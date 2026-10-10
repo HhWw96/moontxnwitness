@@ -101,7 +101,32 @@ export function runCliTests() {
     writeFileSync(resolve(root, 'verification/sqlite-baseline.json'), JSON.stringify(history, null, 2) + '\n');
     writeFileSync(resolve(root, 'verification/sqlite-report.json'), JSON.stringify(report, null, 2) + '\n');
   });
-  const receipt = { tool: 'MoonTxnWitness', version: version(), passed: true, checks: checks.length, names: checks, sqlite: 'actual in-memory SQLite sequential commits; baseline only' };
+  const concurrentRuns = [];
+  test('actual two-thread SQLite WAL races, aborts and retries', () => {
+    for (let repetition = 0; repetition < 3; repetition++) {
+      const captured = spawnSync(process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), [resolve(root, 'examples/capture_sqlite_concurrent.py'), '--rounds', '2'], { encoding: 'utf8', timeout: 30000 });
+      assert.ifError(captured.error); assert.equal(captured.status, 0, captured.stderr);
+      const history = JSON.parse(captured.stdout);
+      const metadata = JSON.parse(captured.stderr);
+      assert.equal(metadata.actualDatabaseExecution, true); assert.equal(metadata.journalMode, 'wal');
+      assert.equal(metadata.workers, 2); assert.equal(metadata.committed, 4); assert.equal(metadata.aborted, 2);
+      const report = analyze(history);
+      assert.equal(report.status, 'consistent'); assert.equal(report.complete, true);
+      assert.equal(report.serialOrder.length, 4); assert.equal(compareModels(history).classification, 'compatible-with-both');
+      assert.equal(replayReport(history, report).valid, true);
+      concurrentRuns.push(metadata);
+      if (repetition === 0) {
+        writeFileSync(resolve(root, 'verification/sqlite-concurrent.json'), JSON.stringify(history, null, 2) + '\n');
+        writeFileSync(resolve(root, 'verification/sqlite-concurrent-report.json'), JSON.stringify(report, null, 2) + '\n');
+      }
+    }
+  });
+  test('concurrent capture never overwrites an existing output', () => {
+    const p = resolve(work, 'existing-sqlite-capture.json'); writeFileSync(p, 'keep');
+    const result = spawnSync(process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), [resolve(root, 'examples/capture_sqlite_concurrent.py'), p, '--rounds', '1'], { encoding: 'utf8', timeout: 30000 });
+    assert.notEqual(result.status, 0); assert.equal(readFileSync(p, 'utf8'), 'keep');
+  });
+  const receipt = { tool: 'MoonTxnWitness', version: version(), passed: true, checks: checks.length, names: checks, sqlite: 'actual in-memory SQLite sequential commits', concurrentRuns };
   mkdirSync(resolve(root, 'verification'), { recursive: true });
   writeFileSync(resolve(root, 'verification/cli.json'), JSON.stringify(receipt, null, 2) + '\n');
   console.log(`CLI integration: ${checks.length} checks passed, including actual SQLite capture.`);

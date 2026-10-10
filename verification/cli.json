@@ -1,8 +1,8 @@
 {
   "tool": "MoonTxnWitness",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "passed": true,
-  "checks": 63,
+  "checks": 65,
   "names": [
     "version matches release metadata",
     "help and no arguments are usable",
@@ -66,7 +66,77 @@
     "updated source hash cannot bind an unrelated old report",
     "capsule rejects duplicate fields and malformed headers",
     "capsule path cannot overwrite the input or report",
-    "actual SQLite transaction capture and CLI import"
+    "actual SQLite transaction capture and CLI import",
+    "actual two-thread SQLite WAL races, aborts and retries",
+    "concurrent capture never overwrites an existing output"
   ],
-  "sqlite": "actual in-memory SQLite sequential commits; baseline only"
+  "sqlite": "actual in-memory SQLite sequential commits",
+  "concurrentRuns": [
+    {
+      "actualDatabaseExecution": true,
+      "sqliteVersion": "3.45.3",
+      "pythonVersion": "3.12.5",
+      "journalMode": "wal",
+      "workers": 2,
+      "rounds": 2,
+      "committed": 4,
+      "aborted": 2,
+      "errors": [
+        {
+          "transaction": "r0-A",
+          "sqliteError": "SQLITE_BUSY"
+        },
+        {
+          "transaction": "r1-A",
+          "sqliteError": "SQLITE_BUSY"
+        }
+      ],
+      "versionOrderSource": "same-transaction SQLite audit sequence",
+      "claim": "Observed history only; does not certify SQLite globally or reproduce an SQLite vulnerability"
+    },
+    {
+      "actualDatabaseExecution": true,
+      "sqliteVersion": "3.45.3",
+      "pythonVersion": "3.12.5",
+      "journalMode": "wal",
+      "workers": 2,
+      "rounds": 2,
+      "committed": 4,
+      "aborted": 2,
+      "errors": [
+        {
+          "transaction": "r0-A",
+          "sqliteError": "SQLITE_BUSY"
+        },
+        {
+          "transaction": "r1-B",
+          "sqliteError": "SQLITE_BUSY"
+        }
+      ],
+      "versionOrderSource": "same-transaction SQLite audit sequence",
+      "claim": "Observed history only; does not certify SQLite globally or reproduce an SQLite vulnerability"
+    },
+    {
+      "actualDatabaseExecution": true,
+      "sqliteVersion": "3.45.3",
+      "pythonVersion": "3.12.5",
+      "journalMode": "wal",
+      "workers": 2,
+      "rounds": 2,
+      "committed": 4,
+      "aborted": 2,
+      "errors": [
+        {
+          "transaction": "r0-A",
+          "sqliteError": "SQLITE_BUSY"
+        },
+        {
+          "transaction": "r1-B",
+          "sqliteError": "SQLITE_BUSY"
+        }
+      ],
+      "versionOrderSource": "same-transaction SQLite audit sequence",
+      "claim": "Observed history only; does not certify SQLite globally or reproduce an SQLite vulnerability"
+    }
+  ]
 }

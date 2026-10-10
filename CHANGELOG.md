@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.5 — 2026-10-10
+
+- Actual two-thread, two-connection SQLite WAL race capture with aborted snapshots and fresh retries.
+- Derive writer order from an audit table committed with each real write.
+- Validate audit/committed-operation agreement and observed final database versions.
+- Execute three independent captures and check both models and semantic replay.
+
 ## 0.0.4 — 2026-10-10
 
 - Self-contained replay capsules bind stored history and report text with SHA-256.
