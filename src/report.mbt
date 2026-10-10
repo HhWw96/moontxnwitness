@@ -76,6 +76,21 @@ pub fn report_json(r : Report) -> Json {
     "witness": witness,
     "serialOrder": r.serial_order.to_json(),
     "versionOrders": r.inferred_orders.to_json(),
+    "versionOrderSources": r.order_sources.to_json(),
+    "search": {
+      "status": r.search.status.to_json(),
+      "attempts": r.search.attempts.to_json(),
+      "operationChecks": r.search.operation_checks.to_json(),
+      "reason": r.search.reason.to_json(),
+      "limits": {
+        "transactions": 8,
+        "operations": 512,
+        "keys": 128,
+        "attempts": 100000,
+        "operationChecks": 1000000,
+      },
+      "blockers": r.search.blockers.map(finding_json).to_json(),
+    },
   }
 }
 

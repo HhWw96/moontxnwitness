@@ -1,9 +1,18 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve, delimiter } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 export const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+export function coreTestCount(directory = resolve(root, 'src')) {
+  let count = 0;
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = resolve(directory, entry.name);
+    if (entry.isDirectory()) count += coreTestCount(path);
+    else if (entry.name.endsWith('.mbt')) count += (readFileSync(path, 'utf8').match(/^test\s+"/gm) || []).length;
+  }
+  return count;
+}
 export function runMoon(args) {
   const localPath = resolve(root, '.local-toolchain.json');
   const local = existsSync(localPath) ? JSON.parse(readFileSync(localPath, 'utf8')).moonHome : null;

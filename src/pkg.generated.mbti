@@ -110,9 +110,21 @@ pub(all) struct Report {
   committed_count : Int
   operation_count : Int
   inferred_orders : Map[String, Array[String]]
+  order_sources : Map[String, String]
+  search : SearchInfo
 } derive(Eq)
 pub fn Report::equal(Self, Self) -> Bool
 pub fn Report::not_equal(Self, Self) -> Bool
+
+pub(all) struct SearchInfo {
+  status : String
+  attempts : Int
+  operation_checks : Int
+  reason : String
+  blockers : Array[Finding]
+} derive(Eq)
+pub fn SearchInfo::equal(Self, Self) -> Bool
+pub fn SearchInfo::not_equal(Self, Self) -> Bool
 
 pub(all) struct Transaction {
   id : String

@@ -7,6 +7,7 @@ import { analyze, version } from '../dist/sdk.mjs';
 import { root } from './moon.mjs';
 
 export function runCliTests() {
+  const release = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
   mkdirSync(resolve(root, 'artifacts/test-work'), { recursive: true });
   const work = mkdtempSync(resolve(root, 'artifacts/test-work/run-'));
   const cli = resolve(root, 'dist/moontxnwitness.mjs');
@@ -21,9 +22,9 @@ export function runCliTests() {
   }
   function json(name) { return JSON.parse(readFileSync(fixture(name), 'utf8')); }
   function tempJson(name, obj) { const path = resolve(work, name); writeFileSync(path, JSON.stringify(obj)); return path; }
-  test('version is 0.0.1', () => { assert.equal(version(), '0.0.1'); assert.equal(run(['--version'], 0).stdout.trim(), '0.0.1'); });
+  test('version matches release metadata', () => { assert.equal(version(), release); assert.equal(run(['--version'], 0).stdout.trim(), release); });
   test('help and no arguments are usable', () => { assert.match(run(['--help'], 0).stdout, /退出码/); assert.match(run([], 0).stdout, /用法/); });
-  for (const [name, status, exit] of [['consistent', 'consistent', 0], ['write-skew', 'violation', 1], ['information-cycle', 'violation', 1], ['unknown-order', 'inconclusive', 3], ['lost-update', 'violation', 1], ['aborted-read', 'violation', 1], ['strict-realtime', 'violation', 1]]) {
+  for (const [name, status, exit] of [['consistent', 'consistent', 0], ['write-skew', 'violation', 1], ['information-cycle', 'violation', 1], ['unknown-order', 'consistent', 0], ['lost-update', 'violation', 1], ['aborted-read', 'violation', 1], ['strict-realtime', 'violation', 1], ['fractured-observation', 'violation', 1]]) {
     test(`${name} fixture status and exit code`, () => { const r = JSON.parse(run(['check', fixture(name), '--format', 'json'], exit).stdout); assert.equal(r.status, status); });
   }
   test('plain text explains witness', () => { const t = run(['check', fixture('write-skew')], 1).stdout; assert.match(t, /异常环证据/); assert.match(t, /操作下标/); });
@@ -38,7 +39,7 @@ export function runCliTests() {
   for (const [name, mutate] of [
     ['changed edge provenance', p => { p.witness.edges[0].fromVersion = 'forged'; }],
     ['broken transaction path', p => { p.witness.transactions[1] = 'not-a-transaction'; }],
-    ['wrong tool version', p => { p.version = '0.0.2'; }],
+    ['wrong tool version', p => { p.version = '999.0.0'; }],
     ['wrong model', p => { p.model = 'strict-serializable'; }],
     ['wrong verdict', p => { p.status = 'consistent'; }],
     ['repeated cycle source', p => { p.witness.edges[1] = p.witness.edges[0]; }],

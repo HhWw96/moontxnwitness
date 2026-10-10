@@ -150,6 +150,16 @@ fn base_report(
       committed += 1
     }
   }
+  let sources : Map[String, String] = Map([])
+  for key, _ in h.initial {
+    sources[key] = if h.version_orders.contains(key) {
+      "asserted"
+    } else if orders.contains(key) {
+      "single-writer"
+    } else {
+      "missing"
+    }
+  }
   {
     outcome,
     model: h.model,
@@ -161,6 +171,14 @@ fn base_report(
     committed_count: committed,
     operation_count: count_ops(h),
     inferred_orders: orders,
+    order_sources: sources,
+    search: {
+      status: "not-needed",
+      attempts: 0,
+      operation_checks: 0,
+      reason: "No bounded completion search was required.",
+      blockers: [],
+    },
   }
 }
 
@@ -461,18 +479,59 @@ fn analyze_internal(h : History, search_cycles : Bool) -> Report {
       ),
     )
   }
-  let outcome = if findings.any(f => f.severity == "violation") {
+  let mut outcome = if findings.any(f => f.severity == "violation") {
     Violation
   } else if findings.any(f => f.severity == "uncertainty") {
     Inconclusive
   } else {
     Consistent
   }
-  let serial_order = if search_cycles && outcome == Consistent {
+  let mut serial_order = if search_cycles && outcome == Consistent {
     topological_order(h.transactions, edges)
   } else {
     []
   }
   let base = base_report(h, outcome, findings, orders)
-  { ..base, edges, witness, serial_order, }
+  let mut search = base.search
+  let mut resolved_orders = orders
+  if search_cycles &&
+    outcome == Inconclusive &&
+    findings.all(f => f.code == "missing_version_order") {
+    let (info, solution) = search_serial(h, orders, edges)
+    search = info
+    if info.status == "found" || info.status == "exhausted" {
+      findings.clear()
+      match solution {
+        Some(ids) => {
+          serial_order = ids
+          resolved_orders = orders_for_serial(h, ids)
+          for key, source in base.order_sources {
+            if source == "missing" {
+              base.order_sources[key] = "searched"
+            }
+          }
+          outcome = Consistent
+        }
+        None => {
+          findings.push(
+            issue(
+              "no_serial_execution", "violation", "Bounded complete enumeration found no serial execution reproducing all recorded reads and asserted orders",
+            ),
+          )
+          outcome = Violation
+        }
+      }
+    } else {
+      findings.push(issue("search_limit", "uncertainty", info.reason))
+    }
+  }
+  {
+    ..base,
+    outcome,
+    edges,
+    witness,
+    serial_order,
+    inferred_orders: resolved_orders,
+    search,
+  }
 }

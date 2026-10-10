@@ -96,7 +96,21 @@ pub(all) struct Report {
   committed_count : Int
   operation_count : Int
   inferred_orders : Map[String, Array[String]]
+  order_sources : Map[String, String]
+  search : SearchInfo
 } derive(Eq)
+
+///|
+pub(all) struct SearchInfo {
+  status : String
+  attempts : Int
+  operation_checks : Int
+  reason : String
+  blockers : Array[Finding]
+} derive(Eq)
+
+///|
+pub extend SearchInfo with Eq::{equal, not_equal}
 
 ///|
 priv struct WriteRef {
@@ -107,7 +121,7 @@ priv struct WriteRef {
 
 ///|
 pub fn version() -> String {
-  "0.0.1"
+  "0.0.2"
 }
 
 ///|

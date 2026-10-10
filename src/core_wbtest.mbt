@@ -86,13 +86,14 @@ test "mutually observed future external writes form an information cycle" {
 }
 
 ///|
-test "scalar values do not establish a multi-writer version order" {
+test "missing order admits a serialization without asserting an observed order" {
   let r = analyze(
     hist([tx("W1", [write_op("x", "x1")]), tx("W2", [write_op("x", "x2")])]),
   )
-  assert_true(r.outcome == Inconclusive)
-  assert_true(has_code(r, "missing_version_order"))
-  assert_eq(r.serial_order.length(), 0)
+  assert_true(r.outcome == Consistent)
+  assert_eq(r.search.status, "found")
+  assert_eq(r.order_sources.at("x"), "searched")
+  assert_eq(r.serial_order.length(), 2)
 }
 
 ///|

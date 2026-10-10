@@ -1,7 +1,7 @@
 // Test-only oracle: replay whole transactions in every possible serial order.
 // It does not construct WR/WW/RW edges or call the production graph search.
 import assert from 'node:assert/strict';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
@@ -59,18 +59,19 @@ function independentShortestCycle(report, ids) {
 
 export function runOracle() {
   const started = performance.now();
-  const counts = { exhaustive: 0, generated: 0, consistent: 0, violation: 0, certificates: 0, shortestCycles: 0, serialOrders: 0 };
+  const counts = { exhaustive: 0, generated: 0, completion: 0, consistent: 0, violation: 0, certificates: 0, shortestCycles: 0, serialOrders: 0 };
   function check(history, category) {
     const ids = history.transactions.filter(t => t.status === 'committed').map(t => t.id);
     const serializations = permutations(ids);
     const exists = serializations.some(order => serialReplay(history, order));
     const report = analyze(history);
     assert.equal(report.status, exists ? 'consistent' : 'violation', JSON.stringify({ history, report, exists }));
-    assert.equal(report.complete, true);
+    if (category !== 'completion' || exists) assert.equal(report.complete, true);
     counts[category]++;
     counts[report.status]++;
     if (exists) {
       assert.equal(serialReplay(history, report.serialOrder), true, 'Reported serial order must replay every read and final-write order');
+      assert.equal(serialReplay({ ...history, versionOrders: report.versionOrders }, report.serialOrder), true, 'Searched orders must match the concrete serial replay');
       counts.serialOrders++;
     }
     const minimum = independentShortestCycle(report, ids);
@@ -97,6 +98,9 @@ export function runOracle() {
         if (chosen.length < n) {
           for (const op of reads) chooseReads([...chosen, op]);
           return;
+        }
+        for (const model of ['serializable', 'strict-serializable']) {
+          check({ schemaVersion: 1, model, initial: { x: 'x0', y: 'y0' }, transactions: ids.map((id, i) => ({ id, status: 'committed', start: i * 3, end: i * 3 + 1, ops: [chosen[i], { type: 'write', key: writeKeys[i], version: versions[i] }] })) }, 'completion');
         }
         for (const x of permutations(finalByKey.x)) for (const y of permutations(finalByKey.y)) {
           for (const model of ['serializable', 'strict-serializable']) {
@@ -146,13 +150,17 @@ export function runOracle() {
       for (const t of transactions) for (const op of t.ops) if (op.type === 'read' && random(2)) op.version = sources[op.key][random(sources[op.key].length)];
       for (const key of Object.keys(orders)) orders[key] = [initial[key], ...shuffle(orders[key].slice(1))];
     }
-    check({ schemaVersion: 1, model: sample % 4 < 2 ? 'serializable' : 'strict-serializable', initial, versionOrders: orders, transactions: shuffle(transactions) }, 'generated');
+    const history = { schemaVersion: 1, model: sample % 4 < 2 ? 'serializable' : 'strict-serializable', initial, versionOrders: orders, transactions: shuffle(transactions) };
+    check(history, 'generated');
+    const partial = Object.fromEntries(Object.entries(orders).filter(([key]) => sample % 2 === 0 && key !== 'x'));
+    check({ ...history, versionOrders: partial }, 'completion');
   }
   assert.equal(counts.exhaustive, 6192);
-  const receipt = { tool: 'MoonTxnWitness', version: '0.0.1', passed: true, method: 'Independent full serial-order enumeration and register replay; DFS shortest-cycle comparison', seed: '0x51A17E', counts, elapsedMs: Math.round(performance.now() - started) };
+  assert.equal(counts.completion, 3128);
+  const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version, passed: true, method: 'Independent full serial-order enumeration and register replay; DFS shortest-cycle comparison', seed: '0x51A17E', counts, elapsedMs: Math.round(performance.now() - started) };
   mkdirSync(resolve(root, 'verification'), { recursive: true });
   writeFileSync(resolve(root, 'verification/oracle.json'), JSON.stringify(receipt, null, 2) + '\n');
-  console.log(`Independent oracle: ${counts.exhaustive + counts.generated} histories agree; ${counts.certificates} cycle certificates verified.`);
+  console.log(`Independent oracle: ${counts.exhaustive + counts.generated + counts.completion} histories agree; ${counts.certificates} cycle certificates verified.`);
   return receipt;
 }
 

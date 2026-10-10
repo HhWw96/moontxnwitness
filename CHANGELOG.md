@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.2 — 2026-10-10
+
+- Bounded exact serial replay search for small histories with missing writer orders.
+- Clearly label searched orders as possible completions, not observed facts.
+- Prove exhaustive failure separately from budget exhaustion; preserve unknown outcomes.
+- Add mixed atomic-writer observation example and extend independent oracle to 10,320 histories.
+
 ## 0.0.1 — 2026-10-10
 
 First local release of MoonTxnWitness.

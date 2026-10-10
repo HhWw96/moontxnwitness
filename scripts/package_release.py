@@ -81,7 +81,7 @@ def run(args, cwd, expected=0):
     return result.stdout
 
 
-fixtures = [("consistent", "consistent", 0), ("write-skew", "violation", 1), ("information-cycle", "violation", 1), ("unknown-order", "inconclusive", 3), ("lost-update", "violation", 1), ("aborted-read", "violation", 1), ("strict-realtime", "violation", 1)]
+fixtures = [("consistent", "consistent", 0), ("write-skew", "violation", 1), ("information-cycle", "violation", 1), ("unknown-order", "consistent", 0), ("lost-update", "violation", 1), ("aborted-read", "violation", 1), ("strict-realtime", "violation", 1), ("fractured-observation", "violation", 1)]
 for kind in ("portable", "source"):
     destination = work / kind
     with zipfile.ZipFile(ARTIFACTS / (NAME + "-" + kind + ".zip")) as packed:
@@ -96,8 +96,9 @@ for kind in ("portable", "source"):
         run([NODE, "scripts/build.mjs"], consumer)
         checks.append("source rebuilt using external MoonBit installation, no local config")
         core_tests = run([NODE, "scripts/moon.mjs", "test", "--target", "js", "--deny-warn"], consumer)
-        assert "Total tests: 41, passed: 41, failed: 0." in core_tests
-        checks.append("source fresh JS core tests: 41 passed")
+        test_count = SUMMARY["coreTestsPerTarget"]
+        assert f"Total tests: {test_count}, passed: {test_count}, failed: 0." in core_tests
+        checks.append(f"source fresh JS core tests: {test_count} passed")
     assert run([NODE, "dist/moontxnwitness.mjs", "--version"], consumer).strip() == VERSION
     checks.append(kind + " version")
     for filename, status, exit_code in fixtures:
