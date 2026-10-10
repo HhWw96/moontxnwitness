@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync, existsSync, mkdtempSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyze, version } from '../dist/sdk.mjs';
+import { analyze, version, shrink } from '../dist/sdk.mjs';
 import { root } from './moon.mjs';
 
 export function runCliTests() {
@@ -65,6 +65,15 @@ export function runCliTests() {
   test('identifier escaping in Markdown and DOT', () => { const h = json('write-skew'); h.transactions[0].id = '<script>[bad]"'; const p = tempJson('escaped.json', h); const md = run(['check', p, '--format', 'markdown'], 1).stdout; assert.equal(md.includes('<script>'), false); const dot = run(['check', p, '--format', 'dot'], 1).stdout; assert.ok(dot.includes('\\"')); });
   test('deterministic JSON output', () => { const a = run(['check', fixture('write-skew'), '--format', 'json'], 1).stdout; const b = run(['check', fixture('write-skew'), '--format', 'json'], 1).stdout; assert.equal(a, b); });
   test('transaction and operation limits', () => { const tooMany = { initial: {}, transactions: Array.from({ length: 513 }, (_, i) => ({ id: `t${i}`, status: 'committed', ops: [] })) }; assert.equal(analyze(tooMany).status, 'invalid'); const manyOps = { initial: { x: 'x0' }, transactions: [{ id: 't', status: 'committed', ops: Array.from({ length: 10001 }, () => ({ type: 'read', key: 'x', version: 'x0' })) }] }; assert.equal(analyze(manyOps).status, 'invalid'); });
+  const noisy = json('write-skew');
+  noisy.transactions = [{ id: 'noise-before', status: 'committed', ops: [] }, ...noisy.transactions, { id: 'noise-after', status: 'committed', ops: [] }];
+  const noisyPath = tempJson('noisy.json', noisy);
+  test('SDK reduction retains only necessary transactions', () => { const r = shrink(noisy); assert.equal(r.oneMinimal, true); assert.equal(r.reducedHistory.transactions.length, 2); assert.equal(r.report.status, 'violation'); });
+  test('CLI reduction exports an independently checkable history', () => { const output = resolve(work, 'reduction.json'); const mini = resolve(work, 'mini.json'); run(['shrink', noisyPath, '--output', output, '--history', mini], 0); assert.equal(JSON.parse(readFileSync(output, 'utf8')).oneMinimal, true); assert.equal(JSON.parse(run(['check', mini, '--format', 'json'], 1).stdout).stats.transactions, 2); });
+  test('reduction does not label a consistent source as a counterexample', () => assert.equal(JSON.parse(run(['shrink', fixture('consistent')], 2).stdout).status, 'not-violation'));
+  test('exact-search violation can be reduced', () => { const r = JSON.parse(run(['shrink', fixture('fractured-observation')], 0).stdout); assert.equal(r.oneMinimal, true); assert.equal(r.report.search.status, 'exhausted'); });
+  test('reduction output does not overwrite its input', () => run(['shrink', noisyPath, '--history', noisyPath], 2));
+  test('reduction rejects duplicate or missing options', () => { run(['shrink', noisyPath, '--output', 'x', '--output', 'y'], 2); run(['shrink', noisyPath, '--history'], 2); });
   test('actual SQLite transaction capture and CLI import', () => {
     const captured = spawnSync(process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), [resolve(root, 'examples/capture_sqlite.py')], { encoding: 'utf8', timeout: 30000 });
     assert.ifError(captured.error); assert.equal(captured.status, 0, captured.stderr);

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.3 — 2026-10-10
+
+- Transaction delta debugging with bounded checks and honest one-minimality status.
+- Export reduced histories for independent analysis without inventing writer orders.
+- Cover cycle, direct-read and exact-search counterexamples.
+- Fix timestamp JSON export: Int64 values must be safe JSON numbers, not strings.
+- Independently replay reduced generated histories and test every singleton deletion.
+
 ## 0.0.2 — 2026-10-10
 
 - Bounded exact serial replay search for small histories with missing writer orders.

@@ -10,11 +10,17 @@ pub fn history_json(History) -> Json
 
 pub fn parse_history(String) -> Result[History, String]
 
+pub fn reduce_history(History, max_checks? : Int) -> Reduction
+
+pub fn reduction_json(Reduction) -> Json
+
 pub fn render_report(Report, String) -> String
 
 pub fn report_json(Report) -> Json
 
 pub fn run_json(String, String) -> String
+
+pub fn shrink_json(String) -> String
 
 pub fn verify_certificate_json(String, String) -> String
 
@@ -98,6 +104,18 @@ pub(all) enum Outcome {
 } derive(Eq)
 pub fn Outcome::equal(Self, Self) -> Bool
 pub fn Outcome::not_equal(Self, Self) -> Bool
+
+pub(all) struct Reduction {
+  history : History
+  report : Report
+  status : String
+  removed : Array[String]
+  checks : Int
+  one_minimal : Bool
+  reason : String
+} derive(Eq)
+pub fn Reduction::equal(Self, Self) -> Bool
+pub fn Reduction::not_equal(Self, Self) -> Bool
 
 pub(all) struct Report {
   outcome : Outcome

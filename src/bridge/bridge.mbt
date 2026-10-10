@@ -5,6 +5,12 @@ pub fn version() -> String {
 }
 
 ///|
+#export_name("shrink_json")
+pub fn shrink_json(text : String) -> String {
+  @txn.shrink_json(text)
+}
+
+///|
 #export_name("analyze_json")
 pub fn analyze_json(text : String) -> String {
   @txn.analyze_json(text)

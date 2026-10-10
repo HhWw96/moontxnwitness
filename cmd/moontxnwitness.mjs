@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import { openSync, readSync, closeSync, writeFileSync, existsSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { run_json, verify_certificate_json, version } from './core.mjs';
+import { run_json, verify_certificate_json, shrink_json, version } from './core.mjs';
 
 const help = `MoonTxnWitness v${version()}
 用法：
   node dist/moontxnwitness.mjs check HISTORY.json [--format text|json|markdown|dot] [--output FILE] [--witness FILE]
   node dist/moontxnwitness.mjs verify HISTORY.json CERTIFICATE.json
+  node dist/moontxnwitness.mjs shrink HISTORY.json [--output REDUCTION.json] [--history MINI.json]
   node dist/moontxnwitness.mjs --help | --version
 
 check 支持以 - 从标准输入读取 UTF-8 JSON。模型由输入中的 model 选择。
@@ -57,6 +58,36 @@ function saveArtifacts(artifacts) {
   }
 }
 
+function localArgs(tokens, allowed, count) {
+  const options = Object.create(null);
+  const paths = [];
+  let literal = false;
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    if (!literal && token === '--') { literal = true; continue; }
+    if (!literal && allowed.includes(token)) {
+      if (options[token] !== undefined) throw new Error(`选项重复：${token}`);
+      if (!tokens[i + 1] || tokens[i + 1].startsWith('--')) throw new Error(`选项缺少值：${token}`);
+      options[token] = tokens[++i];
+    } else if (!literal && token.startsWith('-') && token !== '-') throw new Error(`未知选项：${token}`);
+    else paths.push(token);
+  }
+  if (paths.length !== count) throw new Error(`需要 ${count} 个输入路径`);
+  return { paths, options };
+}
+
+function emitJSON(result, output, inputs, companions = []) {
+  const text = JSON.stringify(result, null, 2) + '\n';
+  const paths = [];
+  const artifacts = [...companions];
+  if (output) artifacts.push([output, text]);
+  for (const [path] of artifacts) checkOutput(path, inputs, paths);
+  saveArtifacts(artifacts);
+  if (output) {
+    console.error(`结果已保存：${output}`);
+  } else process.stdout.write(text);
+}
+
 try {
   const args = process.argv.slice(2);
   if (args.length === 1 && args[0] === '--version') {
@@ -68,6 +99,16 @@ try {
     const result = JSON.parse(verify_certificate_json(readBounded(args[1], 2 * 1024 * 1024), readBounded(args[2], 32 * 1024 * 1024)));
     console.log(JSON.stringify(result, null, 2));
     process.exitCode = result.valid ? 0 : 2;
+  } else if (args[0] === 'shrink') {
+    const { paths, options } = localArgs(args.slice(1), ['--output', '--history'], 1);
+    const result = JSON.parse(shrink_json(readBounded(paths[0], 2 * 1024 * 1024)));
+    const companions = [];
+    if (options['--history']) {
+      if (!result.reducedHistory) throw new Error('无有效的缩减历史可导出');
+      companions.push([options['--history'], JSON.stringify(result.reducedHistory, null, 2) + '\n']);
+    }
+    emitJSON(result, options['--output'], paths, companions);
+    process.exitCode = ['reduced', 'unchanged'].includes(result.status) ? 0 : ['budget', 'skipped'].includes(result.status) ? 3 : 2;
   } else if (args[0] === 'check') {
     let format = 'text';
     let output;

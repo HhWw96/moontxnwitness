@@ -5,7 +5,7 @@ import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
-import { analyze, verify } from '../dist/sdk.mjs';
+import { analyze, verify, shrink } from '../dist/sdk.mjs';
 import { root } from './moon.mjs';
 
 function permutations(items) {
@@ -59,7 +59,7 @@ function independentShortestCycle(report, ids) {
 
 export function runOracle() {
   const started = performance.now();
-  const counts = { exhaustive: 0, generated: 0, completion: 0, consistent: 0, violation: 0, certificates: 0, shortestCycles: 0, serialOrders: 0 };
+  const counts = { exhaustive: 0, generated: 0, completion: 0, consistent: 0, violation: 0, certificates: 0, shortestCycles: 0, serialOrders: 0, reductionsVerified: 0, reductionDeletionChecks: 0 };
   function check(history, category) {
     const ids = history.transactions.filter(t => t.status === 'committed').map(t => t.id);
     const serializations = permutations(ids);
@@ -81,6 +81,31 @@ export function runOracle() {
       counts.certificates++;
       counts.shortestCycles++;
     } else assert.equal(minimum, Infinity);
+    if (category === 'generated' && !exists && counts.generated % 11 === 0) {
+      const reduced = shrink(history);
+      assert.equal(reduced.report.status, 'violation');
+      assert.equal(reduced.oneMinimal, true);
+      const mini = reduced.reducedHistory;
+      assert.deepEqual(mini.initial, history.initial);
+      for (const t of mini.transactions) assert.deepEqual(t.ops, history.transactions.find(original => original.id === t.id).ops);
+      assert.equal(permutations(mini.transactions.map(t => t.id)).some(ids => serialReplay(mini, ids)), false);
+      if (reduced.report.witness) {
+        const verified = verify(mini, reduced.report);
+        assert.equal(verified.valid, true, JSON.stringify({ mini, report: reduced.report, verified }));
+      }
+      for (const t of mini.transactions) {
+        const remainder = mini.transactions.filter(other => other.id !== t.id);
+        const final = Object.fromEntries(Object.keys(mini.initial).map(k => [k, new Set([mini.initial[k]])]));
+        for (const other of remainder) {
+          const writes = new Map(other.ops.filter(op => op.type === 'write').map(op => [op.key, op.version]));
+          for (const [key, v] of writes) final[key].add(v);
+        }
+        const versionOrders = Object.fromEntries(Object.entries(mini.versionOrders || {}).map(([k, order]) => [k, order.filter(v => final[k].has(v))]));
+        assert.notEqual(analyze({ ...mini, transactions: remainder, versionOrders }).status, 'violation');
+        counts.reductionDeletionChecks++;
+      }
+      counts.reductionsVerified++;
+    }
   }
 
   // Exhaustive family: 2 or 3 committed transactions; two keys; each transaction

@@ -225,11 +225,11 @@ pub fn history_json(h : History) -> Json {
         } : Json)
     })
     let start = match tx.start {
-      Some(v) => v.to_json()
+      Some(v) => v.to_double().to_json()
       None => Json::null()
     }
     let end = match tx.end {
-      Some(v) => v.to_json()
+      Some(v) => v.to_double().to_json()
       None => Json::null()
     }
     (
