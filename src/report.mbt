@@ -170,7 +170,7 @@ pub fn verify_certificate_json(
   }
   if root.get("tool") != Some("MoonTxnWitness".to_json()) ||
     root.get("schemaVersion") != Some((1).to_json()) ||
-    root.get("version") != Some(version().to_json()) ||
+    !compatible_evidence_version(root.get("version")) ||
     root.get("model") != Some(model_label(h.model).to_json()) ||
     root.get("status") != Some("violation".to_json()) {
     return invalid(

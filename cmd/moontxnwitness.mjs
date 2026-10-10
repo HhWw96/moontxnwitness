@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 import { openSync, readSync, closeSync, writeFileSync, existsSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { run_json, verify_certificate_json, shrink_json, version } from './core.mjs';
+import { createHash } from 'node:crypto';
+import { run_json, verify_certificate_json, shrink_json, replay_report_json, capsule_content_json, compare_models_json, version } from './core.mjs';
 
 const help = `MoonTxnWitness v${version()}
 用法：
   node dist/moontxnwitness.mjs check HISTORY.json [--format text|json|markdown|dot] [--output FILE] [--witness FILE]
   node dist/moontxnwitness.mjs verify HISTORY.json CERTIFICATE.json
   node dist/moontxnwitness.mjs shrink HISTORY.json [--output REDUCTION.json] [--history MINI.json]
+  node dist/moontxnwitness.mjs compare-models HISTORY.json [--output COMPARISON.json]
+  node dist/moontxnwitness.mjs replay CAPSULE.json
+  check 也支持 --capsule FILE 导出含日志、报告和 SHA-256 的自包含复现包。
   node dist/moontxnwitness.mjs --help | --version
 
 check 支持以 - 从标准输入读取 UTF-8 JSON。模型由输入中的 model 选择。
@@ -31,6 +35,14 @@ function readBounded(path, maximum) {
     }
   } finally { if (fd !== 0) closeSync(fd); }
   return new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks));
+}
+
+function hash(text) { return createHash('sha256').update(text, 'utf8').digest('hex'); }
+function capsule(historyText, report) {
+  const reportText = JSON.stringify(report);
+  const text = JSON.stringify({ format: 'moontxnwitness-replay/v1', schemaVersion: 1, tool: 'MoonTxnWitness', engineVersion: version(), historyText, historySha256: hash(historyText), reportText, reportSha256: hash(reportText) }, null, 2) + '\n';
+  if (Buffer.byteLength(text) > 32 * 1024 * 1024) throw new Error('复现包超过 32 MiB 限制');
+  return text;
 }
 
 function checkOutput(path, inputPaths, otherOutputs) {
@@ -99,6 +111,19 @@ try {
     const result = JSON.parse(verify_certificate_json(readBounded(args[1], 2 * 1024 * 1024), readBounded(args[2], 32 * 1024 * 1024)));
     console.log(JSON.stringify(result, null, 2));
     process.exitCode = result.valid ? 0 : 2;
+  } else if (args[0] === 'compare-models') {
+    const { paths, options } = localArgs(args.slice(1), ['--output'], 1);
+    const result = JSON.parse(compare_models_json(readBounded(paths[0], 2 * 1024 * 1024)));
+    emitJSON(result, options['--output'], paths);
+    process.exitCode = !result.valid ? 2 : result.classification === 'inconclusive' ? 3 : 0;
+  } else if (args[0] === 'replay') {
+    const { paths } = localArgs(args.slice(1), [], 1);
+    const content = JSON.parse(capsule_content_json(readBounded(paths[0], 32 * 1024 * 1024)));
+    const result = !content.valid ? content : hash(content.historyText) !== content.historySha256 || hash(content.reportText) !== content.reportSha256
+      ? { valid: false, reason: '复现包内容的 SHA-256 不匹配' }
+      : JSON.parse(replay_report_json(content.historyText, content.reportText));
+    emitJSON(result, undefined, paths);
+    process.exitCode = result.valid ? 0 : 2;
   } else if (args[0] === 'shrink') {
     const { paths, options } = localArgs(args.slice(1), ['--output', '--history'], 1);
     const result = JSON.parse(shrink_json(readBounded(paths[0], 2 * 1024 * 1024)));
@@ -113,13 +138,14 @@ try {
     let format = 'text';
     let output;
     let witness;
+    let replayFile;
     let input;
     let literal = false;
     const used = new Set();
     for (let i = 1; i < args.length; i++) {
       const token = args[i];
       if (!literal && token === '--') { literal = true; continue; }
-      if (!literal && ['--format', '--output', '--witness'].includes(token)) {
+      if (!literal && ['--format', '--output', '--witness', '--capsule'].includes(token)) {
         if (used.has(token)) throw new Error(`选项重复：${token}`);
         used.add(token);
         if (!args[i + 1] || args[i + 1].startsWith('--')) throw new Error(`选项缺少值：${token}`);
@@ -127,6 +153,7 @@ try {
         if (token === '--format') format = value;
         if (token === '--output') output = value;
         if (token === '--witness') witness = value;
+        if (token === '--capsule') replayFile = value;
       } else if (!literal && token.startsWith('-') && token !== '-') {
         throw new Error(`未知选项：${token}`);
       } else {
@@ -139,10 +166,12 @@ try {
     const outputs = [];
     if (output) checkOutput(output, [input], outputs);
     if (witness) checkOutput(witness, [input], outputs);
+    if (replayFile) checkOutput(replayFile, [input], outputs);
     const historyText = readBounded(input, 2 * 1024 * 1024);
     const result = JSON.parse(run_json(historyText, format));
     if (witness && !result.report.witness) throw new Error('本次结果没有依赖环证据；直接读写异常保留在 findings 中');
     const artifacts = [];
+    if (replayFile) artifacts.push([replayFile, capsule(historyText, result.report)]);
     if (witness) {
       const { schemaVersion, tool, version: releaseVersion, status, model, witness: proof } = result.report;
       artifacts.push([witness, JSON.stringify({ schemaVersion, tool, version: releaseVersion, status, model, witness: proof }, null, 2) + '\n']);

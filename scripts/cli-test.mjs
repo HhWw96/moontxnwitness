@@ -3,7 +3,8 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync, existsSync, mkdtempSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyze, version, shrink } from '../dist/sdk.mjs';
+import { createHash } from 'node:crypto';
+import { analyze, version, shrink, compareModels, replayReport } from '../dist/sdk.mjs';
 import { root } from './moon.mjs';
 
 export function runCliTests() {
@@ -74,6 +75,20 @@ export function runCliTests() {
   test('exact-search violation can be reduced', () => { const r = JSON.parse(run(['shrink', fixture('fractured-observation')], 0).stdout); assert.equal(r.oneMinimal, true); assert.equal(r.report.search.status, 'exhausted'); });
   test('reduction output does not overwrite its input', () => run(['shrink', noisyPath, '--history', noisyPath], 2));
   test('reduction rejects duplicate or missing options', () => { run(['shrink', noisyPath, '--output', 'x', '--output', 'y'], 2); run(['shrink', noisyPath, '--history'], 2); });
+  test('model comparison isolates a realtime-only violation', () => { const r = JSON.parse(run(['compare-models', fixture('strict-realtime')], 0).stdout); assert.equal(r.classification, 'realtime-only-violation'); assert.equal(r.serializable.status, 'consistent'); assert.equal(r.strictSerializable.status, 'violation'); });
+  test('model comparison keeps missing intervals inconclusive', () => assert.equal(compareModels(json('consistent')).classification, 'inconclusive'));
+  test('old v0.0.1 compact cycle certificate remains verifiable', () => assert.equal(JSON.parse(run(['verify', fixture('write-skew'), resolve(root, 'examples/legacy-v0.0.1.witness.json')], 0).stdout).valid, true));
+  test('SDK semantic replay checks counts and findings', () => { const h = json('write-skew'); const r = analyze(h); assert.equal(replayReport(h, r).valid, true); r.stats.transactions++; assert.equal(replayReport(h, r).valid, false); });
+  const capsulePath = resolve(work, '复现包.json');
+  test('capsule works after reading only its own file', () => { run(['check', fixture('write-skew'), '--capsule', capsulePath], 1); const result = JSON.parse(run(['replay', capsulePath], 0).stdout); assert.equal(result.valid, true); assert.equal(result.status, 'violation'); });
+  test('capsules support consistent histories and non-cycle violations', () => { for (const [name, exit] of [['unknown-order', 0], ['fractured-observation', 1], ['aborted-read', 1]]) { const p = resolve(work, `capsule-${name}.json`); run(['check', fixture(name), '--capsule', p], exit); assert.equal(JSON.parse(run(['replay', p], 0).stdout).valid, true); } });
+  const digest = text => createHash('sha256').update(text, 'utf8').digest('hex');
+  test('capsule rejects changed source content before semantic replay', () => { const c = JSON.parse(readFileSync(capsulePath, 'utf8')); c.historyText += ' '; const p = tempJson('bad-source-capsule.json', c); assert.equal(JSON.parse(run(['replay', p], 2).stdout).valid, false); });
+  test('capsule rejects changed report content before semantic replay', () => { const c = JSON.parse(readFileSync(capsulePath, 'utf8')); c.reportText += ' '; assert.equal(JSON.parse(run(['replay', tempJson('bad-report-capsule.json', c)], 2).stdout).valid, false); });
+  test('updated hashes cannot disguise a manufactured conclusion', () => { const c = JSON.parse(readFileSync(capsulePath, 'utf8')); const r = JSON.parse(c.reportText); r.status = 'consistent'; c.reportText = JSON.stringify(r); c.reportSha256 = digest(c.reportText); assert.equal(JSON.parse(run(['replay', tempJson('forged-conclusion.json', c)], 2).stdout).valid, false); });
+  test('updated source hash cannot bind an unrelated old report', () => { const c = JSON.parse(readFileSync(capsulePath, 'utf8')); c.historyText = readFileSync(fixture('consistent'), 'utf8'); c.historySha256 = digest(c.historyText); assert.equal(JSON.parse(run(['replay', tempJson('wrong-binding.json', c)], 2).stdout).valid, false); });
+  test('capsule rejects duplicate fields and malformed headers', () => { const text = JSON.stringify(JSON.parse(readFileSync(capsulePath, 'utf8'))); const p = resolve(work, 'duplicate-capsule.json'); writeFileSync(p, text.slice(0, -1) + ',"schemaVersion":1}'); assert.equal(JSON.parse(run(['replay', p], 2).stdout).valid, false); const c = JSON.parse(text); c.format = 'other/v1'; assert.equal(JSON.parse(run(['replay', tempJson('wrong-format.json', c)], 2).stdout).valid, false); });
+  test('capsule path cannot overwrite the input or report', () => { run(['check', fixture('write-skew'), '--capsule', fixture('write-skew')], 2); const p = resolve(work, 'duplicate-output.json'); run(['check', fixture('write-skew'), '--output', p, '--capsule', p], 2); assert.equal(existsSync(p), false); });
   test('actual SQLite transaction capture and CLI import', () => {
     const captured = spawnSync(process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), [resolve(root, 'examples/capture_sqlite.py')], { encoding: 'utf8', timeout: 30000 });
     assert.ifError(captured.error); assert.equal(captured.status, 0, captured.stderr);

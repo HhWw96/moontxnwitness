@@ -11,6 +11,24 @@ pub fn shrink_json(text : String) -> String {
 }
 
 ///|
+#export_name("replay_report_json")
+pub fn replay_report_json(history : String, report : String) -> String {
+  @txn.replay_report_json(history, report)
+}
+
+///|
+#export_name("capsule_content_json")
+pub fn capsule_content_json(text : String) -> String {
+  @txn.capsule_content_json(text)
+}
+
+///|
+#export_name("compare_models_json")
+pub fn compare_models_json(text : String) -> String {
+  @txn.compare_models_json(text)
+}
+
+///|
 #export_name("analyze_json")
 pub fn analyze_json(text : String) -> String {
   @txn.analyze_json(text)

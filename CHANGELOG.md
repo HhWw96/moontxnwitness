@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.4 — 2026-10-10
+
+- Self-contained replay capsules bind stored history and report text with SHA-256.
+- Recompute semantic results, including cycle, direct-read and exact-search verdicts.
+- Compare the same history under serializable and strict-serializable models.
+- Reject tampering even when an attacker updates content hashes to match forged verdicts.
+- Keep v0.0.1 cycle certificates verifiable; hash checks do not authenticate source identity.
+
 ## 0.0.3 — 2026-10-10
 
 - Transaction delta debugging with bounded checks and honest one-minimality status.
