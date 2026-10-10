@@ -1,0 +1,84 @@
+{
+  "tool": "MoonTxnWitness",
+  "version": "0.0.6",
+  "node": "v24.13.0",
+  "passed": true,
+  "method": "Full JSON-in/JSON-out analysis; warmup then three alternating samples; no timing pass threshold",
+  "caveat": "Local observations only, not a general performance guarantee; current result contains added diagnostics",
+  "results": [
+    {
+      "scenario": "64-prefix-feeding-two-transaction-cycle",
+      "status": "violation",
+      "measurements": [
+        {
+          "engine": "current",
+          "version": "0.0.6",
+          "timesMs": [
+            172.317,
+            100.95,
+            100.791
+          ],
+          "dependencies": 2145,
+          "graph": {
+            "analyzed": true,
+            "components": 65,
+            "cyclicComponents": 1,
+            "cyclicTransactions": 2,
+            "bfsRoots": 1,
+            "edgeBudgetExceeded": false
+          },
+          "medianMs": 100.95
+        },
+        {
+          "engine": "baseline",
+          "version": "0.0.1",
+          "timesMs": [
+            102.664,
+            79.424,
+            84.734
+          ],
+          "dependencies": 2145,
+          "graph": null,
+          "medianMs": 84.734
+        }
+      ]
+    },
+    {
+      "scenario": "96-transaction-strict-acyclic",
+      "status": "consistent",
+      "measurements": [
+        {
+          "engine": "current",
+          "version": "0.0.6",
+          "timesMs": [
+            231.184,
+            100.493,
+            124.037
+          ],
+          "dependencies": 4560,
+          "graph": {
+            "analyzed": true,
+            "components": 96,
+            "cyclicComponents": 0,
+            "cyclicTransactions": 0,
+            "bfsRoots": 0,
+            "edgeBudgetExceeded": false
+          },
+          "medianMs": 124.037
+        },
+        {
+          "engine": "baseline",
+          "version": "0.0.1",
+          "timesMs": [
+            190.757,
+            116.657,
+            124.142
+          ],
+          "dependencies": 4560,
+          "graph": null,
+          "medianMs": 124.142
+        }
+      ]
+    }
+  ]
+}

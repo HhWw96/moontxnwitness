@@ -19,15 +19,30 @@ fn adjacency(
 
 ///|
 /// It minimizes dependency edges / distinct transactions, not the entire source history.
-fn shortest_cycle(txs : Array[Transaction], edges : Array[Edge]) -> Array[Edge] {
+fn shortest_cycle(
+  txs : Array[Transaction],
+  edges : Array[Edge],
+) -> (Array[Edge], GraphInfo) {
   let (index, adj) = adjacency(txs, edges)
   let n = txs.length()
+  let components = strongly_connected(txs, edges, index, adj)
+  let mut cyclic_components = 0
+  let mut cyclic_transactions = 0
+  for size in components.sizes {
+    if size > 1 {
+      cyclic_components += 1
+      cyclic_transactions += size
+    }
+  }
+  let mut bfs_roots = 0
   let mut best : Array[Edge] = []
   let mut best_length = n + 1
   for start in 0..<n {
-    if adj[start].is_empty() {
+    let component = components.groups[start]
+    if component < 0 || components.sizes[component] < 2 {
       continue
     }
+    bfs_roots += 1
     let distance = Array::make(n, -1)
     let parent = Array::make(n, -1)
     let queue = [start]
@@ -42,6 +57,9 @@ fn shortest_cycle(txs : Array[Transaction], edges : Array[Edge]) -> Array[Edge] 
       }
       for ei in adj[v] {
         let w = index.at(edges[ei].to)
+        if components.groups[w] != component {
+          continue
+        }
         if w == start {
           let path = [edges[ei]]
           let mut current = v
@@ -67,7 +85,95 @@ fn shortest_cycle(txs : Array[Transaction], edges : Array[Edge]) -> Array[Edge] 
       break
     }
   }
-  best
+  (
+    best,
+    {
+      analyzed: true,
+      components: components.sizes.length(),
+      cyclic_components,
+      cyclic_transactions,
+      bfs_roots,
+      edge_budget_exceeded: false,
+    },
+  )
+}
+
+///|
+priv struct Components {
+  indices : Array[Int]
+  low : Array[Int]
+  active : Array[Bool]
+  stack : Array[Int]
+  groups : Array[Int]
+  sizes : Array[Int]
+  mut next : Int
+}
+
+///|
+fn component_visit(
+  v : Int,
+  ctx : Components,
+  edges : Array[Edge],
+  index : Map[String, Int],
+  adj : Array[Array[Int]],
+) -> Unit {
+  ctx.indices[v] = ctx.next
+  ctx.low[v] = ctx.next
+  ctx.next += 1
+  ctx.stack.push(v)
+  ctx.active[v] = true
+  for ei in adj[v] {
+    let w = index.at(edges[ei].to)
+    if ctx.indices[w] < 0 {
+      component_visit(w, ctx, edges, index, adj)
+      if ctx.low[w] < ctx.low[v] {
+        ctx.low[v] = ctx.low[w]
+      }
+    } else if ctx.active[w] && ctx.indices[w] < ctx.low[v] {
+      ctx.low[v] = ctx.indices[w]
+    }
+  }
+  if ctx.low[v] == ctx.indices[v] {
+    let mut count = 0
+    while true {
+      let w = match ctx.stack.pop() {
+        Some(w) => w
+        None => abort("component stack")
+      }
+      ctx.active[w] = false
+      ctx.groups[w] = ctx.sizes.length()
+      count += 1
+      if w == v {
+        break
+      }
+    }
+    ctx.sizes.push(count)
+  }
+}
+
+///|
+fn strongly_connected(
+  txs : Array[Transaction],
+  edges : Array[Edge],
+  index : Map[String, Int],
+  adj : Array[Array[Int]],
+) -> Components {
+  let n = txs.length()
+  let ctx : Components = {
+    indices: Array::make(n, -1),
+    low: Array::make(n, -1),
+    active: Array::make(n, false),
+    stack: [],
+    groups: Array::make(n, -1),
+    sizes: [],
+    next: 0,
+  }
+  for i, tx in txs {
+    if tx.status == Committed && ctx.indices[i] < 0 {
+      component_visit(i, ctx, edges, index, adj)
+    }
+  }
+  ctx
 }
 
 ///|

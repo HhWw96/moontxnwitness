@@ -98,7 +98,33 @@ pub(all) struct Report {
   inferred_orders : Map[String, Array[String]]
   order_sources : Map[String, String]
   search : SearchInfo
+  graph : GraphInfo
+  coverage : Array[KeyCoverage]
 } derive(Eq)
+
+///|
+pub(all) struct GraphInfo {
+  analyzed : Bool
+  components : Int
+  cyclic_components : Int
+  cyclic_transactions : Int
+  bfs_roots : Int
+  edge_budget_exceeded : Bool
+} derive(Eq)
+
+///|
+pub(all) struct KeyCoverage {
+  key : String
+  committed_reads : Int
+  committed_final_writes : Int
+  unresolved_reads : Int
+} derive(Eq)
+
+///|
+pub extend GraphInfo with Eq::{equal, not_equal}
+
+///|
+pub extend KeyCoverage with Eq::{equal, not_equal}
 
 ///|
 pub(all) struct SearchInfo {
@@ -121,7 +147,7 @@ priv struct WriteRef {
 
 ///|
 pub fn version() -> String {
-  "0.0.5"
+  "0.0.6"
 }
 
 ///|

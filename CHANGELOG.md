@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.6 — 2026-10-10
+
+- Decompose dependency graphs into SCCs before shortest-cycle search; skip acyclic regions while preserving globally shortest constructed-graph witnesses.
+- Add per-key coverage, explicit observed/searched version-order provenance and Chinese collection guidance.
+- Keep historical cycle certificates and core semantic replay compatible.
+- Add a one-command demo exporting a reduced history, model comparison and verified replay capsule.
+- Validate 71 tests on JS / Wasm GC / Wasm, 10,320 independent histories and 69 CLI checks; retain honest end-to-end benchmark observations.
+- Update v0.0.6 documentation, qualified ecosystem comparison and source/runtime fresh-consumer packaging.
+
 ## 0.0.5 — 2026-10-10
 
 - Actual two-thread, two-connection SQLite WAL race capture with aborted snapshots and fresh retries.
@@ -44,6 +53,6 @@ First local release of MoonTxnWitness.
 - Synthetic examples, actual sequential SQLite baseline, independent replay oracle.
 - Reproducible source/portable ZIP packaging and fresh-consumer checks.
 
-Scope: unique versioned registers with supplied final-write orders. No SQL range
+Scope: unique versioned registers with supplied or bounded-searched final-write orders. No SQL range
 reads, automatic database instrumentation, complete isolation taxonomy, unbounded
 performance claims, native executable, public publication or contest submission.

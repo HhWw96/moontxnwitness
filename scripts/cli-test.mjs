@@ -101,6 +101,9 @@ export function runCliTests() {
     writeFileSync(resolve(root, 'verification/sqlite-baseline.json'), JSON.stringify(history, null, 2) + '\n');
     writeFileSync(resolve(root, 'verification/sqlite-report.json'), JSON.stringify(report, null, 2) + '\n');
   });
+  test('human reports explain searched order provenance in Chinese', () => { const text = run(['check', fixture('unknown-order')], 0).stdout; assert.match(text, /非观测事实/); assert.match(text, /只证明存在/); });
+  test('coverage exposes source gaps and concrete next collection steps', () => { const h = { initial: { x: 'x0' }, transactions: [{ id: 'R', status: 'committed', ops: [{ type: 'read', key: 'x', version: 'outside' }] }] }; const r = analyze(h); assert.equal(r.coverage[0].unresolvedReads, 1); assert.ok(r.nextSteps.some(s => s.includes('采集窗口'))); assert.equal(r.status, 'inconclusive'); });
+  test('acyclic graph skips cycle breadth-first search', () => { const r = analyze(json('consistent')); assert.equal(r.graph.bfsRoots, 0); assert.equal(r.graph.cyclicTransactions, 0); });
   const concurrentRuns = [];
   test('actual two-thread SQLite WAL races, aborts and retries', () => {
     for (let repetition = 0; repetition < 3; repetition++) {
@@ -125,6 +128,19 @@ export function runCliTests() {
     const p = resolve(work, 'existing-sqlite-capture.json'); writeFileSync(p, 'keep');
     const result = spawnSync(process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), [resolve(root, 'examples/capture_sqlite_concurrent.py'), p, '--rounds', '1'], { encoding: 'utf8', timeout: 30000 });
     assert.notEqual(result.status, 0); assert.equal(readFileSync(p, 'utf8'), 'keep');
+  });
+  test('one-command demo exports a reduced and independently replayable case', () => {
+    const demo = spawnSync(process.execPath, [resolve(root, 'dist/demo.mjs'), '--json'], { cwd: work, encoding: 'utf8', timeout: 30000 });
+    assert.ifError(demo.error); assert.equal(demo.status, 0, demo.stderr);
+    const receipt = JSON.parse(demo.stdout);
+    assert.equal(receipt.passed, true); assert.equal(receipt.version, release);
+    assert.equal(receipt.oneMinimal, true); assert.equal(receipt.reducedTransactions, 2);
+    assert.equal(receipt.classification, 'realtime-only-violation');
+    const directory = resolve(work, receipt.outputDirectory);
+    for (const file of receipt.files) assert.ok(existsSync(resolve(directory, file)));
+    const mini = JSON.parse(readFileSync(resolve(directory, 'mini.json'), 'utf8'));
+    assert.equal(analyze(mini).status, 'violation');
+    assert.equal(JSON.parse(run(['replay', resolve(directory, 'case.capsule.json')], 0).stdout).valid, true);
   });
   const receipt = { tool: 'MoonTxnWitness', version: version(), passed: true, checks: checks.length, names: checks, sqlite: 'actual in-memory SQLite sequential commits', concurrentRuns };
   mkdirSync(resolve(root, 'verification'), { recursive: true });

@@ -1,8 +1,8 @@
 {
   "tool": "MoonTxnWitness",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "passed": true,
-  "checks": 65,
+  "checks": 69,
   "names": [
     "version matches release metadata",
     "help and no arguments are usable",
@@ -67,8 +67,12 @@
     "capsule rejects duplicate fields and malformed headers",
     "capsule path cannot overwrite the input or report",
     "actual SQLite transaction capture and CLI import",
+    "human reports explain searched order provenance in Chinese",
+    "coverage exposes source gaps and concrete next collection steps",
+    "acyclic graph skips cycle breadth-first search",
     "actual two-thread SQLite WAL races, aborts and retries",
-    "concurrent capture never overwrites an existing output"
+    "concurrent capture never overwrites an existing output",
+    "one-command demo exports a reduced and independently replayable case"
   ],
   "sqlite": "actual in-memory SQLite sequential commits",
   "concurrentRuns": [
@@ -83,7 +87,7 @@
       "aborted": 2,
       "errors": [
         {
-          "transaction": "r0-A",
+          "transaction": "r0-B",
           "sqliteError": "SQLITE_BUSY"
         },
         {
@@ -105,11 +109,11 @@
       "aborted": 2,
       "errors": [
         {
-          "transaction": "r0-A",
+          "transaction": "r0-B",
           "sqliteError": "SQLITE_BUSY"
         },
         {
-          "transaction": "r1-B",
+          "transaction": "r1-A",
           "sqliteError": "SQLITE_BUSY"
         }
       ],
@@ -127,11 +131,11 @@
       "aborted": 2,
       "errors": [
         {
-          "transaction": "r0-A",
+          "transaction": "r0-B",
           "sqliteError": "SQLITE_BUSY"
         },
         {
-          "transaction": "r1-B",
+          "transaction": "r1-A",
           "sqliteError": "SQLITE_BUSY"
         }
       ],

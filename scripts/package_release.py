@@ -47,7 +47,7 @@ excluded_names = {".local-toolchain.json", ".DS_Store"}
 source = []
 for item in ROOT.rglob("*"):
     relative = item.relative_to(ROOT)
-    if not item.is_file() or any(part in excluded_dirs for part in relative.parts) or item.name in excluded_names:
+    if not item.is_file() or any(part in excluded_dirs or part.startswith('moontxnwitness-demo-') for part in relative.parts) or item.name in excluded_names:
         continue
     if item.suffix in {".log", ".pyc"} or relative.as_posix() == "verification/package.json":
         continue
@@ -60,7 +60,10 @@ for folder in ("dist", "docs", "examples", "verification"):
 
 ARTIFACTS.mkdir(exist_ok=True)
 archives = [archive(source, ARTIFACTS / (NAME + "-source.zip")), archive(portable, ARTIFACTS / (NAME + "-portable.zip"))]
-(ARTIFACTS / "SHA256SUMS").write_text("".join(item["sha256"] + "  " + item["file"] + "\n" for item in archives), encoding="utf-8")
+current_sums = "".join(item["sha256"] + "  " + item["file"] + "\n" for item in archives)
+(ARTIFACTS / (NAME + "-SHA256SUMS.txt")).write_text(current_sums, encoding="utf-8")
+all_releases = [path for path in sorted(ARTIFACTS.glob("MoonTxnWitness-v*-*.zip")) if re.fullmatch(r"MoonTxnWitness-v[0-9]+\.[0-9]+\.[0-9]+-(source|portable)\.zip", path.name)]
+(ARTIFACTS / "SHA256SUMS").write_text("".join(sha256(path) + "  " + path.name + "\n" for path in all_releases), encoding="utf-8")
 
 # All work is created below the project. No existing directory is reset or removed.
 consumer_parent = ARTIFACTS / "consumer-work"
@@ -105,17 +108,34 @@ for kind in ("portable", "source"):
         report = json.loads(run([NODE, "dist/moontxnwitness.mjs", "check", "examples/" + filename + ".json", "--format", "json"], consumer, exit_code))
         assert report["status"] == status
         checks.append(kind + " fixture: " + filename)
-    run([NODE, "dist/moontxnwitness.mjs", "check", "examples/write-skew.json", "--format", "json", "--output", "new-report.json", "--witness", "new-witness.json"], consumer, 1)
+    run([NODE, "dist/moontxnwitness.mjs", "check", "examples/write-skew.json", "--format", "json", "--output", "new-report.json", "--witness", "new-witness.json", "--capsule", "new-case.capsule.json"], consumer, 1)
     checks.append(kind + " combined artifact export")
     assert json.loads(run([NODE, "dist/moontxnwitness.mjs", "verify", "examples/write-skew.json", "new-witness.json"], consumer))["valid"] is True
     checks.append(kind + " certificate verification")
-    sdk = run([NODE, "--input-type=module", "-e", "import {analyze,version} from './dist/sdk.mjs'; import {readFileSync} from 'node:fs'; console.log(JSON.stringify({version:version(),status:analyze(readFileSync('examples/consistent.json','utf8')).status}));"], consumer)
-    assert json.loads(sdk) == {"version": VERSION, "status": "consistent"}
+    assert json.loads(run([NODE, "dist/moontxnwitness.mjs", "verify", "examples/write-skew.json", "examples/legacy-v0.0.1.witness.json"], consumer))["valid"] is True
+    checks.append(kind + " legacy v0.0.1 certificate")
+    assert json.loads(run([NODE, "dist/moontxnwitness.mjs", "replay", "new-case.capsule.json"], consumer))["valid"] is True
+    checks.append(kind + " self-contained replay")
+    run([NODE, "dist/moontxnwitness.mjs", "shrink", "examples/noisy-write-skew.json", "--output", "new-reduction.json", "--history", "new-mini.json"], consumer)
+    reduction = json.loads((consumer / "new-reduction.json").read_text(encoding="utf-8"))
+    assert reduction["oneMinimal"] is True and len(reduction["reducedHistory"]["transactions"]) == 2
+    checks.append(kind + " transaction reduction 7 to 2")
+    assert json.loads(run([NODE, "dist/moontxnwitness.mjs", "check", "new-mini.json", "--format", "json"], consumer, 1))["status"] == "violation"
+    checks.append(kind + " reduced history reanalysis")
+    assert json.loads(run([NODE, "dist/moontxnwitness.mjs", "compare-models", "examples/strict-realtime.json"], consumer))["classification"] == "realtime-only-violation"
+    checks.append(kind + " model comparison")
+    demo = json.loads(run([NODE, "dist/demo.mjs", "--json"], consumer))
+    assert demo["passed"] is True and demo["replayValid"] is True and demo["version"] == VERSION
+    assert all((consumer / demo["outputDirectory"] / name).is_file() for name in demo["files"])
+    checks.append(kind + " one-command demo and artifacts")
+    sdk = run([NODE, "--input-type=module", "-e", "import {analyze,version,shrink,compareModels,replayReport} from './dist/sdk.mjs'; import {readFileSync} from 'node:fs'; const h=readFileSync('examples/consistent.json','utf8'); const r=analyze(h); console.log(JSON.stringify({version:version(),status:r.status,replay:replayReport(h,r).valid,oneMinimal:shrink(readFileSync('examples/noisy-write-skew.json','utf8')).oneMinimal,models:compareModels(readFileSync('examples/strict-realtime.json','utf8')).classification}));"], consumer)
+    assert json.loads(sdk) == {"version": VERSION, "status": "consistent", "replay": True, "oneMinimal": True, "models": "realtime-only-violation"}
     checks.append(kind + " SDK import")
 
 receipt = {"tool": "MoonTxnWitness", "version": VERSION, "passed": True, "archives": archives, "freshConsumerChecks": len(checks), "checks": checks, "sourceRebuilt": True, "portableRequires": "Node.js >=20 (tested with current installed Node)", "node": run([NODE, "--version"], ROOT).strip(), "nativeExecutableIncluded": False, "publiclyPublished": False}
 (ROOT / "verification/package.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / "release-index.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+(ARTIFACTS / (NAME + "-release.json")).write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 print("Packaged " + NAME + ": source + portable; " + str(len(checks)) + " fresh-consumer checks passed.")
 for item in archives:
     print(item["file"] + "  " + str(item["bytes"]) + " bytes  " + item["sha256"])

@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
-node dist\moontxnwitness.mjs check examples\write-skew.json
+node dist\demo.mjs
 echo.
-echo This synthetic example is expected to report a violation (exit code 1).
+echo Open report.md in the newly created moontxnwitness-demo directory.
 pause

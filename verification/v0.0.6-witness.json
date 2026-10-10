@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "tool": "MoonTxnWitness",
+  "version": "0.0.6",
+  "status": "violation",
+  "model": "serializable",
+  "witness": {
+    "kind": "dependency_cycle",
+    "transactions": [
+      "T1",
+      "T2",
+      "T1"
+    ],
+    "edges": [
+      {
+        "from": "T1",
+        "to": "T2",
+        "kind": "rw",
+        "key": "x",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "x0",
+        "toVersion": "x1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "T2",
+        "to": "T1",
+        "kind": "rw",
+        "key": "y",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "y0",
+        "toVersion": "y1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      }
+    ],
+    "minimality": "shortest directed cycle in the constructed graph"
+  }
+}

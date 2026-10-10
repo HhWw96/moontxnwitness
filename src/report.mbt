@@ -77,6 +77,31 @@ pub fn report_json(r : Report) -> Json {
     "serialOrder": r.serial_order.to_json(),
     "versionOrders": r.inferred_orders.to_json(),
     "versionOrderSources": r.order_sources.to_json(),
+    "graph": {
+      "analyzed": r.graph.analyzed.to_json(),
+      "components": r.graph.components.to_json(),
+      "cyclicComponents": r.graph.cyclic_components.to_json(),
+      "cyclicTransactions": r.graph.cyclic_transactions.to_json(),
+      "bfsRoots": r.graph.bfs_roots.to_json(),
+      "edgeBudgetExceeded": r.graph.edge_budget_exceeded.to_json(),
+    },
+    "coverage": r.coverage
+    .map(k => {
+      (
+        {
+          "key": k.key.to_json(),
+          "committedReads": k.committed_reads.to_json(),
+          "committedFinalWrites": k.committed_final_writes.to_json(),
+          "unresolvedReads": k.unresolved_reads.to_json(),
+          "versionOrderSource": r.order_sources.at(k.key).to_json(),
+          "sourceLabel": order_source_cn(
+            r.order_sources.at(k.key),
+            k.committed_final_writes,
+          ).to_json(),
+        } : Json)
+    })
+    .to_json(),
+    "nextSteps": next_steps(r).to_json(),
     "search": {
       "status": r.search.status.to_json(),
       "attempts": r.search.attempts.to_json(),

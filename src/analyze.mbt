@@ -172,6 +172,8 @@ fn base_report(
     operation_count: count_ops(h),
     inferred_orders: orders,
     order_sources: sources,
+    graph: empty_graph(),
+    coverage: coverage_for(h),
     search: {
       status: "not-needed",
       attempts: 0,
@@ -463,10 +465,10 @@ fn analyze_internal(h : History, search_cycles : Bool) -> Report {
       ),
     )
   }
-  let witness = if search_cycles {
+  let (witness, graph) = if search_cycles {
     shortest_cycle(h.transactions, edges)
   } else {
-    []
+    ([], empty_graph())
   }
   if !witness.is_empty() {
     let txs = witness.map(e => e.from)
@@ -533,5 +535,6 @@ fn analyze_internal(h : History, search_cycles : Bool) -> Report {
     serial_order,
     inferred_orders: resolved_orders,
     search,
+    graph: { ..graph, edge_budget_exceeded: overflow[0], },
   }
 }

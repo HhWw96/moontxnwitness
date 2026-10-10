@@ -21,19 +21,24 @@ Apache license, not transaction-analysis code copied from another project.
   transaction-history dependency inference, WR/WW/RW terminology and explanation
   of the difficulties of inferring version order. This project does not embed,
   call or port Elle code. It implements a smaller, explicitly versioned register
-  model with a supplied total final-write order per multi-writer key.
+  model with supplied final-write orders or bounded exact serial completion for
+  small histories whose only uncertainty is missing order.
 - [Adya, Liskov and O'Neil, Generalized Isolation Level Definitions](https://pmg.csail.mit.edu/papers/icde00.pdf):
   conceptual reference for dependency graph terminology. This release does not
   claim to implement every anomaly/isolation class in that work.
 
 ## AI assistance and evidence
 
-The initial implementation, documentation and tests were created with AI
+The implementation, documentation and tests were created with AI
 assistance. The production algorithms are in MoonBit. The test oracle replays
 every possible serial permutation of small whole transactions and does not use
 the production dependency inference rules. Certificate verification shares
 inference rules and separately checks a supplied cycle without searching for one.
 
-Synthetic anomalous histories are labeled as such. The SQLite sample is an
-actually executed sequential baseline, not a reproduced SQLite vulnerability.
-No claim of a prize, organizer acceptance or public release is made for v0.0.1.
+Synthetic anomalous histories are labeled as such. SQLite samples include an
+actually executed sequential baseline and a two-thread/two-connection WAL race
+with aborted attempts and fresh retries. They do not reproduce a SQLite
+vulnerability or certify all database executions. See the official
+[SQLite isolation](https://www.sqlite.org/isolation.html) and
+[WAL](https://www.sqlite.org/wal.html) documentation for the underlying behavior.
+No claim of a prize, organizer acceptance or public release is made for v0.0.6.

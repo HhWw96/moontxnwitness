@@ -109,7 +109,7 @@ pub fn render_report(r : Report, format : String) -> String {
         key +
         "]\n",
       )
-      b.write_string("   " + e.reason + "\n")
+      b.write_string("   " + dependency_cn(e.kind) + "\n")
       match (e.from_op, e.to_op, e.from_version, e.to_version) {
         (Some(a), Some(z), Some(v), Some(w)) => {
           let sv = if markdown { safe_markdown(v) } else { v }
@@ -142,7 +142,11 @@ pub fn render_report(r : Report, format : String) -> String {
       },
     )
     for f in r.findings {
-      let message = if markdown { safe_markdown(f.message) } else { f.message }
+      let message = if markdown {
+        safe_markdown(finding_cn(f))
+      } else {
+        finding_cn(f)
+      }
       b.write_string("- [" + f.severity + "] " + f.code + ": " + message)
       if !f.transactions.is_empty() {
         b.write_string(
@@ -168,8 +172,65 @@ pub fn render_report(r : Report, format : String) -> String {
       "\n",
     )
   }
+  if !r.coverage.is_empty() {
+    b.write_string(
+      if markdown {
+        "\n## 版本来源\n\n"
+      } else {
+        "\n版本来源：\n"
+      },
+    )
+    for i, k in r.coverage {
+      if i >= 64 {
+        b.write_string("其余键的统计请查看 JSON coverage。\n")
+        break
+      }
+      let key = if markdown { safe_markdown(k.key) } else { k.key }
+      b.write_string(
+        "- " +
+        key +
+        "：已提交读 " +
+        k.committed_reads.to_string() +
+        "，最终写 " +
+        k.committed_final_writes.to_string() +
+        "，" +
+        order_source_cn(r.order_sources.at(k.key), k.committed_final_writes) +
+        "，来源未确定读 " +
+        k.unresolved_reads.to_string() +
+        "\n",
+      )
+    }
+  }
+  if r.search.status != "not-needed" {
+    let label = match r.search.status {
+      "found" => "找到可行串行执行（只证明存在）"
+      "exhausted" => "穷尽候选，无法重现所有读取"
+      "budget" => "计算预算用尽，无法判定"
+      _ => "规模超出补全预算，无法判定"
+    }
+    b.write_string(
+      "\n精确补全：" +
+      label +
+      "；尝试 " +
+      r.search.attempts.to_string() +
+      " 次。\n",
+    )
+  }
+  let steps = next_steps(r)
+  if !steps.is_empty() {
+    b.write_string(
+      if markdown {
+        "\n## 下一步\n\n"
+      } else {
+        "\n下一步：\n"
+      },
+    )
+    for step in steps {
+      b.write_string("- " + step + "\n")
+    }
+  }
   b.write_string(
-    "\n范围：唯一版本标记的单键读写，可跨多个键组成事务。结果取决于所提供历史的完整性及版本顺序约束，不能直接证明整个数据库可靠。\n",
+    "\n范围：唯一版本标记的点读写，可跨多个键组成事务。结论针对所提供历史；搜索得到的补全不是实际观测顺序，不能直接证明整个数据库可靠。\n",
   )
   b.to_string()
 }

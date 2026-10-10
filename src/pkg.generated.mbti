@@ -73,6 +73,17 @@ pub(all) struct Finding {
 pub fn Finding::equal(Self, Self) -> Bool
 pub fn Finding::not_equal(Self, Self) -> Bool
 
+pub(all) struct GraphInfo {
+  analyzed : Bool
+  components : Int
+  cyclic_components : Int
+  cyclic_transactions : Int
+  bfs_roots : Int
+  edge_budget_exceeded : Bool
+} derive(Eq)
+pub fn GraphInfo::equal(Self, Self) -> Bool
+pub fn GraphInfo::not_equal(Self, Self) -> Bool
+
 pub(all) struct History {
   model : Model
   initial : Map[String, String]
@@ -81,6 +92,15 @@ pub(all) struct History {
 } derive(Eq)
 pub fn History::equal(Self, Self) -> Bool
 pub fn History::not_equal(Self, Self) -> Bool
+
+pub(all) struct KeyCoverage {
+  key : String
+  committed_reads : Int
+  committed_final_writes : Int
+  unresolved_reads : Int
+} derive(Eq)
+pub fn KeyCoverage::equal(Self, Self) -> Bool
+pub fn KeyCoverage::not_equal(Self, Self) -> Bool
 
 pub(all) enum Model {
   Serializable
@@ -138,6 +158,8 @@ pub(all) struct Report {
   inferred_orders : Map[String, Array[String]]
   order_sources : Map[String, String]
   search : SearchInfo
+  graph : GraphInfo
+  coverage : Array[KeyCoverage]
 } derive(Eq)
 pub fn Report::equal(Self, Self) -> Bool
 pub fn Report::not_equal(Self, Self) -> Bool
