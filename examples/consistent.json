@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "name": "Two committed transactions with a valid serial order",
+  "initial": {"x": "x0", "y": "y0"},
+  "transactions": [
+    {"id": "T1", "status": "committed", "ops": [{"type": "read", "key": "x", "version": "x0"}, {"type": "write", "key": "y", "version": "y1"}]},
+    {"id": "T2", "status": "committed", "ops": [{"type": "read", "key": "y", "version": "y1"}, {"type": "write", "key": "x", "version": "x1"}]}
+  ]
+}

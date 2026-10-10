@@ -1,0 +1,137 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "local/moontxnwitness"
+
+// Values
+pub fn analyze(History) -> Report
+
+pub fn analyze_json(String) -> String
+
+pub fn history_json(History) -> Json
+
+pub fn parse_history(String) -> Result[History, String]
+
+pub fn render_report(Report, String) -> String
+
+pub fn report_json(Report) -> Json
+
+pub fn run_json(String, String) -> String
+
+pub fn verify_certificate_json(String, String) -> String
+
+pub fn verify_cycle(History, Array[Edge]) -> Bool
+
+pub fn version() -> String
+
+// Errors
+
+// Types and methods
+pub(all) enum Dependency {
+  WR
+  WW
+  RW
+  RT
+} derive(Eq)
+pub fn Dependency::equal(Self, Self) -> Bool
+pub fn Dependency::not_equal(Self, Self) -> Bool
+
+pub(all) struct Edge {
+  from : String
+  to : String
+  kind : Dependency
+  key : String?
+  from_op : Int?
+  to_op : Int?
+  from_version : String?
+  to_version : String?
+  reason : String
+} derive(Eq)
+pub fn Edge::equal(Self, Self) -> Bool
+pub fn Edge::not_equal(Self, Self) -> Bool
+
+pub(all) struct Finding {
+  code : String
+  severity : String
+  message : String
+  transactions : Array[String]
+  key : String?
+  ops : Array[Int]
+} derive(Eq)
+pub fn Finding::equal(Self, Self) -> Bool
+pub fn Finding::not_equal(Self, Self) -> Bool
+
+pub(all) struct History {
+  model : Model
+  initial : Map[String, String]
+  version_orders : Map[String, Array[String]]
+  transactions : Array[Transaction]
+} derive(Eq)
+pub fn History::equal(Self, Self) -> Bool
+pub fn History::not_equal(Self, Self) -> Bool
+
+pub(all) enum Model {
+  Serializable
+  StrictSerializable
+} derive(Eq)
+pub fn Model::equal(Self, Self) -> Bool
+pub fn Model::not_equal(Self, Self) -> Bool
+
+pub(all) enum OpKind {
+  Read
+  Write
+} derive(Eq)
+pub fn OpKind::equal(Self, Self) -> Bool
+pub fn OpKind::not_equal(Self, Self) -> Bool
+
+pub(all) struct Operation {
+  kind : OpKind
+  key : String
+  version : String
+} derive(Eq)
+pub fn Operation::equal(Self, Self) -> Bool
+pub fn Operation::not_equal(Self, Self) -> Bool
+
+pub(all) enum Outcome {
+  Consistent
+  Violation
+  Inconclusive
+  Invalid
+} derive(Eq)
+pub fn Outcome::equal(Self, Self) -> Bool
+pub fn Outcome::not_equal(Self, Self) -> Bool
+
+pub(all) struct Report {
+  outcome : Outcome
+  model : Model
+  findings : Array[Finding]
+  edges : Array[Edge]
+  witness : Array[Edge]
+  serial_order : Array[String]
+  transaction_count : Int
+  committed_count : Int
+  operation_count : Int
+  inferred_orders : Map[String, Array[String]]
+} derive(Eq)
+pub fn Report::equal(Self, Self) -> Bool
+pub fn Report::not_equal(Self, Self) -> Bool
+
+pub(all) struct Transaction {
+  id : String
+  status : TxStatus
+  ops : Array[Operation]
+  start : Int64?
+  end : Int64?
+} derive(Eq)
+pub fn Transaction::equal(Self, Self) -> Bool
+pub fn Transaction::not_equal(Self, Self) -> Bool
+
+pub(all) enum TxStatus {
+  Committed
+  Aborted
+  Unknown
+} derive(Eq)
+pub fn TxStatus::equal(Self, Self) -> Bool
+pub fn TxStatus::not_equal(Self, Self) -> Bool
+
+// Type aliases
+
+// Traits

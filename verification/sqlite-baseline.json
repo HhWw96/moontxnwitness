@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "name": "Actual SQLite sequential baseline",
+  "model": "strict-serializable",
+  "initial": {
+    "x": "x0",
+    "y": "y0"
+  },
+  "versionOrders": {
+    "x": [
+      "x0",
+      "x1"
+    ],
+    "y": [
+      "y0",
+      "y1",
+      "y2"
+    ]
+  },
+  "transactions": [
+    {
+      "id": "sql-T1",
+      "status": "committed",
+      "start": 0,
+      "end": 0,
+      "ops": [
+        {
+          "type": "read",
+          "key": "x",
+          "version": "x0"
+        },
+        {
+          "type": "write",
+          "key": "y",
+          "version": "y1"
+        }
+      ]
+    },
+    {
+      "id": "sql-T2",
+      "status": "committed",
+      "start": 0,
+      "end": 0,
+      "ops": [
+        {
+          "type": "read",
+          "key": "y",
+          "version": "y1"
+        },
+        {
+          "type": "write",
+          "key": "x",
+          "version": "x1"
+        }
+      ]
+    },
+    {
+      "id": "sql-T3",
+      "status": "committed",
+      "start": 0,
+      "end": 0,
+      "ops": [
+        {
+          "type": "read",
+          "key": "x",
+          "version": "x1"
+        },
+        {
+          "type": "read",
+          "key": "y",
+          "version": "y1"
+        },
+        {
+          "type": "write",
+          "key": "y",
+          "version": "y2"
+        }
+      ]
+    }
+  ]
+}
