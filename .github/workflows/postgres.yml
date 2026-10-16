@@ -3,6 +3,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Optional immutable release tag to verify with this workflow
+        required: false
+        default: ''
 permissions:
   contents: read
 jobs:
@@ -22,9 +27,10 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
-      MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.source_ref || github.sha }}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
@@ -41,7 +47,19 @@ jobs:
       - name: Install frozen optional database driver
         run: python -m pip install --require-hashes -r examples/postgres-requirements.txt
       - name: Capture and reproduce 20 rounds per isolation scenario
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
         run: npm run postgres:verify
+      - name: Record the actual checked-out source commit
+        env:
+          MTW_WORKFLOW_SHA: ${{ github.sha }}
+          MTW_REQUESTED_REF: ${{ inputs.source_ref || github.sha }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, subprocess
+          source = subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip()
+          pathlib.Path('verification/postgres-ci-source.json').write_text(json.dumps({'sourceCommit':source,'workflowCommit':os.environ['MTW_WORKFLOW_SHA'],'requestedRef':os.environ['MTW_REQUESTED_REF']}, indent=2)+'\n', encoding='utf-8')
+          PY
       - name: Preserve actual database server logs
         if: always()
         env:
@@ -56,4 +74,5 @@ jobs:
           path: |
             verification/postgres.json
             verification/postgres-server.log
+            verification/postgres-ci-source.json
             verification/releases/*/postgres/
