@@ -236,7 +236,8 @@ test "published semantic report replay" {{
         cases = {case['isolation']: case for case in pg_receipt['cases']}
         assert all(row['initialConcurrentCommits'] == 2 and row['initialConcurrentAborts'] == 0 and row['finalOnCallCount'] == 0 for row in cases['REPEATABLE READ']['results'])
         assert all(row['initialConcurrentCommits'] == 1 and row['initialConcurrentAborts'] == 1 and row['sqlstates'] == ['40001'] and row['finalOnCallCount'] == 1 for row in cases['SERIALIZABLE']['results'])
-        history_files = list(pg_dir.rglob('rr-history.json'))
+        history_files = [path for path in pg_dir.rglob('rr-history.json')
+                         if path.parent.name == 'postgres' and path.parent.parent.name == VERSION]
         assert len(history_files) == 1
         for name, expected in pg_receipt['files'].items():
             assert Path(name).name == name and digest(history_files[0].parent / name) == expected

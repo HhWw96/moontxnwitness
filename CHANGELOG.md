@@ -1,5 +1,7 @@
 # 0.1.0
 
+- Post-publication main fix: select the requested release inside multi-version CI evidence; retain original assets, failed verification and successful retry.
+
 - Repair PostgreSQL CI port-context placement; preserve its failed first run and attest the original v0.0.11 source independently from the repaired workflow commit.
 - Freeze the documented v2 analysis/replay and effective-budget contract; recommend balanced entry points while preserving legacy defaults.
 - Make the portable one-command demonstration exercise balanced analysis, reduction and schema-2 replay.

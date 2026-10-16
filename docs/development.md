@@ -38,3 +38,5 @@ Native 在 Windows 本地只检查类型；本机没有配置 C 编译器。Linu
 `python scripts/verify_publication.py VERSION` 可重复公开验收。只读 CI 和证据下载需要可访问 GitHub 的已登录 GitHub CLI；匿名 ZIP 下载本身不使用认证。所有失败记录保留。仅当历史工作流配置需要修复时，分别记录工作流提交和实际检出的不可变发布源码；源码 SHA 必须从 CI 产物核对。
 
 公开发布、参赛者本人解释验收、报名、入群及官方审核是独立状态。说明与清单见 project-brief.md / human-acceptance.md。自动检查不能代填人工签字或官方回执。
+
+复查公开发布请使用 main 当前的核验脚本。归档 v0.1.0 源码中的初始脚本错误地要求 CI 产物只能包含一版历史；main 已按请求版本选择，并继续核对实际源码 SHA 和全部证据文件摘要。原始包、首轮失败及成功重试记录均保留，见该版 post-publication-repair.json。
