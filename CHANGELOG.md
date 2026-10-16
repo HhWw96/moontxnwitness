@@ -8,6 +8,7 @@
 - Add a one-command demo exporting a reduced history, model comparison and verified replay capsule.
 - Validate 71 tests on JS / Wasm GC / Wasm, 10,320 independent histories and 69 CLI checks; retain honest end-to-end benchmark observations.
 - Update v0.0.6 documentation, qualified ecosystem comparison and source/runtime fresh-consumer packaging.
+- Publish under HhWw96/moontxnwitness with public Windows/Linux CI and package installation verification.
 
 ## 0.0.5 — 2026-10-10
 

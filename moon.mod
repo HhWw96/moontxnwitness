@@ -1,4 +1,4 @@
-name = "local/moontxnwitness"
+name = "HhWw96/moontxnwitness"
 
 version = "0.0.6"
 
@@ -7,6 +7,8 @@ source = "src"
 readme = "README.md"
 
 license = "Apache-2.0"
+
+repository = "https://github.com/HhWw96/moontxnwitness"
 
 keywords = [
   "transactions",

@@ -41,4 +41,5 @@ with aborted attempts and fresh retries. They do not reproduce a SQLite
 vulnerability or certify all database executions. See the official
 [SQLite isolation](https://www.sqlite.org/isolation.html) and
 [WAL](https://www.sqlite.org/wal.html) documentation for the underlying behavior.
-No claim of a prize, organizer acceptance or public release is made for v0.0.6.
+Public release verification is recorded separately in verification/publication.json.
+No claim of a prize or organizer acceptance is made for v0.0.6.

@@ -4,6 +4,8 @@ MoonTxnWitness 是用 **MoonBit** 实现的离线事务历史检查器。它分�
 
 English: An offline MoonBit transaction-history checker with shortest cycle witnesses, bounded serial completion, transaction reduction and self-contained replay.
 
+公开入口：[GitHub 源码](https://github.com/HhWw96/moontxnwitness)、[v0.0.6 下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.0.6)、[Mooncakes 库](https://mooncakes.io/docs/HhWw96/moontxnwitness)。公开发布的验证记录在 `verification/publication.json`。
+
 ## 先运行完整演示
 
 运行包需要 **Node.js 20 或更新版本**，本次实测为 24.13.0。解压 portable ZIP，在解压目录运行：
@@ -121,7 +123,13 @@ console.log(replayReport(historyObject, report));
 
 SDK 的分析接口可用于 JavaScript/浏览器，不依赖 Node 文件或密码模块；文件读写与 SHA-256 封装由 Node CLI 执行。
 
-MoonBit 公共接口包括 `parse_history`、`analyze`、`reduce_history`、`compare_models`、`verify_cycle`、`replay_report_json`、`history_json` 和报告渲染，类型见 `src/pkg.generated.mbti`。模块名 `local/moontxnwitness` 是本地占位，尚未发布到 Mooncakes。
+MoonBit 公共接口包括 `parse_history`、`analyze`、`reduce_history`、`compare_models`、`verify_cycle`、`replay_report_json`、`history_json` 和报告渲染，类型见 `src/pkg.generated.mbti`。正式模块名为 `HhWw96/moontxnwitness`：
+
+```powershell
+moon add HhWw96/moontxnwitness@0.0.6
+```
+
+在调用包的 `moon.pkg` 中导入 `"HhWw96/moontxnwitness" @txn`。例如 `@txn.analyze_json(historyText)` 返回结构化结果；原始模型与预算约束同样适用。
 
 ## 构建与验证
 
@@ -142,4 +150,4 @@ npm run package
 
 ## 许可证与交付状态
 
-采用 [Apache-2.0](LICENSE)，参考与 AI 辅助开发说明见 [THIRD_PARTY.md](THIRD_PARTY.md)。v0.0.6 提供本地源码与运行 ZIP，保留初版。尚未公开发布、提交比赛或获得组织方接受；不能保证获奖。
+采用 [Apache-2.0](LICENSE)，参考与 AI 辅助开发说明见 [THIRD_PARTY.md](THIRD_PARTY.md)。v0.0.6 提供源码与运行 ZIP，保留初版。发布不等于比赛提交或组织方接受；不能保证获奖。

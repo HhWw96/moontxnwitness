@@ -52,4 +52,6 @@ npm run package 生成：
 
 ## 迭代与外部状态
 
-Git 保存本地 v0.0.1–v0.0.6 版本；五轮改进及通过的检查见 verification/iterations.json。初版 ZIP 保留。当前未配置远端，也未执行公开发布、远端 CI、Mooncakes 发布或比赛提交。
+Git 保存 v0.0.1–v0.0.6 的开发历史；五轮改进及通过的检查见 verification/iterations.json。初版 ZIP 保留。公开仓库为 https://github.com/HhWw96/moontxnwitness，安装模块为 HhWw96/moontxnwitness@0.0.6。发布及公开下载核验结果见 verification/publication.json。
+
+公开 CI 在 Windows 2022 / Ubuntu 24.04 检查核心、oracle、CLI、真实 SQLite 和干净目录交付流程，Linux 另运行 Native 核心。工作流固定官方工具与组件版本；实际结果以 Actions 页面和发布记录为准，不把已配置工作流当作执行通过。比赛提交与组织方接受仍是单独步骤。
