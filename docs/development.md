@@ -17,7 +17,7 @@ npm run package
 
 build 输出 dist/core.mjs、CLI、SDK、证据传输模块、演示及运行时许可证。无需 npm install，不依赖外部 npm/Mooncakes 包。npm test 检查格式与四目标类型，在 JS / Wasm GC / Wasm 运行核心测试，再执行独立 oracle、CLI 和真实 SQLite 采集。
 
-`node scripts/test.mjs --all` 额外运行 native 测试，需要系统 C 编译器。当前 native 类型检查通过，执行仍因未找到 cc/gcc/clang 未完成。运行包不包含原生可执行文件。
+`node scripts/test.mjs --all` 额外运行 native 测试，需要系统 C 编译器。Windows 本地 native 类型检查通过，执行因未找到 cc/gcc/clang 未完成；公开 Linux CI 已额外执行 Native 核心并通过。运行包不包含原生可执行文件。
 
 ## 当前验证覆盖
 
@@ -29,7 +29,7 @@ build 输出 dist/core.mjs、CLI、SDK、证据传输模块、演示及运行时
 | 独立缩减检查 | 33 份反例，47 次剩余事务单删核对 |
 | CLI / SDK / 导出 / 回放 | 69 项，包括真实 SQLite 与一键演示 |
 | 真实并发采集 | 3 次独立执行，每次 2 轮：4 提交、2 回滚 |
-| Native | 仅类型检查；未执行 |
+| Native | Windows 本地类型检查；Linux CI 实际执行通过 |
 
 oracle 包含 6,192 份完整小历史、1,000 份固定种子多操作历史、3,128 份缺少/部分版本顺序的历史。它枚举整个事务的串行排列，实际重放读写及输入顺序约束，不复用生产依赖推导。正常报告的串行顺序也被重放。
 
@@ -55,3 +55,5 @@ npm run package 生成：
 Git 保存 v0.0.1–v0.0.6 的开发历史；五轮改进及通过的检查见 verification/iterations.json。初版 ZIP 保留。公开仓库为 https://github.com/HhWw96/moontxnwitness，安装模块为 HhWw96/moontxnwitness@0.0.6。发布及公开下载核验结果见 verification/publication.json。
 
 公开 CI 在 Windows 2022 / Ubuntu 24.04 检查核心、oracle、CLI、真实 SQLite 和干净目录交付流程，Linux 另运行 Native 核心。工作流固定官方工具与组件版本；实际结果以 Actions 页面和发布记录为准，不把已配置工作流当作执行通过。比赛提交与组织方接受仍是单独步骤。
+
+`python scripts/verify_publication.py` 复现公开下载验收：匿名下载两个 GitHub ZIP 并核对 SHA-256，运行下载的 CLI/演示/回放，核对 Mooncakes 包与上传文件的字节一致性，然后在没有 workspace 覆盖的独立项目中从注册表安装并运行 JS / Wasm GC 测试。需要可访问 GitHub/Mooncakes、已安装 MoonBit、Node、Python，以及用于只读 CI 核验的 GitHub CLI。首次消费样例导入检查失败的记录保留在 verification/publication-first-attempt.json，修正后的完整结果为 verification/publication.json。

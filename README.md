@@ -6,6 +6,8 @@ English: An offline MoonBit transaction-history checker with shortest cycle witn
 
 公开入口：[GitHub 源码](https://github.com/HhWw96/moontxnwitness)、[v0.0.6 下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.0.6)、[Mooncakes 库](https://mooncakes.io/docs/HhWw96/moontxnwitness)。公开发布的验证记录在 `verification/publication.json`。
 
+2026-10-16 已完成两个 ZIP 的匿名下载与 SHA-256 核对，以及 Mooncakes 上传/下载字节一致性检查。全新独立项目从 Mooncakes 安装后，JS / Wasm GC 各 6 项接口测试通过；公开 Windows/Linux CI 均通过。
+
 ## 先运行完整演示
 
 运行包需要 **Node.js 20 或更新版本**，本次实测为 24.13.0。解压 portable ZIP，在解压目录运行：
@@ -144,7 +146,7 @@ npm run package
 
 没有外部 npm 或 Mooncakes 依赖，无需 `npm install`。核心分析、搜索、缩减、语义复核及报告使用 MoonBit，Node 负责本地文件、哈希和命令行。
 
-验证包含每个 JS / Wasm GC / Wasm 目标 **71 项核心测试**、**10,320 份独立串行重放核对**、6,373 份环证据及最短性核对和 **69 项命令行检查**，包括实际 SQLite 并发执行。Native 类型检查通过，执行因缺少系统 C 编译器未完成，不交付原生可执行文件。
+验证包含每个 JS / Wasm GC / Wasm 目标 **71 项核心测试**、**10,320 份独立串行重放核对**、6,373 份环证据及最短性核对和 **69 项命令行检查**，包括实际 SQLite 并发执行。Windows 本地 Native 仅完成类型检查；公开 Linux CI 另执行 Native 核心测试并通过。运行包仍交付 JavaScript 核心，不包含原生可执行文件。
 
 记录见 [验证汇总](verification/summary.json)、[独立 oracle](verification/oracle.json)、[命令行](verification/cli.json)、[五轮迭代](verification/iterations.json)。新版示例报告见 [缩减后的中文报告](verification/v0.0.6-write-skew.md)，同目录有配套 mini、witness、capsule 和模型对比。未加版本前缀的 write-skew 报告/证据保留为初版兼容性样本。干净目录重建及运行包验证见 [开发与交付](docs/development.md)。本地端到端性能数据见 `verification/benchmark.json`，不作普遍加速保证。
 
