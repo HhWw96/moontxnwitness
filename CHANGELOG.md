@@ -57,3 +57,9 @@ First local release of MoonTxnWitness.
 Scope: unique versioned registers with supplied or bounded-searched final-write orders. No SQL range
 reads, automatic database instrumentation, complete isolation taxonomy, unbounded
 performance claims, native executable, public publication or contest submission.
+# 0.0.7
+
+- Add deterministic full-report graph/search/reduction performance workloads, phase timers, cold load, P95 and independent-process peak RSS measurements.
+- Freeze comparison against v0.0.6; preserve raw samples and distinguish correctness from performance-target attainment.
+- Resolve public CI by exact release-tag commit instead of a historical run ID.
+

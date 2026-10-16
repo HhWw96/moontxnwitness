@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import urllib.request
 import zipfile
@@ -12,7 +13,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-VERSION = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))['version']
+CURRENT_VERSION = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))['version']
+VERSION = sys.argv[1] if len(sys.argv) == 2 else CURRENT_VERSION
+assert re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', VERSION)
 MODULE = 'HhWw96/moontxnwitness'
 REPOSITORY = 'https://github.com/' + MODULE
 NAME = 'MoonTxnWitness-v' + VERSION
@@ -166,7 +169,11 @@ test "published semantic report replay" {{
     RECEIPT['mooncakes']['registryOnlyConsumer'] = {'passed': True, 'workspaceOverride': False, 'targets': targets}
     print('Registry-only JS and Wasm GC consumers: 6 tests each passed.', flush=True)
 
-    ci = json.loads(run(['gh', 'run', 'view', '38847919785', '--repo', MODULE, '--json', 'conclusion,headSha,url,jobs']))
+    tag_sha = run(['git', 'rev-list', '-n', '1', 'v' + VERSION]).strip()
+    runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', tag_sha, '--workflow', 'ci.yml', '--json', 'databaseId,conclusion,headSha', '--limit', '10']))
+    successful = [item for item in runs if item['headSha'] == tag_sha and item['conclusion'] == 'success']
+    assert successful, 'No successful CI run for the exact release commit'
+    ci = json.loads(run(['gh', 'run', 'view', str(successful[0]['databaseId']), '--repo', MODULE, '--json', 'conclusion,headSha,url,jobs']))
     assert ci['conclusion'] == 'success'
     RECEIPT['github']['ci'] = {'url': ci['url'], 'headSha': ci['headSha'], 'conclusion': ci['conclusion'], 'jobs': [{'name': job['name'], 'conclusion': job['conclusion']} for job in ci['jobs']], 'linuxNativeExecuted': any(step['name'] == 'Execute Native core on Linux' and step['conclusion'] == 'success' for job in ci['jobs'] for step in job['steps'])}
     RECEIPT['passed'] = True
@@ -175,5 +182,11 @@ except Exception as error:
     raise
 finally:
     RECEIPT['finishedAt'] = datetime.now(timezone.utc).isoformat()
-    (ROOT / 'verification/publication.json').write_text(json.dumps(RECEIPT, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    destination = ROOT / 'verification/releases' / VERSION
+    destination.mkdir(parents=True, exist_ok=True)
+    serialized = json.dumps(RECEIPT, ensure_ascii=False, indent=2) + '\n'
+    (destination / ('publication-' + datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '.json')).write_text(serialized, encoding='utf-8')
+    (destination / 'publication.json').write_text(serialized, encoding='utf-8')
+    if VERSION == CURRENT_VERSION:
+        (ROOT / 'verification/publication.json').write_text(serialized, encoding='utf-8')
     print('Public verification: ' + ('passed' if RECEIPT['passed'] else 'incomplete'))

@@ -1,4 +1,4 @@
-# MoonTxnWitness v0.0.6
+# MoonTxnWitness v0.0.7
 
 MoonTxnWitness 是用 **MoonBit** 实现的离线事务历史检查器。它分析带唯一版本的多键点读写日志，解释异常依赖，把冗长日志缩成可复现反例，并比较普通与严格可串行化模型。所有分析在本地完成。
 
