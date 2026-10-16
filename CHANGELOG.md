@@ -1,3 +1,13 @@
+# 0.0.10
+
+- Add opt-in 512-transaction reduction with witness/source seeds, remapped immutable writer indexes and rejected-subset caching.
+- Revalidate candidate semantics, retain original input facts and prove singleton minimality only after a completed pass.
+- Stream complete reduced histories/reports and add a schema-directed valid-input parser with legacy fallback.
+- Differentially test parser behavior and prepared subset reports against the reference paths.
+- Reject stale compiled cores before performance measurements using source/core fingerprints.
+- Share immutable integer adjacency across SCC/BFS and topological ordering; generate unique RT pairs without redundant hash-set entries.
+- Recheck singleton candidates on their active keys internally, restore every initial fact in delivered histories, and flatten the complete JSON output once.
+
 # 0.0.9
 
 - Add opt-in 12-transaction compiled completion with predecessor masks, undo trails and complete-failure caching.

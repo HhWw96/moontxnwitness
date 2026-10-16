@@ -23,11 +23,11 @@ build 输出 dist/core.mjs、CLI、SDK、证据传输模块、演示及运行时
 
 | 验证 | 已通过 |
 | --- | --- |
-| 核心 | 71 测试 × JS / Wasm GC / Wasm |
+| 核心 | 94 测试 × JS / Wasm GC / Wasm |
 | 独立串行重放 | 10,320 历史，两种模型 |
 | 环证据及独立 DFS 最短性 | 6,373 份 |
 | 独立缩减检查 | 33 份反例，47 次剩余事务单删核对 |
-| CLI / SDK / 导出 / 回放 | 69 项，包括真实 SQLite 与一键演示 |
+| CLI / SDK / 导出 / 回放 | 73 项，包括真实 SQLite 与一键演示 |
 | 真实并发采集 | 3 次独立执行，每次 2 轮：4 提交、2 回滚 |
 | Native | Windows 本地类型检查；Linux CI 实际执行通过 |
 
@@ -35,24 +35,24 @@ oracle 包含 6,192 份完整小历史、1,000 份固定种子多操作历史、
 
 这是有限可复现的证据，不能代替所有日志上的形式化证明。实际 SQLite 执行只证明这几份日志通过检查。
 
-`npm run benchmark` 输出本机端到端分析时间及 SCC 统计。可用 `node scripts/benchmark.mjs --baseline PATH_TO_OLD_CORE.mjs` 与旧版对比。当前保存记录显示两事务环案例没有端到端加速，严格无环案例时间接近；SCC 缩小搜索范围并不等于整个程序总耗时一定下降。
+`npm run benchmark -- --profile balanced` 执行固定 v0.0.6 基线的完整测量；协议与各版实际结果见 docs/ROADMAP.md。旧有单轮探测保留为 `npm run benchmark:legacy`。可用 `node scripts/benchmark.mjs --baseline PATH_TO_OLD_CORE.mjs` 与旧版对比。当前保存记录显示两事务环案例没有端到端加速，严格无环案例时间接近；SCC 缩小搜索范围并不等于整个程序总耗时一定下降。
 
 ## 交付包和干净目录检查
 
 npm run package 生成：
 
-- artifacts/MoonTxnWitness-v0.0.6-source.zip：源码、测试、文档、示例、验证记录；不含构建目录或本机配置。
-- artifacts/MoonTxnWitness-v0.0.6-portable.zip：编译核心、CLI/SDK/演示、文档、示例、记录及许可证；运行需 Node.js ≥20。
+- artifacts/MoonTxnWitness-v0.0.10-source.zip：源码、测试、文档、示例、验证记录；不含构建目录或本机配置。
+- artifacts/MoonTxnWitness-v0.0.10-portable.zip：编译核心、CLI/SDK/演示、文档、示例、记录及许可证；运行需 Node.js ≥20。
 - artifacts/SHA256SUMS 及版本专属校验文件：ZIP 摘要。
 - verification/package.json 与 artifacts/release-index.json：打包及干净目录验收结果。
 
-打包脚本在 artifacts/consumer-work 下创建新目录解压两种 ZIP。运行包直接执行；源码包不用私有配置，借助当前外部 MoonBit 工具链重建并运行 71 个 JS 核心测试。两者都检查全部主示例、证据导出/复核、缩减后重查、自包含回放、模型对比、SDK 和演示。临时目录不进入 ZIP，不重置或删除既有目录。
+打包脚本在 artifacts/consumer-work 下创建新目录解压两种 ZIP。运行包直接执行；源码包不用私有配置，借助当前外部 MoonBit 工具链重建并运行 94 个 JS 核心测试。两者都检查全部主示例、证据导出/复核、缩减后重查、自包含回放、模型对比、SDK 和演示。临时目录不进入 ZIP，不重置或删除既有目录。
 
 打包的验证记录不包含用户账号或本机绝对路径。verification/package.json 不进入 ZIP，避免包记录自己的哈希造成循环。SHA-256 用于完整性核对，不是签名或真实性认证。
 
 ## 迭代与外部状态
 
-Git 保存 v0.0.1–v0.0.6 的开发历史；五轮改进及通过的检查见 verification/iterations.json。初版 ZIP 保留。公开仓库为 https://github.com/HhWw96/moontxnwitness，安装模块为 HhWw96/moontxnwitness@0.0.6。发布及公开下载核验结果见 verification/publication.json。
+Git 保存 v0.0.1–v0.0.6 的开发历史；五轮改进及通过的检查见 verification/iterations.json。初版 ZIP 保留。公开仓库为 https://github.com/HhWw96/moontxnwitness，安装模块为 HhWw96/moontxnwitness@0.0.10。发布及公开下载核验结果见 verification/publication.json。
 
 公开 CI 在 Windows 2022 / Ubuntu 24.04 检查核心、oracle、CLI、真实 SQLite 和干净目录交付流程，Linux 另运行 Native 核心。工作流固定官方工具与组件版本；实际结果以 Actions 页面和发布记录为准，不把已配置工作流当作执行通过。比赛提交与组织方接受仍是单独步骤。
 

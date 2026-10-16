@@ -43,6 +43,18 @@ pub fn analyze_with_options(
   h : History,
   options? : AnalysisOptions = analysis_options(),
 ) -> AnalysisResult {
+  analyze_balanced_indexed(h, options, collect_writes(h))
+}
+
+///|
+fn analyze_balanced_indexed(
+  h : History,
+  options : AnalysisOptions,
+  writes : Map[String, Map[String, WriteRef]],
+  with_coverage? : Bool = true,
+  validated? : Bool = false,
+  search_cycles? : Bool = true,
+) -> AnalysisResult {
   if !valid_analysis_options(options) {
     return {
       report: base_report(
@@ -60,7 +72,14 @@ pub fn analyze_with_options(
       cached_states: 0,
     }
   }
-  let base = analyze_internal(h, true, complete_search=false)
+  let base = analyze_internal(
+    h,
+    search_cycles,
+    writes~,
+    complete_search=false,
+    with_coverage~,
+    validated~,
+  )
   if base.outcome != Inconclusive ||
     !base.findings.all(f => f.code == "missing_version_order") {
     return { report: base, options, cache_hits: 0, cached_states: 0, }
@@ -172,6 +191,9 @@ fn analysis_result_string(result : AnalysisResult) -> String {
 
 ///|
 fn parse_analysis_options(text : String) -> AnalysisOptions raise {
+  if text == "{}" {
+    return analysis_options()
+  }
   let m = object_fields(guarded_json(text, limit=4096), "options")
   known_fields(
     m,
@@ -213,7 +235,7 @@ fn input_error_report(message : String) -> Report {
 fn options_input(text : String, options_text : String) -> AnalysisResult {
   try {
     let options = parse_analysis_options(options_text)
-    match parse_history(text) {
+    match parse_history_optimized(text) {
       Ok(h) => analyze_with_options(h, options~)
       Err(message) =>
         {

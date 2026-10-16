@@ -2,6 +2,9 @@ import { mkdirSync, copyFileSync, readFileSync, writeFileSync, existsSync } from
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { root, runMoon } from './moon.mjs';
+import { createHash } from 'node:crypto';
+import { sourceFingerprint } from './build-fingerprint.mjs';
+import {spawnSync} from 'node:child_process';
 
 runMoon(['build', '--target', 'js', '--release', '--deny-warn']);
 const output = resolve(root, 'dist');
@@ -24,4 +27,8 @@ if (home) {
 }
 if (!runtimeLicense) notices += '\n' + readFileSync(resolve(root, 'LICENSE'), 'utf8');
 writeFileSync(resolve(output, 'THIRD_PARTY_NOTICES.txt'), notices);
+function componentVersion(binary,args,pattern){const result=spawnSync(binary,args,{encoding:'utf8',windowsHide:true});if(result.status!==0)throw Error('Cannot identify compilation toolchain');const match=(result.stdout+result.stderr).match(pattern);if(!match)throw Error('Unexpected toolchain version output');return match[0];}
+const suffix=process.platform==='win32'?'.exe':'';
+const toolchain={compiler:componentVersion(home?resolve(home,'bin/moonc'+suffix):'moonc',['-v'],/v?[0-9][A-Za-z0-9+._()-]*/),moon:componentVersion(home?resolve(home,'bin/moon'+suffix):'moon',['--version'],/moon\s+[0-9][A-Za-z0-9+._()-]*/)};
+writeFileSync(resolve(output,'build-manifest.json'),JSON.stringify({version:packageVersion,toolchain,sourceSha256:sourceFingerprint(root),coreSha256:createHash('sha256').update(readFileSync(resolve(output,'core.mjs'))).digest('hex')},null,2)+'\n');
 console.log(`Built MoonTxnWitness v${core.version()}: portable MoonBit core + local Node.js CLI.`);

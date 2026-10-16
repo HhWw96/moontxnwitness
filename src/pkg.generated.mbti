@@ -18,6 +18,10 @@ pub fn benchmark_cycle(History, Report) -> Int
 
 pub fn benchmark_infer(History) -> Report
 
+pub fn benchmark_parser_agreement(String) -> String
+
+pub fn benchmark_reduce_balanced(History) -> ReductionResult
+
 pub fn benchmark_render(Report) -> String
 
 pub fn benchmark_search(History, Report) -> Int
@@ -34,9 +38,17 @@ pub fn history_json(History) -> Json
 
 pub fn parse_history(String) -> Result[History, String]
 
+pub fn parse_history_optimized(String) -> Result[History, String]
+
 pub fn reduce_history(History, max_checks? : Int) -> Reduction
 
+pub fn reduce_with_options(History, options? : ReductionOptions) -> ReductionResult
+
 pub fn reduction_json(Reduction) -> Json
+
+pub fn reduction_options(max_checks? : Int, analysis? : AnalysisOptions) -> ReductionOptions
+
+pub fn reduction_result_json(ReductionResult) -> Json
 
 pub fn render_report(Report, String) -> String
 
@@ -49,6 +61,8 @@ pub fn run_json(String, String) -> String
 pub fn run_options_json(String, String) -> String
 
 pub fn shrink_json(String) -> String
+
+pub fn shrink_options_json(String, String) -> String
 
 pub fn verify_certificate_json(String, String) -> String
 
@@ -185,6 +199,22 @@ pub(all) struct Reduction {
 } derive(Eq)
 pub fn Reduction::equal(Self, Self) -> Bool
 pub fn Reduction::not_equal(Self, Self) -> Bool
+
+pub(all) struct ReductionOptions {
+  max_checks : Int
+  analysis : AnalysisOptions
+} derive(Eq)
+pub fn ReductionOptions::equal(Self, Self) -> Bool
+pub fn ReductionOptions::not_equal(Self, Self) -> Bool
+
+pub(all) struct ReductionResult {
+  reduction : Reduction
+  analysis : AnalysisResult
+  cached_checks : Int
+  max_checks : Int
+} derive(Eq)
+pub fn ReductionResult::equal(Self, Self) -> Bool
+pub fn ReductionResult::not_equal(Self, Self) -> Bool
 
 pub(all) struct Report {
   outcome : Outcome

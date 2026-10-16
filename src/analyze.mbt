@@ -2,6 +2,9 @@
 fn collect_writes(h : History) -> Map[String, Map[String, WriteRef]] {
   let writes : Map[String, Map[String, WriteRef]] = Map([])
   for ti, tx in h.transactions {
+    if !tx.ops.any(op => op.kind == Write) {
+      continue
+    }
     let last : Map[String, Int] = Map([])
     for oi, op in tx.ops {
       if op.kind == Write {
@@ -46,6 +49,10 @@ fn resolve_orders(
   keys.sort()
   for key in keys {
     let init = h.initial.at(key)
+    if !writes.contains(key) && !h.version_orders.contains(key) {
+      result[key] = [init]
+      continue
+    }
     let committed : Array[String] = []
     for v, w in writes.get_or_default(key, Map([])) {
       if w.is_final && h.transactions[w.tx].status == Committed {
@@ -143,6 +150,7 @@ fn base_report(
   findings : Array[Finding],
   orders : Map[String, Array[String]],
   writes? : Map[String, Map[String, WriteRef]] = collect_writes(h),
+  with_coverage? : Bool = true,
 ) -> Report {
   let mut committed = 0
   for tx in h.transactions {
@@ -173,7 +181,11 @@ fn base_report(
     inferred_orders: orders,
     order_sources: sources,
     graph: empty_graph(),
-    coverage: coverage_indexed(h, writes),
+    coverage: if with_coverage {
+      coverage_indexed(h, writes)
+    } else {
+      []
+    },
     search: {
       status: "not-needed",
       attempts: 0,
@@ -197,14 +209,16 @@ fn analyze_internal(
   search_cycles : Bool,
   writes? : Map[String, Map[String, WriteRef]] = collect_writes(h),
   complete_search? : Bool = true,
+  with_coverage? : Bool = true,
+  validated? : Bool = false,
 ) -> Report {
-  let findings = validate_history(h)
+  let findings = if validated { [] } else { validate_history(h) }
   if !findings.is_empty() {
-    return base_report(h, Invalid, findings, Map([]))
+    return base_report(h, Invalid, findings, Map([]), writes~, with_coverage~)
   }
   let orders = resolve_orders(h, writes, findings)
   if findings.any(f => f.severity == "error") {
-    return base_report(h, Invalid, findings, orders)
+    return base_report(h, Invalid, findings, orders, writes~, with_coverage~)
   }
   let edges : Array[Edge] = []
   let edge_seen : Map[Edge, Bool] = Map([])
@@ -213,6 +227,9 @@ fn analyze_internal(
   keys.sort()
   let ranks : Map[String, Map[String, Int]] = Map([])
   for key in keys {
+    if orders.at(key).length() < 2 {
+      continue
+    }
     let by_rank : Map[String, Int] = Map([])
     for i, v in orders.at(key) {
       by_rank[v] = i
@@ -222,6 +239,9 @@ fn analyze_internal(
   // Consecutive version constraints suffice for write-write order.
   for key in keys {
     let order = orders.at(key)
+    if order.length() < 3 {
+      continue
+    }
     let by_version = writes.get_or_default(key, Map([]))
     for i in 2..<order.length() {
       let a = by_version.at(order[i - 1])
@@ -253,6 +273,15 @@ fn analyze_internal(
       )
     }
     if tx.status != Committed {
+      continue
+    }
+    // Reads of unchanged initial-only keys cannot contribute a dependency or
+    // a direct anomaly. Keep the transaction for RT and graph accounting.
+    if tx.ops.all(op => {
+        op.kind == Read &&
+        h.initial.get(op.key) == Some(op.version) &&
+        !writes.contains(op.key)
+      }) {
       continue
     }
     let own : Map[String, (String, Int)] = Map([])
@@ -297,8 +326,11 @@ fn analyze_internal(
       if !reads.contains(op.key) {
         reads[op.key] = (op.version, oi)
       }
-      let by_version = writes.get_or_default(op.key, Map([]))
       let is_initial = h.initial.get(op.key) == Some(op.version)
+      if is_initial && !writes.contains(op.key) {
+        continue
+      }
+      let by_version = writes.get_or_default(op.key, Map([]))
       let mut usable = is_initial
       if !is_initial {
         match by_version.get(op.version) {
@@ -381,6 +413,9 @@ fn analyze_internal(
       }
       match orders.get(op.key) {
         Some(order) => {
+          if order.length() < 2 {
+            continue
+          }
           let read_rank = ranks.at(op.key).get_or_default(op.version, -1)
           if read_rank >= 0 {
             for rank in (read_rank + 1)..<order.length() {
@@ -448,8 +483,14 @@ fn analyze_internal(
           continue
         }
         match (a.end, b.start) {
-          (Some(e), Some(s)) if e < s =>
-            add_edge(edges, edge_seen, overflow, {
+          (Some(e), Some(s)) if e < s => {
+            // Unique validated transaction IDs make each ordered RT pair unique.
+            // Other dependency kinds still use full structural deduplication.
+            if edges.length() >= 50000 {
+              overflow[0] = true
+              continue
+            }
+            edges.push({
               from: a.id,
               to: b.id,
               kind: RT,
@@ -460,6 +501,7 @@ fn analyze_internal(
               to_version: None,
               reason: "The source completed before the target began on the asserted common observer clock.",
             })
+          }
           _ => ()
         }
       }
@@ -472,8 +514,13 @@ fn analyze_internal(
       ),
     )
   }
+  let graph_index = if search_cycles {
+    adjacency(h.transactions, edges)
+  } else {
+    { adj: [], sources: [], targets: [], }
+  }
   let (witness, graph) = if search_cycles {
-    shortest_cycle(h.transactions, edges)
+    shortest_cycle(h.transactions, edges, prepared=graph_index)
   } else {
     ([], empty_graph())
   }
@@ -496,11 +543,11 @@ fn analyze_internal(
     Consistent
   }
   let mut serial_order = if search_cycles && outcome == Consistent {
-    topological_order(h.transactions, edges)
+    topological_order(h.transactions, edges, prepared=graph_index)
   } else {
     []
   }
-  let base = base_report(h, outcome, findings, orders, writes~)
+  let base = base_report(h, outcome, findings, orders, writes~, with_coverage~)
   let mut search = base.search
   let mut resolved_orders = orders
   if search_cycles &&

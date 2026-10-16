@@ -169,6 +169,15 @@ test "published semantic report replay" {{
 }}
 '''
         expected_tests += 1
+    if tuple(map(int, VERSION.split('.'))) >= (0, 0, 10):
+        test += f'''\n///|\ntest "published balanced reduction" {{
+  let result = @txn.reduce_with_options(load({history('noisy-write-skew')}))
+  assert_true(result.reduction.one_minimal)
+  assert_eq(result.reduction.history.transactions.length(), 2)
+  assert_true(result.analysis.report.outcome == @txn.Violation)
+}}
+'''
+        expected_tests += 1
     (consumer / 'consumer_wbtest.mbt').write_text(test, encoding='utf-8')
     run([MOON, 'add', MODULE + '@' + VERSION], consumer)
     assert not (consumer / 'moon.work').exists()

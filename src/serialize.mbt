@@ -1,4 +1,39 @@
 ///|
+/// Bounded encoding cache: values are official JSON strings, never conclusions.
+/// Saturation only disables insertion and does not affect output or analysis.
+priv struct QuotedStrings {
+  values : Map[String, String]
+  mut units : Int
+}
+
+///|
+let quoted_strings : QuotedStrings = { values: Map([]), units: 0, }
+
+///|
+fn cached_quote(value : String) -> String {
+  match quoted_strings.values.get(value) {
+    Some(text) => text
+    None => {
+      let text = value.to_json().stringify()
+      if quoted_strings.values.length() < 2048 &&
+        quoted_strings.units + value.length() + text.length() <= 131072 {
+        quoted_strings.values[value] = text
+        quoted_strings.units += value.length() + text.length()
+      }
+      text
+    }
+  }
+}
+
+///|
+fn scalar_string(value : Json, strings : Map[String, String]) -> String {
+  match value {
+    String(s) => quoted_cached(strings, s)
+    _ => value.stringify()
+  }
+}
+
+///|
 /// Stream the largest array instead of materializing its JSON object tree.
 /// Public report_json remains available for structured MoonBit callers.
 fn report_string(r : Report, extras? : Map[String, Json] = Map([])) -> String {
@@ -20,7 +55,7 @@ fn report_string(r : Report, extras? : Map[String, Json] = Map([])) -> String {
     Object(m) => m["dependencies"] = r.edges.length().to_json()
     _ => abort("Report stats")
   }
-  let b = StringBuilder()
+  let b = json_text()
   let strings : Map[String, String] = Map([])
   b.write_char('{')
   let mut first = true
@@ -29,7 +64,7 @@ fn report_string(r : Report, extras? : Map[String, Json] = Map([])) -> String {
       b.write_char(',')
     }
     first = false
-    b.write_string(name.to_json().stringify())
+    b.write_string(quoted_cached(strings, name))
     b.write_char(':')
     if name == "coverage" {
       write_coverage(b, r, strings)
@@ -75,7 +110,7 @@ fn report_string(r : Report, extras? : Map[String, Json] = Map([])) -> String {
       }
       b.write_char(']')
     } else {
-      b.write_string(value.stringify())
+      b.write_string(scalar_string(value, strings))
     }
   }
   b.write_char('}')
@@ -84,7 +119,7 @@ fn report_string(r : Report, extras? : Map[String, Json] = Map([])) -> String {
 
 ///|
 fn write_coverage(
-  b : StringBuilder,
+  b : JsonText,
   r : Report,
   strings : Map[String, String],
 ) -> Unit {
@@ -121,7 +156,7 @@ fn quoted_cached(strings : Map[String, String], value : String) -> String {
   match strings.get(value) {
     Some(text) => text
     None => {
-      let text = value.to_json().stringify()
+      let text = cached_quote(value)
       strings[value] = text
       text
     }
@@ -145,11 +180,7 @@ fn optional_integer(value : Int?) -> String {
 }
 
 ///|
-fn write_edge(
-  b : StringBuilder,
-  e : Edge,
-  strings : Map[String, String],
-) -> Unit {
+fn write_edge(b : JsonText, e : Edge, strings : Map[String, String]) -> Unit {
   b.write_string("{\"from\":")
   b.write_string(quoted_cached(strings, e.from))
   b.write_string(",\"to\":")

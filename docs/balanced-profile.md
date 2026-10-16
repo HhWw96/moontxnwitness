@@ -48,3 +48,42 @@ Schema 1 retains its original traversal, budgets and exact search-count comparis
 The v0.0.7 no-serial-execution capsule is an immutable legacy sample. V1 and V2
 capsule headers must match their contained report schema. Compact cycle certificates
 continue to use schema 1 and independently check edge provenance and closure.
+
+## Balanced transaction reduction
+
+`shrinkWithOptions(history, {maxChecks:256, analysisOptions:{...}})` and
+`shrink --profile balanced` support 512 transactions / 10,000 operations.
+MoonBit uses `reduction_options(...)`, `reduce_with_options(...)`, and
+`reduction_result_json(...)`. The typed result contains `reduction` and `analysis`;
+the JSON result retains the familiar reducedHistory/report/oneMinimal fields.
+
+The reducer seeds candidates from an actual cycle/direct finding and closes
+recorded read sources. It remaps an immutable original writer index for each
+subset, prunes only original asserted version orders, and caches rejected subsets
+using a collision-free original-membership bit string. Every accepted subset is
+reanalyzed. Validation invariants inherited by deletion are reused internally;
+full final diagnostics are restored and checked against fresh analysis by tests.
+Only a completed singleton pass permits `oneMinimal: true`; that is still the
+fixed analyzer/options predicate, not global or operation minimality.
+
+Valid balanced JSON input takes a schema-directed typed parsing path. Plain ASCII
+strings are sliced only after quote/control/escape checks; escaped and Unicode
+strings and all numbers use official scalar decoding. Legacy decoding supplies
+the exact error path. Differential tests compare against the legacy duplicate-key
+guard and official JSON parser, including malformed, duplicate, Unicode and
+numeric mutations. Default compat parsing remains available unchanged.
+
+Internal singleton checks omit unused initial-only keys: with at most one
+committed transaction no cycle or multi-writer search can occur, and unused keys
+cannot change a direct read/source finding. Retained histories keep the complete
+initial state, and accepted singletons receive full final analysis. Tests compare
+both predicates and final reports, including aborted/unknown sources.
+
+All output strings use official JSON escaping. The JS backend uses a tiny
+string-fragment `join` primitive to flatten the final
+output once. Model inference, parsing, graph/search/reduction and JSON field
+selection remain MoonBit; other backends use the standard StringBuilder.
+Official string encodings are cached across calls, bounded by 2,048 entries and
+131,072 UTF-16 units including original and encoded strings. Saturation disables
+insertion; it changes neither encoding nor a conclusion. No analysis verdict is
+cached by this serializer. Tests compare reports before and after saturation.

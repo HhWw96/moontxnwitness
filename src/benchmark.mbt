@@ -31,3 +31,8 @@ pub fn benchmark_search_balanced(h : History, r : Report) -> Int {
   )
   info.attempts
 }
+
+///|
+pub fn benchmark_reduce_balanced(h : History) -> ReductionResult {
+  reduce_with_options(h)
+}

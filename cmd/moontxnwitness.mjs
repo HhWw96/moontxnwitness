@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { openSync, readSync, closeSync, writeFileSync, existsSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { run_json, run_options_json, verify_certificate_json, shrink_json, compare_models_json, version } from './core.mjs';
+import { run_json, run_options_json, verify_certificate_json, shrink_json, shrink_options_json, compare_models_json, version } from './core.mjs';
 import { makeCapsule, replayCapsule } from './evidence.mjs';
 
 const help = `MoonTxnWitness v${version()}
@@ -115,8 +115,11 @@ try {
     emitJSON(result, undefined, paths);
     process.exitCode = result.valid ? 0 : 2;
   } else if (args[0] === 'shrink') {
-    const { paths, options } = localArgs(args.slice(1), ['--output', '--history'], 1);
-    const result = JSON.parse(shrink_json(readBounded(paths[0], 2 * 1024 * 1024)));
+    const { paths, options } = localArgs(args.slice(1), ['--output', '--history', '--profile'], 1);
+    const profile=options['--profile'] || 'compat';
+    if (!['compat','balanced'].includes(profile)) throw new Error('profile 必须为 compat 或 balanced');
+    const history=readBounded(paths[0], 2 * 1024 * 1024);
+    const result = JSON.parse(profile==='balanced' ? shrink_options_json(history,'{}') : shrink_json(history));
     const companions = [];
     if (options['--history']) {
       if (!result.reducedHistory) throw new Error('无有效的缩减历史可导出');

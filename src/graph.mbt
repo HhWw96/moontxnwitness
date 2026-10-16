@@ -31,8 +31,9 @@ fn adjacency(txs : Array[Transaction], edges : Array[Edge]) -> GraphIndex {
 fn shortest_cycle(
   txs : Array[Transaction],
   edges : Array[Edge],
+  prepared? : GraphIndex = adjacency(txs, edges),
 ) -> (Array[Edge], GraphInfo) {
-  let g = adjacency(txs, edges)
+  let g = prepared
   let n = txs.length()
   let components = strongly_connected(txs, g)
   let mut cyclic_components = 0
@@ -185,8 +186,9 @@ fn strongly_connected(txs : Array[Transaction], g : GraphIndex) -> Components {
 fn topological_order(
   txs : Array[Transaction],
   edges : Array[Edge],
+  prepared? : GraphIndex = adjacency(txs, edges),
 ) -> Array[String] {
-  let g = adjacency(txs, edges)
+  let g = prepared
   let degree = Array::make(txs.length(), 0)
   for target in g.targets {
     degree[target] += 1

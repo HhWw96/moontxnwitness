@@ -57,3 +57,25 @@ keys and uses the official JSON parser for syntax validation.
 The v0.0.7 exhaustive-failure capsule is retained as a legacy compatibility sample.
 Performance receipts include intermediate attempts that missed the target; do not
 select the older smoke receipt as final release evidence.
+
+## v0.0.9 results
+
+The full balanced search group is 3.69x faster than v0.0.6 in this local measurement;
+the 8-transaction hard case is 10.36x. All 10,320 histories are independently
+checked through both legacy and balanced entry points, plus eight 9-12 transaction
+proof fixtures. This search release does not claim all roadmap performance goals
+are complete; its balanced graph group measured 1.92x, and large reduction comes next.
+
+## v0.0.10 accepted measurement
+
+The final full protocol in `verification/releases/0.0.10/release-gate-v010.json`
+measured graph 2.665x, search 5.023x and reduction 2.178x geometric-mean speedup
+against v0.0.6, with graph peak RSS ratio 0.6972 (30.28% lower). Control P95
+regressions stayed within the stated allowance. All full semantic comparisons
+passed. Earlier misses are retained, including the initial ASCII-encoder attempt;
+it was removed rather than using that attempt as successful release evidence.
+
+RT ordered pairs are unique by validated transaction IDs and no longer allocate
+redundant hash-set entries. SCC, shortest cycle and topological order share one
+immutable integer adjacency. Unchanged initial-only reads skip unnecessary local
+maps, while all transactions remain in graph and RT accounting.

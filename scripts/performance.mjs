@@ -6,21 +6,27 @@ import { cpus, platform, release, arch } from 'node:os';
 import { spawn } from 'node:child_process';
 import { fixtures } from './benchmark-fixtures.mjs';
 import { root } from './moon.mjs';
+import { sourceFingerprint } from './build-fingerprint.mjs';
 const args=process.argv.slice(2);
-let baseline=resolve(root,'artifacts/baseline-v0.0.6/core.mjs'),quick=false,profile='compat',label='performance';
+let baseline=resolve(root,'artifacts/baseline-v0.0.6/core.mjs'),quick=false,profile='compat',label='performance',group='all';
 for(let i=0;i<args.length;i++){
   if(args[i]==='--baseline')baseline=resolve(args[++i]);
   else if(args[i]==='--quick')quick=true;
   else if(args[i]==='--profile')profile=args[++i];
   else if(args[i]==='--label')label=args[++i];
+  else if(args[i]==='--group')group=args[++i];
   else throw Error('Usage: performance [--baseline core.mjs] [--quick] [--profile compat|balanced] [--label NAME]');
 }
 assert.ok(['compat','balanced'].includes(profile));assert.match(label,/^[a-zA-Z0-9-]+$/);
+assert.ok(['all','graph','search','reduction','control'].includes(group));
 const version=JSON.parse(readFileSync(resolve(root,'package.json'),'utf8')).version;
+const manifest=JSON.parse(readFileSync(resolve(root,'dist/build-manifest.json'),'utf8'));
+assert.equal(manifest.sourceSha256,sourceFingerprint(root),'Compiled core is stale; complete a successful build first');
+assert.equal(manifest.coreSha256,createHash('sha256').update(readFileSync(resolve(root,'dist/core.mjs'))).digest('hex'));
 const work=resolve(root,`artifacts/bench-${version}-${label}-${Date.now()}`);mkdirSync(work,{recursive:true});
 copyFileSync(resolve(root,'dist/core.mjs'),resolve(work,'current.mjs'));copyFileSync(baseline,resolve(work,'baseline.mjs'));
 const hash=text=>createHash('sha256').update(text).digest('hex');
-const cases=fixtures();for(const c of cases)writeFileSync(resolve(work,c.name+'.json'),JSON.stringify(c));
+const cases=fixtures().filter(c=>group==='all'||c.group===group);for(const c of cases)writeFileSync(resolve(work,c.name+'.json'),JSON.stringify(c));
 function run(engine,c,phase='full'){
   return new Promise((done,reject)=>{
     const child=spawn(process.execPath,[resolve(root,'scripts/benchmark-worker.mjs'),resolve(work,engine+'.mjs'),resolve(work,c.name+'.json'),phase,quick?'1':'5',quick?'3':'30',engine==='current'?profile:'compat'],{stdio:['ignore','pipe','pipe']});
@@ -30,6 +36,8 @@ function run(engine,c,phase='full'){
   });
 }
 const receipt={tool:'MoonTxnWitness',version,passed:false,protocol:quick?'smoke-only':'5 warmups, 30 measured samples, 3 independent alternating process batches',profile,baselineVersion:'0.0.6',baselineSha256:hash(readFileSync(baseline)),currentSha256:hash(readFileSync(resolve(work,'current.mjs'))),environment:{node:process.version,os:platform(),release:release(),arch:arch(),cpu:cpus()[0].model},results:[],phases:[],targets:{graphSpeedup:2,graphPeakMemoryReduction:.3,searchSpeedup:2,reductionSpeedup:2},caveat:'Full reports compared with full reports. Local measurements; target attainment is separate from correctness.'};
+receipt.sourceSha256=manifest.sourceSha256;
+receipt.environment.toolchain=manifest.toolchain;
 const median=a=>[...a].sort((x,y)=>x-y)[Math.floor(a.length/2)];
 for(const c of cases){
   const observations={current:[],baseline:[]};let semantic=null;
@@ -44,15 +52,16 @@ for(const c of cases){
 }
 for(const name of ['dense-rt-192','long-ring-128','completion-impossible-8','reduction-64']){
   const c=cases.find(c=>c.name===name);const rows=[];
+  if(!c)continue;
   const phases=c.operation==='shrink'?['parse','inference','reduction']:c.group==='search'?['parse','inference','search','render']:['parse','inference','cycle','render'];
   for(const phase of phases)rows.push(await run('current',c,phase));
   receipt.phases.push({scenario:name,measurements:rows});
 }
-receipt.groups=Object.fromEntries(['graph','search','reduction','control'].map(group=>{
+receipt.groups=Object.fromEntries([...new Set(cases.map(c=>c.group))].map(group=>{
   const rows=receipt.results.filter(r=>r.group===group);const speedup=Math.exp(rows.reduce((s,r)=>s+Math.log(r.speedup),0)/rows.length);const memoryRatio=Math.exp(rows.reduce((s,r)=>s+Math.log(r.memoryRatio),0)/rows.length);
   return [group,{geometricMeanSpeedup:speedup,geometricMeanPeakMemoryRatio:memoryRatio,targetMet:group==='graph'?speedup>=2&&memoryRatio<=.7:group==='control'?rows.every(r=>median(r.current.map(v=>v.p95Ms))-median(r.baseline.map(v=>v.p95Ms))<=Math.max(2,median(r.baseline.map(v=>v.p95Ms))*.1)):speedup>=2}];
 }));
-receipt.passed=true;receipt.performanceTargetsMet=!quick&&Object.values(receipt.groups).every(g=>g.targetMet);
+receipt.passed=true;receipt.workloadScope=group;receipt.performanceTargetsMet=group==='all'&&!quick&&Object.values(receipt.groups).every(g=>g.targetMet);
 mkdirSync(resolve(root,'verification/releases',version),{recursive:true});
 writeFileSync(resolve(root,'verification/releases',version,label+'.json'),JSON.stringify(receipt,null,2)+'\n');
 console.log(JSON.stringify({correctnessPassed:receipt.passed,performanceTargetsMet:receipt.performanceTargetsMet,groups:receipt.groups}));

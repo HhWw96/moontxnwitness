@@ -5,7 +5,7 @@ import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
-import { analyze, analyzeWithOptions, verify, shrink } from '../dist/sdk.mjs';
+import { analyze, analyzeWithOptions, verify, shrink, shrinkWithOptions, replayReport } from '../dist/sdk.mjs';
 import { completion } from './benchmark-fixtures.mjs';
 import { root } from './moon.mjs';
 
@@ -60,7 +60,7 @@ function independentShortestCycle(report, ids) {
 
 export function runOracle() {
   const started = performance.now();
-  const counts = { exhaustive: 0, generated: 0, completion: 0, consistent: 0, violation: 0, certificates: 0, shortestCycles: 0, serialOrders: 0, reductionsVerified: 0, reductionDeletionChecks: 0, balancedHistories: 0, largeCompletionProofs: 0 };
+  const counts = { exhaustive: 0, generated: 0, completion: 0, consistent: 0, violation: 0, certificates: 0, shortestCycles: 0, serialOrders: 0, reductionsVerified: 0, reductionDeletionChecks: 0, balancedHistories: 0, largeCompletionProofs: 0, balancedReductionsVerified: 0, balancedDeletionChecks: 0 };
   function check(history, category) {
     const ids = history.transactions.filter(t => t.status === 'committed').map(t => t.id);
     const serializations = permutations(ids);
@@ -87,6 +87,21 @@ export function runOracle() {
       counts.shortestCycles++;
     } else assert.equal(minimum, Infinity);
     if (category === 'generated' && !exists && counts.generated % 11 === 0) {
+      const advanced = shrinkWithOptions(history);
+      assert.equal(advanced.report.status,'violation');assert.equal(advanced.oneMinimal,true);
+      const small=advanced.reducedHistory;
+      assert.equal(replayReport(small,advanced.report).valid,true,'Prepared subset report must match fresh full analysis');
+      assert.deepEqual(small.initial,history.initial);
+      for(const t of small.transactions)assert.deepEqual(t.ops,history.transactions.find(o=>o.id===t.id).ops);
+      assert.equal(permutations(small.transactions.map(t=>t.id)).some(ids=>serialReplay(small,ids)),false);
+      for(const t of small.transactions){
+        const transactions=small.transactions.filter(o=>o.id!==t.id);
+        const finals=Object.fromEntries(Object.entries(small.initial).map(([k,v])=>[k,new Set([v])]));
+        for(const other of transactions)for(const [k,v] of new Map(other.ops.filter(o=>o.type==='write').map(o=>[o.key,o.version])))finals[k].add(v);
+        const versionOrders=Object.fromEntries(Object.entries(small.versionOrders||{}).map(([k,vs])=>[k,vs.filter(v=>finals[k].has(v))]));
+        assert.notEqual(analyzeWithOptions({...small,transactions,versionOrders}).status,'violation');counts.balancedDeletionChecks++;
+      }
+      counts.balancedReductionsVerified++;
       const reduced = shrink(history);
       assert.equal(reduced.report.status, 'violation');
       assert.equal(reduced.oneMinimal, true);

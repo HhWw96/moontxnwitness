@@ -11,6 +11,12 @@ pub fn shrink_json(text : String) -> String {
 }
 
 ///|
+#export_name("shrink_options_json")
+pub fn shrink_options_json(text : String, options : String) -> String {
+  @txn.shrink_options_json(text, options)
+}
+
+///|
 #export_name("replay_report_json")
 pub fn replay_report_json(history : String, report : String) -> String {
   @txn.replay_report_json(history, report)
@@ -71,6 +77,21 @@ pub fn benchmark_parse(text : String) -> @txn.History {
 }
 
 ///|
+#export_name("benchmark_parser_agreement")
+pub fn benchmark_parser_agreement(text : String) -> String {
+  @txn.benchmark_parser_agreement(text)
+}
+
+///|
+#export_name("benchmark_parse_balanced")
+pub fn benchmark_parse_balanced(text : String) -> @txn.History {
+  match @txn.parse_history_optimized(text) {
+    Ok(h) => h
+    Err(_) => abort("Invalid benchmark fixture")
+  }
+}
+
+///|
 #export_name("benchmark_infer")
 pub fn benchmark_infer(h : @txn.History) -> @txn.Report {
   @txn.benchmark_infer(h)
@@ -104,4 +125,10 @@ pub fn benchmark_render(r : @txn.Report) -> String {
 #export_name("benchmark_reduce")
 pub fn benchmark_reduce(h : @txn.History) -> @txn.Reduction {
   @txn.reduce_history(h)
+}
+
+///|
+#export_name("benchmark_reduce_balanced")
+pub fn benchmark_reduce_balanced(h : @txn.History) -> @txn.ReductionResult {
+  @txn.benchmark_reduce_balanced(h)
 }

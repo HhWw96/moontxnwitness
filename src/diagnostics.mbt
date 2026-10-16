@@ -40,10 +40,14 @@ fn coverage_indexed(
   keys.sort()
   for key in keys {
     let mut count = 0
-    for _, w in writes.get_or_default(key, Map([])) {
-      if w.is_final && h.transactions[w.tx].status == Committed {
-        count += 1
-      }
+    match writes.get(key) {
+      Some(versions) =>
+        for _, w in versions {
+          if w.is_final && h.transactions[w.tx].status == Committed {
+            count += 1
+          }
+        }
+      None => ()
     }
     result.push({
       key,

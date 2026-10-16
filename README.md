@@ -1,6 +1,8 @@
-# MoonTxnWitness v0.0.9
+# MoonTxnWitness v0.0.10
 
 MoonTxnWitness 是用 **MoonBit** 实现的离线事务历史检查器。它分析带唯一版本的多键点读写日志，解释异常依赖，把冗长日志缩成可复现反例，并比较普通与严格可串行化模型。所有分析在本地完成。
+
+v0.0.10 增加 `shrink --profile balanced` / `shrinkWithOptions`，可将 512 事务日志缩成经过验证的反例，并明确是否完成单删检查。高级输入解析和完整结果输出同时优化，原始输入事实与旧入口保留。
 
 v0.0.9 新增显式 `--profile balanced` / `analyzeWithOptions`：最多 12 个已提交事务的有界补全、回滚状态和失败缓存，以及预算可复核的 v2 证据。旧入口继续保留原有行为。详见 [高级分析与证据约定](docs/balanced-profile.md)。
 
@@ -8,9 +10,9 @@ v0.0.9 新增显式 `--profile balanced` / `analyzeWithOptions`：最多 12 个�
 
 English: An offline MoonBit transaction-history checker with shortest cycle witnesses, bounded serial completion, transaction reduction and self-contained replay.
 
-公开入口：[GitHub 源码](https://github.com/HhWw96/moontxnwitness)、[v0.0.9 下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.0.9)、[Mooncakes 库](https://mooncakes.io/docs/HhWw96/moontxnwitness)。公开发布的验证记录在 `verification/publication.json`。
+公开入口：[GitHub 源码](https://github.com/HhWw96/moontxnwitness)、[v0.0.10 下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.0.10)、[Mooncakes 库](https://mooncakes.io/docs/HhWw96/moontxnwitness)。公开发布的验证记录在 `verification/publication.json`。
 
-2026-10-16 已完成两个 ZIP 的匿名下载与 SHA-256 核对，以及 Mooncakes 上传/下载字节一致性检查。全新独立项目从 Mooncakes 安装后，JS / Wasm GC 各 6 项接口测试通过；公开 Windows/Linux CI 均通过。
+每版公开发布后，分别核对两个 ZIP 的匿名下载与 SHA-256、Mooncakes 上传/下载字节，并在全新独立项目安装测试。对应版本的实际结果保存在 `verification/releases/VERSION/publication.json`；构建与本地检查不等于公开发布完成。
 
 ## 先运行完整演示
 
@@ -54,7 +56,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 
 `check` 支持 `text`、`json`、`markdown`、`dot`。异常示例返回 **1** 是预期结果；成功复核返回 **0**。`--witness` 只导出依赖环。没有环的直接异常、穷举无解也可使用 `--capsule` 复现。
 
-`verify` 重新推导边并检查环闭合，不重跑最短环搜索。`replay` 检查包内文本的 SHA-256，并重算核心判断；支持本项目 schema 1 的 0.0.1–0.0.6 证据版本。哈希不能认证采集者身份，展示补充字段也不属于核心语义复核范围。详见 [证据与缩减](docs/evidence.md)。
+`verify` 重新推导边并检查环闭合，不重跑最短环搜索。`replay` 检查包内文本的 SHA-256，并重算核心判断；保留历史 schema 1，支持高级入口的 schema 2。哈希不能认证采集者身份，运行计数与判断证据分开保存。详见 [高级证据约定](docs/balanced-profile.md)。
 
 ## 输入与模型
 
@@ -101,7 +103,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 
 范围为唯一版本点读写寄存器；支持外部中间版本、回滚版本、自身读写顺序等直接异常。尚不支持范围查询、谓词冲突、append/list 模型、自动 SQL 插桩、Jepsen 日志直接导入或完整隔离级别分类。分析一个历史不能认证整个数据库。
 
-预算：512 事务、10,000 操作、50,000 依赖；历史最多 2 MiB UTF-8，核心解析最多 1,048,576 UTF-16 单元，JSON 深度 64。精确搜索限 8 个已提交事务、512 操作、128 初始键、100,000 候选前缀和 1,000,000 操作检查。缩减限 64 事务、2,048 操作和 128 次候选检查。`oneMinimal` 不表示全局最少事务，也不最小化操作。
+共同输入预算：512 事务、10,000 操作、50,000 依赖；历史最多 2 MiB UTF-8，核心解析最多 1,048,576 UTF-16 单元，JSON 深度 64。旧入口搜索限 8 个已提交事务，缩减限 64 事务、2,048 操作和 128 次检查。`balanced` 搜索限 12 个已提交事务、512 操作、128 初始键、100,000 候选前缀、1,000,000 操作检查和 50,000 项失败缓存；缩减限 512 事务、10,000 操作和 256 次候选检查。`oneMinimal` 不表示全局最少事务，也不最小化操作。
 
 ## 真实 SQLite 采集
 
@@ -132,7 +134,7 @@ SDK 的分析接口可用于 JavaScript/浏览器，不依赖 Node 文件或密�
 MoonBit 公共接口包括 `parse_history`、`analyze`、`reduce_history`、`compare_models`、`verify_cycle`、`replay_report_json`、`history_json` 和报告渲染，类型见 `src/pkg.generated.mbti`。正式模块名为 `HhWw96/moontxnwitness`：
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.0.9
+moon add HhWw96/moontxnwitness@0.0.10
 ```
 
 在调用包的 `moon.pkg` 中导入 `"HhWw96/moontxnwitness" @txn`。例如 `@txn.analyze_json(historyText)` 返回结构化结果；原始模型与预算约束同样适用。

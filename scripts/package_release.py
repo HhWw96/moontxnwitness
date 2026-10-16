@@ -113,6 +113,10 @@ for kind in ("portable", "source"):
         assert advanced['schemaVersion'] == 2 and advanced['search']['status'] == 'exhausted'
         assert json.loads(run([NODE, "dist/moontxnwitness.mjs", "replay", "advanced.capsule.json"], consumer))['valid'] is True
         checks.append(kind + " balanced v2 exhaustive proof and capsule")
+    if tuple(map(int, VERSION.split('.'))) >= (0, 0, 10):
+        reduced = json.loads(run([NODE, "dist/moontxnwitness.mjs", "shrink", "examples/noisy-write-skew.json", "--profile", "balanced"], consumer))
+        assert reduced['oneMinimal'] is True and len(reduced['reducedHistory']['transactions']) == 2 and reduced['report']['schemaVersion'] == 2
+        checks.append(kind + " balanced reduction and v2 report")
     run([NODE, "dist/moontxnwitness.mjs", "check", "examples/write-skew.json", "--format", "json", "--output", "new-report.json", "--witness", "new-witness.json", "--capsule", "new-case.capsule.json"], consumer, 1)
     checks.append(kind + " combined artifact export")
     assert json.loads(run([NODE, "dist/moontxnwitness.mjs", "verify", "examples/write-skew.json", "new-witness.json"], consumer))["valid"] is True

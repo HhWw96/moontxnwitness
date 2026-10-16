@@ -4,7 +4,8 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync, mkdtempSync } from 
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { analyze, analyzeWithOptions, version, shrink, compareModels, replayReport } from '../dist/sdk.mjs';
+import { analyze, analyzeWithOptions, version, shrink, shrinkWithOptions, compareModels, replayReport } from '../dist/sdk.mjs';
+import { noisy as noisyHistoryFixture } from './benchmark-fixtures.mjs';
 import { root } from './moon.mjs';
 
 export function runCliTests() {
@@ -43,6 +44,16 @@ export function runCliTests() {
     assert.equal(replayReport(h,r).valid,true);
     assert.equal(analyzeWithOptions(h,{maxAttempts:-1}).status,'invalid');
     run(['check',fixture('consistent'),'--profile','unknown'],2);
+  });
+  test('balanced large reduction 512 to 2 preserves source facts and replays', () => {
+    const h=noisyHistoryFixture(512);const input=tempJson('large-history.json',h);
+    const result=JSON.parse(run(['shrink',input,'--profile','balanced'],0).stdout);
+    assert.equal(result.reducedHistory.transactions.length,2);assert.equal(result.oneMinimal,true);assert.ok(result.checks<=4);
+    assert.deepEqual(result.reducedHistory.initial,h.initial);assert.deepEqual(result.reducedHistory.versionOrders,{});
+    assert.equal(replayReport(result.reducedHistory,result.report).valid,true);
+    assert.equal(shrink(h).status,'skipped');
+    const limited=shrinkWithOptions(h,{maxChecks:1});assert.equal(limited.status,'budget');assert.equal(limited.oneMinimal,false);
+    assert.equal(shrinkWithOptions(h,{maxChecks:257}).status,'invalid');
   });
   for (const [name, status, exit] of [['consistent', 'consistent', 0], ['write-skew', 'violation', 1], ['information-cycle', 'violation', 1], ['unknown-order', 'consistent', 0], ['lost-update', 'violation', 1], ['aborted-read', 'violation', 1], ['strict-realtime', 'violation', 1], ['fractured-observation', 'violation', 1]]) {
     test(`${name} fixture status and exit code`, () => { const r = JSON.parse(run(['check', fixture(name), '--format', 'json'], exit).stdout); assert.equal(r.status, status); });
