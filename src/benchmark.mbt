@@ -15,3 +15,8 @@ pub fn benchmark_search(h : History, r : Report) -> Int {
   let (info, _) = search_serial(h, r.inferred_orders, r.edges)
   info.attempts
 }
+
+///|
+pub fn benchmark_render(r : Report) -> String {
+  report_string(r)
+}

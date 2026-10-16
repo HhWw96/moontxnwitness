@@ -1,10 +1,11 @@
 {
   "tool": "MoonTxnWitness",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "passed": true,
-  "checks": 69,
+  "checks": 70,
   "names": [
     "version matches release metadata",
+    "v0.0.7 exhaustive-search capsule preserves v1 replay counts",
     "help and no arguments are usable",
     "consistent fixture status and exit code",
     "write-skew fixture status and exit code",
@@ -87,33 +88,11 @@
       "aborted": 2,
       "errors": [
         {
-          "transaction": "r0-A",
+          "transaction": "r0-B",
           "sqliteError": "SQLITE_BUSY"
         },
         {
-          "transaction": "r1-A",
-          "sqliteError": "SQLITE_BUSY"
-        }
-      ],
-      "versionOrderSource": "same-transaction SQLite audit sequence",
-      "claim": "Observed history only; does not certify SQLite globally or reproduce an SQLite vulnerability"
-    },
-    {
-      "actualDatabaseExecution": true,
-      "sqliteVersion": "3.45.3",
-      "pythonVersion": "3.12.5",
-      "journalMode": "wal",
-      "workers": 2,
-      "rounds": 2,
-      "committed": 4,
-      "aborted": 2,
-      "errors": [
-        {
-          "transaction": "r0-A",
-          "sqliteError": "SQLITE_BUSY"
-        },
-        {
-          "transaction": "r1-A",
+          "transaction": "r1-B",
           "sqliteError": "SQLITE_BUSY"
         }
       ],
@@ -136,6 +115,28 @@
         },
         {
           "transaction": "r1-B",
+          "sqliteError": "SQLITE_BUSY"
+        }
+      ],
+      "versionOrderSource": "same-transaction SQLite audit sequence",
+      "claim": "Observed history only; does not certify SQLite globally or reproduce an SQLite vulnerability"
+    },
+    {
+      "actualDatabaseExecution": true,
+      "sqliteVersion": "3.45.3",
+      "pythonVersion": "3.12.5",
+      "journalMode": "wal",
+      "workers": 2,
+      "rounds": 2,
+      "committed": 4,
+      "aborted": 2,
+      "errors": [
+        {
+          "transaction": "r0-B",
+          "sqliteError": "SQLITE_BUSY"
+        },
+        {
+          "transaction": "r1-A",
           "sqliteError": "SQLITE_BUSY"
         }
       ],

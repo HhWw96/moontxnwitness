@@ -11,8 +11,10 @@ fn empty_graph() -> GraphInfo {
 }
 
 ///|
-fn coverage_for(h : History) -> Array[KeyCoverage] {
-  let writes = collect_writes(h)
+fn coverage_indexed(
+  h : History,
+  writes : Map[String, Map[String, WriteRef]],
+) -> Array[KeyCoverage] {
   let reads : Map[String, Int] = Map([])
   let unresolved : Map[String, Int] = Map([])
   for tx in h.transactions {

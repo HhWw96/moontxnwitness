@@ -1,10 +1,12 @@
-# MoonTxnWitness v0.0.7
+# MoonTxnWitness v0.0.8
 
 MoonTxnWitness 是用 **MoonBit** 实现的离线事务历史检查器。它分析带唯一版本的多键点读写日志，解释异常依赖，把冗长日志缩成可复现反例，并比较普通与严格可串行化模型。所有分析在本地完成。
 
+后续性能与真实数据库迭代见 [路线与测量协议](docs/ROADMAP.md)。v0.0.8 使用结构化依赖去重、整数图索引、可复用 BFS 缓冲区和流式完整报告；保留 v1 判断、边来源和原有搜索预算。完整测量保存在 `verification/releases/`，烟雾检查不视为性能达标。
+
 English: An offline MoonBit transaction-history checker with shortest cycle witnesses, bounded serial completion, transaction reduction and self-contained replay.
 
-公开入口：[GitHub 源码](https://github.com/HhWw96/moontxnwitness)、[v0.0.6 下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.0.6)、[Mooncakes 库](https://mooncakes.io/docs/HhWw96/moontxnwitness)。公开发布的验证记录在 `verification/publication.json`。
+公开入口：[GitHub 源码](https://github.com/HhWw96/moontxnwitness)、[v0.0.8 下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.0.8)、[Mooncakes 库](https://mooncakes.io/docs/HhWw96/moontxnwitness)。公开发布的验证记录在 `verification/publication.json`。
 
 2026-10-16 已完成两个 ZIP 的匿名下载与 SHA-256 核对，以及 Mooncakes 上传/下载字节一致性检查。全新独立项目从 Mooncakes 安装后，JS / Wasm GC 各 6 项接口测试通过；公开 Windows/Linux CI 均通过。
 
@@ -128,7 +130,7 @@ SDK 的分析接口可用于 JavaScript/浏览器，不依赖 Node 文件或密�
 MoonBit 公共接口包括 `parse_history`、`analyze`、`reduce_history`、`compare_models`、`verify_cycle`、`replay_report_json`、`history_json` 和报告渲染，类型见 `src/pkg.generated.mbti`。正式模块名为 `HhWw96/moontxnwitness`：
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.0.6
+moon add HhWw96/moontxnwitness@0.0.8
 ```
 
 在调用包的 `moon.pkg` 中导入 `"HhWw96/moontxnwitness" @txn`。例如 `@txn.analyze_json(historyText)` 返回结构化结果；原始模型与预算约束同样适用。

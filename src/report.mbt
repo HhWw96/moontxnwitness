@@ -123,7 +123,7 @@ pub fn report_json(r : Report) -> Json {
 /// Main portable host entry. Syntax/schema errors have the same report envelope.
 pub fn analyze_json(text : String) -> String {
   match parse_history(text) {
-    Ok(h) => report_json(analyze(h)).stringify(indent=2)
+    Ok(h) => report_string(analyze(h))
     Err(message) => {
       let empty : History = {
         model: Serializable,

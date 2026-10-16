@@ -10,6 +10,8 @@ pub fn benchmark_cycle(History, Report) -> Int
 
 pub fn benchmark_infer(History) -> Report
 
+pub fn benchmark_render(Report) -> String
+
 pub fn benchmark_search(History, Report) -> Int
 
 pub fn capsule_content_json(String) -> String
@@ -50,8 +52,10 @@ pub(all) enum Dependency {
   WW
   RW
   RT
-} derive(Eq)
+} derive(Eq, Hash)
 pub fn Dependency::equal(Self, Self) -> Bool
+pub fn Dependency::hash(Self) -> Int
+pub fn Dependency::hash_combine(Self, Hasher) -> Unit
 pub fn Dependency::not_equal(Self, Self) -> Bool
 
 pub(all) struct Edge {
@@ -64,8 +68,10 @@ pub(all) struct Edge {
   from_version : String?
   to_version : String?
   reason : String
-} derive(Eq)
+} derive(Eq, Hash)
 pub fn Edge::equal(Self, Self) -> Bool
+pub fn Edge::hash(Self) -> Int
+pub fn Edge::hash_combine(Self, Hasher) -> Unit
 pub fn Edge::not_equal(Self, Self) -> Bool
 
 pub(all) struct Finding {

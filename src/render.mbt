@@ -32,7 +32,7 @@ fn outcome_cn(o : Outcome) -> String {
 /// Render local text, Markdown, JSON or Graphviz DOT. No external renderer is required.
 pub fn render_report(r : Report, format : String) -> String {
   if format == "json" {
-    return report_json(r).stringify(indent=2) + "\n"
+    return report_string(r) + "\n"
   }
   let b = StringBuilder()
   if format == "dot" {

@@ -109,22 +109,21 @@ fn resolve_orders(
 ///|
 fn add_edge(
   edges : Array[Edge],
-  seen : Map[String, Bool],
+  seen : Map[Edge, Bool],
   overflow : Array[Bool],
   edge : Edge,
 ) -> Unit {
   if edge.from == edge.to {
     return
   }
-  let signature = edge_json(edge).stringify()
-  if seen.contains(signature) {
+  if seen.contains(edge) {
     return
   }
   if edges.length() >= 50000 {
     overflow[0] = true
     return
   }
-  seen[signature] = true
+  seen[edge] = true
   edges.push(edge)
 }
 
@@ -143,6 +142,7 @@ fn base_report(
   outcome : Outcome,
   findings : Array[Finding],
   orders : Map[String, Array[String]],
+  writes? : Map[String, Map[String, WriteRef]] = collect_writes(h),
 ) -> Report {
   let mut committed = 0
   for tx in h.transactions {
@@ -173,7 +173,7 @@ fn base_report(
     inferred_orders: orders,
     order_sources: sources,
     graph: empty_graph(),
-    coverage: coverage_for(h),
+    coverage: coverage_indexed(h, writes),
     search: {
       status: "not-needed",
       attempts: 0,
@@ -192,21 +192,32 @@ pub fn analyze(h : History) -> Report {
 
 ///|
 /// Evidence verification shares inference rules but does not run graph search.
-fn analyze_internal(h : History, search_cycles : Bool) -> Report {
+fn analyze_internal(
+  h : History,
+  search_cycles : Bool,
+  writes? : Map[String, Map[String, WriteRef]] = collect_writes(h),
+) -> Report {
   let findings = validate_history(h)
   if !findings.is_empty() {
     return base_report(h, Invalid, findings, Map([]))
   }
-  let writes = collect_writes(h)
   let orders = resolve_orders(h, writes, findings)
   if findings.any(f => f.severity == "error") {
     return base_report(h, Invalid, findings, orders)
   }
   let edges : Array[Edge] = []
-  let edge_seen : Map[String, Bool] = Map([])
+  let edge_seen : Map[Edge, Bool] = Map([])
   let overflow = [false]
   let keys = orders.keys().collect()
   keys.sort()
+  let ranks : Map[String, Map[String, Int]] = Map([])
+  for key in keys {
+    let by_rank : Map[String, Int] = Map([])
+    for i, v in orders.at(key) {
+      by_rank[v] = i
+    }
+    ranks[key] = by_rank
+  }
   // Consecutive version constraints suffice for write-write order.
   for key in keys {
     let order = orders.at(key)
@@ -369,12 +380,7 @@ fn analyze_internal(h : History, search_cycles : Bool) -> Report {
       }
       match orders.get(op.key) {
         Some(order) => {
-          let mut read_rank = -1
-          for i, v in order {
-            if v == op.version {
-              read_rank = i
-            }
-          }
+          let read_rank = ranks.at(op.key).get_or_default(op.version, -1)
           if read_rank >= 0 {
             for rank in (read_rank + 1)..<order.length() {
               let w = by_version.at(order[rank])
@@ -493,7 +499,7 @@ fn analyze_internal(h : History, search_cycles : Bool) -> Report {
   } else {
     []
   }
-  let base = base_report(h, outcome, findings, orders)
+  let base = base_report(h, outcome, findings, orders, writes~)
   let mut search = base.search
   let mut resolved_orders = orders
   if search_cycles &&

@@ -3,7 +3,9 @@ fn compatible_evidence_version(v : Json?) -> Bool {
   match v {
     Some(String(s)) =>
       s == version() ||
-      ["0.0.1", "0.0.2", "0.0.3", "0.0.4", "0.0.5", "0.0.6"].contains(s)
+      ["0.0.1", "0.0.2", "0.0.3", "0.0.4", "0.0.5", "0.0.6", "0.0.7", "0.0.8"].contains(
+        s,
+      )
     _ => false
   }
 }
@@ -136,8 +138,13 @@ pub fn capsule_content_json(text : String) -> String {
 
 ///|
 pub fn compare_models(h : History) -> Json {
-  let serial = analyze({ ..h, model: Serializable, })
-  let strict = analyze({ ..h, model: StrictSerializable, })
+  let writes = collect_writes(h)
+  let serial = analyze_internal({ ..h, model: Serializable, }, true, writes~)
+  let strict = analyze_internal(
+    { ..h, model: StrictSerializable, },
+    true,
+    writes~,
+  )
   let category = if serial.outcome == Invalid || strict.outcome == Invalid {
     "invalid"
   } else if serial.outcome == Violation {

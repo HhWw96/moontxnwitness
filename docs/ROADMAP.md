@@ -26,7 +26,9 @@ runtime/CPU/OS, cold module load, first analysis, P95 and process peak RSS.
 Phase hooks time parse, dependency inference (including validation/coverage),
 SCC/shortest cycle, legacy completion, reduction, and full report serialization
 independently, with already-prepared input outside each timed section. They are
-development hooks, not stable SDK interfaces. Phase results on a no-cycle report
+development hooks, not stable SDK interfaces. Rendering in v0.0.7 uses its original
+structured serializer; later versions measure their shipped streaming serializer.
+Phase results on a no-cycle report
 measure the specified isolated operation, not a complete user-visible result.
 
 Targets: graph group geometric mean >=2x and RSS ratio <=0.7; search and
@@ -41,3 +43,17 @@ evidence traversal. Advanced profiles and v2 evidence carry explicit effective
 budgets and algorithm identifiers. Exhaustion and a negative proof are distinct.
 The author must still perform the documented installation/demo/explanation
 exercise; registration, group membership and organizer decisions remain separate.
+
+## v0.0.8 implementation
+
+Edge equality and hashing cover every provenance field, including the reason.
+No transitive dependencies are dropped. SCC and BFS use integer endpoints with
+stable adjacency/root order and epoch-marked reusable buffers. Coverage and
+model comparisons reuse the writer index. Full dependency arrays, per-key
+coverage and version maps are streamed with official JSON string escaping and
+a per-report escaped-string cache. Duplicate-key scanning still decodes escaped
+keys and uses the official JSON parser for syntax validation.
+
+The v0.0.7 exhaustive-failure capsule is retained as a legacy compatibility sample.
+Performance receipts include intermediate attempts that missed the target; do not
+select the older smoke receipt as final release evidence.

@@ -49,7 +49,7 @@ pub(all) enum Dependency {
   WW
   RW
   RT
-} derive(Eq)
+} derive(Eq, Hash)
 
 ///|
 /// Operation indexes are zero-based. Initial versions have no transaction.
@@ -63,7 +63,13 @@ pub(all) struct Edge {
   from_version : String?
   to_version : String?
   reason : String
-} derive(Eq)
+} derive(Eq, Hash)
+
+///|
+pub extend Dependency with Hash::{hash, hash_combine}
+
+///|
+pub extend Edge with Hash::{hash, hash_combine}
 
 ///|
 pub(all) struct Finding {
@@ -147,7 +153,7 @@ priv struct WriteRef {
 
 ///|
 pub fn version() -> String {
-  "0.0.7"
+  "0.0.8"
 }
 
 ///|

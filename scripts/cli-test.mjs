@@ -24,6 +24,7 @@ export function runCliTests() {
   function json(name) { return JSON.parse(readFileSync(fixture(name), 'utf8')); }
   function tempJson(name, obj) { const path = resolve(work, name); writeFileSync(path, JSON.stringify(obj)); return path; }
   test('version matches release metadata', () => { assert.equal(version(), release); assert.equal(run(['--version'], 0).stdout.trim(), release); });
+  test('v0.0.7 exhaustive-search capsule preserves v1 replay counts', () => assert.equal(JSON.parse(run(['replay', fixture('legacy-v0.0.7.capsule')], 0).stdout).valid, true));
   test('help and no arguments are usable', () => { assert.match(run(['--help'], 0).stdout, /退出码/); assert.match(run([], 0).stdout, /用法/); });
   for (const [name, status, exit] of [['consistent', 'consistent', 0], ['write-skew', 'violation', 1], ['information-cycle', 'violation', 1], ['unknown-order', 'consistent', 0], ['lost-update', 'violation', 1], ['aborted-read', 'violation', 1], ['strict-realtime', 'violation', 1], ['fractured-observation', 'violation', 1]]) {
     test(`${name} fixture status and exit code`, () => { const r = JSON.parse(run(['check', fixture(name), '--format', 'json'], exit).stdout); assert.equal(r.status, status); });

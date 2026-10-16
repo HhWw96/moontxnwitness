@@ -1,18 +1,27 @@
 ///|
-fn adjacency(
-  txs : Array[Transaction],
-  edges : Array[Edge],
-) -> (Map[String, Int], Array[Array[Int]]) {
+priv struct GraphIndex {
+  adj : Array[Array[Int]]
+  sources : Array[Int]
+  targets : Array[Int]
+}
+
+///|
+fn adjacency(txs : Array[Transaction], edges : Array[Edge]) -> GraphIndex {
   let index : Map[String, Int] = Map([])
   let adj : Array[Array[Int]] = []
   for i, tx in txs {
     index[tx.id] = i
     adj.push([])
   }
+  let sources : Array[Int] = []
+  let targets : Array[Int] = []
   for ei, edge in edges {
-    adj[index.at(edge.from)].push(ei)
+    let source = index.at(edge.from)
+    sources.push(source)
+    targets.push(index.at(edge.to))
+    adj[source].push(ei)
   }
-  (index, adj)
+  { adj, sources, targets, }
 }
 
 ///| Breadth-first search from every node finds a globally shortest directed cycle.
@@ -23,9 +32,9 @@ fn shortest_cycle(
   txs : Array[Transaction],
   edges : Array[Edge],
 ) -> (Array[Edge], GraphInfo) {
-  let (index, adj) = adjacency(txs, edges)
+  let g = adjacency(txs, edges)
   let n = txs.length()
-  let components = strongly_connected(txs, edges, index, adj)
+  let components = strongly_connected(txs, g)
   let mut cyclic_components = 0
   let mut cyclic_transactions = 0
   for size in components.sizes {
@@ -37,26 +46,31 @@ fn shortest_cycle(
   let mut bfs_roots = 0
   let mut best : Array[Edge] = []
   let mut best_length = n + 1
+  let distance = Array::make(n, 0)
+  let parent = Array::make(n, -1)
+  let seen = Array::make(n, 0)
+  let queue = Array::make(n, 0)
   for start in 0..<n {
     let component = components.groups[start]
     if component < 0 || components.sizes[component] < 2 {
       continue
     }
     bfs_roots += 1
-    let distance = Array::make(n, -1)
-    let parent = Array::make(n, -1)
-    let queue = [start]
+    let epoch = start + 1
+    queue[0] = start
+    let mut tail = 1
+    seen[start] = epoch
     distance[start] = 0
     let mut head = 0
     let mut found = false
-    while head < queue.length() && !found {
+    while head < tail && !found {
       let v = queue[head]
       head += 1
       if distance[v] + 1 >= best_length {
         break
       }
-      for ei in adj[v] {
-        let w = index.at(edges[ei].to)
+      for ei in g.adj[v] {
+        let w = g.targets[ei]
         if components.groups[w] != component {
           continue
         }
@@ -66,7 +80,7 @@ fn shortest_cycle(
           while current != start {
             let p = parent[current]
             path.push(edges[p])
-            current = index.at(edges[p].from)
+            current = g.sources[p]
           }
           path.rev_in_place()
           best = path
@@ -74,10 +88,12 @@ fn shortest_cycle(
           found = true
           break
         }
-        if distance[w] == -1 {
+        if seen[w] != epoch {
+          seen[w] = epoch
           distance[w] = distance[v] + 1
           parent[w] = ei
-          queue.push(w)
+          queue[tail] = w
+          tail += 1
         }
       }
     }
@@ -110,22 +126,16 @@ priv struct Components {
 }
 
 ///|
-fn component_visit(
-  v : Int,
-  ctx : Components,
-  edges : Array[Edge],
-  index : Map[String, Int],
-  adj : Array[Array[Int]],
-) -> Unit {
+fn component_visit(v : Int, ctx : Components, g : GraphIndex) -> Unit {
   ctx.indices[v] = ctx.next
   ctx.low[v] = ctx.next
   ctx.next += 1
   ctx.stack.push(v)
   ctx.active[v] = true
-  for ei in adj[v] {
-    let w = index.at(edges[ei].to)
+  for ei in g.adj[v] {
+    let w = g.targets[ei]
     if ctx.indices[w] < 0 {
-      component_visit(w, ctx, edges, index, adj)
+      component_visit(w, ctx, g)
       if ctx.low[w] < ctx.low[v] {
         ctx.low[v] = ctx.low[w]
       }
@@ -152,12 +162,7 @@ fn component_visit(
 }
 
 ///|
-fn strongly_connected(
-  txs : Array[Transaction],
-  edges : Array[Edge],
-  index : Map[String, Int],
-  adj : Array[Array[Int]],
-) -> Components {
+fn strongly_connected(txs : Array[Transaction], g : GraphIndex) -> Components {
   let n = txs.length()
   let ctx : Components = {
     indices: Array::make(n, -1),
@@ -170,7 +175,7 @@ fn strongly_connected(
   }
   for i, tx in txs {
     if tx.status == Committed && ctx.indices[i] < 0 {
-      component_visit(i, ctx, edges, index, adj)
+      component_visit(i, ctx, g)
     }
   }
   ctx
@@ -181,10 +186,10 @@ fn topological_order(
   txs : Array[Transaction],
   edges : Array[Edge],
 ) -> Array[String] {
-  let (index, adj) = adjacency(txs, edges)
+  let g = adjacency(txs, edges)
   let degree = Array::make(txs.length(), 0)
-  for e in edges {
-    degree[index.at(e.to)] += 1
+  for target in g.targets {
+    degree[target] += 1
   }
   let used = Array::make(txs.length(), false)
   let result : Array[String] = []
@@ -201,8 +206,8 @@ fn topological_order(
     }
     used[next] = true
     result.push(txs[next].id)
-    for ei in adj[next] {
-      degree[index.at(edges[ei].to)] -= 1
+    for ei in g.adj[next] {
+      degree[g.targets[ei]] -= 1
     }
   }
   result

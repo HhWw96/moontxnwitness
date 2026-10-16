@@ -79,7 +79,7 @@ pub fn benchmark_search(h : @txn.History, r : @txn.Report) -> Int {
 ///|
 #export_name("benchmark_render")
 pub fn benchmark_render(r : @txn.Report) -> String {
-  @txn.report_json(r).stringify(indent=2)
+  @txn.benchmark_render(r)
 }
 
 ///|

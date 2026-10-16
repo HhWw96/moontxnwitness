@@ -4,14 +4,38 @@
 /// Keys are decoded with the official parser, including escaped equivalent spellings.
 priv struct JsonScan {
   chars : Array[Char]
+  decoded_keys : Map[String, String]
   mut pos : Int
   mut depth : Int
 }
 
 ///|
+fn json_white(c : Char) -> Bool {
+  c == ' ' || c == '\n' || c == '\r' || c == '\t'
+}
+
+///|
+fn JsonScan::skip_string(self : JsonScan) -> Unit raise {
+  self.pos += 1
+  while self.pos < self.chars.length() {
+    let c = self.chars[self.pos]
+    self.pos += 1
+    if c == '"' {
+      return
+    }
+    if c == '\\' {
+      if self.pos >= self.chars.length() {
+        fail("Truncated JSON escape")
+      }
+      self.pos += 1
+    }
+  }
+  fail("Unterminated JSON string")
+}
+
+///|
 fn JsonScan::white(self : JsonScan) -> Unit {
-  while self.pos < self.chars.length() &&
-        [' ', '\n', '\r', '\t'].contains(self.chars[self.pos]) {
+  while self.pos < self.chars.length() && json_white(self.chars[self.pos]) {
     self.pos += 1
   }
 }
@@ -67,9 +91,16 @@ fn JsonScan::value(self : JsonScan) -> Unit raise {
       if c == '{' {
         self.white()
         let raw_key = self.string_token()
-        let key = match @json.parse(raw_key) {
-          String(s) => s
-          _ => fail("Invalid object key")
+        let key = match self.decoded_keys.get(raw_key) {
+          Some(key) => key
+          None => {
+            let key = match @json.parse(raw_key) {
+              String(s) => s
+              _ => fail("Invalid object key")
+            }
+            self.decoded_keys[raw_key] = key
+            key
+          }
         }
         if seen.contains(key) {
           fail("Duplicate JSON object key: " + key)
@@ -98,11 +129,14 @@ fn JsonScan::value(self : JsonScan) -> Unit raise {
     }
     fail("Unclosed JSON container")
   } else if c == '"' {
-    let _ = self.string_token()
+    self.skip_string()
   } else {
     let start = self.pos
     while self.pos < self.chars.length() &&
-          ![',', '}', ']', ' ', '\n', '\r', '\t'].contains(self.chars[self.pos]) {
+          self.chars[self.pos] != ',' &&
+          self.chars[self.pos] != '}' &&
+          self.chars[self.pos] != ']' &&
+          !json_white(self.chars[self.pos]) {
       self.pos += 1
     }
     if self.pos == start {
@@ -116,7 +150,12 @@ fn guarded_json(text : String, limit? : Int = 1048576) -> Json raise {
   if text.length() > limit {
     fail("JSON input exceeds the size limit")
   }
-  let scan : JsonScan = { chars: text.iter().collect(), pos: 0, depth: 0, }
+  let scan : JsonScan = {
+    chars: text.iter().collect(),
+    decoded_keys: Map([]),
+    pos: 0,
+    depth: 0,
+  }
   scan.value()
   scan.white()
   if scan.pos != scan.chars.length() {

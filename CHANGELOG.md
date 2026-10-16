@@ -1,3 +1,10 @@
+# 0.0.8
+
+- Deduplicate complete edges with typed structural hashes, preserving collision-safe provenance.
+- Use integer graph endpoints, shared BFS buffers, version-rank indexes and reusable writer/coverage data.
+- Stream full dependency JSON with cached escaping; avoid temporary whitespace/token arrays in the duplicate-key guard.
+- Preserve schema-v1 search traversal, evidence and all dependency edges.
+
 # Changelog
 
 ## 0.0.6 — 2026-10-10
@@ -62,4 +69,3 @@ performance claims, native executable, public publication or contest submission.
 - Add deterministic full-report graph/search/reduction performance workloads, phase timers, cold load, P95 and independent-process peak RSS measurements.
 - Freeze comparison against v0.0.6; preserve raw samples and distinguish correctness from performance-target attainment.
 - Resolve public CI by exact release-tag commit instead of a historical run ID.
-
