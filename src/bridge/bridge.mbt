@@ -35,6 +35,18 @@ pub fn analyze_json(text : String) -> String {
 }
 
 ///|
+#export_name("analyze_options_json")
+pub fn analyze_options_json(text : String, options : String) -> String {
+  @txn.analyze_options_json(text, options)
+}
+
+///|
+#export_name("run_options_json")
+pub fn run_options_json(text : String, format : String) -> String {
+  @txn.run_options_json(text, format)
+}
+
+///|
 #export_name("verify_certificate_json")
 pub fn verify_certificate_json(
   history : String,
@@ -74,6 +86,12 @@ pub fn benchmark_cycle(h : @txn.History, r : @txn.Report) -> Int {
 #export_name("benchmark_search")
 pub fn benchmark_search(h : @txn.History, r : @txn.Report) -> Int {
   @txn.benchmark_search(h, r)
+}
+
+///|
+#export_name("benchmark_search_balanced")
+pub fn benchmark_search_balanced(h : @txn.History, r : @txn.Report) -> Int {
+  @txn.benchmark_search_balanced(h, r)
 }
 
 ///|

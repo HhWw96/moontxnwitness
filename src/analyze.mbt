@@ -196,6 +196,7 @@ fn analyze_internal(
   h : History,
   search_cycles : Bool,
   writes? : Map[String, Map[String, WriteRef]] = collect_writes(h),
+  complete_search? : Bool = true,
 ) -> Report {
   let findings = validate_history(h)
   if !findings.is_empty() {
@@ -503,6 +504,7 @@ fn analyze_internal(
   let mut search = base.search
   let mut resolved_orders = orders
   if search_cycles &&
+    complete_search &&
     outcome == Inconclusive &&
     findings.all(f => f.code == "missing_version_order") {
     let (info, solution) = search_serial(h, orders, edges)

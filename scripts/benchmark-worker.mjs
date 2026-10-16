@@ -15,7 +15,7 @@ if(phase==='full')run=()=>JSON.parse(fixture.operation==='shrink'
 else {
   if(!core.benchmark_parse){console.log(JSON.stringify({available:false,phase}));process.exit(0);}
   const h=core.benchmark_parse(text);const r=core.benchmark_infer(h);
-  const functions={parse:()=>core.benchmark_parse(text),inference:()=>core.benchmark_infer(h),cycle:()=>core.benchmark_cycle(h,r),search:()=>core.benchmark_search(h,r),render:()=>core.benchmark_render(r),reduction:()=>core.benchmark_reduce(h)};
+  const functions={parse:()=>core.benchmark_parse(text),inference:()=>core.benchmark_infer(h),cycle:()=>core.benchmark_cycle(h,r),search:()=>profile==='balanced' && core.benchmark_search_balanced ? core.benchmark_search_balanced(h,r) : core.benchmark_search(h,r),render:()=>core.benchmark_render(r),reduction:()=>core.benchmark_reduce(h)};
   run=functions[phase];if(!run)throw Error('Unknown phase');
 }
 const first=performance.now();let output=run();const firstMs=performance.now()-first;
@@ -28,7 +28,7 @@ if(phase==='full'){
   assert.equal(output.status,fixture.status);
   if(fixture.cycle)assert.equal(report.witness.edges.length,fixture.cycle);
   if(fixture.operation==='shrink'){assert.equal(output.oneMinimal,true);assert.equal(output.reducedHistory.transactions.length,2);}
-  const {version,graph,search,coverage,nextSteps,...stable}=report;
+  const {version,schemaVersion,algorithm,analysisOptions,effectiveLimits,metrics,graph,search,coverage,nextSteps,...stable}=report;
   semantic=stable;outputBytes=Buffer.byteLength(JSON.stringify(output));
 }
 const sorted=[...timesMs].sort((a,b)=>a-b);

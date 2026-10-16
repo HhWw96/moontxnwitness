@@ -5,7 +5,8 @@ import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
-import { analyze, verify, shrink } from '../dist/sdk.mjs';
+import { analyze, analyzeWithOptions, verify, shrink } from '../dist/sdk.mjs';
+import { completion } from './benchmark-fixtures.mjs';
 import { root } from './moon.mjs';
 
 function permutations(items) {
@@ -59,12 +60,16 @@ function independentShortestCycle(report, ids) {
 
 export function runOracle() {
   const started = performance.now();
-  const counts = { exhaustive: 0, generated: 0, completion: 0, consistent: 0, violation: 0, certificates: 0, shortestCycles: 0, serialOrders: 0, reductionsVerified: 0, reductionDeletionChecks: 0 };
+  const counts = { exhaustive: 0, generated: 0, completion: 0, consistent: 0, violation: 0, certificates: 0, shortestCycles: 0, serialOrders: 0, reductionsVerified: 0, reductionDeletionChecks: 0, balancedHistories: 0, largeCompletionProofs: 0 };
   function check(history, category) {
     const ids = history.transactions.filter(t => t.status === 'committed').map(t => t.id);
     const serializations = permutations(ids);
     const exists = serializations.some(order => serialReplay(history, order));
     const report = analyze(history);
+    const balanced = analyzeWithOptions(history);
+    assert.equal(balanced.status, exists ? 'consistent' : 'violation', 'Balanced result must agree with independent full serial replay');
+    if (exists) assert.equal(serialReplay(history, balanced.serialOrder), true);
+    counts.balancedHistories++;
     assert.equal(report.status, exists ? 'consistent' : 'violation', JSON.stringify({ history, report, exists }));
     if (category !== 'completion' || exists) assert.equal(report.complete, true);
     counts[category]++;
@@ -182,6 +187,17 @@ export function runOracle() {
   }
   assert.equal(counts.exhaustive, 6192);
   assert.equal(counts.completion, 3128);
+  for (const n of [9,10,11,12]) {
+    const h = completion(n);
+    const projection = { ...h, transactions: h.transactions.filter(t => ['A','B','R'].includes(t.id)) };
+    assert.equal(permutations(['A','B','R']).some(ids => serialReplay(projection,ids)),false);
+    assert.ok(h.transactions.filter(t=>t.id.startsWith('N')).every(t=>t.ops.every(op=>op.type==='read' && op.key==='z' && op.version==='z0')));
+    assert.equal(analyzeWithOptions(h).status,'violation','Independent impossible projection plus disjoint read-only noise');
+    const positive = {initial:{x:'x0'},transactions:Array.from({length:n},(_,i)=>({id:`W${i}`,status:'committed',ops:[{type:'write',key:'x',version:`x${i+1}`}]}))};
+    const report=analyzeWithOptions(positive);
+    assert.equal(report.status,'consistent');assert.equal(serialReplay(positive,report.serialOrder),true);
+    counts.largeCompletionProofs+=2;
+  }
   const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version, passed: true, method: 'Independent full serial-order enumeration and register replay; DFS shortest-cycle comparison', seed: '0x51A17E', counts, elapsedMs: Math.round(performance.now() - started) };
   mkdirSync(resolve(root, 'verification'), { recursive: true });
   writeFileSync(resolve(root, 'verification/oracle.json'), JSON.stringify(receipt, null, 2) + '\n');

@@ -1,7 +1,7 @@
 ///|
 /// Stream the largest array instead of materializing its JSON object tree.
 /// Public report_json remains available for structured MoonBit callers.
-fn report_string(r : Report) -> String {
+fn report_string(r : Report, extras? : Map[String, Json] = Map([])) -> String {
   let small = report_json({
     ..r,
     edges: [],
@@ -12,6 +12,9 @@ fn report_string(r : Report) -> String {
   let fields = match small {
     Object(m) => m
     _ => abort("Report object")
+  }
+  for name, value in extras {
+    fields[name] = value
   }
   match fields.at("stats") {
     Object(m) => m["dependencies"] = r.edges.length().to_json()

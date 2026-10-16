@@ -156,6 +156,19 @@ test "published semantic report replay" {{
   assert_true(j is Object(m) && m.get("valid") == Some(true.to_json()))
 }}
 '''
+    expected_tests = 6
+    if tuple(map(int, VERSION.split('.'))) >= (0, 0, 9):
+        test += f'''\n///|\ntest "published balanced profile and v2 replay" {{
+  let text = {history('fractured-observation')}
+  let result = @txn.analyze_with_options(load(text))
+  assert_true(result.report.outcome == @txn.Violation)
+  assert_eq(result.report.search.status, "exhausted")
+  let j = @txn.analysis_result_json(result)
+  let replay = @json.parse(@txn.replay_report_json(text, j.stringify()))
+  assert_true(replay is Object(m) && m.get("valid") == Some(true.to_json()))
+}}
+'''
+        expected_tests += 1
     (consumer / 'consumer_wbtest.mbt').write_text(test, encoding='utf-8')
     run([MOON, 'add', MODULE + '@' + VERSION], consumer)
     assert not (consumer / 'moon.work').exists()
@@ -164,10 +177,10 @@ test "published semantic report replay" {{
     targets = []
     for target in ('js', 'wasm-gc'):
         output = run([MOON, 'test', '--target', target, '--deny-warn'], consumer)
-        assert 'Total tests: 6, passed: 6, failed: 0.' in output
-        targets.append({'target': target, 'tests': 6, 'passed': True})
+        assert f'Total tests: {expected_tests}, passed: {expected_tests}, failed: 0.' in output
+        targets.append({'target': target, 'tests': expected_tests, 'passed': True})
     RECEIPT['mooncakes']['registryOnlyConsumer'] = {'passed': True, 'workspaceOverride': False, 'targets': targets}
-    print('Registry-only JS and Wasm GC consumers: 6 tests each passed.', flush=True)
+    print(f'Registry-only JS and Wasm GC consumers: {expected_tests} tests each passed.', flush=True)
 
     tag_sha = run(['git', 'rev-list', '-n', '1', 'v' + VERSION]).strip()
     runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', tag_sha, '--workflow', 'ci.yml', '--json', 'databaseId,conclusion,headSha', '--limit', '10']))

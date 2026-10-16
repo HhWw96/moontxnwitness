@@ -108,6 +108,11 @@ for kind in ("portable", "source"):
         report = json.loads(run([NODE, "dist/moontxnwitness.mjs", "check", "examples/" + filename + ".json", "--format", "json"], consumer, exit_code))
         assert report["status"] == status
         checks.append(kind + " fixture: " + filename)
+    if tuple(map(int, VERSION.split('.'))) >= (0, 0, 9):
+        advanced = json.loads(run([NODE, "dist/moontxnwitness.mjs", "check", "examples/fractured-observation.json", "--profile", "balanced", "--format", "json", "--capsule", "advanced.capsule.json"], consumer, 1))
+        assert advanced['schemaVersion'] == 2 and advanced['search']['status'] == 'exhausted'
+        assert json.loads(run([NODE, "dist/moontxnwitness.mjs", "replay", "advanced.capsule.json"], consumer))['valid'] is True
+        checks.append(kind + " balanced v2 exhaustive proof and capsule")
     run([NODE, "dist/moontxnwitness.mjs", "check", "examples/write-skew.json", "--format", "json", "--output", "new-report.json", "--witness", "new-witness.json", "--capsule", "new-case.capsule.json"], consumer, 1)
     checks.append(kind + " combined artifact export")
     assert json.loads(run([NODE, "dist/moontxnwitness.mjs", "verify", "examples/write-skew.json", "new-witness.json"], consumer))["valid"] is True

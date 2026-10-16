@@ -3,9 +3,10 @@ fn compatible_evidence_version(v : Json?) -> Bool {
   match v {
     Some(String(s)) =>
       s == version() ||
-      ["0.0.1", "0.0.2", "0.0.3", "0.0.4", "0.0.5", "0.0.6", "0.0.7", "0.0.8"].contains(
-        s,
-      )
+      [
+        "0.0.1", "0.0.2", "0.0.3", "0.0.4", "0.0.5", "0.0.6", "0.0.7", "0.0.8", "0.0.9",
+        "0.0.10", "0.0.11", "0.1.0",
+      ].contains(s)
     _ => false
   }
 }
@@ -31,6 +32,9 @@ pub fn replay_report_json(
       guarded_json(report_text, limit=33554432),
       "report",
     )
+    if root.get("schemaVersion") == Some((2).to_json()) {
+      return replay_report_v2(history_text, root)
+    }
     if root.get("tool") != Some("MoonTxnWitness".to_json()) ||
       root.get("schemaVersion") != Some((1).to_json()) ||
       !compatible_evidence_version(root.get("version")) {
@@ -83,8 +87,12 @@ pub fn capsule_content_json(text : String) -> String {
       ],
       "capsule",
     )
-    if root.get("format") != Some("moontxnwitness-replay/v1".to_json()) ||
-      root.get("schemaVersion") != Some((1).to_json()) ||
+    let v1 = root.get("format") == Some("moontxnwitness-replay/v1".to_json()) &&
+      root.get("schemaVersion") == Some((1).to_json())
+    let v2 = root.get("format") == Some("moontxnwitness-replay/v2".to_json()) &&
+      root.get("schemaVersion") == Some((2).to_json()) &&
+      compatible_v2_version(root.get("engineVersion"))
+    if (!v1 && !v2) ||
       root.get("tool") != Some("MoonTxnWitness".to_json()) ||
       !compatible_evidence_version(root.get("engineVersion")) {
       fail("Unsupported capsule header")
@@ -118,7 +126,8 @@ pub fn capsule_content_json(text : String) -> String {
       "report",
     )
     if report.get("version") != root.get("engineVersion") ||
-      report.get("tool") != root.get("tool") {
+      report.get("tool") != root.get("tool") ||
+      report.get("schemaVersion") != root.get("schemaVersion") {
       fail("Capsule and report headers differ")
     }
     let result : Json = {

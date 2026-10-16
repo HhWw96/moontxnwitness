@@ -4,7 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync, mkdtempSync } from 
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { analyze, version, shrink, compareModels, replayReport } from '../dist/sdk.mjs';
+import { analyze, analyzeWithOptions, version, shrink, compareModels, replayReport } from '../dist/sdk.mjs';
 import { root } from './moon.mjs';
 
 export function runCliTests() {
@@ -26,6 +26,24 @@ export function runCliTests() {
   test('version matches release metadata', () => { assert.equal(version(), release); assert.equal(run(['--version'], 0).stdout.trim(), release); });
   test('v0.0.7 exhaustive-search capsule preserves v1 replay counts', () => assert.equal(JSON.parse(run(['replay', fixture('legacy-v0.0.7.capsule')], 0).stdout).valid, true));
   test('help and no arguments are usable', () => { assert.match(run(['--help'], 0).stdout, /退出码/); assert.match(run([], 0).stdout, /用法/); });
+  test('balanced CLI exports and replays a v2 negative proof', () => {
+    const capsule = resolve(work, 'balanced.capsule.json');
+    const r = JSON.parse(run(['check', fixture('fractured-observation'), '--profile', 'balanced', '--format', 'json', '--capsule', capsule], 1).stdout);
+    assert.equal(r.schemaVersion, 2); assert.equal(r.search.status, 'exhausted'); assert.equal(r.effectiveLimits.transactions, 12);
+    assert.equal(JSON.parse(readFileSync(capsule, 'utf8')).format, 'moontxnwitness-replay/v2');
+    assert.equal(JSON.parse(run(['replay', capsule], 0).stdout).valid, true);
+    const damaged=JSON.parse(readFileSync(capsule,'utf8'));const report=JSON.parse(damaged.reportText);report.effectiveLimits.attempts=0;
+    damaged.reportText=JSON.stringify(report);damaged.reportSha256=createHash('sha256').update(damaged.reportText).digest('hex');
+    assert.equal(JSON.parse(run(['replay',tempJson('changed-budget.capsule.json',damaged)],2).stdout).valid,false);
+  });
+  test('balanced SDK budgets and legacy default remain distinct', () => {
+    const h={initial:{x:'x0'},transactions:Array.from({length:12},(_,i)=>({id:`T${i}`,status:'committed',ops:[{type:'write',key:'x',version:`v${i}`}]}))};
+    assert.equal(analyze(h).status,'inconclusive');assert.equal(analyzeWithOptions(h).status,'consistent');
+    const r=analyzeWithOptions(h,{maxAttempts:0});assert.equal(r.status,'inconclusive');assert.equal(r.search.status,'budget');
+    assert.equal(replayReport(h,r).valid,true);
+    assert.equal(analyzeWithOptions(h,{maxAttempts:-1}).status,'invalid');
+    run(['check',fixture('consistent'),'--profile','unknown'],2);
+  });
   for (const [name, status, exit] of [['consistent', 'consistent', 0], ['write-skew', 'violation', 1], ['information-cycle', 'violation', 1], ['unknown-order', 'consistent', 0], ['lost-update', 'violation', 1], ['aborted-read', 'violation', 1], ['strict-realtime', 'violation', 1], ['fractured-observation', 'violation', 1]]) {
     test(`${name} fixture status and exit code`, () => { const r = JSON.parse(run(['check', fixture(name), '--format', 'json'], exit).stdout); assert.equal(r.status, status); });
   }

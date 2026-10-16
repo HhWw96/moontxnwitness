@@ -20,3 +20,14 @@ pub fn benchmark_search(h : History, r : Report) -> Int {
 pub fn benchmark_render(r : Report) -> String {
   report_string(r)
 }
+
+///|
+pub fn benchmark_search_balanced(h : History, r : Report) -> Int {
+  let (info, _, _, _) = search_optimized(
+    h,
+    r.inferred_orders,
+    r.edges,
+    analysis_options(),
+  )
+  info.attempts
+}

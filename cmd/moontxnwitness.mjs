@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { openSync, readSync, closeSync, writeFileSync, existsSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { run_json, verify_certificate_json, shrink_json, compare_models_json, version } from './core.mjs';
+import { run_json, run_options_json, verify_certificate_json, shrink_json, compare_models_json, version } from './core.mjs';
 import { makeCapsule, replayCapsule } from './evidence.mjs';
 
 const help = `MoonTxnWitness v${version()}
@@ -12,6 +12,7 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs compare-models HISTORY.json [--output COMPARISON.json]
   node dist/moontxnwitness.mjs replay CAPSULE.json
   check 也支持 --capsule FILE 导出含日志、报告和 SHA-256 的自包含复现包。
+  check 支持 --profile balanced 使用 12 事务搜索和 v2 证据；默认 compat 保留旧接口行为。
   node dist/moontxnwitness.mjs --help | --version
 
 check 支持以 - 从标准输入读取 UTF-8 JSON。模型由输入中的 model 选择。
@@ -128,13 +129,14 @@ try {
     let output;
     let witness;
     let replayFile;
+    let profile = 'compat';
     let input;
     let literal = false;
     const used = new Set();
     for (let i = 1; i < args.length; i++) {
       const token = args[i];
       if (!literal && token === '--') { literal = true; continue; }
-      if (!literal && ['--format', '--output', '--witness', '--capsule'].includes(token)) {
+      if (!literal && ['--format', '--output', '--witness', '--capsule', '--profile'].includes(token)) {
         if (used.has(token)) throw new Error(`选项重复：${token}`);
         used.add(token);
         if (!args[i + 1] || args[i + 1].startsWith('--')) throw new Error(`选项缺少值：${token}`);
@@ -143,6 +145,7 @@ try {
         if (token === '--output') output = value;
         if (token === '--witness') witness = value;
         if (token === '--capsule') replayFile = value;
+        if (token === '--profile') profile = value;
       } else if (!literal && token.startsWith('-') && token !== '-') {
         throw new Error(`未知选项：${token}`);
       } else {
@@ -152,18 +155,19 @@ try {
     }
     if (input === undefined) throw new Error('缺少历史文件路径');
     if (!['text', 'json', 'markdown', 'dot'].includes(format)) throw new Error('format 必须为 text、json、markdown 或 dot');
+    if (!['compat', 'balanced'].includes(profile)) throw new Error('profile 必须为 compat 或 balanced');
     const outputs = [];
     if (output) checkOutput(output, [input], outputs);
     if (witness) checkOutput(witness, [input], outputs);
     if (replayFile) checkOutput(replayFile, [input], outputs);
     const historyText = readBounded(input, 2 * 1024 * 1024);
-    const result = JSON.parse(run_json(historyText, format));
+    const result = JSON.parse(profile === 'balanced' ? run_options_json(historyText, format) : run_json(historyText, format));
     if (witness && !result.report.witness) throw new Error('本次结果没有依赖环证据；直接读写异常保留在 findings 中');
     const artifacts = [];
     if (replayFile) artifacts.push([replayFile, makeCapsule(historyText, result.report)]);
     if (witness) {
       const { schemaVersion, tool, version: releaseVersion, status, model, witness: proof } = result.report;
-      artifacts.push([witness, JSON.stringify({ schemaVersion, tool, version: releaseVersion, status, model, witness: proof }, null, 2) + '\n']);
+      artifacts.push([witness, JSON.stringify({ schemaVersion: 1, tool, version: releaseVersion, status, model, witness: proof }, null, 2) + '\n']);
     }
     if (output) artifacts.push([output, result.output]);
     saveArtifacts(artifacts);

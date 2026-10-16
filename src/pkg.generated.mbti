@@ -2,9 +2,17 @@
 package "HhWw96/moontxnwitness"
 
 // Values
+pub fn analysis_options(max_attempts? : Int, max_operation_checks? : Int, max_cached_states? : Int) -> AnalysisOptions
+
+pub fn analysis_result_json(AnalysisResult) -> Json
+
 pub fn analyze(History) -> Report
 
 pub fn analyze_json(String) -> String
+
+pub fn analyze_options_json(String, String) -> String
+
+pub fn analyze_with_options(History, options? : AnalysisOptions) -> AnalysisResult
 
 pub fn benchmark_cycle(History, Report) -> Int
 
@@ -13,6 +21,8 @@ pub fn benchmark_infer(History) -> Report
 pub fn benchmark_render(Report) -> String
 
 pub fn benchmark_search(History, Report) -> Int
+
+pub fn benchmark_search_balanced(History, Report) -> Int
 
 pub fn capsule_content_json(String) -> String
 
@@ -36,6 +46,8 @@ pub fn report_json(Report) -> Json
 
 pub fn run_json(String, String) -> String
 
+pub fn run_options_json(String, String) -> String
+
 pub fn shrink_json(String) -> String
 
 pub fn verify_certificate_json(String, String) -> String
@@ -47,6 +59,23 @@ pub fn version() -> String
 // Errors
 
 // Types and methods
+pub(all) struct AnalysisOptions {
+  max_attempts : Int
+  max_operation_checks : Int
+  max_cached_states : Int
+} derive(Eq)
+pub fn AnalysisOptions::equal(Self, Self) -> Bool
+pub fn AnalysisOptions::not_equal(Self, Self) -> Bool
+
+pub(all) struct AnalysisResult {
+  report : Report
+  options : AnalysisOptions
+  cache_hits : Int
+  cached_states : Int
+} derive(Eq)
+pub fn AnalysisResult::equal(Self, Self) -> Bool
+pub fn AnalysisResult::not_equal(Self, Self) -> Bool
+
 pub(all) enum Dependency {
   WR
   WW

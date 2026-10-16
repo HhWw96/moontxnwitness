@@ -1,3 +1,9 @@
+# 0.0.9
+
+- Add opt-in 12-transaction compiled completion with predecessor masks, undo trails and complete-failure caching.
+- Keep legacy search and exact v1 replay counts; v2 records effective budgets and separates runtime counters from semantic evidence.
+- Add balanced MoonBit/JS/CLI entry points, independent oracle comparisons and 9-12 transaction proof fixtures.
+
 # 0.0.8
 
 - Deduplicate complete edges with typed structural hashes, preserving collision-safe provenance.
