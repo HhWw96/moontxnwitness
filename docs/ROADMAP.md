@@ -90,3 +90,19 @@ checked. The owned temporary cluster was stopped afterward. Independent Linux
 PostgreSQL CI is a required separate public release check. The analyzer algorithms
 are unchanged from v0.0.10; this version includes a smoke-only benchmark and
 references the accepted v0.0.10 full protocol rather than claiming a new full run.
+
+## v0.1.0 convergence
+
+The frozen balanced profile passed the full protocol: graph 2.820x, search
+5.557x and reduction 2.215x; graph peak RSS ratio 0.69977. Full scenario tables
+and limits are in performance.md. Legacy entry points remain unchanged; the
+portable demo recommends balanced and exports v2. Fixed fixture JSON, pinned
+public baseline fetching and immutable timestamped measurement receipts make
+retesting self-contained after the documented toolchain setup.
+
+All five small versions have public download and registry-consumer proof. The
+v0.0.11 first Linux workflow initialization failed; its immutable source was
+subsequently tested by a repaired workflow with separately attested source and
+workflow commits. This history is retained. The current publisher waits for
+Windows/Linux, Native and PostgreSQL CI before package publication. Participant
+installation/explanation and organizer states remain independent requirements.

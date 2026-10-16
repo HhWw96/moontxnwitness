@@ -87,6 +87,8 @@ try:
     assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'check', 'examples/write-skew.json', '--format', 'json'], portable, 1))['status'] == 'violation'
     demo = json.loads(run([NODE, 'dist/demo.mjs', '--json'], portable))
     assert demo['passed'] is True and demo['replayValid'] is True
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 0):
+        assert demo['profile'] == 'balanced' and demo['reportSchemaVersion'] == 2
     assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay', str(portable / demo['outputDirectory'] / 'case.capsule.json')], portable))['valid'] is True
     RECEIPT['github']['downloadedRuntimeChecks'] = ['exact version', 'write-skew diagnosis', 'one-command demo', 'exported capsule replay']
     if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
@@ -207,7 +209,16 @@ test "published semantic report replay" {{
     if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
         runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', tag_sha, '--workflow', 'postgres.yml', '--json', 'databaseId,conclusion,headSha', '--limit', '10']))
         successful = [item for item in runs if item['headSha'] == tag_sha and item['conclusion'] == 'success']
-        assert successful, 'No successful independent PostgreSQL CI for this release commit'
+        repaired = False
+        repair_path = ROOT / 'verification/releases' / VERSION / 'postgres-ci-repair.json'
+        if not successful and repair_path.exists():
+            repair = json.loads(repair_path.read_text(encoding='utf-8'))
+            assert repair['sourceCommit'] == tag_sha
+            candidate = json.loads(run(['gh', 'run', 'view', str(repair['runId']), '--repo', MODULE, '--json', 'conclusion,headSha']))
+            assert candidate['conclusion'] == 'success' and candidate['headSha'] == repair['workflowCommit']
+            successful = [{'databaseId': repair['runId']}]
+            repaired = True
+        assert successful, 'No successful independent PostgreSQL CI for this release source'
         pg_ci = json.loads(run(['gh', 'run', 'view', str(successful[0]['databaseId']), '--repo', MODULE, '--json', 'conclusion,headSha,url']))
         pg_dir = WORK / 'postgres-ci'
         run(['gh', 'run', 'download', str(successful[0]['databaseId']), '--repo', MODULE, '--name', 'actual-postgresql-evidence', '--dir', str(pg_dir)])
@@ -218,6 +229,10 @@ test "published semantic report replay" {{
         assert pg_receipt['roundsPerScenario'] == 20 and len(pg_receipt['cases']) == 2
         assert all(case['rounds'] == 20 and len(case['results']) == 20 for case in pg_receipt['cases'])
         assert pg_receipt['server'].startswith('PostgreSQL 18.') and 'linux' in pg_receipt['server'].lower()
+        attestations = list(pg_dir.rglob('postgres-ci-source.json'))
+        assert len(attestations) == 1
+        source = json.loads(attestations[0].read_text(encoding='utf-8'))
+        assert source['sourceCommit'] == tag_sha and source['workflowCommit'] == pg_ci['headSha']
         cases = {case['isolation']: case for case in pg_receipt['cases']}
         assert all(row['initialConcurrentCommits'] == 2 and row['initialConcurrentAborts'] == 0 and row['finalOnCallCount'] == 0 for row in cases['REPEATABLE READ']['results'])
         assert all(row['initialConcurrentCommits'] == 1 and row['initialConcurrentAborts'] == 1 and row['sqlstates'] == ['40001'] and row['finalOnCallCount'] == 1 for row in cases['SERIALIZABLE']['results'])
@@ -228,7 +243,7 @@ test "published semantic report replay" {{
         assert pg_receipt['oneMinimal'] and pg_receipt['minimalTransactions'] == 2 and pg_receipt['v2CapsulesReplayed'] == 3
         logs = list(pg_dir.rglob('postgres-server.log'))
         assert len(logs) == 1 and logs[0].stat().st_size > 0
-        RECEIPT['github']['postgresCi'] = {**pg_ci, 'actualDatabaseExecution': True, 'roundsPerScenario': 20, 'server': pg_receipt['server'], 'receiptSha256': digest(candidates[0]), 'serverLogSha256': digest(logs[0]), 'oneMinimal': True, 'minimalTransactions': 2, 'v2CapsulesReplayed': 3}
+        RECEIPT['github']['postgresCi'] = {**pg_ci, **source, 'workflowRepair': repaired, 'actualDatabaseExecution': True, 'roundsPerScenario': 20, 'server': pg_receipt['server'], 'receiptSha256': digest(candidates[0]), 'serverLogSha256': digest(logs[0]), 'oneMinimal': True, 'minimalTransactions': 2, 'v2CapsulesReplayed': 3}
         destination = ROOT / 'verification/releases' / VERSION
         destination.mkdir(parents=True, exist_ok=True)
         (destination / 'postgres-linux.json').write_text(json.dumps(pg_receipt, indent=2) + '\n', encoding='utf-8')

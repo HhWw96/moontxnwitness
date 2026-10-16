@@ -164,10 +164,12 @@ export function runCliTests() {
     assert.ifError(demo.error); assert.equal(demo.status, 0, demo.stderr);
     const receipt = JSON.parse(demo.stdout);
     assert.equal(receipt.passed, true); assert.equal(receipt.version, release);
+    assert.equal(receipt.profile, 'balanced'); assert.equal(receipt.reportSchemaVersion, 2);
     assert.equal(receipt.oneMinimal, true); assert.equal(receipt.reducedTransactions, 2);
     assert.equal(receipt.classification, 'realtime-only-violation');
     const directory = resolve(work, receipt.outputDirectory);
     for (const file of receipt.files) assert.ok(existsSync(resolve(directory, file)));
+    assert.equal(JSON.parse(readFileSync(resolve(directory, 'case.capsule.json'), 'utf8')).format, 'moontxnwitness-replay/v2');
     const mini = JSON.parse(readFileSync(resolve(directory, 'mini.json'), 'utf8'));
     assert.equal(analyze(mini).status, 'violation');
     assert.equal(JSON.parse(run(['replay', resolve(directory, 'case.capsule.json')], 0).stdout).valid, true);

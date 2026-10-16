@@ -1,68 +1,61 @@
-# MoonTxnWitness v0.0.11
+# MoonTxnWitness v0.1.0
 
-MoonTxnWitness 是用 **MoonBit** 实现的离线事务历史检查器。它分析带唯一版本的多键点读写日志，解释异常依赖，把冗长日志缩成可复现反例，并比较普通与严格可串行化模型。所有分析在本地完成。
+**用 MoonBit 把事务并发日志变成可解释、可缩减、可回放的反例。** 面向数据库与后端开发者，连接真实采集、异常解释、反例缩减、证据复现和修复回归。分析在本地完成。
 
-v0.0.11 增加真实 PostgreSQL 18 双连接采集：20 轮 RR 写偏斜与 20 轮 Serializable 回滚/全新重试对照，完整串联分析、2 事务缩减与三个 v2 复现包回放。便携包可运行 `node dist/postgres-demo.mjs`，依赖与实际执行方法见 [PostgreSQL 说明](docs/postgres-capture.md)。缺少数据库时明确记录未执行。
+English: An offline MoonBit transaction-history checker with shortest cycle witnesses, bounded serial completion, transaction reduction and reproducible database examples.
 
-v0.0.10 增加 `shrink --profile balanced` / `shrinkWithOptions`，可将 512 事务日志缩成经过验证的反例，并明确是否完成单删检查。高级输入解析和完整结果输出同时优化，原始输入事实与旧入口保留。
-
-v0.0.9 新增显式 `--profile balanced` / `analyzeWithOptions`：最多 12 个已提交事务的有界补全、回滚状态和失败缓存，以及预算可复核的 v2 证据。旧入口继续保留原有行为。详见 [高级分析与证据约定](docs/balanced-profile.md)。
-
-后续性能与真实数据库迭代见 [路线与测量协议](docs/ROADMAP.md)。v0.0.8 使用结构化依赖去重、整数图索引、可复用 BFS 缓冲区和流式完整报告；保留 v1 判断、边来源和原有搜索预算。完整测量保存在 `verification/releases/`，烟雾检查不视为性能达标。
-
-English: An offline MoonBit transaction-history checker with shortest cycle witnesses, bounded serial completion, transaction reduction and self-contained replay.
-
-公开入口：[GitHub 源码](https://github.com/HhWw96/moontxnwitness)、[v0.0.11 下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.0.11)、[Mooncakes 库](https://mooncakes.io/docs/HhWw96/moontxnwitness)。公开发布的验证记录在 `verification/publication.json`。
-
-每版公开发布后，分别核对两个 ZIP 的匿名下载与 SHA-256、Mooncakes 上传/下载字节，并在全新独立项目安装测试。对应版本的实际结果保存在 `verification/releases/VERSION/publication.json`；构建与本地检查不等于公开发布完成。
+[源码](https://github.com/HhWw96/moontxnwitness) · [v0.1.0 下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.1.0) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [一页项目说明](docs/project-brief.md)
 
 ## 先运行完整演示
 
-运行包需要 **Node.js 20 或更新版本**，本次实测为 24.13.0。解压 portable ZIP，在解压目录运行：
+下载 portable ZIP，解压后运行。需要 **Node.js ≥20**，本机验证使用 24.13.0：
 
 ```powershell
 node dist/moontxnwitness.mjs --version
 node dist/demo.mjs
 ```
 
-Windows 也可双击 `run-demo.cmd`。演示自动创建新的 `moontxnwitness-demo-*` 目录，导出中文报告、7→2 事务缩减结果、模型对比和通过复核的复现包。先打开其中的 `report.md`。每次运行创建新目录，已有文件不会被覆盖。
+Windows 也可双击 `run-demo.cmd`。演示使用推荐的 `balanced` 入口，在新的 `moontxnwitness-demo-*` 目录保存中文报告、7→2 事务缩减、模型对照和 schema-2 复现包。先打开 `report.md`。演示使用合成案例；真实数据库流程见下文。
 
-演示使用合成异常；实际 SQLite 并发采集另见下文。
-
-## 五轮迭代完成的能力
-
-| 版本 | 核心改进 | 能解决的问题 |
-| --- | --- | --- |
-| 0.0.2 | 有预算的精确串行重放搜索 | 小日志缺少写入版本顺序时，寻找可行执行或证明穷举无解 |
-| 0.0.3 | 按事务缩减反例 | 删除无关事务，保留确定异常；明确是否完成单事务删除检查 |
-| 0.0.4 | 自包含复现包、语义回放、模型对比 | 复现环、直接读写异常和无环的穷举失败；区分实时先后导致的异常 |
-| 0.0.5 | 真实双线程 SQLite WAL 采集 | 记录实际提交、忙冲突回滚和新事务重试；从事务内审计表采集版本顺序 |
-| 0.0.6 | 强连通分量定位、版本来源与逐键诊断 | 先排除无环区域；区分采集事实和搜索补全，提示下一步需要采集什么 |
-
-初版 0.0.1 的 MoonBit 库、CLI、JavaScript SDK、WR/WW/RW/RT 依赖、最短异常环及独立环复核均保留。区别与检索范围见 [独特性说明](docs/UNIQUENESS.md)。
-
-## 检查、缩减和复现
-
-以下命令创建新文件；若目标已存在会拒绝覆盖。
+## 检查、缩减、复现
 
 ```powershell
-node dist/moontxnwitness.mjs check examples/write-skew.json
-node dist/moontxnwitness.mjs check examples/unknown-order.json --format json
-node dist/moontxnwitness.mjs check examples/fractured-observation.json --format markdown
-node dist/moontxnwitness.mjs shrink examples/noisy-write-skew.json --output reduction.json --history mini.json
-node dist/moontxnwitness.mjs check mini.json --format markdown --output report.md --witness witness.json --capsule case.capsule.json
-node dist/moontxnwitness.mjs verify mini.json witness.json
+node dist/moontxnwitness.mjs check examples/write-skew.json --profile balanced
+node dist/moontxnwitness.mjs check examples/fractured-observation.json --profile balanced --format json
+node dist/moontxnwitness.mjs shrink examples/noisy-write-skew.json --profile balanced --output reduction.json --history mini.json
+node dist/moontxnwitness.mjs check mini.json --profile balanced --format markdown --output report.md --capsule case.capsule.json
 node dist/moontxnwitness.mjs replay case.capsule.json
 node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ```
 
-`check` 支持 `text`、`json`、`markdown`、`dot`。异常示例返回 **1** 是预期结果；成功复核返回 **0**。`--witness` 只导出依赖环。没有环的直接异常、穷举无解也可使用 `--capsule` 复现。
+导出拒绝覆盖已有文件。`check` 支持 text/json/markdown/dot；异常返回 **1** 是预期结果。
 
-`verify` 重新推导边并检查环闭合，不重跑最短环搜索。`replay` 检查包内文本的 SHA-256，并重算核心判断；保留历史 schema 1，支持高级入口的 schema 2。哈希不能认证采集者身份，运行计数与判断证据分开保存。详见 [高级证据约定](docs/balanced-profile.md)。
+| 状态 | 退出码 | 含义 |
+| --- | --- | --- |
+| consistent | 0 | 当前模型与约束内有可行串行执行，无未解决缺失 |
+| violation | 1 | 有直接读写异常、依赖环或完整搜索无解 |
+| invalid | 2 | 输入或约束不合法 |
+| inconclusive | 3 | 缺少观察或计算预算不足 |
 
-## 输入与模型
+`complete` 不认证采集真实性或采集窗口完整。`oneMinimal` 只表示当前分析规则与预算下，删除任何一个剩余事务都不能保留确定异常；它不表示全局最少事务或最少操作。
 
-每次写入必须有同键唯一的版本标记。业务值相同的两次写入也必须使用不同版本，例如 `x:T1:1`、`x:T2:1`。日志记录已完成操作的真实观察，不能把业务值当成写入身份。
+## 真实 PostgreSQL 18 闭环
+
+按照 [PostgreSQL 采集说明](docs/postgres-capture.md) 安装可选 Python 驱动、配置测试数据库，然后运行：
+
+```powershell
+node dist/postgres-demo.mjs
+```
+
+同一入口连续执行 **20 轮 Repeatable Read 写偏斜**和 **20 轮 Serializable 回滚/全新事务重试对照**，分析两份真实历史，把异常缩成两事务，并回放三个 v2 复现包。保存 SQL 结果、提交确认、40001 回滚、JSONL 日志和摘要。两连接先点读，再经同步屏障写入；不从自增序号或线程返回时间推断提交顺序。
+
+缺少 Python、驱动或连接配置时明确返回 `not-executed`、`passed:false` 和退出码 3；实际运行失败保留失败记录。每次只创建和清理自己的随机测试 schema，输出放在新目录。源码另有临时实例辅助入口和独立 Linux PostgreSQL CI。
+
+[SQLite 顺序与真实 WAL 并发案例](docs/sqlite-capture.md)使用 Python 标准库。这些实验检查所捕获的执行，不认证整个数据库，也不将隔离级别允许的现象称作漏洞。
+
+## 输入与判断依据
+
+每次同键写入必须有唯一版本身份；业务值相同的两次写入也使用不同标记。
 
 ```json
 {
@@ -70,11 +63,11 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
   "model": "serializable",
   "initial": {"x": "x0", "y": "y0"},
   "transactions": [
-    {"id": "T1", "status": "committed", "ops": [
+    {"id": "A", "status": "committed", "ops": [
       {"type": "read", "key": "x", "version": "x0"},
       {"type": "write", "key": "y", "version": "y1"}
     ]},
-    {"id": "T2", "status": "committed", "ops": [
+    {"id": "B", "status": "committed", "ops": [
       {"type": "read", "key": "y", "version": "y0"},
       {"type": "write", "key": "x", "version": "x1"}
     ]}
@@ -82,82 +75,68 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 }
 ```
 
-该日志要求 T1 在 T2 之前、T2 又在 T1 之前，形成两事务写偏斜反例。
+这份日志要求 A 在 B 前、B 又在 A 前，形成两事务环。报告保留依赖的键、操作下标、版本和来源，并寻找图中全局最短的有向环。
 
-- `serializable`：寻找满足读取观察及输入版本约束的整个事务串行执行。
-- `strict-serializable`：再尊重共同观察时钟中明确先完成、后开始的事务次序。
-- 每个键须声明 `initial`；每个事务须声明 `committed`、`aborted` 或 `unknown`。
-- `versionOrders` 是可选的、来自采集的同键最终写入顺序。工具不会从版本名字、数组位置或结束时间猜测写入顺序。
-- 多写者键没有顺序时，仅在没有其他信息缺失的小日志中执行精确搜索。`searched` 顺序证明存在一个可能执行，**不是观测到的数据库顺序**。
+- `serializable` 检查整个事务的串行执行；`strict-serializable` 再尊重共同单调观察时钟中明确先完成、后开始的约束。
+- 事务状态为 committed/aborted/unknown；缺少结果、来源或共同时间时明确指出。
+- `versionOrders` 是可选的采集事实。缺少多写者顺序时，只在其余观察充分且规模允许时搜索补全。
+- `searched` 只证明某个可能执行成立，不能变成已观察到的数据库顺序。缩减只裁剪原始声明。
 
-输入约定、共同时间要求和完整示例见 [输入格式](docs/input-format.md) 与 [JSON Schema](docs/history.schema.json)。
+详见 [输入格式](docs/input-format.md)、[JSON Schema](docs/history.schema.json)、[算法设计](docs/design.md) 和 [独特性范围](docs/UNIQUENESS.md)。范围/谓词查询、自动 SQL 插桩、append/list 模型及完整隔离级别分类尚未实现。
 
-## 看懂结果与边界
+## API 与预算约定
 
-| 状态 | check 退出码 | 含义 |
-| --- | --- | --- |
-| `consistent` | 0 | 当前模型及约束内存在可行串行执行，输入没有未解决的缺失 |
-| `violation` | 1 | 有确定读写异常、依赖环或完整搜索无解 |
-| `invalid` | 2 | 输入或约束不合法 |
-| `inconclusive` | 3 | 缺少必要信息，或预算不足以作出结论 |
-
-报告保留操作下标、依赖来源、逐键读写覆盖、版本顺序来源及下一步采集提示。已有确定异常可以与其他缺失共存，此时 `complete: false`；`complete` 不认证日志真实或采集窗口完整。
-
-范围为唯一版本点读写寄存器；支持外部中间版本、回滚版本、自身读写顺序等直接异常。尚不支持范围查询、谓词冲突、append/list 模型、自动 SQL 插桩、Jepsen 日志直接导入或完整隔离级别分类。分析一个历史不能认证整个数据库。
-
-共同输入预算：512 事务、10,000 操作、50,000 依赖；历史最多 2 MiB UTF-8，核心解析最多 1,048,576 UTF-16 单元，JSON 深度 64。旧入口搜索限 8 个已提交事务，缩减限 64 事务、2,048 操作和 128 次检查。`balanced` 搜索限 12 个已提交事务、512 操作、128 初始键、100,000 候选前缀、1,000,000 操作检查和 50,000 项失败缓存；缩减限 512 事务、10,000 操作和 256 次候选检查。`oneMinimal` 不表示全局最少事务，也不最小化操作。
-
-## 真实 SQLite 采集
-
-需要 Python 3.11 或更新版本，使用标准库，无需额外安装：
-
-```powershell
-python examples/capture_sqlite.py sqlite-history.json
-node dist/moontxnwitness.mjs check sqlite-history.json
-python examples/capture_sqlite_concurrent.py sqlite-concurrent.json --rounds 3
-node dist/moontxnwitness.mjs compare-models sqlite-concurrent.json
-```
-
-顺序基线实际执行 3 个事务。并发采集让两个独立连接先读同一快照，再竞争写入，记录实际忙冲突和回滚，随后以新事务重试。版本顺序来自与数据写入一同提交的审计表，而非线程返回顺序。详见 [SQLite 采集说明](docs/sqlite-capture.md)。本轮实际负载符合两种模型；合成异常不声称是 SQLite 漏洞。
-
-## 程序接入
+保留 `analyze`、`reduce_history`、JS `analyze`/`shrink` 和 CLI 默认行为。推荐显式使用高级入口：
 
 ```javascript
-import { analyze, shrink, compareModels, replayReport, verify, version } from './dist/sdk.mjs';
-const report = analyze(historyObject); // 也接受原始 JSON 文本
-console.log(version(), report.status, report.serialOrder);
-const comparison = compareModels(historyObject);
-if (report.witness) console.log(verify(historyObject, report));
-console.log(replayReport(historyObject, report));
+import {analyzeWithOptions, shrinkWithOptions, replayReport} from './dist/sdk.mjs';
+const report = analyzeWithOptions(history, {
+  maxAttempts: 100000, maxOperationChecks: 1000000, maxCachedStates: 50000
+});
+console.log(report.status, report.search, report.metrics);
+const reduced = shrinkWithOptions(history, {maxChecks: 256});
+console.log(reduced.oneMinimal, replayReport(reduced.reducedHistory, reduced.report));
 ```
 
-SDK 的分析接口可用于 JavaScript/浏览器，不依赖 Node 文件或密码模块；文件读写与 SHA-256 封装由 Node CLI 执行。
-
-MoonBit 公共接口包括 `parse_history`、`analyze`、`reduce_history`、`compare_models`、`verify_cycle`、`replay_report_json`、`history_json` 和报告渲染，类型见 `src/pkg.generated.mbti`。正式模块名为 `HhWw96/moontxnwitness`：
+MoonBit 使用 `analysis_options` / `analyze_with_options` / `analysis_result_json` 和 `reduction_options` / `reduce_with_options` / `reduction_result_json`。类型见 `src/pkg.generated.mbti`。
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.0.11
+moon add HhWw96/moontxnwitness@0.1.0
 ```
 
-在调用包的 `moon.pkg` 中导入 `"HhWw96/moontxnwitness" @txn`。例如 `@txn.analyze_json(historyText)` 返回结构化结果；原始模型与预算约束同样适用。
+| 范围 | 默认兼容入口 | balanced 入口 |
+| --- | --- | --- |
+| 图分析 | 512 事务 / 10,000 操作 / 50,000 依赖 | 相同 |
+| 完整串行补全 | 8 个已提交事务 | 12 个已提交事务 |
+| 补全操作 / 初始键 | 512 / 128 | 相同 |
+| 候选前缀 / 操作检查 | 100,000 / 1,000,000 | 相同，可调低 |
+| 失败状态缓存 | 无 | 最多 50,000 项，可关闭 |
+| 缩减 | 64 事务 / 2,048 操作 / 128 次检查 | 512 事务 / 10,000 操作 / 256 次检查 |
 
-## 构建与验证
+核心 JSON 限 1,048,576 UTF-16 单元，CLI 历史限 2 MiB UTF-8，深度 64。缓存满后停止新增缓存；预算耗尽不会被当作穷举无解。
 
-验证工具链：Moon 0.1.20260920、moonc v0.10.14+7d59c7ec9、Node 24.13.0、Python 3.12.5。源码构建需安装 MoonBit，并设置好 `MOON_HOME` 或运行路径。
+v2 记录算法、模型、有效预算和版本来源，把运行计数与判断证据分开；v1 保留原搜索顺序、预算和计数比较规则。回放重算语义，SHA-256 仅保证完整性，不认证采集者。`verify` 使用 schema-1 紧凑环证书；完整 v2 报告使用 `replayReport` 或 CLI `replay`。详见 [高级分析与证据](docs/balanced-profile.md)。
+
+## 构建与可重复验收
+
+源码需要 MoonBit、Node 和 Python，无需 npm install。工具链见 [开发说明](docs/development.md)。
 
 ```powershell
-node scripts/build.mjs
+npm run build
 npm test
-npm run demo
+npm run benchmark
+npm run postgres:verify
 npm run package
 ```
 
-没有外部 npm 或 Mooncakes 依赖，无需 `npm install`。核心分析、搜索、缩减、语义复核及报告使用 MoonBit，Node 负责本地文件、哈希和命令行。
+`benchmark` 自动重建，缺少基线时下载并核对公开 v0.0.6 核心的固定摘要。完整报告与完整报告比较：每场景预热 5 次、测量 30 次、分 3 批交替复测；独立进程记录峰值 RSS、冷启动、P95 和输出大小。固定输入、原始样本和失败记录均保留。`--quick` 只作烟雾检查。详见 [路线与协议](docs/ROADMAP.md) 和 [性能报告](docs/performance.md)。
 
-验证包含每个 JS / Wasm GC / Wasm 目标 **71 项核心测试**、**10,320 份独立串行重放核对**、6,373 份环证据及最短性核对和 **69 项命令行检查**，包括实际 SQLite 并发执行。Windows 本地 Native 仅完成类型检查；公开 Linux CI 另执行 Native 核心测试并通过。运行包仍交付 JavaScript 核心，不包含原生可执行文件。
+v0.0.10 的完整负载组相对 v0.0.6：图分析 2.67 倍、搜索 5.02 倍、缩减 2.18 倍，图分析峰值内存下降约 30.3%。这是工程测量，不是官方评分权重；当前冻结版本的结果见性能报告。
 
-记录见 [验证汇总](verification/summary.json)、[独立 oracle](verification/oracle.json)、[命令行](verification/cli.json)、[五轮迭代](verification/iterations.json)。新版示例报告见 [缩减后的中文报告](verification/v0.0.6-write-skew.md)，同目录有配套 mini、witness、capsule 和模型对比。未加版本前缀的 write-skew 报告/证据保留为初版兼容性样本。干净目录重建及运行包验证见 [开发与交付](docs/development.md)。本地端到端性能数据见 `verification/benchmark.json`，不作普遍加速保证。
+验证保留每后端 94 项核心测试、10,320 份独立串行重放、6,373 份环证据、2,542 份解析差分和独立缩减检查。Windows/Linux CI 检查便携交付；Linux 另执行 Native 和独立 PostgreSQL 流程。每版实际 CI、公开下载、摘要、Mooncakes 字节和全新注册表安装结果见 `verification/releases/VERSION/publication.json`。
 
-## 许可证与交付状态
+## 开源与参赛状态
 
-采用 [Apache-2.0](LICENSE)，参考与 AI 辅助开发说明见 [THIRD_PARTY.md](THIRD_PARTY.md)。v0.0.6 提供源码与运行 ZIP，保留初版。发布不等于比赛提交或组织方接受；不能保证获奖。
+Apache-2.0；依赖、概念来源、AI 使用与复核方式见 [THIRD_PARTY.md](THIRD_PARTY.md)。分析算法全部使用 MoonBit；JS 处理文件与传输，Python 可选采集数据库，JS 后端有一个字符串片段拼接原语。
+
+v0.0.7–v0.0.11 的实质提交、变更、失败尝试和发布记录保留。参赛者本人仍须完成 [安装与解释验收](docs/human-acceptance.md)，并独立确认报名、入群及组织方回执。公开发布或自动检查通过不表示官方接受或获奖。

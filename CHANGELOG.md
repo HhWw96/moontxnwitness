@@ -1,3 +1,11 @@
+# 0.1.0
+
+- Repair PostgreSQL CI port-context placement; preserve its failed first run and attest the original v0.0.11 source independently from the repaired workflow commit.
+- Freeze the documented v2 analysis/replay and effective-budget contract; recommend balanced entry points while preserving legacy defaults.
+- Make the portable one-command demonstration exercise balanced analysis, reduction and schema-2 replay.
+- Include fixed benchmark inputs, automatic pinned public v0.0.6 baseline preparation, complete performance comparisons and current verification instructions.
+- Deliver actual PostgreSQL anomaly/fix evidence, an explainable project brief, AI provenance and a separate human acceptance checklist.
+
 # 0.0.11
 
 - Capture actual PostgreSQL 18 point-read/write transactions through two independent connections and a bounded synchronization barrier.

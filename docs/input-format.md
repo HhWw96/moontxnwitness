@@ -1,5 +1,7 @@
 # 历史格式 v1
 
+历史输入格式保持兼容；文中 8 事务搜索预算属于旧入口，balanced 补全为 12 个已提交事务，见 [高级约定](balanced-profile.md)。
+
 根对象只接受 `schemaVersion`、`name`、`model`、`initial`、`versionOrders`、`transactions`。未知字段、重复 JSON 键（包括转义后相同的键）、不合法 JSON 会被拒绝。`schemaVersion` 默认 1，`model` 默认 `serializable`，`name` 是可选描述，不参与分析。
 
 ## 版本和操作

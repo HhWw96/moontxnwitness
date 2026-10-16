@@ -2,8 +2,8 @@
 import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyze, shrink, compareModels, version } from './sdk.mjs';
-import { run_json } from './core.mjs';
+import { analyzeWithOptions as analyze, shrinkWithOptions as shrink, compareModels, version } from './sdk.mjs';
+import { run_options_json } from './core.mjs';
 import { makeCapsule, replayCapsule } from './evidence.mjs';
 
 try {
@@ -18,7 +18,7 @@ try {
   const models = compareModels(fixture('strict-realtime'));
   if (cycle.status !== 'violation' || cycle.witness?.edges.length !== 2 || completion.status !== 'consistent' || impossible.status !== 'violation' || reduction.status !== 'reduced' || !reduction.oneMinimal || reduction.reducedHistory.transactions.length !== 2 || models.classification !== 'realtime-only-violation') throw new Error('演示结果与示例预期不符');
   const miniText = JSON.stringify(reduction.reducedHistory, null, 2) + '\n';
-  const rendered = JSON.parse(run_json(miniText, 'markdown'));
+  const rendered = JSON.parse(run_options_json(miniText, 'markdown'));
   const capsule = makeCapsule(miniText, rendered.report);
   const replay = replayCapsule(capsule);
   if (!replay.valid) throw new Error('演示复现包未通过复核');
@@ -34,7 +34,7 @@ try {
     ['replay.json', JSON.stringify(replay, null, 2) + '\n'],
   ]);
   for (const [name, text] of artifacts) writeFileSync(resolve(directory, name), text, { encoding: 'utf8', flag: 'wx' });
-  const receipt = { tool: 'MoonTxnWitness', version: version(), passed: true, outputDirectory: basename(directory), files: [...artifacts.keys()], cycleTransactions: cycle.witness.transactions, completion: completion.status, impossibleCompletion: impossible.status, reducedTransactions: 2, oneMinimal: reduction.oneMinimal, classification: models.classification, replayValid: replay.valid, examples: 'synthetic histories; not a reproduced database vulnerability' };
+  const receipt = { tool: 'MoonTxnWitness', version: version(), passed: true, profile: 'balanced', reportSchemaVersion: 2, outputDirectory: basename(directory), files: [...artifacts.keys()], cycleTransactions: cycle.witness.transactions, completion: completion.status, impossibleCompletion: impossible.status, reducedTransactions: 2, oneMinimal: reduction.oneMinimal, classification: models.classification, replayValid: replay.valid, examples: 'synthetic histories; not a reproduced database vulnerability' };
   writeFileSync(resolve(directory, 'demo.json'), JSON.stringify(receipt, null, 2) + '\n', { encoding: 'utf8', flag: 'wx' });
   if (args[0] === '--json') console.log(JSON.stringify(receipt));
   else console.log(`MoonTxnWitness v${version()} 演示完成\n1. 写偏斜：找到两事务异常环。\n2. 缺少版本顺序：搜索可行执行，并识别无解的混合观察。\n3. 日志缩减：7 个事务缩成 2 个，单事务删除检查通过。\n4. 模型对比：定位由实时先后约束造成的严格模型异常。\n5. 自包含复现包：摘要和核心判断复核通过。\n报告与证据已保存到 ${receipt.outputDirectory}，先打开 report.md 查看。\n这些异常均为合成示例。实际 SQLite 并发采集方法见 docs/sqlite-capture.md。`);

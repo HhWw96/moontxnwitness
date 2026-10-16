@@ -1,5 +1,10 @@
 # Balanced analysis and v2 evidence
 
+The v0.1.0 contract freezes these option maxima, schema-2 semantic comparisons,
+and `bounded-register-v2.1` algorithm identity. Legacy entry points remain
+available; balanced is the recommended explicit entry point and portable demo.
+Future report versions remain rejected until their compatibility is implemented.
+
 The default `analyze` / `analyze_json`, CLI `check`, and `shrink` keep the original
 8-transaction completion / 64-transaction reduction behavior. Use an explicit
 advanced entry point when its larger, bounded search is useful:

@@ -135,6 +135,8 @@ for kind in ("portable", "source"):
     checks.append(kind + " model comparison")
     demo = json.loads(run([NODE, "dist/demo.mjs", "--json"], consumer))
     assert demo["passed"] is True and demo["replayValid"] is True and demo["version"] == VERSION
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 0):
+        assert demo['profile'] == 'balanced' and demo['reportSchemaVersion'] == 2
     assert all((consumer / demo["outputDirectory"] / name).is_file() for name in demo["files"])
     checks.append(kind + " one-command demo and artifacts")
     sdk = run([NODE, "--input-type=module", "-e", "import {analyze,version,shrink,compareModels,replayReport} from './dist/sdk.mjs'; import {readFileSync} from 'node:fs'; const h=readFileSync('examples/consistent.json','utf8'); const r=analyze(h); console.log(JSON.stringify({version:version(),status:r.status,replay:replayReport(h,r).valid,oneMinimal:shrink(readFileSync('examples/noisy-write-skew.json','utf8')).oneMinimal,models:compareModels(readFileSync('examples/strict-realtime.json','utf8')).classification}));"], consumer)

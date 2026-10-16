@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdirSync, writeFileSync, readFileSync, copyFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, copyFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { cpus, platform, release, arch } from 'node:os';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fixtures } from './benchmark-fixtures.mjs';
 import { root } from './moon.mjs';
 import { sourceFingerprint } from './build-fingerprint.mjs';
 const args=process.argv.slice(2);
-let baseline=resolve(root,'artifacts/baseline-v0.0.6/core.mjs'),quick=false,profile='compat',label='performance',group='all';
+let baseline=resolve(root,'artifacts/baseline-v0.0.6/core.mjs'),quick=false,profile='balanced',label='performance',group='all';
 for(let i=0;i<args.length;i++){
   if(args[i]==='--baseline')baseline=resolve(args[++i]);
   else if(args[i]==='--quick')quick=true;
@@ -17,16 +17,22 @@ for(let i=0;i<args.length;i++){
   else if(args[i]==='--group')group=args[++i];
   else throw Error('Usage: performance [--baseline core.mjs] [--quick] [--profile compat|balanced] [--label NAME]');
 }
+if(!existsSync(baseline)){const prepared=spawnSync(process.env.PYTHON||(process.platform==='win32'?'python':'python3'),[resolve(root,'scripts/performance-baseline.py'),'--destination',baseline],{stdio:'inherit',windowsHide:true});assert.ifError(prepared.error);assert.equal(prepared.status,0,'Cannot fetch the pinned public v0.0.6 baseline');}
 assert.ok(['compat','balanced'].includes(profile));assert.match(label,/^[a-zA-Z0-9-]+$/);
 assert.ok(['all','graph','search','reduction','control'].includes(group));
 const version=JSON.parse(readFileSync(resolve(root,'package.json'),'utf8')).version;
+assert.equal(createHash('sha256').update(readFileSync(baseline)).digest('hex'),'0f568f483ef2f88b11aab6ac3ee63c7e8fbdb946aefcd2a1d7da583d6bc0aa9d','Use the pinned public v0.0.6 core for this frozen comparison');
 const manifest=JSON.parse(readFileSync(resolve(root,'dist/build-manifest.json'),'utf8'));
 assert.equal(manifest.sourceSha256,sourceFingerprint(root),'Compiled core is stale; complete a successful build first');
 assert.equal(manifest.coreSha256,createHash('sha256').update(readFileSync(resolve(root,'dist/core.mjs'))).digest('hex'));
 const work=resolve(root,`artifacts/bench-${version}-${label}-${Date.now()}`);mkdirSync(work,{recursive:true});
 copyFileSync(resolve(root,'dist/core.mjs'),resolve(work,'current.mjs'));copyFileSync(baseline,resolve(work,'baseline.mjs'));
 const hash=text=>createHash('sha256').update(text).digest('hex');
-const cases=fixtures().filter(c=>group==='all'||c.group===group);for(const c of cases)writeFileSync(resolve(work,c.name+'.json'),JSON.stringify(c));
+const cases=fixtures().filter(c=>group==='all'||c.group===group);for(const c of cases){
+  const frozen=resolve(root,'verification/fixtures/v006-comparison',c.name+'.json');
+  if(existsSync(frozen))assert.deepEqual(c,JSON.parse(readFileSync(frozen,'utf8')),'Frozen benchmark input changed');
+  writeFileSync(resolve(work,c.name+'.json'),JSON.stringify(c));
+}
 function run(engine,c,phase='full'){
   return new Promise((done,reject)=>{
     const child=spawn(process.execPath,[resolve(root,'scripts/benchmark-worker.mjs'),resolve(work,engine+'.mjs'),resolve(work,c.name+'.json'),phase,quick?'1':'5',quick?'3':'30',engine==='current'?profile:'compat'],{stdio:['ignore','pipe','pipe']});
@@ -42,7 +48,7 @@ const median=a=>[...a].sort((x,y)=>x-y)[Math.floor(a.length/2)];
 for(const c of cases){
   const observations={current:[],baseline:[]};let semantic=null;
   for(let batch=0;batch<(quick?1:3);batch++)for(const engine of batch%2?['baseline','current']:['current','baseline']){
-    const row=await run(engine,c);const stable=row.semantic;delete row.semantic;
+    const row=await run(engine,c);assert.equal(row.version,engine==='current'?version:'0.0.6');const stable=row.semantic;delete row.semantic;
     if(!semantic)semantic=stable;else assert.deepEqual(stable,semantic,`Semantic disagreement: ${c.name}`);
     observations[engine].push(row);
   }
@@ -64,4 +70,5 @@ receipt.groups=Object.fromEntries([...new Set(cases.map(c=>c.group))].map(group=
 receipt.passed=true;receipt.workloadScope=group;receipt.performanceTargetsMet=group==='all'&&!quick&&Object.values(receipt.groups).every(g=>g.targetMet);
 mkdirSync(resolve(root,'verification/releases',version),{recursive:true});
 writeFileSync(resolve(root,'verification/releases',version,label+'.json'),JSON.stringify(receipt,null,2)+'\n');
+writeFileSync(resolve(root,'verification/releases',version,label+'-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json'),JSON.stringify(receipt,null,2)+'\n');
 console.log(JSON.stringify({correctnessPassed:receipt.passed,performanceTargetsMet:receipt.performanceTargetsMet,groups:receipt.groups}));
