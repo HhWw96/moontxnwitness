@@ -42,12 +42,12 @@ def archive(files, path):
     return {"file": path.name, "bytes": path.stat().st_size, "sha256": sha256(path), "files": len(files)}
 
 
-excluded_dirs = {".git", "_build", ".mooncakes", "node_modules", "artifacts", "dist", "__pycache__"}
+excluded_dirs = {".git", "_build", ".mooncakes", "node_modules", "artifacts", "dist", "__pycache__", ".venv-pg"}
 excluded_names = {".local-toolchain.json", ".DS_Store"}
 source = []
 for item in ROOT.rglob("*"):
     relative = item.relative_to(ROOT)
-    if not item.is_file() or any(part in excluded_dirs or part.startswith('moontxnwitness-demo-') for part in relative.parts) or item.name in excluded_names:
+    if not item.is_file() or any(part in excluded_dirs or part.startswith(('moontxnwitness-demo-', 'moontxnwitness-postgres-')) for part in relative.parts) or item.name in excluded_names:
         continue
     if item.suffix in {".log", ".pyc"} or relative.as_posix() == "verification/package.json":
         continue
@@ -140,6 +140,22 @@ for kind in ("portable", "source"):
     sdk = run([NODE, "--input-type=module", "-e", "import {analyze,version,shrink,compareModels,replayReport} from './dist/sdk.mjs'; import {readFileSync} from 'node:fs'; const h=readFileSync('examples/consistent.json','utf8'); const r=analyze(h); console.log(JSON.stringify({version:version(),status:r.status,replay:replayReport(h,r).valid,oneMinimal:shrink(readFileSync('examples/noisy-write-skew.json','utf8')).oneMinimal,models:compareModels(readFileSync('examples/strict-realtime.json','utf8')).classification}));"], consumer)
     assert json.loads(sdk) == {"version": VERSION, "status": "consistent", "replay": True, "oneMinimal": True, "models": "realtime-only-violation"}
     checks.append(kind + " SDK import")
+    if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
+        old_python = env.get('MTW_PYTHON')
+        try:
+            env['MTW_PYTHON'] = str(work / 'absent-python')
+            skipped = json.loads(run([NODE, 'dist/postgres-demo.mjs'], consumer, 3))
+            assert skipped['status'] == 'not-executed' and not skipped['passed'] and not skipped['actualDatabaseExecution']
+            checks.append(kind + ' optional PostgreSQL missing prerequisite is not executed')
+        finally:
+            if old_python is None:
+                env.pop('MTW_PYTHON', None)
+            else:
+                env['MTW_PYTHON'] = old_python
+        for case in ('rr', 'serial', 'mini'):
+            capsule = 'verification/releases/' + VERSION + '/postgres/' + case + '.capsule.json'
+            assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay', capsule], consumer))['valid']
+            checks.append(kind + ' actual PostgreSQL bundled ' + case + ' capsule replay')
 
 receipt = {"tool": "MoonTxnWitness", "version": VERSION, "passed": True, "archives": archives, "freshConsumerChecks": len(checks), "checks": checks, "sourceRebuilt": True, "portableRequires": "Node.js >=20 (tested with current installed Node)", "node": run([NODE, "--version"], ROOT).strip(), "nativeExecutableIncluded": False, "publiclyPublished": False}
 (ROOT / "verification/package.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

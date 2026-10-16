@@ -79,3 +79,14 @@ RT ordered pairs are unique by validated transaction IDs and no longer allocate
 redundant hash-set entries. SCC, shortest cycle and topological order share one
 immutable integer adjacency. Unchanged initial-only reads skip unnecessary local
 maps, while all transactions remain in graph and RT accounting.
+
+## v0.0.11 actual-database acceptance
+
+The local PostgreSQL 18 suite completed 20 RR rounds and 20 Serializable
+server-abort/fresh-retry rounds, including a second run on a newly initialized
+cluster with a clean hash-verified optional driver. Both histories, 100 observed
+transactions, SQL events, two-transaction reduction and three v2 capsules were
+checked. The owned temporary cluster was stopped afterward. Independent Linux
+PostgreSQL CI is a required separate public release check. The analyzer algorithms
+are unchanged from v0.0.10; this version includes a smoke-only benchmark and
+references the accepted v0.0.10 full protocol rather than claiming a new full run.

@@ -46,16 +46,18 @@ def publish():
     assets = [str(ROOT / ('artifacts/MoonTxnWitness-v' + VERSION + suffix)) for suffix in ('-source.zip', '-portable.zip', '-SHA256SUMS.txt')]
     run(['gh', 'release', 'create', tag, '--repo', MODULE, '--target', sha, '--title', 'MoonTxnWitness ' + tag, '--notes-file', str(notes), *assets])
     print('Public GitHub Release created: ' + tag, flush=True)
-    deadline = time.monotonic() + 1800
-    while time.monotonic() < deadline:
-        runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', sha, '--workflow', 'ci.yml', '--json', 'databaseId,status,conclusion', '--limit', '10']))
-        if any(r['conclusion'] == 'success' for r in runs):
-            break
-        if runs and all(r['status'] == 'completed' for r in runs):
-            raise RuntimeError('Public CI failed; preserve this release and repair with a new commit')
-        time.sleep(15)
-    else:
-        raise TimeoutError('CI did not finish within the observation window')
+    workflows = ['ci.yml'] + (['postgres.yml'] if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11) else [])
+    for workflow in workflows:
+        deadline = time.monotonic() + 1800
+        while time.monotonic() < deadline:
+            runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', sha, '--workflow', workflow, '--json', 'databaseId,status,conclusion', '--limit', '10']))
+            if any(r['conclusion'] == 'success' for r in runs):
+                break
+            if runs and all(r['status'] == 'completed' for r in runs):
+                raise RuntimeError('Public CI failed: ' + workflow + '; preserve the failed run and repair')
+            time.sleep(15)
+        else:
+            raise TimeoutError('CI did not finish within the observation window: ' + workflow)
     run([sys.executable, 'scripts/verify_publication.py', VERSION], timeout=900, capture=False)
     print('Public download, exact-commit CI and registry-only consumers passed: ' + tag, flush=True)
 

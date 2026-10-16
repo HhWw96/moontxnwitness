@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "tool": "MoonTxnWitness",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "status": "consistent",
   "model": "strict-serializable",
   "scope": "versioned point-read/write registers; supplied history and asserted version orders",
@@ -10,112 +10,112 @@
     "transactions": 6,
     "committed": 4,
     "operations": 10,
-    "dependencies": 11
+    "dependencies": 13
   },
   "findings": [],
   "edges": [
     {
-      "from": "r0-B-retry",
-      "to": "r1-B",
+      "from": "r0-B",
+      "to": "r1-B-retry",
       "kind": "ww",
       "key": "x",
       "fromOp": 1,
       "toOp": 1,
-      "fromVersion": "x:r0:B:retry",
-      "toVersion": "x:r1:B",
+      "fromVersion": "x:r0:B",
+      "toVersion": "x:r1:B:retry",
       "reason": "The asserted per-key version order puts this write before the next write."
     },
     {
-      "from": "r0-A",
-      "to": "r1-A-retry",
+      "from": "r0-A-retry",
+      "to": "r1-A",
       "kind": "ww",
       "key": "y",
       "fromOp": 1,
       "toOp": 1,
-      "fromVersion": "y:r0:A",
-      "toVersion": "y:r1:A:retry",
+      "fromVersion": "y:r0:A:retry",
+      "toVersion": "y:r1:A",
       "reason": "The asserted per-key version order puts this write before the next write."
     },
     {
-      "from": "r0-A",
-      "to": "r0-B-retry",
-      "kind": "rw",
-      "key": "x",
-      "fromOp": 0,
-      "toOp": 1,
-      "fromVersion": "x0",
-      "toVersion": "x:r0:B:retry",
-      "reason": "The reader observes an earlier version and must precede this later committed write."
-    },
-    {
-      "from": "r0-A",
-      "to": "r1-B",
-      "kind": "rw",
-      "key": "x",
-      "fromOp": 0,
-      "toOp": 1,
-      "fromVersion": "x0",
-      "toVersion": "x:r1:B",
-      "reason": "The reader observes an earlier version and must precede this later committed write."
-    },
-    {
-      "from": "r0-A",
-      "to": "r0-B-retry",
-      "kind": "wr",
-      "key": "y",
-      "fromOp": 1,
-      "toOp": 0,
-      "fromVersion": "y:r0:A",
-      "toVersion": "y:r0:A",
-      "reason": "The reader observes the unique final version written by the source transaction."
-    },
-    {
-      "from": "r0-B-retry",
-      "to": "r1-A-retry",
+      "from": "r0-B",
+      "to": "r0-A-retry",
       "kind": "rw",
       "key": "y",
       "fromOp": 0,
       "toOp": 1,
-      "fromVersion": "y:r0:A",
-      "toVersion": "y:r1:A:retry",
+      "fromVersion": "y0",
+      "toVersion": "y:r0:A:retry",
       "reason": "The reader observes an earlier version and must precede this later committed write."
     },
     {
-      "from": "r0-A",
-      "to": "r1-B",
-      "kind": "wr",
-      "key": "y",
-      "fromOp": 1,
-      "toOp": 0,
-      "fromVersion": "y:r0:A",
-      "toVersion": "y:r0:A",
-      "reason": "The reader observes the unique final version written by the source transaction."
-    },
-    {
-      "from": "r1-B",
-      "to": "r1-A-retry",
+      "from": "r0-B",
+      "to": "r1-A",
       "kind": "rw",
       "key": "y",
       "fromOp": 0,
       "toOp": 1,
-      "fromVersion": "y:r0:A",
-      "toVersion": "y:r1:A:retry",
+      "fromVersion": "y0",
+      "toVersion": "y:r1:A",
       "reason": "The reader observes an earlier version and must precede this later committed write."
     },
     {
-      "from": "r1-B",
-      "to": "r1-A-retry",
+      "from": "r0-B",
+      "to": "r0-A-retry",
       "kind": "wr",
       "key": "x",
       "fromOp": 1,
       "toOp": 0,
-      "fromVersion": "x:r1:B",
-      "toVersion": "x:r1:B",
+      "fromVersion": "x:r0:B",
+      "toVersion": "x:r0:B",
       "reason": "The reader observes the unique final version written by the source transaction."
     },
     {
-      "from": "r0-A",
-      "to": "r1-A-retry",
+      "from": "r0-A-retry",
+      "to": "r1-B-retry",
+      "kind": "rw",
+      "key": "x",
+      "fromOp": 0,
+      "toOp": 1,
+      "fromVersion": "x:r0:B",
+      "toVersion": "x:r1:B:retry",
+      "reason": "The reader observes an earlier version and must precede this later committed write."
+    },
+    {
+      "from": "r0-B",
+      "to": "r1-A",
+      "kind": "wr",
+      "key": "x",
+      "fromOp": 1,
+      "toOp": 0,
+      "fromVersion": "x:r0:B",
+      "toVersion": "x:r0:B",
+      "reason": "The reader observes the unique final version written by the source transaction."
+    },
+    {
+      "from": "r1-A",
+      "to": "r1-B-retry",
+      "kind": "rw",
+      "key": "x",
+      "fromOp": 0,
+      "toOp": 1,
+      "fromVersion": "x:r0:B",
+      "toVersion": "x:r1:B:retry",
+      "reason": "The reader observes an earlier version and must precede this later committed write."
+    },
+    {
+      "from": "r1-A",
+      "to": "r1-B-retry",
+      "kind": "wr",
+      "key": "y",
+      "fromOp": 1,
+      "toOp": 0,
+      "fromVersion": "y:r1:A",
+      "toVersion": "y:r1:A",
+      "reason": "The reader observes the unique final version written by the source transaction."
+    },
+    {
+      "from": "r0-B",
+      "to": "r0-A-retry",
       "kind": "rt",
       "key": null,
       "fromOp": null,
@@ -125,8 +125,30 @@
       "reason": "The source completed before the target began on the asserted common observer clock."
     },
     {
-      "from": "r0-B-retry",
-      "to": "r1-A-retry",
+      "from": "r0-B",
+      "to": "r1-A",
+      "kind": "rt",
+      "key": null,
+      "fromOp": null,
+      "toOp": null,
+      "fromVersion": null,
+      "toVersion": null,
+      "reason": "The source completed before the target began on the asserted common observer clock."
+    },
+    {
+      "from": "r0-B",
+      "to": "r1-B-retry",
+      "kind": "rt",
+      "key": null,
+      "fromOp": null,
+      "toOp": null,
+      "fromVersion": null,
+      "toVersion": null,
+      "reason": "The source completed before the target began on the asserted common observer clock."
+    },
+    {
+      "from": "r0-A-retry",
+      "to": "r1-B-retry",
       "kind": "rt",
       "key": null,
       "fromOp": null,
@@ -138,21 +160,21 @@
   ],
   "witness": null,
   "serialOrder": [
-    "r0-A",
-    "r0-B-retry",
-    "r1-B",
-    "r1-A-retry"
+    "r0-B",
+    "r0-A-retry",
+    "r1-A",
+    "r1-B-retry"
   ],
   "versionOrders": {
     "x": [
       "x0",
-      "x:r0:B:retry",
-      "x:r1:B"
+      "x:r0:B",
+      "x:r1:B:retry"
     ],
     "y": [
       "y0",
-      "y:r0:A",
-      "y:r1:A:retry"
+      "y:r0:A:retry",
+      "y:r1:A"
     ]
   },
   "versionOrderSources": {

@@ -1,6 +1,8 @@
-# MoonTxnWitness v0.0.10
+# MoonTxnWitness v0.0.11
 
 MoonTxnWitness 是用 **MoonBit** 实现的离线事务历史检查器。它分析带唯一版本的多键点读写日志，解释异常依赖，把冗长日志缩成可复现反例，并比较普通与严格可串行化模型。所有分析在本地完成。
+
+v0.0.11 增加真实 PostgreSQL 18 双连接采集：20 轮 RR 写偏斜与 20 轮 Serializable 回滚/全新重试对照，完整串联分析、2 事务缩减与三个 v2 复现包回放。便携包可运行 `node dist/postgres-demo.mjs`，依赖与实际执行方法见 [PostgreSQL 说明](docs/postgres-capture.md)。缺少数据库时明确记录未执行。
 
 v0.0.10 增加 `shrink --profile balanced` / `shrinkWithOptions`，可将 512 事务日志缩成经过验证的反例，并明确是否完成单删检查。高级输入解析和完整结果输出同时优化，原始输入事实与旧入口保留。
 
@@ -10,7 +12,7 @@ v0.0.9 新增显式 `--profile balanced` / `analyzeWithOptions`：最多 12 个�
 
 English: An offline MoonBit transaction-history checker with shortest cycle witnesses, bounded serial completion, transaction reduction and self-contained replay.
 
-公开入口：[GitHub 源码](https://github.com/HhWw96/moontxnwitness)、[v0.0.10 下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.0.10)、[Mooncakes 库](https://mooncakes.io/docs/HhWw96/moontxnwitness)。公开发布的验证记录在 `verification/publication.json`。
+公开入口：[GitHub 源码](https://github.com/HhWw96/moontxnwitness)、[v0.0.11 下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.0.11)、[Mooncakes 库](https://mooncakes.io/docs/HhWw96/moontxnwitness)。公开发布的验证记录在 `verification/publication.json`。
 
 每版公开发布后，分别核对两个 ZIP 的匿名下载与 SHA-256、Mooncakes 上传/下载字节，并在全新独立项目安装测试。对应版本的实际结果保存在 `verification/releases/VERSION/publication.json`；构建与本地检查不等于公开发布完成。
 
@@ -134,7 +136,7 @@ SDK 的分析接口可用于 JavaScript/浏览器，不依赖 Node 文件或密�
 MoonBit 公共接口包括 `parse_history`、`analyze`、`reduce_history`、`compare_models`、`verify_cycle`、`replay_report_json`、`history_json` 和报告渲染，类型见 `src/pkg.generated.mbti`。正式模块名为 `HhWw96/moontxnwitness`：
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.0.10
+moon add HhWw96/moontxnwitness@0.0.11
 ```
 
 在调用包的 `moon.pkg` 中导入 `"HhWw96/moontxnwitness" @txn`。例如 `@txn.analyze_json(historyText)` 返回结构化结果；原始模型与预算约束同样适用。

@@ -13,7 +13,8 @@ Apache license, not transaction-analysis code copied from another project.
   not redistributed in the portable ZIP.
 - Python standard-library `sqlite3` supplies the actual SQLite baseline and
   `zipfile` creates archives. Python/SQLite binaries are not redistributed.
-- No external npm packages or Mooncakes packages are required.
+- No external npm packages or Mooncakes packages are required by the analyzer.
+- Optional PostgreSQL collection uses [psycopg 3.3.6](https://pypi.org/project/psycopg/3.3.6/), LGPL-3.0-only, installed separately using frozen PyPI hashes. Its wheels and PostgreSQL binaries are not redistributed. Driver dependencies keep their upstream licenses.
 
 ## Conceptual references
 
@@ -42,4 +43,4 @@ vulnerability or certify all database executions. See the official
 [SQLite isolation](https://www.sqlite.org/isolation.html) and
 [WAL](https://www.sqlite.org/wal.html) documentation for the underlying behavior.
 Public release verification is recorded separately in verification/publication.json.
-No claim of a prize or organizer acceptance is made for v0.0.6.
+PostgreSQL controlled fixtures also retain real SQL results, server-reported rollbacks and fresh retries; expectations follow the [PostgreSQL 18 isolation documentation](https://www.postgresql.org/docs/18/transaction-iso.html). No claim of a prize or organizer acceptance is made.

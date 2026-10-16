@@ -1,3 +1,10 @@
+# 0.0.11
+
+- Capture actual PostgreSQL 18 point-read/write transactions through two independent connections and a bounded synchronization barrier.
+- Execute 20 RR write-skew rounds and 20 Serializable server-abort/fresh-retry rounds, then analyze, reduce and replay three v2 capsules.
+- Ship the complete workflow in the portable runtime, preserve partial SQL observations and explicitly label missing database prerequisites as not executed.
+- Add independent Linux PostgreSQL CI, frozen optional driver hashes and an owned temporary-cluster helper.
+
 # 0.0.10
 
 - Add opt-in 512-transaction reduction with witness/source seeds, remapped immutable writer indexes and rejected-subset caching.

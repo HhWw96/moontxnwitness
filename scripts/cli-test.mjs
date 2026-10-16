@@ -172,6 +172,18 @@ export function runCliTests() {
     assert.equal(analyze(mini).status, 'violation');
     assert.equal(JSON.parse(run(['replay', resolve(directory, 'case.capsule.json')], 0).stdout).valid, true);
   });
+  test('optional PostgreSQL workflow explicitly records missing Python as not executed', () => {
+    const result=spawnSync(process.execPath,[resolve(root,'dist/postgres-demo.mjs')],{cwd:work,encoding:'utf8',timeout:30000,env:{...process.env,MTW_PYTHON:resolve(work,'absent-python')}});
+    assert.ifError(result.error);assert.equal(result.status,3,result.stderr);
+    const r=JSON.parse(result.stdout);assert.equal(r.status,'not-executed');assert.equal(r.passed,false);assert.equal(r.actualDatabaseExecution,false);
+    const saved=JSON.parse(readFileSync(resolve(r.outputDirectory,'receipt.json'),'utf8'));assert.equal(saved.status,'not-executed');assert.equal(saved.version,release);
+  });
+  test('PostgreSQL capture without driver or connection configuration cannot pass', () => {
+    const env={...process.env};delete env.MTW_PG_DSN;delete env.MTW_PG_CONNECTION_FILE;
+    const result=spawnSync(process.env.PYTHON||(process.platform==='win32'?'python':'python3'),[resolve(root,'examples/capture_postgres.py'),'--output',resolve(work,'unexecuted-pg-capture')],{encoding:'utf8',timeout:30000,env});
+    assert.ifError(result.error);assert.equal(result.status,3,result.stderr);
+    const r=JSON.parse(result.stdout);assert.equal(r.status,'not-executed');assert.equal(r.passed,false);assert.equal(r.actualDatabaseExecution,false);
+  });
   const receipt = { tool: 'MoonTxnWitness', version: version(), passed: true, checks: checks.length, names: checks, sqlite: 'actual in-memory SQLite sequential commits', concurrentRuns };
   mkdirSync(resolve(root, 'verification'), { recursive: true });
   writeFileSync(resolve(root, 'verification/cli.json'), JSON.stringify(receipt, null, 2) + '\n');
