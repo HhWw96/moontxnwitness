@@ -37,6 +37,20 @@ fn scalar_string(value : Json, strings : Map[String, String]) -> String {
 /// Stream the largest array instead of materializing its JSON object tree.
 /// Public report_json remains available for structured MoonBit callers.
 fn report_string(r : Report, extras? : Map[String, Json] = Map([])) -> String {
+  let b = json_text()
+  let strings : Map[String, String] = Map([])
+  write_report(b, r, strings, extras~)
+  b.to_string()
+}
+
+///|
+/// Append a complete report without flattening a nested result into a temporary string.
+fn write_report(
+  b : JsonText,
+  r : Report,
+  strings : Map[String, String],
+  extras? : Map[String, Json] = Map([]),
+) -> Unit {
   let small = report_json({
     ..r,
     edges: [],
@@ -55,8 +69,6 @@ fn report_string(r : Report, extras? : Map[String, Json] = Map([])) -> String {
     Object(m) => m["dependencies"] = r.edges.length().to_json()
     _ => abort("Report stats")
   }
-  let b = json_text()
-  let strings : Map[String, String] = Map([])
   b.write_char('{')
   let mut first = true
   for name, value in fields {
@@ -114,7 +126,6 @@ fn report_string(r : Report, extras? : Map[String, Json] = Map([])) -> String {
     }
   }
   b.write_char('}')
-  b.to_string()
 }
 
 ///|

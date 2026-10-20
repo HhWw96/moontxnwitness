@@ -1,4 +1,15 @@
-# Performance and real-database delivery
+# Roadmap and delivery history
+
+## Next delivery v0.1.1 through v0.2.0
+
+The [implementation plan](roadmap-v0.2.0.md) proposes eight small releases for
+driver capture, ordinary-table version provenance, ORM and transaction lifecycle,
+list append, bounded relational predicates, anomaly/model classification, real
+business debugging, and performance/scale. It preserves the v0.1.0 contract and
+uses v0.1.0 as the direct regression baseline. The proposed work is not yet
+implemented or released; v0.2.0 requires its explicit correctness and evidence gates.
+
+## v0.0.7 through v0.1.0 delivery history
 
 Accepted scope: v0.0.7 performance evidence, v0.0.8 graph/allocation improvements,
 v0.0.9 bounded optimized completion and v2 evidence, v0.0.10 large reduction,
@@ -36,7 +47,7 @@ reduction >=2x; control P95 regression <=max(10%,2ms). Summary output must not
 be compared with a full baseline report. A correctness pass does not mean all
 performance targets passed. Raw failed measurements are retained.
 
-## Stable boundary
+## Stable boundary in v0.1.0
 
 Versioned point reads/writes only. Preserve existing default budgets and v1
 evidence traversal. Advanced profiles and v2 evidence carry explicit effective

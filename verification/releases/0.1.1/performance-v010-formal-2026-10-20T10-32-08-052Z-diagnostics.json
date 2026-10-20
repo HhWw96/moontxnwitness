@@ -1,0 +1,274 @@
+{
+  "sourceReceipt": "verification/releases/0.1.1/performance-v010-formal-2026-10-20T10-32-08-052Z.json",
+  "sourceReceiptSha256": "f734d2bcb32a69da87ed9199e3deee538a18cbcf216b7313e039898df4114b2f",
+  "scope": "Direct main analysis core only. Capture-core import and synchronous SDK two-module startup are not measured.",
+  "sourceIdentity": {
+    "version": "0.1.1",
+    "toolchain": {
+      "compiler": "v0.10.14+7d59c7ec9",
+      "moon": "moon 0.1.20260920"
+    },
+    "sourceSha256": "fcdd5b089d30e8d64e2b11332fb8138a33ac6fb07235342602edd1fe1aa1dcb4",
+    "coreSha256": "efefa2e8833e7201aa759516e9102e33d38eec4571b4551b74bfa628ff432626",
+    "captureCoreSha256": "fe9daa92d751ab7a3dddf279a632d5f19e590c1bb2751a9a209a1b93cdd65c9a"
+  },
+  "gateUnchanged": true,
+  "failedScenarios": [
+    {
+      "scenario": "reduction-512",
+      "batches": [
+        {
+          "batch": 1,
+          "order": [
+            "current",
+            "baseline"
+          ],
+          "baseline": {
+            "p50Ms": 11.1644,
+            "p95Ms": 15.316899999999976,
+            "rssMiB": 79.9921875,
+            "maxMs": 15.8519,
+            "top5Ms": [
+              13.941000000000031,
+              14.062299999999993,
+              14.897100000000023,
+              15.316899999999976,
+              15.8519
+            ]
+          },
+          "current": {
+            "p50Ms": 10.230999999999995,
+            "p95Ms": 14.775100000000009,
+            "rssMiB": 80.1875,
+            "maxMs": 18.277000000000044,
+            "top5Ms": [
+              12.174400000000048,
+              13.175899999999956,
+              14.2654,
+              14.775100000000009,
+              18.277000000000044
+            ]
+          }
+        },
+        {
+          "batch": 2,
+          "order": [
+            "baseline",
+            "current"
+          ],
+          "baseline": {
+            "p50Ms": 8.8091,
+            "p95Ms": 12.58080000000001,
+            "rssMiB": 80.55859375,
+            "maxMs": 12.782800000000009,
+            "top5Ms": [
+              11.076900000000023,
+              11.319700000000012,
+              11.588700000000017,
+              12.58080000000001,
+              12.782800000000009
+            ]
+          },
+          "current": {
+            "p50Ms": 10.426399999999944,
+            "p95Ms": 15.729299999999967,
+            "rssMiB": 80.33984375,
+            "maxMs": 15.98169999999999,
+            "top5Ms": [
+              13.67009999999999,
+              14.288700000000006,
+              14.540400000000034,
+              15.729299999999967,
+              15.98169999999999
+            ]
+          }
+        },
+        {
+          "batch": 3,
+          "order": [
+            "current",
+            "baseline"
+          ],
+          "baseline": {
+            "p50Ms": 9.779200000000003,
+            "p95Ms": 11.711999999999989,
+            "rssMiB": 80.6328125,
+            "maxMs": 14.264299999999992,
+            "top5Ms": [
+              10.989599999999996,
+              11.317499999999995,
+              11.5428,
+              11.711999999999989,
+              14.264299999999992
+            ]
+          },
+          "current": {
+            "p50Ms": 9.503800000000012,
+            "p95Ms": 16.22550000000001,
+            "rssMiB": 80.28125,
+            "maxMs": 17.28710000000001,
+            "top5Ms": [
+              12.669700000000034,
+              13.51860000000002,
+              13.80940000000004,
+              16.22550000000001,
+              17.28710000000001
+            ]
+          }
+        }
+      ],
+      "gate": {
+        "baseline": {
+          "medianMs": 9.779200000000003,
+          "p95Ms": 12.58080000000001,
+          "coldModuleLoadMs": 29.144599999999997,
+          "firstAnalysisMs": 74.30260000000001,
+          "peakRssKiB": 82492,
+          "outputBytes": 122250
+        },
+        "current": {
+          "medianMs": 10.230999999999995,
+          "p95Ms": 15.729299999999967,
+          "coldModuleLoadMs": 29.725499999999997,
+          "firstAnalysisMs": 66.54310000000001,
+          "peakRssKiB": 82208,
+          "outputBytes": 122250
+        },
+        "p95RegressionMs": 3.148499999999956,
+        "allowedP95RegressionMs": 2
+      },
+      "pooledDescriptiveOnly": {
+        "baseline": {
+          "samples": 90,
+          "p50Ms": 9.932099999999991,
+          "p95Ms": 14.062299999999993,
+          "maxMs": 15.8519,
+          "meanMs": 9.922334444444447
+        },
+        "current": {
+          "samples": 90,
+          "p50Ms": 9.975999999999999,
+          "p95Ms": 15.729299999999967,
+          "maxMs": 18.277000000000044,
+          "meanMs": 10.518843333333336
+        }
+      },
+      "phasesDiagnosticOnly": [
+        {
+          "phase": "parse",
+          "baseline": {
+            "medianMs": 1.9062999999999874,
+            "p95Ms": 4.144200000000012,
+            "coldModuleLoadMs": 17.683400000000006,
+            "firstAnalysisMs": 4.149000000000001,
+            "peakRssKiB": 65576,
+            "outputBytes": null
+          },
+          "current": {
+            "medianMs": 1.6499000000000024,
+            "p95Ms": 3.809299999999979,
+            "coldModuleLoadMs": 24.1678,
+            "firstAnalysisMs": 4.0922999999999945,
+            "peakRssKiB": 65848,
+            "outputBytes": null
+          },
+          "p95RegressionMs": -0.33490000000003306,
+          "allowedP95RegressionMs": 2
+        },
+        {
+          "phase": "inference",
+          "baseline": {
+            "medianMs": 1.6605000000000132,
+            "p95Ms": 3.8649000000000058,
+            "coldModuleLoadMs": 18.507099999999994,
+            "firstAnalysisMs": 9.739400000000018,
+            "peakRssKiB": 74776,
+            "outputBytes": null
+          },
+          "current": {
+            "medianMs": 1.905099999999976,
+            "p95Ms": 4.586199999999991,
+            "coldModuleLoadMs": 23.506500000000003,
+            "firstAnalysisMs": 5.593099999999993,
+            "peakRssKiB": 73564,
+            "outputBytes": null
+          },
+          "p95RegressionMs": 0.7212999999999852,
+          "allowedP95RegressionMs": 2
+        },
+        {
+          "phase": "reduction",
+          "baseline": {
+            "medianMs": 2.773499999999956,
+            "p95Ms": 5.557600000000008,
+            "coldModuleLoadMs": 30.12660000000001,
+            "firstAnalysisMs": 15.078900000000004,
+            "peakRssKiB": 83440,
+            "outputBytes": null
+          },
+          "current": {
+            "medianMs": 2.9879999999999995,
+            "p95Ms": 5.5504999999999995,
+            "coldModuleLoadMs": 19.216400000000007,
+            "firstAnalysisMs": 15.179999999999978,
+            "peakRssKiB": 83240,
+            "outputBytes": null
+          },
+          "p95RegressionMs": -0.007100000000008322,
+          "allowedP95RegressionMs": 2
+        }
+      ]
+    }
+  ],
+  "groups": {
+    "graph": {
+      "geometricMeanSpeedup": 0.9765907363551697,
+      "geometricMeanPeakMemoryRatio": 1.0050647178694263,
+      "allP95WithinAllowance": true
+    },
+    "search": {
+      "geometricMeanSpeedup": 0.9303543973194468,
+      "geometricMeanPeakMemoryRatio": 1.00376291082903,
+      "allP95WithinAllowance": true
+    },
+    "control": {
+      "geometricMeanSpeedup": 1.2766197400221206,
+      "geometricMeanPeakMemoryRatio": 1.0054677188034387,
+      "allP95WithinAllowance": true
+    },
+    "reduction": {
+      "geometricMeanSpeedup": 0.9491059430812797,
+      "geometricMeanPeakMemoryRatio": 0.9821737412378193,
+      "allP95WithinAllowance": true
+    },
+    "search-large": {
+      "geometricMeanSpeedup": 0.9707014894891904,
+      "geometricMeanPeakMemoryRatio": 0.9980801070860099,
+      "allP95WithinAllowance": true
+    },
+    "reduction-large": {
+      "geometricMeanSpeedup": 0.9558400938324707,
+      "geometricMeanPeakMemoryRatio": 0.9965572419143675,
+      "allP95WithinAllowance": false
+    }
+  },
+  "note": "New split-code measurement; prior failed implementation remains failed. Derived diagnostics do not replace the original predeclared gate. No batch discarded.",
+  "staticCoreComparison": {
+    "baselineBytes": 675320,
+    "currentBytes": 675397,
+    "baselineSha256": "6c76b3be6c45ff633232568b3ffed3c1393ade3b4d012ee5c21c49cbb8dcf97b",
+    "currentSha256": "efefa2e8833e7201aa759516e9102e33d38eec4571b4551b74bfa628ff432626",
+    "alphaReviewDiff": "verification/releases/0.1.1/performance-v010-formal-2026-10-20T10-32-08-052Z-compiled-alpha.diff",
+    "alphaReviewDiffSha256": "87673eeed36e7f08d496be7394728670f0aa94af3dfb0540b61b8df20a112889",
+    "normalization": "Consistent first-occurrence renaming of generated _M...S<number> symbols per stem and _x_<number> temporary names; review only, not JavaScript AST equivalence proof.",
+    "observedRemainingChanges": "Engine-version strings and replay compatibility allowlists only; no visible changed hot-path algorithm or allocation expression.",
+    "limitations": "Static inspection does not measure allocation rates, GC pauses, JIT decisions, CPU frequency, or operating-system interference."
+  },
+  "rootCauseEstablished": false,
+  "telemetryLimitations": [
+    "No GC event trace or allocation profile recorded in either formal run.",
+    "No per-batch CPU time/frequency, scheduler counters, or background process telemetry recorded.",
+    "Peak RSS cannot establish allocation rate or absence of GC pauses.",
+    "Full JSON output and client decoding are timed; isolated reduction excludes parsing and final full serialization, so phase equality does not exclude full-pipeline tail costs."
+  ]
+}

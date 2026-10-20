@@ -1,0 +1,77 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-aed15be6bdc148c9b644b702a3963ac6",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 16000,
+      "initial": {
+        "[\"mtw_capture_4dc10661f14e415e81a6d886d0b19426.registers\",\"text\",\"x\"]": "x0",
+        "[\"mtw_capture_4dc10661f14e415e81a6d886d0b19426.registers\",\"text\",\"y\"]": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 141000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 141000,
+      "phase": "execute-request",
+      "sql": "SELECT count(*) FROM \"mtw_capture_4dc10661f14e415e81a6d886d0b19426\".registers",
+      "parameters": null,
+      "mapped": false,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 141000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 141000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          2
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "sql",
+      "time": 141000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 7,
+      "kind": "end",
+      "time": 141000,
+      "tx": "tx-1",
+      "status": "committed"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "unsupported_sql",
+      "message": "An SQL statement has no explicit point-read/write mapping."
+    }
+  ]
+}

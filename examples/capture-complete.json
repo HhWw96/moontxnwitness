@@ -1,0 +1,17 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "synthetic-example-clock",
+  "scope": {"exclusiveWriters": true},
+  "gaps": [],
+  "events": [
+    {"seq": 1, "kind": "snapshot", "time": 0, "consistent": true, "initial": {"x": "x0", "y": "y0"}},
+    {"seq": 2, "kind": "begin", "tx": "A", "time": 1},
+    {"seq": 3, "kind": "begin", "tx": "B", "time": 2},
+    {"seq": 4, "kind": "op", "tx": "A", "time": 3, "op": {"type": "read", "key": "x", "version": "x0"}},
+    {"seq": 5, "kind": "op", "tx": "B", "time": 4, "op": {"type": "read", "key": "y", "version": "y0"}},
+    {"seq": 6, "kind": "op", "tx": "A", "time": 5, "op": {"type": "write", "key": "y", "version": "y1"}},
+    {"seq": 7, "kind": "op", "tx": "B", "time": 6, "op": {"type": "write", "key": "x", "version": "x1"}},
+    {"seq": 8, "kind": "end", "tx": "A", "time": 7, "status": "committed"},
+    {"seq": 9, "kind": "end", "tx": "B", "time": 8, "status": "committed"}
+  ]
+}

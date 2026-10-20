@@ -1,10 +1,12 @@
-# MoonTxnWitness v0.1.0
+# MoonTxnWitness v0.1.1 开发中
 
 **用 MoonBit 把事务并发日志变成可解释、可缩减、可回放的反例。** 面向数据库与后端开发者，连接真实采集、异常解释、反例缩减、证据复现和修复回归。分析在本地完成。
 
 English: An offline MoonBit transaction-history checker with shortest cycle witnesses, bounded serial completion, transaction reduction and reproducible database examples.
 
-[源码](https://github.com/HhWw96/moontxnwitness) · [v0.1.0 下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.1.0) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [一页项目说明](docs/project-brief.md)
+[源码](https://github.com/HhWw96/moontxnwitness) · [v0.1.0 稳定版下载](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.1.0) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [一页项目说明](docs/project-brief.md)
+
+当前开发版新增 [驱动自动采集与 MoonBit 归一化](docs/automatic-capture.md)。已有业务接入等发布门槛尚待完成；公开稳定包仍为 v0.1.0。后续工作见 [v0.2.0 实施计划](docs/roadmap-v0.2.0.md)。
 
 ## 先运行完整演示
 

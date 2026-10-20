@@ -1,3 +1,21 @@
+# 0.1.1 — development
+
+- Split automatic capture from the existing CLI analysis module and share the
+  reduction JSON writer without omitting evidence or changing budgets/counters.
+  Same-version compatibility fixtures retain byte-identical full outputs.
+- Bound raw-value trees and retained capture evidence by aggregate nodes/JSON
+  bytes. Exhaustion records a coverage gap while business calls keep their
+  original result or exception.
+- Add experimental column/sidecar provenance fixtures for ordinary tables and a
+  three-batch cost study. Both candidates currently regress throughput/latency;
+  they remain outside the stable adapter and do not complete v0.1.2.
+
+- Add opt-in synchronous/asynchronous psycopg capture with generated point SQL templates, explicit custom mappings, a locked initial snapshot, raw JSONL and coverage gaps.
+- Normalize capture traces in MoonBit; gaps, unknown outcomes and unfinished transactions cannot expose a complete history. Add SDK `normalizeCapture` and CLI `ingest`.
+- Preserve legacy analysis and schema-2 replay, explicitly accepting the new engine header without changing its algorithm.
+- Freeze a hash-verified public v0.1.0 baseline with 20 full scenarios, 15 phases and complete formal samples; retain historical measurements separately.
+- Add controlled real-PostgreSQL capture checks and driver-interface tests. Independent existing-business adoption remains an uncompleted release gate.
+
 # 0.1.0
 
 - Post-publication main fix: select the requested release inside multi-version CI evidence; retain original assets, failed verification and successful retry.

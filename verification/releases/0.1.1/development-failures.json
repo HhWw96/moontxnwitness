@@ -1,0 +1,45 @@
+{
+  "version": "0.1.1",
+  "failures": [
+    {
+      "stage": "local-toolchain",
+      "reason": "Old ignored toolchain junction targeted an unavailable MoonLDIF directory.",
+      "repair": "Restored official pinned moonc 0.10.14+7d59c7ec9 and matching core, then bundled the standard library."
+    },
+    {
+      "stage": "first-full-test",
+      "coreTests": 118,
+      "passed": 116,
+      "failed": 2,
+      "reason": "The v2 compatible-engine allowlist omitted the new 0.1.1 header, so current reports could not replay after the version bump.",
+      "repair": "Add the explicit 0.1.1 header only; the bounded-register-v2.1 algorithm and comparison rules remain unchanged. A subsequent full run is required."
+    },
+    {
+      "stage": "full-test-cli-io",
+      "reason": "System disk exhausted during oversized CLI input fixture creation, after all core and oracle checks passed.",
+      "repair": "Removed this run downloaded archives; moved only reproducible compiler/build caches to dedicated scratch with original path junctions. Full npm test subsequently passed."
+    },
+    {
+      "stage": "toolchain-identification",
+      "reason": "After relocating binary cache, version probe did not forward MOON_HOME.",
+      "repair": "Pass the same explicit MOON_HOME used for compilation to version probes; subsequent full npm test passed."
+    },
+    {
+      "stage": "actual-capture-first-run",
+      "reason": "Windows async psycopg path requires selector loop; first controlled run stopped before completion.",
+      "repair": "Configure the test application selector policy, preserving adapter global-loop neutrality. New owned-cluster run passed seven scenarios and four capsule replays."
+    },
+    {
+      "stage": "formal-performance-first-implementation",
+      "receipt": "performance-v010-formal-2026-10-20T10-05-50-790Z.json",
+      "reason": "dense-rt-192 P95 exceeded the unchanged common-workload regression gate; full-output correctness passed.",
+      "repair": "Separated capture core from the legacy CLI analysis path and measured the new implementation; the original failure remains valid."
+    },
+    {
+      "stage": "formal-performance-split-core",
+      "receipt": "performance-v010-formal-2026-10-20T10-32-08-052Z.json",
+      "reason": "reduction-512 P95 increased 3.148 ms against a 2 ms allowance; full-output correctness passed. The root cause is not established.",
+      "repair": "Investigating output allocation with a shared writer. This is not a performance pass and prior rounds are not combined selectively."
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 """Publish already-tested packages under the explicitly bound repository owner."""
 import json
+import hashlib
 import os
 import subprocess
 import sys
@@ -59,8 +60,25 @@ def publish():
         acceptance = json.loads((ROOT / 'verification/releases' / VERSION / 'acceptance.json').read_text(encoding='utf-8'))
         performance = json.loads((ROOT / 'verification/releases' / VERSION / acceptance['performanceReceipt']).read_text(encoding='utf-8'))
         manifest = json.loads((ROOT / 'dist/build-manifest.json').read_text(encoding='utf-8'))
-        assert acceptance['passed'] and performance['performanceTargetsMet']
-        assert performance['sourceSha256'] == manifest['sourceSha256'] and performance['currentSha256'] == manifest['coreSha256']
+        assert acceptance['passed']
+        if tuple(map(int, VERSION.split('.'))) >= (0, 1, 1):
+            assert acceptance['releaseReady'] and acceptance['existingBusinessIntegration']['passed']
+            assert performance['formalReleaseGatePassed'] and performance['correctnessPassed'] and not performance['smokeOnly']
+            current = performance['provenance']['currentBuildManifest']
+            assert current['sourceSha256'] == manifest['sourceSha256'] and current['coreSha256'] == manifest['coreSha256']
+            capture = json.loads((ROOT / 'verification/capture-postgres.json').read_text(encoding='utf-8'))
+            assert capture['version'] == VERSION and capture['passed'] and capture['actualDatabaseExecution']
+            for field, path in (
+                ('adapterSha256', 'integrations/python/moontxnwitness_capture/capture.py'),
+                ('captureCoreSha256', 'dist/capture-core.mjs'),
+                ('analysisCoreSha256', 'dist/core.mjs'),
+                ('fixtureSha256', 'scripts/capture-postgres-test.py'),
+                ('e2eSha256', 'scripts/capture-postgres-e2e.mjs'),
+            ):
+                assert capture['captureSource'][field] == hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), 'Actual capture receipt is stale: ' + path
+        else:
+            assert performance['performanceTargetsMet']
+            assert performance['sourceSha256'] == manifest['sourceSha256'] and performance['currentSha256'] == manifest['coreSha256']
         postgres = json.loads((ROOT / 'verification/postgres.json').read_text(encoding='utf-8'))
         assert postgres['version'] == VERSION and postgres['passed'] and postgres['actualDatabaseExecution']
     sha = run(['git', 'rev-parse', 'HEAD'])

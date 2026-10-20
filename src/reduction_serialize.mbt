@@ -1,7 +1,19 @@
 ///|
+/// Retained as the standalone history encoder; nested reductions use write_history.
+#warnings("-unused_value")
 fn history_string(h : History) -> String {
   let strings : Map[String, String] = Map([])
   let b = json_text()
+  write_history(b, h, strings)
+  b.to_string()
+}
+
+///|
+fn write_history(
+  b : JsonText,
+  h : History,
+  strings : Map[String, String],
+) -> Unit {
   b.write_string("{\"schemaVersion\":1,\"model\":")
   b.write_string(quoted_cached(strings, model_label(h.model)))
   b.write_string(",\"initial\":{")
@@ -71,7 +83,6 @@ fn history_string(h : History) -> String {
     b.write_string("]}")
   }
   b.write_string("]}")
-  b.to_string()
 }
 
 ///|
@@ -108,9 +119,14 @@ fn reduction_result_string(result : ReductionResult) -> String {
     b.write_char(',')
   }
   b.write_string("\"reducedHistory\":")
-  b.write_string(history_string(r.history))
+  write_history(b, r.history, strings)
   b.write_string(",\"report\":")
-  b.write_string(analysis_result_string(result.analysis))
+  write_report(
+    b,
+    result.analysis.report,
+    strings,
+    extras=analysis_extras(result.analysis),
+  )
   b.write_char('}')
   b.to_string()
 }

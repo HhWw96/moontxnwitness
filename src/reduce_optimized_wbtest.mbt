@@ -169,3 +169,112 @@ test "encoding cache saturation changes neither escaping nor complete reports" {
   assert_true(quoted_strings.units <= 131072)
   assert_eq(reduction_result_string(result), before)
 }
+
+///|
+test "shared reduction writer retains Unicode intermediate-read provenance" {
+  let key = "键\"\\🙂"
+  let middle = "中间\"\\版本"
+  let final_version = "终版🙂"
+  let h = {
+    ..hist([
+      tx("写者\"🙂", [
+        write_op(key, middle),
+        read_op(key, middle),
+        write_op(key, final_version),
+      ]),
+      tx("读者\\", [read_op(key, middle)]),
+    ]),
+    initial: Map([(key, "初始\"\\版本"), ("未使用🙂", "初始")]),
+  }
+  let result = reduce_with_options(h)
+  assert_true(result.reduction.one_minimal)
+  assert_eq(result.reduction.history.transactions.length(), 2)
+  assert_true(has_code(result.analysis.report, "intermediate_read"))
+  let encoded = reduction_result_string(result)
+  assert_eq(@json.parse(encoded), reduction_result_json(result))
+  let output = object_fields(@json.parse(encoded), "output")
+  let restored = parse_history(output.at("reducedHistory").stringify()).unwrap()
+  assert_true(restored == result.reduction.history)
+  assert_eq(restored.transactions[0].ops[0].version, middle)
+  assert_eq(restored.transactions[0].ops[2].version, final_version)
+  assert_true(
+    result_valid(
+      replay_report_json(
+        history_string(restored),
+        output.at("report").stringify(),
+      ),
+    ),
+  )
+}
+
+///|
+test "shared reduction writer retains all 512 initial facts and exact check accounting" {
+  let h = large_noise(512)
+  for max_checks in [0, 1, 256] {
+    let result = reduce_with_options(h, options=reduction_options(max_checks~))
+    let encoded = reduction_result_string(result)
+    let output = object_fields(@json.parse(encoded), "output")
+    let restored = parse_history(output.at("reducedHistory").stringify()).unwrap()
+    assert_true(restored.initial == h.initial)
+    assert_eq(restored.initial.length(), 512)
+    assert_eq(result.analysis.report.coverage.length(), 512)
+    assert_eq(result.analysis.report.inferred_orders.length(), 512)
+    assert_eq(
+      result.reduction.checks,
+      if max_checks == 256 {
+        3
+      } else {
+        max_checks
+      },
+    )
+    assert_eq(result.cached_checks, 0)
+    assert_eq(result.reduction.one_minimal, max_checks == 256)
+    assert_eq(
+      restored.transactions.length(),
+      if max_checks == 0 {
+        512
+      } else {
+        2
+      },
+    )
+    assert_eq(@json.parse(encoded), reduction_result_json(result))
+    assert_true(
+      result_valid(
+        replay_report_json(
+          history_string(restored),
+          output.at("report").stringify(),
+        ),
+      ),
+    )
+  }
+}
+
+///|
+test "shared reduction writer distinguishes an empty history from a singleton violation" {
+  let empty = hist([])
+  let empty_result = reduce_with_options(empty)
+  assert_eq(empty_result.reduction.status, "not-violation")
+  assert_eq(empty_result.reduction.checks, 0)
+  assert_true(!empty_result.reduction.one_minimal)
+  assert_eq(
+    @json.parse(reduction_result_string(empty_result)),
+    reduction_result_json(empty_result),
+  )
+  let single = hist([
+    tx("A", [read_op("x", "x0"), write_op("x", "x1"), read_op("x", "x0")]),
+  ])
+  let result = reduce_with_options(single)
+  assert_eq(result.reduction.history.transactions.length(), 1)
+  assert_eq(result.reduction.checks, 1)
+  assert_true(result.reduction.one_minimal)
+  assert_true(has_code(result.analysis.report, "read_your_writes"))
+  let output = object_fields(
+    @json.parse(reduction_result_string(result)),
+    "output",
+  )
+  assert_eq(output.at("checks"), (1).to_json())
+  assert_eq(
+    @json.parse(reduction_result_string(result)),
+    reduction_result_json(result),
+  )
+}

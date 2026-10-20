@@ -51,6 +51,8 @@ jobs:
           MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
         run: npm run postgres:verify
       - name: Record the actual checked-out source commit
+        # New source refs include a conservative driver capture adapter.
+        if: always()
         env:
           MTW_WORKFLOW_SHA: ${{ github.sha }}
           MTW_REQUESTED_REF: ${{ inputs.source_ref || github.sha }}
@@ -60,6 +62,22 @@ jobs:
           source = subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip()
           pathlib.Path('verification/postgres-ci-source.json').write_text(json.dumps({'sourceCommit':source,'workflowCommit':os.environ['MTW_WORKFLOW_SHA'],'requestedRef':os.environ['MTW_REQUESTED_REF']}, indent=2)+'\n', encoding='utf-8')
           PY
+      - name: Verify automatic capture against actual PostgreSQL
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          if [ -f scripts/capture-postgres-e2e.mjs ]; then
+            npm run capture:verify
+          fi
+      - name: Verify experimental provenance on ordinary tables
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          if [ -f experiments/provenance/postgres_test.py ]; then
+            python experiments/provenance/test_prototype.py
+            python experiments/provenance/test_cost_study.py
+            python experiments/provenance/postgres_test.py --schema mtw_provenance_ci --output verification/provenance-prototypes/ci
+          fi
       - name: Preserve actual database server logs
         if: always()
         env:
@@ -75,4 +93,7 @@ jobs:
             verification/postgres.json
             verification/postgres-server.log
             verification/postgres-ci-source.json
+            verification/capture-postgres.json
             verification/releases/*/postgres/
+            verification/releases/*/capture/
+            verification/provenance-prototypes/ci/

@@ -53,7 +53,7 @@ for item in ROOT.rglob("*"):
         continue
     source.append(relative.as_posix())
 portable = ["README.md", "LICENSE", "CHANGELOG.md", "THIRD_PARTY.md", "run-demo.cmd"]
-for folder in ("dist", "docs", "examples", "verification"):
+for folder in ("dist", "docs", "examples", "verification", "integrations"):
     for item in (ROOT / folder).rglob("*"):
         if item.is_file() and "__pycache__" not in item.parts and item.name != "package.json":
             portable.append(item.relative_to(ROOT).as_posix())
@@ -142,6 +142,12 @@ for kind in ("portable", "source"):
     sdk = run([NODE, "--input-type=module", "-e", "import {analyze,version,shrink,compareModels,replayReport} from './dist/sdk.mjs'; import {readFileSync} from 'node:fs'; const h=readFileSync('examples/consistent.json','utf8'); const r=analyze(h); console.log(JSON.stringify({version:version(),status:r.status,replay:replayReport(h,r).valid,oneMinimal:shrink(readFileSync('examples/noisy-write-skew.json','utf8')).oneMinimal,models:compareModels(readFileSync('examples/strict-realtime.json','utf8')).classification}));"], consumer)
     assert json.loads(sdk) == {"version": VERSION, "status": "consistent", "replay": True, "oneMinimal": True, "models": "realtime-only-violation"}
     checks.append(kind + " SDK import")
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 1):
+        captured = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'ingest', 'examples/capture-complete.json', '--history', 'captured-history.json'], consumer))
+        assert captured['status'] == 'ready' and captured['coverage']['complete']
+        assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'check', 'captured-history.json', '--profile', 'balanced', '--format', 'json'], consumer, 1))['status'] == 'violation'
+        assert (consumer / 'integrations/python/moontxnwitness_capture/capture.py').is_file()
+        checks.append(kind + ' captured trace ingestion and packaged Python adapter')
     if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
         old_python = env.get('MTW_PYTHON')
         try:
