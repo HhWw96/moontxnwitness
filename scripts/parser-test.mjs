@@ -6,6 +6,7 @@ import {fileURLToPath} from 'node:url';
 import {fixtures} from './benchmark-fixtures.mjs';
 import {benchmark_parser_agreement,version} from '../dist/core.mjs';
 import {root} from './moon.mjs';
+import {writeVerifiedJson} from './performance-evidence.mjs';
 export function runParserTests(){
   let seed=0xA10C5EED,checked=0,fastValid=0,referenceInvalid=0;
   const random=n=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)%n;};
@@ -32,6 +33,6 @@ export function runParserTests(){
     check(text);
   }
   const receipt={tool:'MoonTxnWitness',version:version(),passed:true,seed:'0xA10C5EED',checked,fastValid,referenceInvalid,method:'Schema-directed parser versus legacy duplicate/depth guard plus official JSON decoder; malformed/Unicode/duplicate/numeric mutations'};
-  writeFileSync(resolve(root,'verification/parser.json'),JSON.stringify(receipt,null,2)+'\n');console.log(`Parser differential: ${checked} inputs agree; ${referenceInvalid} malformed inputs rejected by reference.`);return receipt;
+  writeVerifiedJson(resolve(root,'verification/parser.json'),receipt);console.log(`Parser differential: ${checked} inputs agree; ${referenceInvalid} malformed inputs rejected by reference.`);return receipt;
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))runParserTests();

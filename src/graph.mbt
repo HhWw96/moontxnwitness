@@ -183,6 +183,49 @@ fn strongly_connected(txs : Array[Transaction], g : GraphIndex) -> Components {
 }
 
 ///|
+fn topology_ready_push(ready : Array[Int], value : Int) -> Unit {
+  let mut child = ready.length()
+  ready.push(value)
+  while child > 0 {
+    let parent = (child - 1) / 2
+    if ready[parent] <= value {
+      break
+    }
+    ready[child] = ready[parent]
+    child = parent
+  }
+  ready[child] = value
+}
+
+///|
+fn topology_ready_pop(ready : Array[Int]) -> Int {
+  let next = ready[0]
+  let last = match ready.pop() {
+    Some(value) => value
+    None => abort("Empty topology ready queue")
+  }
+  if !ready.is_empty() {
+    let mut parent = 0
+    while parent * 2 + 1 < ready.length() {
+      let left = parent * 2 + 1
+      let right = left + 1
+      let child = if right < ready.length() && ready[right] < ready[left] {
+        right
+      } else {
+        left
+      }
+      if last <= ready[child] {
+        break
+      }
+      ready[parent] = ready[child]
+      parent = child
+    }
+    ready[parent] = last
+  }
+  next
+}
+
+///|
 fn topological_order(
   txs : Array[Transaction],
   edges : Array[Edge],
@@ -193,23 +236,25 @@ fn topological_order(
   for target in g.targets {
     degree[target] += 1
   }
-  let used = Array::make(txs.length(), false)
+  // Original array indices define the existing deterministic tie order. A
+  // min-heap selects that same first ready transaction without rescanning all
+  // previously emitted transactions for every result element.
+  let ready : Array[Int] = []
+  for i, tx in txs {
+    if tx.status == Committed && degree[i] == 0 {
+      topology_ready_push(ready, i)
+    }
+  }
   let result : Array[String] = []
-  for _i in 0..<txs.length() {
-    let mut next = -1
-    for i, tx in txs {
-      if tx.status == Committed && !used[i] && degree[i] == 0 {
-        next = i
-        break
-      }
-    }
-    if next == -1 {
-      break
-    }
-    used[next] = true
+  while !ready.is_empty() {
+    let next = topology_ready_pop(ready)
     result.push(txs[next].id)
     for ei in g.adj[next] {
-      degree[g.targets[ei]] -= 1
+      let target = g.targets[ei]
+      degree[target] -= 1
+      if degree[target] == 0 && txs[target].status == Committed {
+        topology_ready_push(ready, target)
+      }
     }
   }
   result

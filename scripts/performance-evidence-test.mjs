@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { EvidenceIoError, PerformanceEvidenceJournal, recoverPerformanceEvidence,
-  writeImmutableEvidence } from './performance-evidence.mjs';
+  writeImmutableEvidence, writeVerifiedJson } from './performance-evidence.mjs';
 
 const fixtures = [];
 const passed = [];
@@ -239,6 +239,52 @@ try {
     assert.equal(restored.receipt.complete, false);
     assert.equal(restored.receipt.formalReleaseGatePassed, false);
     assert.equal(restored.receipt.correctnessPassed, false);
+  });
+
+  test('verified JSON receipt replacement preserves original bytes after physical write failures and retries only the already encoded output', () => {
+    const fixture = setup(), target = join(fixture.root, 'verification-summary.json');
+    const original = { passed: true, checks: 75, evidence: ['original complete receipt'] };
+    writeVerifiedJson(target, original);
+    const originalBytes = fs.readFileSync(target);
+    let phase = 'partial-write', partialWrites = 0, openAttempts = 0, encodings = 0;
+    const fdPaths = new Map();
+    const io = { ...fs,
+      openSync(path, ...args) {
+        if (phase === 'transient-open') {
+          openAttempts++;
+          if (openAttempts < 3) throw ioError('UNKNOWN', 'open');
+        }
+        const fd = fs.openSync(path, ...args);
+        fdPaths.set(fd, String(path));
+        return fd;
+      },
+      writeSync(fd, buffer, offset, length, position) {
+        if (phase === 'partial-write' && fdPaths.has(fd)) {
+          fs.writeSync(fd, buffer, offset, Math.min(11, length), position);
+          partialWrites++;
+          throw ioError('UNKNOWN', 'write');
+        }
+        return fs.writeSync(fd, buffer, offset, length, position);
+      },
+      closeSync(fd) { fdPaths.delete(fd); return fs.closeSync(fd); },
+    };
+    const replacement = { passed: true, checks: 91, evidence: ['one computed replacement'] };
+    const output = { toJSON() { encodings++; return replacement; } };
+    const configuration = { io, maxAttempts: 3, retryDelayMs: 0 };
+    assert.throws(() => writeVerifiedJson(target, output, configuration), error =>
+      error instanceof EvidenceIoError && error.operation === 'pointer-replace' &&
+      error.code === 'UNKNOWN' && error.attempts.length === 3);
+    assert.equal(partialWrites, 3, 'The fault physically wrote staging bytes on all three bounded attempts');
+    assert.equal(encodings, 1, 'Retrying persistence must not recalculate the receipt');
+    assert.deepEqual(fs.readFileSync(target), originalBytes);
+    assert.deepEqual(JSON.parse(fs.readFileSync(target)), original);
+    assert.equal(fs.readdirSync(fixture.root).filter(name => name.endsWith('.pending')).length, 3);
+    phase = 'transient-open';
+    writeVerifiedJson(target, output, configuration);
+    assert.equal(openAttempts, 3);
+    assert.equal(encodings, 2, 'Each explicit save encodes once; I/O retries reuse those exact bytes');
+    assert.deepEqual(fs.readFileSync(target), Buffer.from(JSON.stringify(replacement, null, 2) + '\n'));
+    assert.deepEqual(JSON.parse(fs.readFileSync(target)), replacement);
   });
 
   console.log(JSON.stringify({ passed: true, tests: passed.length, cases: passed,

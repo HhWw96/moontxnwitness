@@ -20,12 +20,14 @@ ROOT = Path(__file__).resolve().parent.parent
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--bin', default=str(ROOT / 'artifacts/postgres18-tools/pgsql/bin'))
-    parser.add_argument('--suite', choices=['capture', 'legacy', 'all', 'provenance', 'provenance-cost', 'provenance-profile', 'capture-with-profile', 'dislock', 'capture-with-dislock'], default='capture')
+    parser.add_argument('--work-root', type=Path, default=ROOT / 'artifacts/capture-postgres',
+                        help='Parent for new owned cluster files; existing runs are never reused or removed')
+    parser.add_argument('--suite', choices=['capture', 'legacy', 'all', 'provenance', 'provenance-cost', 'provenance-profile', 'capture-with-profile', 'dislock', 'capture-with-dislock', 'presence', 'presence-database', 'capture-with-presence', 'all-with-presence'], default='capture')
     args = parser.parse_args()
-    parent = (ROOT / 'artifacts/capture-postgres').resolve()
+    parent = args.work_root.resolve()
     parent.mkdir(parents=True, exist_ok=True)
     work = Path(tempfile.mkdtemp(prefix='run-', dir=parent)).resolve()
-    assert work.is_relative_to(ROOT.resolve())
+    assert work.is_relative_to(parent)
     binaries = Path(args.bin).resolve()
     suffix = '.exe' if os.name == 'nt' else ''
     assert (binaries / ('initdb' + suffix)).is_file()
@@ -79,10 +81,22 @@ def main():
         connection_file.write_text(json.dumps({'host':'127.0.0.1', 'port':port,
             'dbname':'postgres', 'user':'mtw', 'password':password}), encoding='utf8')
         env['MTW_PG_CONNECTION_FILE'] = str(connection_file)
-        suites = (['legacy','capture'] if args.suite == 'all' else
+        suites = (['legacy','capture','provenance-profile','dislock','presence'] if args.suite == 'all-with-presence' else
+                  ['legacy','capture'] if args.suite == 'all' else
+                  ['capture','provenance-profile','dislock','presence'] if args.suite == 'capture-with-presence' else
                   ['capture','provenance-profile','dislock'] if args.suite == 'capture-with-dislock' else
                   ['capture','provenance-profile'] if args.suite == 'capture-with-profile' else [args.suite])
         for suite in suites:
+            if suite in ('presence', 'presence-database'):
+                output = ROOT / 'verification/provenance-presence' / ('run-' + uuid.uuid4().hex)
+                command = (['node', str(ROOT / 'experiments/provenance/presence_e2e.mjs')]
+                    if suite == 'presence' else [sys.executable, '-B', str(ROOT / 'experiments/provenance/presence_postgres.py')])
+                result = subprocess.run(command + [
+                    '--schema', 'mtw_provenance_presence_' + uuid.uuid4().hex[:12], '--output', str(output)],
+                    cwd=ROOT, env=env, creationflags=flags)
+                if result.returncode:
+                    return result.returncode
+                continue
             if suite == 'dislock':
                 output = ROOT / 'verification/business/dislock' / ('run-' + uuid.uuid4().hex)
                 result = subprocess.run(['node', str(ROOT / 'experiments/business/dislock/e2e.mjs'),
@@ -128,7 +142,7 @@ def main():
         if drive is not None:
             assert Path(drive + '/').resolve() == work
             subprocess.run(['subst', drive, '/D'], check=True, creationflags=flags)
-        print('Owned database stopped; files retained in artifacts/capture-postgres/' + work.name)
+        print('Owned database stopped; cluster and logs retained in the selected work root as ' + work.name)
 
 
 if __name__ == '__main__':

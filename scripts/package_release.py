@@ -19,6 +19,20 @@ NODE = os.environ.get("MTW_NODE", "node")
 SUMMARY = json.loads((ROOT / "verification/summary.json").read_text(encoding="utf-8"))
 assert SUMMARY["passed"] is True and SUMMARY["version"] == VERSION, "Run npm test before packaging"
 assert (ROOT / "dist/core.mjs").is_file(), "Build the runtime before packaging"
+MANIFEST = json.loads((ROOT / 'dist/build-manifest.json').read_text(encoding='utf-8'))
+assert SUMMARY.get('buildManifest') == MANIFEST, 'Run all tests against this exact runtime before packaging'
+tested_files = json.loads(subprocess.check_output([NODE, '--input-type=module', '-e',
+    "import {verificationFingerprint} from './scripts/verification-fingerprint.mjs'; console.log(JSON.stringify(verificationFingerprint(process.cwd())));"],
+    cwd=ROOT, text=True))
+assert SUMMARY.get('testedFileSha256') == tested_files, 'Executable sources or wrappers changed after tests; rerun verification'
+current_source = subprocess.check_output([NODE, '--input-type=module', '-e',
+    "import {sourceFingerprint} from './scripts/build-fingerprint.mjs'; console.log(sourceFingerprint(process.cwd()));"],
+    cwd=ROOT, text=True).strip()
+assert current_source == MANIFEST['sourceSha256'], 'MoonBit source changed after the verified build'
+for runtime, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'captureCoreSha256')):
+    assert hashlib.sha256((ROOT / 'dist' / runtime).read_bytes()).hexdigest() == MANIFEST[field], 'Compiled runtime changed after build'
+for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'demo.mjs', 'postgres-demo.mjs'):
+    assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
 
 
 def sha256(path):
@@ -66,7 +80,7 @@ all_releases = [path for path in sorted(ARTIFACTS.glob("MoonTxnWitness-v*-*.zip"
 (ARTIFACTS / "SHA256SUMS").write_text("".join(sha256(path) + "  " + path.name + "\n" for path in all_releases), encoding="utf-8")
 
 # All work is created below the project. No existing directory is reset or removed.
-consumer_parent = ARTIFACTS / "consumer-work"
+consumer_parent = Path(os.environ.get('MTW_CONSUMER_WORK_ROOT', str(ARTIFACTS / 'consumer-work'))).resolve()
 consumer_parent.mkdir(exist_ok=True)
 work = Path(tempfile.mkdtemp(prefix="run-", dir=consumer_parent)).resolve()
 assert work.is_relative_to(consumer_parent.resolve())
@@ -157,6 +171,12 @@ for kind in ("portable", "source"):
             profile = run([sys.executable, '-c', "import sys; sys.path.insert(0,'experiments/provenance'); from returning_profile import ReturningPointProfile; print(ReturningPointProfile.__name__)"], consumer)
             assert profile.strip() == 'ReturningPointProfile'
             checks.append(kind + ' experimental existing-RETURNING profile import without database access')
+        if (ROOT / 'experiments/provenance/presence_profile.py').exists():
+            profile = run([sys.executable, '-c', "import sys; sys.path.insert(0,'experiments/provenance'); from presence_profile import PresencePointProfile; print(PresencePointProfile.__name__)"], consumer)
+            assert profile.strip() == 'PresencePointProfile'
+            assert (consumer / 'experiments/provenance/PRESENCE_PROFILE.md').is_file()
+            assert json.loads(run([NODE, '--input-type=module', '-e', "import {normalizePresenceCapture} from './dist/sdk.mjs'; console.log(JSON.stringify(normalizePresenceCapture('{}')));"], consumer))['status'] == 'invalid'
+            checks.append(kind + ' experimental presence adapter import and independent SDK rejection without database access')
         if (ROOT / 'experiments/business/dislock/business.py').exists():
             source = run([sys.executable, '-c', "import sys; sys.path.insert(0,'experiments/business/dislock'); from business import verify_sources; print(verify_sources()['commit'])"], consumer)
             assert source.strip() == 'f9946f07159054433d9071c3805e41223cb47856'

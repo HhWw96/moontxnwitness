@@ -1,5 +1,14 @@
 # 0.1.1 — development
 
+- Add a separate experimental trace-2 presence projection for frozen-key ordinary
+  tables: observed negative reads, INSERT/UPDATE/DELETE, tombstones and reinserts.
+  MoonBit validates operation/fact bindings and factual committed source chains;
+  metadata predecessors never create application reads. Stable trace-1 rejects it.
+- Scan plain ASCII identifiers once while preserving the Unicode/escape fallback
+  and typed validation. Use an original-index min-heap for deterministic topology
+  without repeatedly scanning emitted transactions; complete reports retain bytes.
+- Bind tested executable sources and JS/Python wrappers by SHA-256 before packaging.
+  Save test receipts through verified atomic writes with filesystem-only retries.
 - Avoid rescanning the entire original history for every reduction cache key.
   Encode retained original transaction indices in bounded keys and skip index
   reconstruction on cached failures or exhausted budgets. Valid frozen reports

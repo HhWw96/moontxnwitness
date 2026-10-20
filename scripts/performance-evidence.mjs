@@ -1,4 +1,4 @@
-// Filesystem-only persistence for benchmark evidence. No benchmark is retried.
+// Filesystem-only persistence for evidence. No analysis or test is retried.
 import * as fs from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { basename, dirname, join } from 'node:path';
@@ -124,6 +124,12 @@ function replacePointer(target, value, configuration) {
       discardTemporary(temporary, io);
     }
   }, configuration);
+}
+
+// Test receipts are complete JSON documents too. Reuse the same verified atomic
+// publication path; a temporary file failure must not truncate the prior result.
+export function writeVerifiedJson(target, value, configuration = {}) {
+  replacePointer(target, value, options(configuration));
 }
 
 function checkedSnapshot(bytes) {

@@ -1,4 +1,4 @@
-"""Check published business artifact bindings without running a database.
+"""Check published business/presence artifact bindings without running a database.
 
 --git verifies the actual HEAD blobs, catching checkout/commit transformations
 that a working-tree-only check cannot see. No file is modified by this script.
@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 def verify(use_git=False):
     receipts = sorted((ROOT / "verification/business/dislock").glob("run-*/business-receipt.json"))
+    receipts += sorted((ROOT / "verification/provenance-presence").glob("run-*/presence-receipt.json"))
     if not receipts:
         raise ValueError("No completed business receipt is present")
     files = 0
@@ -30,6 +31,8 @@ def verify(use_git=False):
         for scenario in receipt["scenarios"]:
             bindings = scenario["artifactBindings"]
             required = {"trace", "coverage"}
+            if path.name == 'presence-receipt.json':
+                required.add('audit')
             if scenario["expectedStatus"] == "ready":
                 required |= {"history", "report", "capsule"}
             elif set(bindings) & {"history", "report", "capsule"}:
@@ -38,8 +41,10 @@ def verify(use_git=False):
                 raise ValueError("Required artifact binding is missing")
             for binding in bindings.values():
                 name = binding["path"]
+                if not isinstance(name, str):
+                    raise ValueError("Artifact path must be a string")
                 relative = PurePosixPath(name)
-                if (not isinstance(name, str) or not relative.parts or relative.is_absolute()
+                if (not relative.parts or relative.is_absolute()
                         or ".." in relative.parts or "\\" in name or ":" in name):
                     raise ValueError("Artifact path must stay within its receipt directory")
                 target = path.parent.joinpath(*relative.parts)

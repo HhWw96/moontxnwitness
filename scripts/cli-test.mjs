@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 import { analyze, analyzeWithOptions, version, shrink, shrinkWithOptions, compareModels, replayReport } from '../dist/sdk.mjs';
 import { noisy as noisyHistoryFixture } from './benchmark-fixtures.mjs';
 import { root } from './moon.mjs';
+import {writeVerifiedJson} from './performance-evidence.mjs';
 
 export function runCliTests() {
   const release = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
@@ -188,7 +189,7 @@ export function runCliTests() {
   });
   const receipt = { tool: 'MoonTxnWitness', version: version(), passed: true, checks: checks.length, names: checks, sqlite: 'actual in-memory SQLite sequential commits', concurrentRuns };
   mkdirSync(resolve(root, 'verification'), { recursive: true });
-  writeFileSync(resolve(root, 'verification/cli.json'), JSON.stringify(receipt, null, 2) + '\n');
+  writeVerifiedJson(resolve(root, 'verification/cli.json'), receipt);
   console.log(`CLI integration: ${checks.length} checks passed, including actual SQLite capture.`);
   return receipt;
 }

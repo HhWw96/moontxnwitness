@@ -95,6 +95,14 @@ jobs:
             python experiments/business/dislock/test_business.py
             node experiments/business/dislock/e2e.mjs --schema mtw_provenance_dislock_ci --output verification/business/dislock/ci
           fi
+      - name: Verify experimental CRUD and negative-read projection
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          if [ -f experiments/provenance/presence_e2e.mjs ]; then
+            python experiments/provenance/test_presence_profile.py
+            node experiments/provenance/presence_e2e.mjs --schema mtw_provenance_presence_ci --output verification/provenance-presence/ci
+          fi
       - name: Preserve actual database server logs
         if: always()
         env:
@@ -116,3 +124,4 @@ jobs:
             verification/provenance-prototypes/ci/
             verification/provenance-profile/ci/
             verification/business/dislock/ci/
+            verification/provenance-presence/ci/

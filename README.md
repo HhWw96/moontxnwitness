@@ -8,6 +8,8 @@ English: An offline MoonBit transaction-history checker with shortest cycle witn
 
 当前开发版新增 [驱动自动采集与 MoonBit 归一化](docs/automatic-capture.md)。已有业务接入等发布门槛尚待完成；公开稳定包仍为 v0.1.0。后续工作见 [v0.2.0 实施计划](docs/roadmap-v0.2.0.md)。
 
+普通无版本列业务表的 [固定键 CRUD 与空结果采集实验](experiments/provenance/PRESENCE_PROFILE.md)已接通数据库、MoonBit 校验、分析、缩减和重放。实验入口为 `normalizePresenceCapture` / `ingest-presence`；支持范围及安装成本单列，尚未作为 v0.1.2 稳定接口发布。
+
 ## 先运行完整演示
 
 下载 portable ZIP，解压后运行。需要 **Node.js ≥20**，本机验证使用 24.13.0：

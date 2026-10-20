@@ -100,11 +100,42 @@ fn HistoryScan::string(self : HistoryScan) -> String raise {
 
 ///|
 fn HistoryScan::identifier(self : HistoryScan) -> String raise {
-  let value = self.string()
-  if !valid_identifier(value) {
-    fail("Invalid identifier")
+  self.white()
+  let start = self.pos
+  if self.peek() != 34 {
+    fail("Expected string")
   }
-  value
+  self.pos += 1
+  let content = self.pos
+  while self.pos < self.text.length() {
+    let c = self.text.unsafe_get(self.pos).to_int()
+    if c == 34 {
+      if self.pos == content {
+        fail("Invalid identifier")
+      }
+      let end = self.pos
+      self.pos += 1
+      return match self.text.get_view(start=content, end~) {
+        Some(view) => view.to_owned()
+        None => fail("Invalid ASCII boundary")
+      }
+    }
+    if c == 92 || c > 127 {
+      // Keep official scalar decoding and decoded-length validation for every
+      // escape and non-ASCII value. Typed history validation still runs later.
+      self.pos = start
+      let value = self.string()
+      if !valid_identifier(value) {
+        fail("Invalid identifier")
+      }
+      return value
+    }
+    if c < 32 || c == 127 || self.pos - content >= 256 {
+      fail("Invalid identifier")
+    }
+    self.pos += 1
+  }
+  fail("Unclosed string")
 }
 
 ///|

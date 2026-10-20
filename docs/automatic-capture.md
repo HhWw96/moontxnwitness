@@ -25,6 +25,8 @@ node dist/moontxnwitness.mjs replay case.capsule.json
 
 SDK 提供 `normalizeCapture(trace)`。它与命令行共同使用 MoonBit `normalize_capture_json`，不在 JS 中另写判定逻辑。`ingest` 接受文件或标准输入，输出文件必须尚不存在。
 
+普通表 CRUD 的实验使用独立 `traceSchema: 2`，调用 `normalizePresenceCapture(trace)` 或 `ingest-presence`。它在固定已知键集合内记录存在性、墓碑和同语句版本来源，详情见 [实验说明](../experiments/provenance/PRESENCE_PROFILE.md)。原 `normalizeCapture` / `ingest` 继续拒绝该新格式；实验不是任意 SQL、ORM 或范围查询支持。
+
 ## 采集结果和分析结果分开
 
 | 归一化状态 | 含义 | 是否导出历史 |

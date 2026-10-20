@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 2,
+  "tool": "MoonTxnWitness",
+  "version": "0.1.1",
+  "status": "violation",
+  "model": "serializable",
+  "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+  "complete": true,
+  "stats": {
+    "transactions": 2,
+    "committed": 2,
+    "operations": 4,
+    "dependencies": 2
+  },
+  "findings": [
+    {
+      "code": "dependency_cycle",
+      "severity": "violation",
+      "message": "The dependency cycle prevents any serial order satisfying these observations and constraints",
+      "transactions": [
+        "tx-1",
+        "tx-2"
+      ],
+      "key": null,
+      "ops": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "tx-1",
+      "to": "tx-2",
+      "kind": "rw",
+      "key": "[\"mtw_provenance_profile_b77a120d2ffc.items_skew\",\"text\",\"b\"]",
+      "fromOp": 0,
+      "toOp": 1,
+      "fromVersion": "c9b8ea19-096e-4fcf-8516-f6f6988d18d2",
+      "toVersion": "9d771382-3001-4c23-8310-878c800766a6",
+      "reason": "The reader observes an earlier version and must precede this later committed write."
+    },
+    {
+      "from": "tx-2",
+      "to": "tx-1",
+      "kind": "rw",
+      "key": "[\"mtw_provenance_profile_b77a120d2ffc.items_skew\",\"text\",\"a\"]",
+      "fromOp": 0,
+      "toOp": 1,
+      "fromVersion": "442dd458-3461-478f-9f4c-a14dcf769be7",
+      "toVersion": "f6707e15-82b6-4f9c-8dec-6dbf9cf7f81b",
+      "reason": "The reader observes an earlier version and must precede this later committed write."
+    }
+  ],
+  "witness": {
+    "kind": "dependency_cycle",
+    "transactions": [
+      "tx-1",
+      "tx-2",
+      "tx-1"
+    ],
+    "edges": [
+      {
+        "from": "tx-1",
+        "to": "tx-2",
+        "kind": "rw",
+        "key": "[\"mtw_provenance_profile_b77a120d2ffc.items_skew\",\"text\",\"b\"]",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "c9b8ea19-096e-4fcf-8516-f6f6988d18d2",
+        "toVersion": "9d771382-3001-4c23-8310-878c800766a6",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "tx-2",
+        "to": "tx-1",
+        "kind": "rw",
+        "key": "[\"mtw_provenance_profile_b77a120d2ffc.items_skew\",\"text\",\"a\"]",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "442dd458-3461-478f-9f4c-a14dcf769be7",
+        "toVersion": "f6707e15-82b6-4f9c-8dec-6dbf9cf7f81b",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      }
+    ],
+    "minimality": "shortest directed cycle in the constructed graph"
+  },
+  "serialOrder": [],
+  "versionOrders": {
+    "[\"mtw_provenance_profile_b77a120d2ffc.items_skew\",\"text\",\"a\"]": [
+      "442dd458-3461-478f-9f4c-a14dcf769be7",
+      "f6707e15-82b6-4f9c-8dec-6dbf9cf7f81b"
+    ],
+    "[\"mtw_provenance_profile_b77a120d2ffc.items_skew\",\"text\",\"b\"]": [
+      "c9b8ea19-096e-4fcf-8516-f6f6988d18d2",
+      "9d771382-3001-4c23-8310-878c800766a6"
+    ]
+  },
+  "versionOrderSources": {
+    "[\"mtw_provenance_profile_b77a120d2ffc.items_skew\",\"text\",\"a\"]": "single-writer",
+    "[\"mtw_provenance_profile_b77a120d2ffc.items_skew\",\"text\",\"b\"]": "single-writer"
+  },
+  "graph": {
+    "analyzed": true,
+    "components": 1,
+    "cyclicComponents": 1,
+    "cyclicTransactions": 2,
+    "bfsRoots": 1,
+    "edgeBudgetExceeded": false
+  },
+  "coverage": [
+    {
+      "key": "[\"mtw_provenance_profile_b77a120d2ffc.items_skew\",\"text\",\"a\"]",
+      "committedReads": 1,
+      "committedFinalWrites": 1,
+      "unresolvedReads": 0,
+      "versionOrderSource": "single-writer",
+      "sourceLabel": "单写者推断"
+    },
+    {
+      "key": "[\"mtw_provenance_profile_b77a120d2ffc.items_skew\",\"text\",\"b\"]",
+      "committedReads": 1,
+      "committedFinalWrites": 1,
+      "unresolvedReads": 0,
+      "versionOrderSource": "single-writer",
+      "sourceLabel": "单写者推断"
+    }
+  ],
+  "nextSteps": [
+    "保留原始日志，使用 shrink 缩减反例，并用 capsule 保存可复现证据。"
+  ],
+  "search": {
+    "status": "not-needed",
+    "reason": "No bounded completion search was required."
+  },
+  "algorithm": "bounded-register-v2.1",
+  "effectiveLimits": {
+    "transactions": 12,
+    "operations": 512,
+    "keys": 128,
+    "attempts": 100000,
+    "operationChecks": 1000000,
+    "cachedStates": 50000
+  },
+  "analysisOptions": {
+    "maxAttempts": 100000,
+    "maxOperationChecks": 1000000,
+    "maxCachedStates": 50000
+  },
+  "metrics": {
+    "attempts": 0,
+    "operationChecks": 0,
+    "cacheHits": 0,
+    "cachedStates": 0,
+    "blockers": []
+  }
+}

@@ -1,0 +1,160 @@
+{
+  "schema": 1,
+  "status": "passed",
+  "passed": true,
+  "actualDatabaseExecution": false,
+  "auditType": "Independent static byte/source/fact-chain audit and capsule replay; no database execution",
+  "databaseExecutionClaim": {
+    "source": "verification/provenance-presence/run-6089a462bdbd43e9ab80edc94b481c61/presence-receipt.json",
+    "recordedActualDatabaseExecution": true,
+    "server": "PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35229, 64-bit",
+    "driver": "3.3.6",
+    "notIndependentlyRerun": true
+  },
+  "inputReceipt": {
+    "path": "verification/provenance-presence/run-6089a462bdbd43e9ab80edc94b481c61/presence-receipt.json",
+    "sha256": "f8cee10b0197fd805ea3684981474203cb7b1cd7a5118242c627ed5581a2f7bd",
+    "bytes": 14644
+  },
+  "currentBuild": {
+    "version": "0.1.1",
+    "toolchain": {
+      "compiler": "v0.10.14+7d59c7ec9",
+      "moon": "moon 0.1.20260920"
+    },
+    "sourceSha256": "c00c514defb7f551aae417245c5f6642284874cbdaf1a0fe77e717a433265bb1",
+    "coreSha256": "a8b94cd9e8db7a643523e7cd201ff5bce65b4382d25e41892cb6e431eebca3c3",
+    "captureCoreSha256": "33c14cf537fb454e2177eaa17c4f7467c4c28316b9de04e1e8d4c9c665e57506"
+  },
+  "scenarios": [
+    {
+      "name": "crud-absence-reinsert-rollback",
+      "status": "ready",
+      "verdict": "consistent",
+      "bindings": 7,
+      "rawOperations": 19,
+      "preservedReadFacts": 11,
+      "writeFacts": 8,
+      "committedWritesMatchedAudit": 6,
+      "abortedWritesAbsentFromAudit": 2,
+      "originalOperationsPreservedExactly": true,
+      "factualFinalOrderMatchedAudit": true
+    },
+    {
+      "name": "negative-point-write-skew",
+      "status": "ready",
+      "verdict": "violation",
+      "bindings": 7,
+      "rawOperations": 4,
+      "preservedReadFacts": 2,
+      "writeFacts": 2,
+      "committedWritesMatchedAudit": 2,
+      "abortedWritesAbsentFromAudit": 0,
+      "originalOperationsPreservedExactly": true,
+      "factualFinalOrderMatchedAudit": true
+    },
+    {
+      "name": "read-committed-delete-source",
+      "status": "ready",
+      "verdict": "consistent",
+      "bindings": 7,
+      "rawOperations": 4,
+      "preservedReadFacts": 1,
+      "writeFacts": 3,
+      "committedWritesMatchedAudit": 3,
+      "abortedWritesAbsentFromAudit": 0,
+      "originalOperationsPreservedExactly": true,
+      "factualFinalOrderMatchedAudit": true
+    },
+    {
+      "name": "gap-unread",
+      "status": "inconclusive",
+      "verdict": null,
+      "bindings": 3,
+      "rawOperations": 0,
+      "preservedReadFacts": 0,
+      "writeFacts": 0,
+      "committedWritesMatchedAudit": 0,
+      "abortedWritesAbsentFromAudit": 0,
+      "originalOperationsPreservedExactly": false,
+      "factualFinalOrderMatchedAudit": false
+    },
+    {
+      "name": "gap-unknown",
+      "status": "inconclusive",
+      "verdict": null,
+      "bindings": 3,
+      "rawOperations": 0,
+      "preservedReadFacts": 0,
+      "writeFacts": 0,
+      "committedWritesMatchedAudit": 0,
+      "abortedWritesAbsentFromAudit": 0,
+      "originalOperationsPreservedExactly": false,
+      "factualFinalOrderMatchedAudit": false
+    },
+    {
+      "name": "gap-zero",
+      "status": "inconclusive",
+      "verdict": null,
+      "bindings": 3,
+      "rawOperations": 0,
+      "preservedReadFacts": 0,
+      "writeFacts": 0,
+      "committedWritesMatchedAudit": 0,
+      "abortedWritesAbsentFromAudit": 0,
+      "originalOperationsPreservedExactly": false,
+      "factualFinalOrderMatchedAudit": false
+    }
+  ],
+  "otherSuites": [
+    {
+      "name": "legacy",
+      "receipt": "verification/postgres.json",
+      "receiptSha256": "e775a34bd04e28d383f182f3e5d3f5d75fe3d8a3e277a91bd379e930fb63bc06",
+      "recordedActualDatabaseExecution": true,
+      "replayedCapsules": 3,
+      "bindings": 0,
+      "auditActualDatabaseExecution": false
+    },
+    {
+      "name": "capture",
+      "receipt": "verification/capture-postgres.json",
+      "receiptSha256": "c36bcfb48528c4251081132fb367c5d1bb65365fe41b80dcd8b307561d1996a1",
+      "recordedActualDatabaseExecution": true,
+      "replayedCapsules": 4,
+      "bindings": 0,
+      "auditActualDatabaseExecution": false
+    },
+    {
+      "name": "profile",
+      "receipt": "verification/provenance-profile/run-f1c1d811997045a7ae634478e3e784d9/profile-receipt.json",
+      "receiptSha256": "7d0043763824d1dc01bf103a0195e8dc2b6c4087d77880c2708c38189858ae1b",
+      "recordedActualDatabaseExecution": true,
+      "replayedCapsules": 2,
+      "bindings": 0,
+      "auditActualDatabaseExecution": false
+    },
+    {
+      "name": "dislock",
+      "receipt": "verification/business/dislock/run-fe5c5fe545534dc8b3675ca67505ab73/business-receipt.json",
+      "receiptSha256": "126d67bdb2e1cdc7bce253f1e925efe68853703c8d524c3dd40e8636858e4b1a",
+      "recordedActualDatabaseExecution": true,
+      "replayedCapsules": 4,
+      "bindings": 27,
+      "auditActualDatabaseExecution": false
+    }
+  ],
+  "generatedAt": "2026-10-20T15:31:45.308Z",
+  "artifactBindings": 30,
+  "sourceFilesVerified": 11,
+  "replayedPresenceCapsules": 3,
+  "scenarioCount": 6,
+  "rejectionsVerified": 10,
+  "tamperChecksVerified": 8,
+  "boundaries": [
+    "This audit did not run a database, build, or benchmark",
+    "Initial presence flags are new raw facts: key/token binding and later coherence do not authenticate an unused flag as database truth",
+    "SHA-256 bindings detect mismatches, not authenticity of collection or full application behavior",
+    "Only observed point operations are projected; no predecessor was synthesized as an application read"
+  ]
+}

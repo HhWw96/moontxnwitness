@@ -1,0 +1,155 @@
+{
+  "status": "driver-passed-core-pending",
+  "actualDatabaseExecution": true,
+  "scope": "controlled synthetic SQL profile; not existing external application adoption",
+  "server": "PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35229, 64-bit",
+  "driver": "3.3.6",
+  "python": "3.12.5",
+  "scenarios": [
+    {
+      "name": "same-value-intermediate-rollback",
+      "trace": "same-value-intermediate-rollback.trace.json",
+      "expectedStatus": "ready",
+      "expectedVerdict": "consistent",
+      "facts": {
+        "intermediateWriteTokens": [
+          "da1a5ea4-90a3-4caa-bdd7-8ad4e1121094",
+          "80705184-2573-4488-9538-2b30e8bff9b4"
+        ],
+        "abortedToken": "6ddffa25-2d81-42d8-8c83-d9a39f207945",
+        "businessSurfaceCompared": true,
+        "originalConstraintError": "23502"
+      },
+      "independentAudit": {
+        "versions": 4,
+        "writes": 2,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "ddlTamperingRejected": [
+        "nonce",
+        "disabled-trigger",
+        "function-body"
+      ],
+      "uninstallPreservedBusinessRows": true
+    },
+    {
+      "name": "repeatable-read-write-skew",
+      "trace": "repeatable-read-write-skew.trace.json",
+      "expectedStatus": "ready",
+      "expectedVerdict": "violation",
+      "facts": {
+        "schedule": "both point reads before disjoint point updates; acknowledged commits"
+      }
+    },
+    {
+      "name": "unsupported-sql",
+      "trace": "unsupported-sql.trace.json",
+      "expectedStatus": "inconclusive",
+      "expectedVerdict": null,
+      "facts": {
+        "originalSqlExecuted": true
+      }
+    },
+    {
+      "name": "unconsumed",
+      "trace": "unconsumed.trace.json",
+      "expectedStatus": "inconclusive",
+      "expectedVerdict": null,
+      "facts": {
+        "originalSqlExecuted": true
+      }
+    }
+  ],
+  "rejections": [
+    {
+      "feature": "outgoing-fk",
+      "rejected": true,
+      "stableRejected": true,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "incoming-fk",
+      "rejected": true,
+      "stableRejected": true,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "rewrite-rule",
+      "rejected": true,
+      "stableRejected": true,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "check",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "generated",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "expression-index",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "partial-index",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "domain",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "inherited-parent",
+      "rejected": true,
+      "stableRejected": true,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "inherited-child",
+      "rejected": true,
+      "stableRejected": true,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "failure-after-ddl",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    }
+  ],
+  "schemaRetained": false,
+  "notMeasured": [
+    "full capture C/A performance",
+    "multi-client contention cost",
+    "CPU",
+    "RSS",
+    "lock waits"
+  ],
+  "sources": {
+    "capture_profile_postgres.py": "0a0ae45a353628937048cd6387e3f2564ea8f93980b6bbbd20088f5f7127c951",
+    "capture_profile.py": "4ba5559a8c618f584ace50981723a9ee53300718e95dc7650c5ff40bf9ca0c8f",
+    "prototype.py": "2e40349d7d44fe8ca54786c0f3a9ecc52847a4558078bc7bd2cab6c1c9e64a71"
+  }
+}

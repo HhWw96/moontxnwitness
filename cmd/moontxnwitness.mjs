@@ -11,6 +11,7 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs shrink HISTORY.json [--output REDUCTION.json] [--history MINI.json]
   node dist/moontxnwitness.mjs compare-models HISTORY.json [--output COMPARISON.json]
   node dist/moontxnwitness.mjs ingest TRACE.json [--output COVERAGE.json] [--history HISTORY.json]
+  node dist/moontxnwitness.mjs ingest-presence TRACE2.json [--output COVERAGE.json] [--history HISTORY.json]
   node dist/moontxnwitness.mjs replay CAPSULE.json
   check 也支持 --capsule FILE 导出含日志、报告和 SHA-256 的自包含复现包。
   check 支持 --profile balanced 使用 12 事务搜索和 v2 证据；默认 compat 保留旧接口行为。
@@ -18,6 +19,7 @@ const help = `MoonTxnWitness v${version()}
 
 check 支持以 - 从标准输入读取 UTF-8 JSON。模型由输入中的 model 选择。
 ingest 用 MoonBit 校验自动采集记录；只有 ready 状态才可导出历史。ready 不表示历史符合隔离模型。
+ingest-presence 为实验入口，校验固定键普通表的存在性与版本来源；不代表支持任意 SQL。
 输出文件必须尚不存在；不会覆盖输入或现有报告。--witness 导出精简环证据。
 退出码：0 符合所选模型；1 确定异常；2 输入/执行/证据无效；3 无法判定。
 结果只针对提供的唯一版本读写历史及版本顺序约束。不会连接数据库或上传数据。
@@ -106,10 +108,11 @@ try {
     const result = JSON.parse(verify_certificate_json(readBounded(args[1], 2 * 1024 * 1024), readBounded(args[2], 32 * 1024 * 1024)));
     console.log(JSON.stringify(result, null, 2));
     process.exitCode = result.valid ? 0 : 2;
-  } else if (args[0] === 'ingest') {
+  } else if (args[0] === 'ingest' || args[0] === 'ingest-presence') {
     const { paths, options } = localArgs(args.slice(1), ['--output', '--history'], 1);
-    const { normalize_capture_json } = await import('./capture-core.mjs');
-    const result = JSON.parse(normalize_capture_json(readBounded(paths[0], 8 * 1024 * 1024)));
+    const capture = await import('./capture-core.mjs');
+    const normalize = args[0] === 'ingest-presence' ? capture.normalize_presence_json : capture.normalize_capture_json;
+    const result = JSON.parse(normalize(readBounded(paths[0], 8 * 1024 * 1024)));
     const companions = [];
     if (options['--history']) {
       if (result.status !== 'ready' || !result.history) throw new Error('采集记录不完整或无效，未导出历史；请先查看 ingest 覆盖报告');

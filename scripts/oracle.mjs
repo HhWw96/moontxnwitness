@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { analyze, analyzeWithOptions, verify, shrink, shrinkWithOptions, replayReport } from '../dist/sdk.mjs';
 import { completion } from './benchmark-fixtures.mjs';
 import { root } from './moon.mjs';
+import {writeVerifiedJson} from './performance-evidence.mjs';
 
 function permutations(items) {
   if (items.length === 0) return [[]];
@@ -215,7 +216,7 @@ export function runOracle() {
   }
   const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version, passed: true, method: 'Independent full serial-order enumeration and register replay; DFS shortest-cycle comparison', seed: '0x51A17E', counts, elapsedMs: Math.round(performance.now() - started) };
   mkdirSync(resolve(root, 'verification'), { recursive: true });
-  writeFileSync(resolve(root, 'verification/oracle.json'), JSON.stringify(receipt, null, 2) + '\n');
+  writeVerifiedJson(resolve(root, 'verification/oracle.json'), receipt);
   console.log(`Independent oracle: ${counts.exhaustive + counts.generated + counts.completion} histories agree; ${counts.certificates} cycle certificates verified.`);
   return receipt;
 }
