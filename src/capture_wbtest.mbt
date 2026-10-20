@@ -331,3 +331,289 @@ test "capture event resource limits are explicit before event traversal" {
   object_fields(fixture, "test")["events"] = Array::make(65537, Json::null()).to_json()
   let _ = capture_check(fixture, "invalid")
 }
+
+///|
+fn column_capture_key() -> String {
+  "[\"mtw_provenance_profile.items\",\"text\",\"a\"]"
+}
+
+///|
+fn column_capture_trace(body : Array[Json]) -> Json raise {
+  let initial : Map[String, String] = Map([
+    (column_capture_key(), "50000000-0000-4000-8000-000000000000"),
+  ])
+  let events : Array[Json] = [
+    {
+      "kind": "snapshot",
+      "seq": 1,
+      "time": 0,
+      "consistent": true,
+      "initial": initial.to_json(),
+    },
+  ]
+  for index, event in body {
+    let fields = object_fields(event, "column capture test event")
+    fields["seq"] = (index + 2).to_json()
+    fields["time"] = (index + 1).to_json()
+    events.push(event)
+  }
+  {
+    "traceSchema": 1,
+    "clockDomain": "column-profile-monotonic-test",
+    "scope": { "exclusiveWriters": true },
+    "gaps": [],
+    "events": events.to_json(),
+  }
+}
+
+///|
+test "server tokens preserve repeated-value writes and internal intermediate reads" {
+  let key = column_capture_key()
+  let first = "f0000000-0000-4000-8000-000000000001"
+  let final_token = "10000000-0000-4000-8000-000000000002"
+  let trace = column_capture_trace([
+    { "kind": "begin", "tx": "W" },
+    {
+      "kind": "sql",
+      "tx": "W",
+      "phase": "execute-request",
+      "mapped": true,
+      "sql": "UPDATE items SET value=%s WHERE id=%s",
+      "parameters": [7, "a"],
+    },
+    {
+      "kind": "sql",
+      "tx": "W",
+      "phase": "execute-ack",
+      "mapped": true,
+      "sql": "UPDATE items SET value=%s WHERE id=%s RETURNING private_version",
+      "affectedRows": 1,
+      "rows": [[first.to_json()]],
+    },
+    {
+      "kind": "op",
+      "tx": "W",
+      "op": {
+        "type": "write",
+        "key": key.to_json(),
+        "version": first.to_json(),
+      },
+    },
+    {
+      "kind": "sql",
+      "tx": "W",
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [[7, first.to_json()]],
+    },
+    {
+      "kind": "op",
+      "tx": "W",
+      "op": { "type": "read", "key": key.to_json(), "version": first.to_json() },
+    },
+    {
+      "kind": "sql",
+      "tx": "W",
+      "phase": "execute-request",
+      "mapped": true,
+      "sql": "UPDATE items SET value=%s WHERE id=%s",
+      "parameters": [7, "a"],
+    },
+    {
+      "kind": "sql",
+      "tx": "W",
+      "phase": "execute-ack",
+      "mapped": true,
+      "sql": "UPDATE items SET value=%s WHERE id=%s RETURNING private_version",
+      "affectedRows": 1,
+      "rows": [[final_token.to_json()]],
+    },
+    {
+      "kind": "op",
+      "tx": "W",
+      "op": {
+        "type": "write",
+        "key": key.to_json(),
+        "version": final_token.to_json(),
+      },
+    },
+    {
+      "kind": "op",
+      "tx": "W",
+      "op": {
+        "type": "read",
+        "key": key.to_json(),
+        "version": final_token.to_json(),
+      },
+    },
+    { "kind": "end", "tx": "W", "status": "committed" },
+    { "kind": "begin", "tx": "R" },
+    {
+      "kind": "op",
+      "tx": "R",
+      "op": {
+        "type": "read",
+        "key": key.to_json(),
+        "version": final_token.to_json(),
+      },
+    },
+    { "kind": "end", "tx": "R", "status": "committed" },
+  ])
+  let normalized = capture_check(trace, "ready")
+  let h = parse_history(capture_field(normalized, "history").stringify()).unwrap()
+  assert_eq(h.transactions[0].ops.length(), 4)
+  assert_eq(h.transactions[0].ops[0].version, first)
+  assert_eq(h.transactions[0].ops[1].version, first)
+  assert_eq(h.transactions[0].ops[2].version, final_token)
+  let report = analyze(h)
+  assert_true(report.outcome == Consistent)
+  assert_eq(report.inferred_orders.at(key), [
+    "50000000-0000-4000-8000-000000000000", final_token,
+  ])
+  assert_true(
+    report.edges.any(edge => {
+      edge.kind == WR &&
+      edge.from == "W" &&
+      edge.to == "R" &&
+      edge.from_op == Some(2)
+    }),
+  )
+  assert_true(h.version_orders.is_empty())
+}
+
+///|
+test "server-token projection retains external intermediate-version evidence" {
+  let key = column_capture_key()
+  let first = "f0000000-0000-4000-8000-000000000001"
+  let final_token = "10000000-0000-4000-8000-000000000002"
+  let trace = column_capture_trace([
+    { "kind": "begin", "tx": "W" },
+    {
+      "kind": "op",
+      "tx": "W",
+      "op": {
+        "type": "write",
+        "key": key.to_json(),
+        "version": first.to_json(),
+      },
+    },
+    {
+      "kind": "op",
+      "tx": "W",
+      "op": {
+        "type": "write",
+        "key": key.to_json(),
+        "version": final_token.to_json(),
+      },
+    },
+    { "kind": "end", "tx": "W", "status": "committed" },
+    { "kind": "begin", "tx": "R" },
+    {
+      "kind": "op",
+      "tx": "R",
+      "op": { "type": "read", "key": key.to_json(), "version": first.to_json() },
+    },
+    { "kind": "end", "tx": "R", "status": "committed" },
+  ])
+  let normalized = capture_check(trace, "ready")
+  let h = parse_history(capture_field(normalized, "history").stringify()).unwrap()
+  let report = analyze(h)
+  assert_true(report.outcome == Violation)
+  assert_true(has_code(report, "intermediate_read"))
+  assert_eq(h.transactions[0].ops.length(), 2)
+  assert_eq(h.transactions[1].ops[0].version, first)
+}
+
+///|
+test "server-token rollback facts survive while unknown outcomes cannot expose history" {
+  let key = column_capture_key()
+  let token = "70000000-0000-4000-8000-000000000003"
+  let trace = column_capture_trace([
+    { "kind": "begin", "tx": "W" },
+    {
+      "kind": "op",
+      "tx": "W",
+      "op": {
+        "type": "write",
+        "key": key.to_json(),
+        "version": token.to_json(),
+      },
+    },
+    {
+      "kind": "op",
+      "tx": "W",
+      "op": { "type": "read", "key": key.to_json(), "version": token.to_json() },
+    },
+    { "kind": "end", "tx": "W", "status": "aborted" },
+    { "kind": "begin", "tx": "R" },
+    {
+      "kind": "op",
+      "tx": "R",
+      "op": {
+        "type": "read",
+        "key": key.to_json(),
+        "version": "50000000-0000-4000-8000-000000000000",
+      },
+    },
+    { "kind": "end", "tx": "R", "status": "committed" },
+  ])
+  let normalized = capture_check(trace, "ready")
+  let h = parse_history(capture_field(normalized, "history").stringify()).unwrap()
+  assert_true(h.transactions[0].status == Aborted)
+  assert_eq(h.transactions[0].ops.length(), 2)
+  assert_eq(h.transactions[0].ops[0].version, token)
+  assert_true(analyze(h).outcome == Consistent)
+  capture_event(trace, 4)["status"] = "unknown".to_json()
+  let _ = capture_check(trace, "inconclusive")
+}
+
+///|
+test "server UUID and acknowledgement order do not become collected version order" {
+  let key = column_capture_key()
+  let early = "f0000000-0000-4000-8000-000000000001"
+  let later = "10000000-0000-4000-8000-000000000002"
+  let trace = column_capture_trace([
+    { "kind": "begin", "tx": "A" },
+    {
+      "kind": "op",
+      "tx": "A",
+      "op": {
+        "type": "write",
+        "key": key.to_json(),
+        "version": early.to_json(),
+      },
+    },
+    { "kind": "end", "tx": "A", "status": "committed" },
+    { "kind": "begin", "tx": "B" },
+    {
+      "kind": "op",
+      "tx": "B",
+      "op": {
+        "type": "write",
+        "key": key.to_json(),
+        "version": later.to_json(),
+      },
+    },
+    { "kind": "end", "tx": "B", "status": "committed" },
+  ])
+  let normalized = capture_check(trace, "ready")
+  let h = parse_history(capture_field(normalized, "history").stringify()).unwrap()
+  assert_true(h.version_orders.is_empty())
+  assert_eq(h.transactions[0].ops[0].version, early)
+  assert_eq(h.transactions[1].ops[0].version, later)
+  let result = analyze_with_options(h)
+  assert_true(result.report.outcome == Consistent)
+  assert_eq(result.report.order_sources.at(key), "searched")
+  assert_true(h.version_orders.is_empty())
+  capture_events(trace)[2] = {
+    "kind": "sql",
+    "seq": 3,
+    "time": 2,
+    "tx": "A",
+    "phase": "execute-request",
+    "sql": "SELECT count(*) FROM items",
+    "mapped": false,
+  }
+  let _ = capture_check(trace, "inconclusive")
+}

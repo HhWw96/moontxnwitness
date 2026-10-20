@@ -53,7 +53,7 @@ for item in ROOT.rglob("*"):
         continue
     source.append(relative.as_posix())
 portable = ["README.md", "LICENSE", "CHANGELOG.md", "THIRD_PARTY.md", "run-demo.cmd"]
-for folder in ("dist", "docs", "examples", "verification", "integrations"):
+for folder in ("dist", "docs", "examples", "verification", "integrations", "experiments"):
     for item in (ROOT / folder).rglob("*"):
         if item.is_file() and "__pycache__" not in item.parts and item.name != "package.json":
             portable.append(item.relative_to(ROOT).as_posix())
@@ -148,6 +148,11 @@ for kind in ("portable", "source"):
         assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'check', 'captured-history.json', '--profile', 'balanced', '--format', 'json'], consumer, 1))['status'] == 'violation'
         assert (consumer / 'integrations/python/moontxnwitness_capture/capture.py').is_file()
         checks.append(kind + ' captured trace ingestion and packaged Python adapter')
+        if (ROOT / 'experiments/provenance/capture_profile.py').exists():
+            profile = run([sys.executable, '-c', "import sys; sys.path.insert(0,'experiments/provenance'); from capture_profile import ColumnPointProfile; print(ColumnPointProfile.__name__)"], consumer)
+            assert profile.strip() == 'ColumnPointProfile'
+            assert (consumer / 'experiments/provenance/CAPTURE_PROFILE.md').is_file()
+            checks.append(kind + ' experimental ordinary-table profile and documentation import without database access')
     if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
         old_python = env.get('MTW_PYTHON')
         try:

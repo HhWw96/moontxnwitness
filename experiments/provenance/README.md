@@ -1,5 +1,10 @@
 # v0.1.2 provenance experiments
 
+The separate [existing-row capture profile](CAPTURE_PROFILE.md) connects the
+column prototype to opt-in SQL rewriting/cursor projection and the existing
+MoonBit ingest/analyze/shrink/replay path. Its validation and scope are separate
+from the provenance-only and B/A cost results below.
+
 These are two independent **research prototypes**, outside the stable v0.1.1
 capture adapter. They do not complete its existing-application acceptance gate,
 and do not constitute a v0.1.2 release or a production-ready installer.

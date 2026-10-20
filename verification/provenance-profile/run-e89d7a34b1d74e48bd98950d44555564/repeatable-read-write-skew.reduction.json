@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 2,
+  "tool": "MoonTxnWitness",
+  "version": "0.1.1",
+  "status": "unchanged",
+  "oneMinimal": true,
+  "removedTransactions": [],
+  "checks": 2,
+  "reason": "Every remaining singleton deletion was checked under the fixed balanced analyzer predicate and options. Not a global or operation minimum.",
+  "limits": {
+    "transactions": 512,
+    "operations": 10000,
+    "checks": 256
+  },
+  "cachedCandidateChecks": 0,
+  "scope": "transaction deletion; fixed initial state; asserted orders pruned; analyzer-specific definite-violation predicate",
+  "reducedHistory": {
+    "schemaVersion": 1,
+    "model": "serializable",
+    "initial": {
+      "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"a\"]": "3c65ab90-ecdf-4486-b5a3-2ce2dc1d4f5b",
+      "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"b\"]": "17928a1e-d5c2-4e9b-8955-8ea946489ce9"
+    },
+    "versionOrders": {},
+    "transactions": [
+      {
+        "id": "tx-1",
+        "status": "committed",
+        "start": 172000,
+        "end": 203000,
+        "ops": [
+          {
+            "type": "read",
+            "key": "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"b\"]",
+            "version": "17928a1e-d5c2-4e9b-8955-8ea946489ce9"
+          },
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"a\"]",
+            "version": "8e81a1b2-6571-49a2-8cc1-61a3e079c403"
+          }
+        ]
+      },
+      {
+        "id": "tx-2",
+        "status": "committed",
+        "start": 172000,
+        "end": 203000,
+        "ops": [
+          {
+            "type": "read",
+            "key": "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"a\"]",
+            "version": "3c65ab90-ecdf-4486-b5a3-2ce2dc1d4f5b"
+          },
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"b\"]",
+            "version": "6f3c1424-92f7-48a4-9f90-7131dd690b31"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "schemaVersion": 2,
+    "tool": "MoonTxnWitness",
+    "version": "0.1.1",
+    "status": "violation",
+    "model": "serializable",
+    "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+    "complete": true,
+    "stats": {
+      "transactions": 2,
+      "committed": 2,
+      "operations": 4,
+      "dependencies": 2
+    },
+    "findings": [
+      {
+        "code": "dependency_cycle",
+        "severity": "violation",
+        "message": "The dependency cycle prevents any serial order satisfying these observations and constraints",
+        "transactions": [
+          "tx-1",
+          "tx-2"
+        ],
+        "key": null,
+        "ops": []
+      }
+    ],
+    "edges": [
+      {
+        "from": "tx-1",
+        "to": "tx-2",
+        "kind": "rw",
+        "key": "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"b\"]",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "17928a1e-d5c2-4e9b-8955-8ea946489ce9",
+        "toVersion": "6f3c1424-92f7-48a4-9f90-7131dd690b31",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "tx-2",
+        "to": "tx-1",
+        "kind": "rw",
+        "key": "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"a\"]",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "3c65ab90-ecdf-4486-b5a3-2ce2dc1d4f5b",
+        "toVersion": "8e81a1b2-6571-49a2-8cc1-61a3e079c403",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      }
+    ],
+    "witness": {
+      "kind": "dependency_cycle",
+      "transactions": [
+        "tx-1",
+        "tx-2",
+        "tx-1"
+      ],
+      "edges": [
+        {
+          "from": "tx-1",
+          "to": "tx-2",
+          "kind": "rw",
+          "key": "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"b\"]",
+          "fromOp": 0,
+          "toOp": 1,
+          "fromVersion": "17928a1e-d5c2-4e9b-8955-8ea946489ce9",
+          "toVersion": "6f3c1424-92f7-48a4-9f90-7131dd690b31",
+          "reason": "The reader observes an earlier version and must precede this later committed write."
+        },
+        {
+          "from": "tx-2",
+          "to": "tx-1",
+          "kind": "rw",
+          "key": "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"a\"]",
+          "fromOp": 0,
+          "toOp": 1,
+          "fromVersion": "3c65ab90-ecdf-4486-b5a3-2ce2dc1d4f5b",
+          "toVersion": "8e81a1b2-6571-49a2-8cc1-61a3e079c403",
+          "reason": "The reader observes an earlier version and must precede this later committed write."
+        }
+      ],
+      "minimality": "shortest directed cycle in the constructed graph"
+    },
+    "serialOrder": [],
+    "versionOrders": {
+      "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"a\"]": [
+        "3c65ab90-ecdf-4486-b5a3-2ce2dc1d4f5b",
+        "8e81a1b2-6571-49a2-8cc1-61a3e079c403"
+      ],
+      "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"b\"]": [
+        "17928a1e-d5c2-4e9b-8955-8ea946489ce9",
+        "6f3c1424-92f7-48a4-9f90-7131dd690b31"
+      ]
+    },
+    "versionOrderSources": {
+      "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"a\"]": "single-writer",
+      "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"b\"]": "single-writer"
+    },
+    "graph": {
+      "analyzed": true,
+      "components": 1,
+      "cyclicComponents": 1,
+      "cyclicTransactions": 2,
+      "bfsRoots": 1,
+      "edgeBudgetExceeded": false
+    },
+    "coverage": [
+      {
+        "key": "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"a\"]",
+        "committedReads": 1,
+        "committedFinalWrites": 1,
+        "unresolvedReads": 0,
+        "versionOrderSource": "single-writer",
+        "sourceLabel": "单写者推断"
+      },
+      {
+        "key": "[\"mtw_provenance_profile_3358a5ac3de3.items_skew\",\"text\",\"b\"]",
+        "committedReads": 1,
+        "committedFinalWrites": 1,
+        "unresolvedReads": 0,
+        "versionOrderSource": "single-writer",
+        "sourceLabel": "单写者推断"
+      }
+    ],
+    "nextSteps": [
+      "保留原始日志，使用 shrink 缩减反例，并用 capsule 保存可复现证据。"
+    ],
+    "search": {
+      "status": "not-needed",
+      "reason": "No bounded completion search was required."
+    },
+    "algorithm": "bounded-register-v2.1",
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "metrics": {
+      "attempts": 0,
+      "operationChecks": 0,
+      "cacheHits": 0,
+      "cachedStates": 0,
+      "blockers": []
+    }
+  }
+}

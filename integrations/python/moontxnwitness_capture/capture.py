@@ -522,12 +522,17 @@ class CaptureSession:
                 "ON a.attrelid=i.indrelid AND a.attnum=i.indkey[0] "
                 "WHERE i.indrelid=c.oid AND i.indisprimary AND i.indnkeyatts=1 AND a.attname=%s) "
                 "FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace "
-                "WHERE n.nspname=%s AND c.relname=%s")
+                "WHERE n.nspname=%s AND c.relname=%s "
+                "AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_constraint fk "
+                "WHERE fk.contype='f' AND (fk.conrelid=c.oid OR fk.confrelid=c.oid)) "
+                "AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_rewrite rw WHERE rw.ev_class=c.oid) "
+                "AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_inherits ih "
+                "WHERE ih.inhparent=c.oid OR ih.inhrelid=c.oid)")
 
     @staticmethod
     def _validate_catalog(row):
         if row is None or tuple(row) != ("r", False, False, True):
-            raise CaptureSetupError("v0.1.1 requires ordinary tables with the declared single-column primary key, without RLS or enabled user triggers")
+            raise CaptureSetupError("v0.1.1 requires ordinary tables with the declared single-column primary key, without RLS, enabled user triggers, foreign keys, rewrite rules or inheritance")
 
     def initialize(self, connection):
         """Take one locked initial state, without deriving initial from first reads.

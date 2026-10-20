@@ -42,6 +42,8 @@ jobs:
         run: python scripts/publication_privacy.py --history
       - name: Verify core, independent oracle, CLI and actual SQLite
         run: npm test
+      - name: Verify benchmark evidence under filesystem faults
+        run: node scripts/performance-evidence-test.mjs
       - name: Execute Native core on Linux
         if: runner.os == 'Linux'
         run: node scripts/moon.mjs test --target native --deny-warn

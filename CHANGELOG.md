@@ -1,5 +1,18 @@
 # 0.1.1 — development
 
+- Batch JS JSON fragments after CPU/GC diagnostics, removing the final copy of
+  all fragments. Wasm/Native retain their existing output path; complete evidence
+  and analysis counters remain unchanged.
+- Add an opt-in PostgreSQL 18 existing-row SQL profile that captures the actual
+  server-assigned UUID with the SELECT/UPDATE statement and hides metadata from
+  supported business cursor results. It remains experimental and does not cover
+  arbitrary SQL, new keys, insert/delete or an existing external application.
+- Reject foreign-key, rewrite-rule and inherited-table side effects during
+  stable capture initialization. The experimental installer also verifies the
+  exact PostgreSQL 18 NOT NULL constraints and rolls back failed setup.
+- Preserve performance observations with immutable snapshots, atomic pointers
+  and bounded filesystem-only retries; fault injection never retries analysis.
+
 - Split automatic capture from the existing CLI analysis module and share the
   reduction JSON writer without omitting evidence or changing budgets/counters.
   Same-version compatibility fixtures retain byte-identical full outputs.

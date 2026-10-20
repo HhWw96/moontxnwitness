@@ -1,0 +1,469 @@
+{
+  "tool": "MoonTxnWitness",
+  "version": "0.1.1",
+  "baselineVersion": "0.1.0",
+  "startedAt": "2026-10-20T11:49:03.675Z",
+  "complete": false,
+  "passed": false,
+  "smokeOnly": true,
+  "correctnessPassed": false,
+  "formalReleaseGatePassed": false,
+  "protocol": {
+    "warmups": 1,
+    "samplesPerBatch": 3,
+    "independentAlternatingBatches": 1,
+    "profile": "balanced",
+    "fullOperation": "MoonBit JSON-in/JSON-out plus client JSON decoding; all evidence retained",
+    "summaryStatistic": "Median of the corresponding three per-process statistics",
+    "semanticComparison": "All full-output values must match frozen v0.1.0; only root version and shrink report.version are normalized",
+    "phaseCaveat": "Prepared-input phase hooks are separate diagnostic operations, not additive end-to-end stages"
+  },
+  "environment": {
+    "node": "v24.13.0",
+    "os": "win32",
+    "release": "10.0.22000",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 7 5800H with Radeon Graphics         ",
+    "toolchain": {
+      "compiler": "v0.10.14+7d59c7ec9",
+      "moon": "moon 0.1.20260920"
+    }
+  },
+  "releaseGate": {
+    "scope": "All 20 frozen common full-output workloads; phases are diagnostic",
+    "allowedP95Regression": "max(0.10 * baseline P95, 2 milliseconds)",
+    "futureOptimizationTargetsApplied": false,
+    "applicable": false
+  },
+  "evidencePersistence": {
+    "scheme": "Immutable numbered snapshots with payload/file SHA-256 and atomic latest pointer",
+    "fileIoAttempts": 3,
+    "fileIoRetryDelayMs": 20,
+    "measuredOperationsRetried": false,
+    "stagingCaveat": "Orphan/partial staging files are never pointer targets; recovery without a valid pointer cannot claim completion",
+    "durabilityCaveat": "Files are fsynced before publication; cross-platform power-loss directory durability is not guaranteed"
+  },
+  "results": [
+    {
+      "scenario": "dense-rt-96",
+      "group": "graph",
+      "phase": "full",
+      "inputSha256": "c566190cd20634fe1998d6c17534af239efbb9e5e4fea70211f78cb330eac479",
+      "inputBytes": 6217,
+      "engineOrders": [
+        [
+          "baseline",
+          "current"
+        ]
+      ],
+      "observations": {
+        "baseline": [
+          {
+            "version": "0.1.0",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 156.53520000000003,
+            "firstMs": 51.692200000000014,
+            "timesMs": [
+              24.163200000000018,
+              24.651299999999992,
+              19.195899999999995
+            ],
+            "medianMs": 24.163200000000018,
+            "p95Ms": 24.651299999999992,
+            "peakRssKiB": 79176,
+            "fullOutput": {
+              "outputBytes": 939968,
+              "outputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "versionNormalizedSha256": "ff07e5eded8669891ac1f16b3ba7d26a4082f9515c6f2a95ddbcd92d754d70d6",
+              "frozenOutputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          }
+        ],
+        "current": [
+          {
+            "version": "0.1.1",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 19.963800000000006,
+            "firstMs": 50.32069999999999,
+            "timesMs": [
+              21.1858,
+              14.072499999999991,
+              11.066100000000006
+            ],
+            "medianMs": 14.072499999999991,
+            "p95Ms": 21.1858,
+            "peakRssKiB": 71132,
+            "fullOutput": {
+              "outputBytes": 939968,
+              "outputSha256": "9004cb11db421a7d2029b7c047f7d217c87e9b2d949d1435e85eb08522c5f3c1",
+              "versionNormalizedSha256": "ff07e5eded8669891ac1f16b3ba7d26a4082f9515c6f2a95ddbcd92d754d70d6",
+              "frozenOutputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          }
+        ]
+      },
+      "baseline": {
+        "medianMs": 24.163200000000018,
+        "p95Ms": 24.651299999999992,
+        "coldModuleLoadMs": 156.53520000000003,
+        "firstAnalysisMs": 51.692200000000014,
+        "peakRssKiB": 79176,
+        "outputBytes": 939968
+      },
+      "current": {
+        "medianMs": 14.072499999999991,
+        "p95Ms": 21.1858,
+        "coldModuleLoadMs": 19.963800000000006,
+        "firstAnalysisMs": 50.32069999999999,
+        "peakRssKiB": 71132,
+        "outputBytes": 939968
+      },
+      "speedup": 1.717050985965538,
+      "peakMemoryRatio": 0.8984035566333233,
+      "semanticAgreement": true,
+      "p95RegressionMs": -3.4654999999999916,
+      "allowedP95RegressionMs": 2.4651299999999994,
+      "p95WithinAllowance": true,
+      "p95ReleaseGateApplicable": false
+    },
+    {
+      "scenario": "dense-rt-192",
+      "group": "graph",
+      "phase": "full",
+      "inputSha256": "3e750511751e3fe345423d8807ff6ce9794fbc617bc5c7e805ca95dac0a553ff",
+      "inputBytes": 12549,
+      "engineOrders": [
+        [
+          "current",
+          "baseline"
+        ]
+      ],
+      "observations": {
+        "baseline": [
+          {
+            "version": "0.1.0",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 16.548999999999992,
+            "firstMs": 90.19170000000001,
+            "timesMs": [
+              57.5291,
+              45.72739999999999,
+              58.76909999999998
+            ],
+            "medianMs": 57.5291,
+            "p95Ms": 58.76909999999998,
+            "peakRssKiB": 134920,
+            "fullOutput": {
+              "outputBytes": 3795108,
+              "outputSha256": "d98b4f731f9069ab91a1b006faac6f1f4cf7be83c77fbbc1d7bf0019d7698e13",
+              "versionNormalizedSha256": "9622698c627d776360f35d73628e41811e9803f742030ba68fdfed45609ca59e",
+              "frozenOutputSha256": "d98b4f731f9069ab91a1b006faac6f1f4cf7be83c77fbbc1d7bf0019d7698e13",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          }
+        ],
+        "current": [
+          {
+            "version": "0.1.1",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 24.289900000000017,
+            "firstMs": 138.20289999999997,
+            "timesMs": [
+              81.11540000000002,
+              86.83019999999999,
+              50.255199999999945
+            ],
+            "medianMs": 81.11540000000002,
+            "p95Ms": 86.83019999999999,
+            "peakRssKiB": 121932,
+            "fullOutput": {
+              "outputBytes": 3795108,
+              "outputSha256": "7c6b9a9e7ea4ec389bfc9a1bf038c21e82d60000d651500a9b0542b42a8b7c4e",
+              "versionNormalizedSha256": "9622698c627d776360f35d73628e41811e9803f742030ba68fdfed45609ca59e",
+              "frozenOutputSha256": "d98b4f731f9069ab91a1b006faac6f1f4cf7be83c77fbbc1d7bf0019d7698e13",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          }
+        ]
+      },
+      "baseline": {
+        "medianMs": 57.5291,
+        "p95Ms": 58.76909999999998,
+        "coldModuleLoadMs": 16.548999999999992,
+        "firstAnalysisMs": 90.19170000000001,
+        "peakRssKiB": 134920,
+        "outputBytes": 3795108
+      },
+      "current": {
+        "medianMs": 81.11540000000002,
+        "p95Ms": 86.83019999999999,
+        "coldModuleLoadMs": 24.289900000000017,
+        "firstAnalysisMs": 138.20289999999997,
+        "peakRssKiB": 121932,
+        "outputBytes": 3795108
+      },
+      "speedup": 0.7092253752061876,
+      "peakMemoryRatio": 0.9037355469908094,
+      "semanticAgreement": true,
+      "p95RegressionMs": 28.06110000000001,
+      "allowedP95RegressionMs": 5.876909999999999,
+      "p95WithinAllowance": false,
+      "p95ReleaseGateApplicable": false
+    },
+    {
+      "scenario": "dense-rt-316",
+      "group": "graph",
+      "phase": "full",
+      "inputSha256": "e1fcb7771d43cc01ff2efa074f2dd8fddefab2dec77728e6c077e59223f2f86f",
+      "inputBytes": 20733,
+      "engineOrders": [
+        [
+          "baseline",
+          "current"
+        ]
+      ],
+      "observations": {
+        "baseline": [
+          {
+            "version": "0.1.0",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 12.794399999999996,
+            "firstMs": 235.394,
+            "timesMs": [
+              162.78189999999995,
+              157.6291,
+              166.351
+            ],
+            "medianMs": 162.78189999999995,
+            "p95Ms": 166.351,
+            "peakRssKiB": 307368,
+            "fullOutput": {
+              "outputBytes": 10320608,
+              "outputSha256": "bdd5e1e3822b7131487ad6b43f3e4f727b492a58a6f12ead0868d10780042e5c",
+              "versionNormalizedSha256": "53e1eb899f14f142e7bd60137d72b46626d6812a9609e189a8cf3c313a19ed79",
+              "frozenOutputSha256": "bdd5e1e3822b7131487ad6b43f3e4f727b492a58a6f12ead0868d10780042e5c",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          }
+        ],
+        "current": [
+          {
+            "version": "0.1.1",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 19.559399999999997,
+            "firstMs": 177.8234,
+            "timesMs": [
+              96.7464,
+              119.29680000000002,
+              133.539
+            ],
+            "medianMs": 119.29680000000002,
+            "p95Ms": 133.539,
+            "peakRssKiB": 245112,
+            "fullOutput": {
+              "outputBytes": 10320608,
+              "outputSha256": "e4a74cd17ec7714a2e5d84b9b8ca88f0214135d5be1f227699b8a328732a6a90",
+              "versionNormalizedSha256": "53e1eb899f14f142e7bd60137d72b46626d6812a9609e189a8cf3c313a19ed79",
+              "frozenOutputSha256": "bdd5e1e3822b7131487ad6b43f3e4f727b492a58a6f12ead0868d10780042e5c",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          }
+        ]
+      },
+      "baseline": {
+        "medianMs": 162.78189999999995,
+        "p95Ms": 166.351,
+        "coldModuleLoadMs": 12.794399999999996,
+        "firstAnalysisMs": 235.394,
+        "peakRssKiB": 307368,
+        "outputBytes": 10320608
+      },
+      "current": {
+        "medianMs": 119.29680000000002,
+        "p95Ms": 133.539,
+        "coldModuleLoadMs": 19.559399999999997,
+        "firstAnalysisMs": 177.8234,
+        "peakRssKiB": 245112,
+        "outputBytes": 10320608
+      },
+      "speedup": 1.364511872908577,
+      "peakMemoryRatio": 0.7974545170609822,
+      "semanticAgreement": true,
+      "p95RegressionMs": -32.81200000000001,
+      "allowedP95RegressionMs": 16.6351,
+      "p95WithinAllowance": true,
+      "p95ReleaseGateApplicable": false
+    },
+    {
+      "scenario": "sparse-512",
+      "group": "graph",
+      "phase": "full",
+      "inputSha256": "2cdbb7b98f9d073a9bec99d5c3e88e4c4d8a84cc0490c3dd13dc862e316f92f1",
+      "inputBytes": 73318,
+      "engineOrders": [
+        [
+          "current",
+          "baseline"
+        ]
+      ],
+      "observations": {
+        "baseline": [
+          {
+            "version": "0.1.0",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 17.935999999999993,
+            "firstMs": 74.3703,
+            "timesMs": [
+              20.6986,
+              24.32159999999999,
+              26.164500000000004
+            ],
+            "medianMs": 24.32159999999999,
+            "p95Ms": 26.164500000000004,
+            "peakRssKiB": 71032,
+            "fullOutput": {
+              "outputBytes": 101410,
+              "outputSha256": "4240d7d6a047845865674679bd186adee9fd2c35837cf30894abe1fb32b3bf36",
+              "versionNormalizedSha256": "99eed9883372bc5a89186a8ae28680979115b416bb00822648c970b3c6c6ccf7",
+              "frozenOutputSha256": "4240d7d6a047845865674679bd186adee9fd2c35837cf30894abe1fb32b3bf36",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          }
+        ],
+        "current": [
+          {
+            "version": "0.1.1",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 12.060499999999998,
+            "firstMs": 56.72280000000001,
+            "timesMs": [
+              11.467899999999986,
+              13.271100000000018,
+              15.436700000000002
+            ],
+            "medianMs": 13.271100000000018,
+            "p95Ms": 15.436700000000002,
+            "peakRssKiB": 72984,
+            "fullOutput": {
+              "outputBytes": 101410,
+              "outputSha256": "88a5e679366c1a7ea50f6c270fa51fddf372df7f6e687ffe11afbb2f40fc744e",
+              "versionNormalizedSha256": "99eed9883372bc5a89186a8ae28680979115b416bb00822648c970b3c6c6ccf7",
+              "frozenOutputSha256": "4240d7d6a047845865674679bd186adee9fd2c35837cf30894abe1fb32b3bf36",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          }
+        ]
+      },
+      "baseline": {
+        "medianMs": 24.32159999999999,
+        "p95Ms": 26.164500000000004,
+        "coldModuleLoadMs": 17.935999999999993,
+        "firstAnalysisMs": 74.3703,
+        "peakRssKiB": 71032,
+        "outputBytes": 101410
+      },
+      "current": {
+        "medianMs": 13.271100000000018,
+        "p95Ms": 15.436700000000002,
+        "coldModuleLoadMs": 12.060499999999998,
+        "firstAnalysisMs": 56.72280000000001,
+        "peakRssKiB": 72984,
+        "outputBytes": 101410
+      },
+      "speedup": 1.8326740059226405,
+      "peakMemoryRatio": 1.027480572136502,
+      "semanticAgreement": true,
+      "p95RegressionMs": -10.727800000000002,
+      "allowedP95RegressionMs": 2.6164500000000004,
+      "p95WithinAllowance": true,
+      "p95ReleaseGateApplicable": false
+    }
+  ],
+  "phases": [],
+  "artifacts": "artifacts/performance-v010-0.1.1-2026-10-20T11-49-03-672Z",
+  "caveat": "Same-machine direct comparison. Smoke cannot satisfy release acceptance. v0.1.8 speedup/RSS targets are not v0.1.1 gates.",
+  "provenance": {
+    "baseline": {
+      "transport": "verified-core-retained-from-frozen-baseline",
+      "publicUrl": "https://github.com/HhWw96/moontxnwitness/releases/download/v0.1.0/MoonTxnWitness-v0.1.0-portable.zip",
+      "archiveSha256": "d7495482b8267f327edf40e95111acbd2502290fc97e5f1e5e1203e7bc59488c",
+      "coreSha256": "6c76b3be6c45ff633232568b3ffed3c1393ade3b4d012ee5c21c49cbb8dcf97b",
+      "sourceSha256": "dcc8653278a9f98dc6056d23c8b7d7d9db3fc6b8406b22987fc9ff03997dd830",
+      "publishedBuildManifest": {
+        "version": "0.1.0",
+        "toolchain": {
+          "compiler": "v0.10.14+7d59c7ec9",
+          "moon": "moon 0.1.20260920"
+        },
+        "sourceSha256": "dcc8653278a9f98dc6056d23c8b7d7d9db3fc6b8406b22987fc9ff03997dd830",
+        "coreSha256": "6c76b3be6c45ff633232568b3ffed3c1393ade3b4d012ee5c21c49cbb8dcf97b"
+      }
+    },
+    "currentBuildManifest": {
+      "version": "0.1.1",
+      "toolchain": {
+        "compiler": "v0.10.14+7d59c7ec9",
+        "moon": "moon 0.1.20260920"
+      },
+      "sourceSha256": "8d6c54792dcc38a7acda1ebd36f988d19afdd69aa3612bcc83b8e9002e559841",
+      "coreSha256": "eb47939a938b39cac20e6c73df1222a6551f35fdca3e71fb3ec0addaa671ef8d",
+      "captureCoreSha256": "733179318755fb2bcce038dcb428622857376cf0071ad0b4485c7d485092a3ee"
+    },
+    "frozenBaselineReceipt": "verification/baselines/0.1.0/measurement-formal-2026-10-20T09-31-01-333Z.json",
+    "originalBaselineProtocol": {
+      "warmups": 5,
+      "samplesPerBatch": 30,
+      "independentProcessBatches": 3,
+      "profile": "balanced",
+      "fullOperation": "MoonBit JSON-in/JSON-out plus client JSON decoding; full evidence retained",
+      "phaseCaveat": "Phase hooks prepare input outside timed section; phases do not sum to full analysis."
+    },
+    "currentSnapshot": "Copied dist/core.mjs after checking manifest source/core/version identity"
+  },
+  "fixtureManifestSha256": "208a86d4f19224b7bdea753e6380b677b52155bab557f734b2021f525f9056a6",
+  "evidenceCheckpoint": {
+    "format": "moontxnwitness-performance-checkpoint-v1",
+    "runId": "performance-v010-smoke-2026-10-20T11-49-03-672Z",
+    "sequence": 6,
+    "previous": {
+      "receipt": "verification/releases/0.1.1/performance-v010-smoke-2026-10-20T11-49-03-672Z.checkpoints/000005-3d6e2c1f-cd53-4529-8ff4-9face2ab00c2.json",
+      "sha256": "48536718c5166e9092c1777ab777ea33c9d963cbcbc80b62d694c473fbcb0465"
+    },
+    "payloadBytes": 16413,
+    "payloadSha256": "ceaeb32cfd1e571b412bd98992640a15320ebdc540da0e7f1644f9f97923042a"
+  }
+}

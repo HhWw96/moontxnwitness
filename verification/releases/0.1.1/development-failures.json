@@ -46,6 +46,12 @@
       "receipt": "performance-v010-formal-2026-10-20T11-04-03-092Z-interrupted.json",
       "reason": "Windows fs.open returned UNKNOWN (errno -4094) during checkpoint persistence. The error snapshot was saved; 15/20 full workloads and 0/15 diagnostic phases completed. dense-rt-316 and sparse-512 already exceeded P95 limits.",
       "repair": "Retain raw samples and an explicitly partial receipt. No restart or release pass is inferred. Filesystem root cause remains unconfirmed."
+    },
+    {
+      "stage": "ordinary-table-profile-first-actual-postgresql",
+      "receipt": "../../provenance-profile/run-29a2743ab45744df80acadddfd6ab99f/profile-failure.json",
+      "reason": "The installer expected only primary/foreign keys in pg_constraint; PostgreSQL 18 also represents NOT NULL constraints there. Initialization rejected its own generated marker schema.",
+      "repair": "Validate the exact expected PG18 NOT NULL column sets and enforcement flags; preserve p/f validation. Two fresh owned-cluster reruns passed and all instances were stopped."
     }
   ]
 }

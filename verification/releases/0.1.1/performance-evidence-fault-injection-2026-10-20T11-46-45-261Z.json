@@ -1,0 +1,109 @@
+{
+  "tool": "MoonTxnWitness",
+  "check": "performance evidence persistence fault injection",
+  "startedAt": "2026-10-20T11:46:44.007Z",
+  "finishedAt": "2026-10-20T11:46:45.261Z",
+  "passed": true,
+  "simulatedFailures": true,
+  "formalPerformanceAcceptanceEstablished": false,
+  "performanceWorkloadsExecuted": 0,
+  "environment": {
+    "node": "v24.13.0",
+    "os": "win32",
+    "release": "10.0.22000",
+    "arch": "x64"
+  },
+  "sources": {
+    "scripts/performance-v010.mjs": "441ddab4e6e0976b5305e84b25e04b4abd003e13a4293e177115371885e00fca",
+    "scripts/performance-evidence.mjs": "2967f84ad72ef1f93cd5b697ec46f676432e59bef947056378903528ce66a433",
+    "scripts/performance-evidence-test.mjs": "c25309093b2bea82ed58a06ec379b5fd65180d22823c5c9c97c9e873ee97077d"
+  },
+  "result": {
+    "passed": true,
+    "tests": 8,
+    "cases": [
+      "partial physical writes leave the previous checkpoint and atomic pointer intact; failure snapshot preserves raw samples",
+      "failed pointer replacement cannot expose a new terminal result; an interruption replaces it only after complete persistence",
+      "physical partial writes to the next pointer staging file never truncate the current latest JSON",
+      "real child-process exit during a physical partial write preserves the last durable checkpoint",
+      "transient file-open failures retry at most three times and commit exactly one unchanged receipt",
+      "missing/corrupt pointer recovery ignores malformed or tampered snapshots and never infers terminal acceptance",
+      "immutable publication refuses existing different bytes and reports failure without overwriting either raw artifact",
+      "pointer acceptance flags must agree with the hashed snapshot; external edits cannot promote an incomplete checkpoint"
+    ],
+    "benchmarkOperationsExecuted": 0,
+    "helperSha256": "2967f84ad72ef1f93cd5b697ec46f676432e59bef947056378903528ce66a433"
+  },
+  "publication": {
+    "immutableSnapshots": true,
+    "exclusiveSameFilesystemHardLink": true,
+    "atomicLatestRename": true,
+    "readBackSha256Verification": true,
+    "filesystemAttempts": 3,
+    "filesystemRetryDelayMs": 20,
+    "benchmarkRetries": false,
+    "workerPersistenceModuleLoadedAfterMeasuredOperationAndRssSnapshot": true,
+    "failedOrUnpublishedRecoveryCanClaimCompletion": false,
+    "fallback": "Ignored per-run evidence-recovery directory; stderr in-memory receipt if both filesystem stores fail"
+  },
+  "previousPerformanceReceipts": [
+    {
+      "path": "verification/releases/0.1.1/performance-v010-formal-2026-10-20T10-05-50-790Z.json",
+      "sha256": "766eb5785bed5272db5a8a3cfea9e59f9bbe477de85314ee509233c5999985da",
+      "byteIdenticalToHead": true
+    },
+    {
+      "path": "verification/releases/0.1.1/performance-v010-formal-2026-10-20T10-32-08-052Z.json",
+      "sha256": "f734d2bcb32a69da87ed9199e3deee538a18cbcf216b7313e039898df4114b2f",
+      "byteIdenticalToHead": true
+    },
+    {
+      "path": "verification/releases/0.1.1/performance-v010-formal-2026-10-20T11-04-03-092Z.json",
+      "sha256": "ffccee540389f6f577db332b4bbc1ab92fe5487bc70fb16502c1335034ff611c",
+      "byteIdenticalToHead": true
+    },
+    {
+      "path": "verification/releases/0.1.1/performance-v010-formal-2026-10-20T11-04-03-092Z-interrupted.json",
+      "sha256": "7109230993d332726a1d0f28345cb6698b67e94e622f7a91201d98b7c089ea11",
+      "byteIdenticalToHead": true
+    }
+  ],
+  "previousLatestPointer": {
+    "path": "verification/releases/0.1.1/performance-v010-latest.json",
+    "workingSha256": "0e19bfed5dbcc39d9d7c13e80cfab6132ab3aad20eb62d12dcd067578d6995a2",
+    "headSha256": "5a98f84c020242956d4c8203cf7e80fefef067f2506cf34aa8275523e83febac",
+    "workingBytes": 370,
+    "headBytes": 358,
+    "jsonIdentical": true,
+    "noGitTextDiff": true,
+    "modifiedByThisTask": false,
+    "lineEndings": "Existing working file CRLF versus Git HEAD LF; bytes deliberately not rewritten"
+  },
+  "receiptPreparationAttempts": [
+    {
+      "attempt": 1,
+      "outcome": "metadata assertion failure after all eight fault tests passed",
+      "reason": "Initial harness required the existing latest pointer to be byte-identical to Git HEAD. Existing CRLF/LF difference caused the assertion; decoded JSON and git diff agree. No performance receipt was changed and no benchmark was run.",
+      "workingPointerSha256": "0e19bfed5dbcc39d9d7c13e80cfab6132ab3aad20eb62d12dcd067578d6995a2",
+      "headPointerSha256": "5a98f84c020242956d4c8203cf7e80fefef067f2506cf34aa8275523e83febac"
+    },
+    {
+      "attempt": 2,
+      "outcome": "passed",
+      "change": "Metadata now reports raw digests and verifies existing pointer JSON/no text diff without rewriting it"
+    }
+  ],
+  "timingProtocolChange": "None: input manifests, full output comparison fields, timing loops, RSS point, cold-start timers, 5/30/3, alternating order, aggregation and P95 allowance are unchanged",
+  "limitations": [
+    "Lightweight filesystem fault tests do not establish performance acceptance.",
+    "No abrupt power-loss test or directory fsync guarantee.",
+    "If the new run cannot publish any checkpoint, latest remains its previous valid run/checkpoint; runId and latestUpdated=false identify this state.",
+    "The archived worker stdout and interruptedObservation retain measured samples when artifact writes fail."
+  ],
+  "recoveryApi": {
+    "module": "scripts/performance-evidence.mjs",
+    "function": "recoverPerformanceEvidence",
+    "authority": "A valid atomic latest pointer and exact snapshot digest; orphan recovery always reports complete=false"
+  },
+  "testCommand": "node scripts/performance-evidence-test.mjs"
+}

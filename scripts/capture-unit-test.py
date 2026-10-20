@@ -47,7 +47,7 @@ class FakeCursor:
         elif query.startswith("LOCK TABLE"):
             pass
         elif "FROM pg_catalog.pg_class" in query:
-            self.rows = [conn.catalog]
+            self.rows = [] if conn.foreign_keys or conn.rewrite_rules or conn.inheritance else [conn.catalog]
         elif query.startswith('SELECT "id","version" FROM '):
             self.rows = [(key, value[1]) for key, value in conn.store.items()]
         else:
@@ -116,6 +116,7 @@ class FakeConnection:
         self.working = None
         self.closed = False
         self.catalog = ("r", False, False, True)
+        self.foreign_keys = self.rewrite_rules = self.inheritance = False
         self.business_error = BusinessError("preserve this exact business exception")
         self.commit_error = None
         self.commit_error_status = None
@@ -241,6 +242,21 @@ def gap_codes(capture):
 
 
 class CaptureUnitTests(unittest.TestCase):
+    def test_snapshot_rejects_foreign_keys_rules_and_inheritance_before_business_activity(self):
+        for feature in ("foreign_keys", "rewrite_rules", "inheritance"):
+            capture = CaptureSession([PointRead(READ, TABLE)])
+            setup = FakeConnection(autocommit=True)
+            setattr(setup, feature, True)
+            with self.assertRaises(CaptureSetupError):
+                capture.initialize(setup)
+            self.assertFalse(kinds(capture, "snapshot"))
+            self.assertEqual(setup.store, {1: (10, "v0")})
+            self.assertIn("initialization_failed", gap_codes(capture))
+        catalog_sql = CaptureSession._catalog_sql()
+        self.assertIn("fk.conrelid=c.oid OR fk.confrelid=c.oid", catalog_sql)
+        self.assertIn("pg_catalog.pg_rewrite", catalog_sql)
+        self.assertIn("ih.inhparent=c.oid OR ih.inhrelid=c.oid", catalog_sql)
+
     def test_memoryview_element_count_cannot_bypass_binary_byte_budget(self):
         for payload in (memoryview(bytearray(200_000)).cast("I"),
                         memoryview(bytearray(262_144)).cast("B", shape=(512, 512))):

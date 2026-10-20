@@ -1,0 +1,190 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-178d1c47f58d41a8a5fe726890dec957",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 0,
+      "initial": {
+        "[\"mtw_capture_a6cb89d542f849ec84b1ccce2a2596e3.registers\",\"text\",\"x\"]": "x0",
+        "[\"mtw_capture_a6cb89d542f849ec84b1ccce2a2596e3.registers\",\"text\",\"y\"]": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 78000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 78000,
+      "phase": "execute-request",
+      "sql": "SELECT value,version FROM \"mtw_capture_a6cb89d542f849ec84b1ccce2a2596e3\".registers WHERE key=%s",
+      "parameters": [
+        "x"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 94000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 94000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          1,
+          "x0"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "op",
+      "time": 94000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_capture_a6cb89d542f849ec84b1ccce2a2596e3.registers\",\"text\",\"x\"]",
+        "version": "x0"
+      }
+    },
+    {
+      "seq": 7,
+      "kind": "sql",
+      "time": 94000,
+      "phase": "execute-request",
+      "sql": "UPDATE \"mtw_capture_a6cb89d542f849ec84b1ccce2a2596e3\".registers SET value=%s,version=%s WHERE key=%s",
+      "parameters": [
+        2,
+        "x-async",
+        "x"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 94000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 9,
+      "kind": "op",
+      "time": 94000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_capture_a6cb89d542f849ec84b1ccce2a2596e3.registers\",\"text\",\"x\"]",
+        "version": "x-async"
+      }
+    },
+    {
+      "seq": 10,
+      "kind": "sql",
+      "time": 94000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 11,
+      "kind": "end",
+      "time": 94000,
+      "tx": "tx-1",
+      "status": "committed"
+    },
+    {
+      "seq": 12,
+      "kind": "begin",
+      "time": 157000,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 13,
+      "kind": "sql",
+      "time": 157000,
+      "phase": "execute-request",
+      "sql": "SELECT value,version FROM \"mtw_capture_a6cb89d542f849ec84b1ccce2a2596e3\".registers WHERE key=%s",
+      "parameters": [
+        "x"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 14,
+      "kind": "sql",
+      "time": 172000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 15,
+      "kind": "sql",
+      "time": 172000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          2,
+          "x-async"
+        ]
+      ],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 16,
+      "kind": "op",
+      "time": 172000,
+      "tx": "tx-2",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_capture_a6cb89d542f849ec84b1ccce2a2596e3.registers\",\"text\",\"x\"]",
+        "version": "x-async"
+      }
+    },
+    {
+      "seq": 17,
+      "kind": "sql",
+      "time": 172000,
+      "phase": "commit-ack",
+      "tx": "tx-2"
+    },
+    {
+      "seq": 18,
+      "kind": "end",
+      "time": 172000,
+      "tx": "tx-2",
+      "status": "committed"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "log_unclosed",
+      "message": "Capture footer is absent; the event stream may be truncated."
+    }
+  ]
+}

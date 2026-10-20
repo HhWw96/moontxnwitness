@@ -78,6 +78,14 @@ jobs:
             python experiments/provenance/test_cost_study.py
             python experiments/provenance/postgres_test.py --schema mtw_provenance_ci --output verification/provenance-prototypes/ci
           fi
+      - name: Verify experimental ordinary-table capture profile
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          if [ -f experiments/provenance/capture_profile_e2e.mjs ]; then
+            python experiments/provenance/test_capture_profile.py
+            node experiments/provenance/capture_profile_e2e.mjs --schema mtw_provenance_profile_ci --output verification/provenance-profile/ci
+          fi
       - name: Preserve actual database server logs
         if: always()
         env:
@@ -97,3 +105,4 @@ jobs:
             verification/releases/*/postgres/
             verification/releases/*/capture/
             verification/provenance-prototypes/ci/
+            verification/provenance-profile/ci/

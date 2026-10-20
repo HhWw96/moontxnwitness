@@ -29,7 +29,11 @@ operations still go to the driver unchanged, with explicit coverage gaps.
 The custom `PointRead(sql, table, ...)` and `PointWrite(sql, table, ...)`
 constructors are **trusted semantic mappings** supplied by the application. The
 adapter matches the exact SQL string; it cannot prove that arbitrary supplied SQL
-has the declared semantics. Review and test custom mappings. Generated template
+has the declared semantics. This declaration includes the SQL and its database
+constraint/function semantics; this stable adapter does not comprehensively
+audit arbitrary CHECK functions, expressions or database functions for hidden
+reads/writes. Incoming/outgoing foreign keys, rewrite rules and inheritance
+parents/children are conservatively rejected during initialization. Review and test custom mappings. Generated template
 factories encode the supported primary-key SQL shape directly, including quoted
 identifiers and parameter positions.
 
