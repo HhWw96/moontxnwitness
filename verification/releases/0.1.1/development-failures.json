@@ -52,6 +52,17 @@
       "receipt": "../../provenance-profile/run-29a2743ab45744df80acadddfd6ab99f/profile-failure.json",
       "reason": "The installer expected only primary/foreign keys in pg_constraint; PostgreSQL 18 also represents NOT NULL constraints there. Initialization rejected its own generated marker schema.",
       "repair": "Validate the exact expected PG18 NOT NULL column sets and enforcement flags; preserve p/f validation. Two fresh owned-cluster reruns passed and all instances were stopped."
+    },
+    {
+      "stage": "formal-performance-block-output",
+      "receipt": "performance-v010-formal-2026-10-20T12-25-37-920Z.checkpoints/000038-6e2d7c5e-1c3e-473a-9e1d-27ea9c4e8750.json",
+      "reason": "All 20 full workloads and 15 phases completed with full-output agreement, but completion-impossible-12 P95 increased 4.2575 ms versus a 2.47192 ms allowance.",
+      "repair": "Preserve the failed round; CPU/GC diagnostics identified decimal cache-key allocation and hashing. Compact complete state keys are a new implementation requiring its own full measurement."
+    },
+    {
+      "stage": "fresh-source-consumer-toolchain-environment",
+      "reason": "Local packaging invocation omitted the external MoonBit toolchain environment; the fresh source consumer correctly had no private local config and spawnSync moon returned ENOENT.",
+      "repair": "Pass the configured pinned compiler with MTW_TOOLCHAIN_HOME to a fresh consumer extraction. Preserve the failed consumer directory; package validation is repeated with the same source."
     }
   ]
 }

@@ -1,0 +1,100 @@
+{
+  "tool": "MoonTxnWitness",
+  "version": "0.1.1",
+  "baselineVersion": "0.1.0",
+  "startedAt": "2026-10-20T12:25:37.922Z",
+  "complete": false,
+  "passed": false,
+  "smokeOnly": false,
+  "correctnessPassed": false,
+  "formalReleaseGatePassed": false,
+  "protocol": {
+    "warmups": 5,
+    "samplesPerBatch": 30,
+    "independentAlternatingBatches": 3,
+    "profile": "balanced",
+    "fullOperation": "MoonBit JSON-in/JSON-out plus client JSON decoding; all evidence retained",
+    "summaryStatistic": "Median of the corresponding three per-process statistics",
+    "semanticComparison": "All full-output values must match frozen v0.1.0; only root version and shrink report.version are normalized",
+    "phaseCaveat": "Prepared-input phase hooks are separate diagnostic operations, not additive end-to-end stages"
+  },
+  "environment": {
+    "node": "v24.13.0",
+    "os": "win32",
+    "release": "10.0.22000",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 7 5800H with Radeon Graphics         ",
+    "toolchain": {
+      "compiler": "v0.10.14+7d59c7ec9",
+      "moon": "moon 0.1.20260920"
+    }
+  },
+  "releaseGate": {
+    "scope": "All 20 frozen common full-output workloads; phases are diagnostic",
+    "allowedP95Regression": "max(0.10 * baseline P95, 2 milliseconds)",
+    "futureOptimizationTargetsApplied": false,
+    "applicable": true
+  },
+  "evidencePersistence": {
+    "scheme": "Immutable numbered snapshots with payload/file SHA-256 and atomic latest pointer",
+    "fileIoAttempts": 3,
+    "fileIoRetryDelayMs": 20,
+    "measuredOperationsRetried": false,
+    "stagingCaveat": "Orphan/partial staging files are never pointer targets; recovery without a valid pointer cannot claim completion",
+    "durabilityCaveat": "Files are fsynced before publication; cross-platform power-loss directory durability is not guaranteed"
+  },
+  "results": [],
+  "phases": [],
+  "artifacts": "artifacts/performance-v010-0.1.1-2026-10-20T12-25-37-920Z",
+  "caveat": "Same-machine direct comparison. Smoke cannot satisfy release acceptance. v0.1.8 speedup/RSS targets are not v0.1.1 gates.",
+  "provenance": {
+    "baseline": {
+      "transport": "verified-core-retained-from-frozen-baseline",
+      "publicUrl": "https://github.com/HhWw96/moontxnwitness/releases/download/v0.1.0/MoonTxnWitness-v0.1.0-portable.zip",
+      "archiveSha256": "d7495482b8267f327edf40e95111acbd2502290fc97e5f1e5e1203e7bc59488c",
+      "coreSha256": "6c76b3be6c45ff633232568b3ffed3c1393ade3b4d012ee5c21c49cbb8dcf97b",
+      "sourceSha256": "dcc8653278a9f98dc6056d23c8b7d7d9db3fc6b8406b22987fc9ff03997dd830",
+      "publishedBuildManifest": {
+        "version": "0.1.0",
+        "toolchain": {
+          "compiler": "v0.10.14+7d59c7ec9",
+          "moon": "moon 0.1.20260920"
+        },
+        "sourceSha256": "dcc8653278a9f98dc6056d23c8b7d7d9db3fc6b8406b22987fc9ff03997dd830",
+        "coreSha256": "6c76b3be6c45ff633232568b3ffed3c1393ade3b4d012ee5c21c49cbb8dcf97b"
+      }
+    },
+    "currentBuildManifest": {
+      "version": "0.1.1",
+      "toolchain": {
+        "compiler": "v0.10.14+7d59c7ec9",
+        "moon": "moon 0.1.20260920"
+      },
+      "sourceSha256": "8d6c54792dcc38a7acda1ebd36f988d19afdd69aa3612bcc83b8e9002e559841",
+      "coreSha256": "eb47939a938b39cac20e6c73df1222a6551f35fdca3e71fb3ec0addaa671ef8d",
+      "captureCoreSha256": "733179318755fb2bcce038dcb428622857376cf0071ad0b4485c7d485092a3ee"
+    },
+    "frozenBaselineReceipt": "verification/baselines/0.1.0/measurement-formal-2026-10-20T09-31-01-333Z.json",
+    "originalBaselineProtocol": {
+      "warmups": 5,
+      "samplesPerBatch": 30,
+      "independentProcessBatches": 3,
+      "profile": "balanced",
+      "fullOperation": "MoonBit JSON-in/JSON-out plus client JSON decoding; full evidence retained",
+      "phaseCaveat": "Phase hooks prepare input outside timed section; phases do not sum to full analysis."
+    },
+    "currentSnapshot": "Copied dist/core.mjs after checking manifest source/core/version identity"
+  },
+  "fixtureManifestSha256": "208a86d4f19224b7bdea753e6380b677b52155bab557f734b2021f525f9056a6",
+  "evidenceCheckpoint": {
+    "format": "moontxnwitness-performance-checkpoint-v1",
+    "runId": "performance-v010-formal-2026-10-20T12-25-37-920Z",
+    "sequence": 2,
+    "previous": {
+      "receipt": "verification/releases/0.1.1/performance-v010-formal-2026-10-20T12-25-37-920Z.checkpoints/000001-47d7fb78-8ffb-4e5c-9138-060568c294b0.json",
+      "sha256": "dd676fe5f239757f8974dd2534c1966f0f094f2468a50015b31f674021fc8be9"
+    },
+    "payloadBytes": 4068,
+    "payloadSha256": "4de5814d6320b127880eb7bfdfa1468c301acd9be86a86101fe5a6322956854e"
+  }
+}

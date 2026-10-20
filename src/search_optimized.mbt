@@ -35,19 +35,32 @@ priv struct OptimizedSearch {
 }
 
 ///|
-fn optimized_state_key(ctx : OptimizedSearch, selected : Int) -> String {
-  let b = StringBuilder()
-  b.write_string(selected.to_string())
-  for value in ctx.state {
-    b.write_char('/')
-    b.write_string(value.to_string())
+fn encode_search_state_key(
+  selected : Int,
+  state : Array[Int],
+  positions : Array[Int],
+) -> String {
+  // The compiled search admits at most 12 transactions and 512 operations:
+  // selected <= 4095, each version ID <= 512, and each position <= 12.
+  // These nonnegative values are all below the Unicode surrogate range.
+  // Both vectors have the same fixed key count K throughout this search, so
+  // one character per component gives a lossless key of exactly 1 + 2*K
+  // characters. It retains selected, every current version and every position;
+  // no delimiters, decimal strings, truncation or probabilistic digest is used.
+  let b = StringBuilder(size_hint=1 + state.length() + positions.length())
+  b.write_char(selected.unsafe_to_char())
+  for value in state {
+    b.write_char(value.unsafe_to_char())
   }
-  b.write_char(':')
-  for value in ctx.positions {
-    b.write_char('/')
-    b.write_string(value.to_string())
+  for value in positions {
+    b.write_char(value.unsafe_to_char())
   }
   b.to_string()
+}
+
+///|
+fn optimized_state_key(ctx : OptimizedSearch, selected : Int) -> String {
+  encode_search_state_key(selected, ctx.state, ctx.positions)
 }
 
 ///|

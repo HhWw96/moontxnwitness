@@ -1,5 +1,9 @@
 # 0.1.1 — development
 
+- Encode the complete bounded search cache state in fixed-width numeric
+  characters after CPU diagnostics. Preserve every current version, declared
+  position, traversal, budget and counter; add collision and exact-limit tests.
+
 - Batch JS JSON fragments after CPU/GC diagnostics, removing the final copy of
   all fragments. Wasm/Native retain their existing output path; complete evidence
   and analysis counters remain unchanged.
