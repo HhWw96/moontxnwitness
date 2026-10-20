@@ -40,6 +40,12 @@
       "receipt": "performance-v010-formal-2026-10-20T10-32-08-052Z.json",
       "reason": "reduction-512 P95 increased 3.148 ms against a 2 ms allowance; full-output correctness passed. The root cause is not established.",
       "repair": "Investigating output allocation with a shared writer. This is not a performance pass and prior rounds are not combined selectively."
+    },
+    {
+      "stage": "formal-performance-shared-writer-interrupted",
+      "receipt": "performance-v010-formal-2026-10-20T11-04-03-092Z-interrupted.json",
+      "reason": "Windows fs.open returned UNKNOWN (errno -4094) during checkpoint persistence. The error snapshot was saved; 15/20 full workloads and 0/15 diagnostic phases completed. dense-rt-316 and sparse-512 already exceeded P95 limits.",
+      "repair": "Retain raw samples and an explicitly partial receipt. No restart or release pass is inferred. Filesystem root cause remains unconfirmed."
     }
   ]
 }
