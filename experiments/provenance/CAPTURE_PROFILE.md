@@ -1,5 +1,15 @@
 # Existing-row server-token capture experiment
 
+The separate [existing-RETURNING profile](returning_profile.py) now supports a
+reviewed, exact conditional-update declaration with original business result
+columns. Its first real component integration is the frozen
+[dislock lease renewal slice](../business/dislock/README.md). It appends actual
+OLD/NEW UUIDs to the original UPDATE RETURNING and buffers only the projected
+business result; it does not consume or replace the owner predicate, NOW/TTL
+calculation or original return columns. Zero-row guards and unconsumed business
+results remain coverage gaps. This extension remains experimental and does not
+expand the two-template `ColumnPointProfile` contract described below.
+
 This v0.1.2 experimental slice is separate from the stable adapter. It connects
 an explicitly generated SQL profile to the existing MoonBit
 ingest/analyze/shrink/replay path. It is not automatic instrumentation of

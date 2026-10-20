@@ -10,12 +10,12 @@
     "x": [
       "x0",
       "x:r0:B:retry",
-      "x:r1:B:retry"
+      "x:r1:B"
     ],
     "y": [
       "y0",
       "y:r0:A",
-      "y:r1:A"
+      "y:r1:A:retry"
     ]
   },
   "transactions": [
@@ -53,8 +53,8 @@
     {
       "id": "r0-B-retry",
       "status": "committed",
-      "start": 16000,
-      "end": 16000,
+      "start": 0,
+      "end": 15000,
       "ops": [
         {
           "type": "read",
@@ -63,6 +63,19 @@
         },
         {
           "type": "write",
+          "key": "x",
+          "version": "x:r0:B:retry"
+        }
+      ]
+    },
+    {
+      "id": "r1-A",
+      "status": "aborted",
+      "start": 15000,
+      "end": 31000,
+      "ops": [
+        {
+          "type": "read",
           "key": "x",
           "version": "x:r0:B:retry"
         }
@@ -70,50 +83,37 @@
     },
     {
       "id": "r1-B",
-      "status": "aborted",
-      "start": 16000,
-      "end": 32000,
+      "status": "committed",
+      "start": 15000,
+      "end": 31000,
       "ops": [
         {
           "type": "read",
           "key": "y",
           "version": "y:r0:A"
-        }
-      ]
-    },
-    {
-      "id": "r1-A",
-      "status": "committed",
-      "start": 16000,
-      "end": 32000,
-      "ops": [
-        {
-          "type": "read",
-          "key": "x",
-          "version": "x:r0:B:retry"
         },
         {
           "type": "write",
-          "key": "y",
-          "version": "y:r1:A"
+          "key": "x",
+          "version": "x:r1:B"
         }
       ]
     },
     {
-      "id": "r1-B-retry",
+      "id": "r1-A-retry",
       "status": "committed",
-      "start": 47000,
+      "start": 31000,
       "end": 47000,
       "ops": [
         {
           "type": "read",
-          "key": "y",
-          "version": "y:r1:A"
+          "key": "x",
+          "version": "x:r1:B"
         },
         {
           "type": "write",
-          "key": "x",
-          "version": "x:r1:B:retry"
+          "key": "y",
+          "version": "y:r1:A:retry"
         }
       ]
     }

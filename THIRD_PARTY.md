@@ -15,6 +15,13 @@ Apache license, not transaction-analysis code copied from another project.
   `zipfile` creates archives. Python/SQLite binaries are not redistributed.
 - No external npm packages or Mooncakes packages are required by the analyzer.
 - Optional PostgreSQL collection uses [psycopg 3.3.6](https://pypi.org/project/psycopg/3.3.6/), LGPL-3.0-only, installed separately using frozen PyPI hashes. Its wheels and PostgreSQL binaries are not redistributed. Driver dependencies keep their upstream licenses.
+- The experimental existing-lease integration vendors unmodified
+  [Actticus/dislock](https://github.com/Actticus/dislock/tree/f9946f07159054433d9071c3805e41223cb47856)
+  at commit `f9946f07159054433d9071c3805e41223cb47856`, under its MIT license.
+  The original license, selected original files, source archive and byte hashes
+  remain in `experiments/business/dislock/upstream/`. The fixture calls the
+  existing business functions; it does not turn this third-party component into
+  MoonBit-authored code or imply upstream adoption of MoonTxnWitness.
 
 ## Conceptual references
 

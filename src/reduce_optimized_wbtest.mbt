@@ -55,6 +55,7 @@ test "candidate writer remapping matches fresh collection including aborts and i
     original: h,
     writes: collect_writes(h),
     options: reduction_options(),
+    original_indices: Map([]),
     negative_candidates: Map([]),
     checks: 0,
     hits: 0,
@@ -65,7 +66,7 @@ test "candidate writer remapping matches fresh collection including aborts and i
       [h.transactions[1], h.transactions[2]],
       [h.transactions[0]],
     ] {
-    let (candidate, writes, _) = indexed_candidate(ctx, txs)
+    let (candidate, writes) = indexed_candidate(ctx, txs)
     let expected = collect_writes(candidate)
     assert_eq(writes.length(), expected.length())
     for key, versions in writes {
@@ -96,6 +97,7 @@ test "cached candidate misses do not spend another analysis budget" {
     original: h,
     writes: collect_writes(h),
     options: reduction_options(),
+    original_indices: Map([]),
     negative_candidates: Map([]),
     checks: 0,
     hits: 0,

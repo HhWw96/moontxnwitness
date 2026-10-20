@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "diagnosticOnly": true,
+  "formalReleaseGateApplicable": false,
+  "frozenAt": "2026-10-20T13:21:29.225Z",
+  "runId": "reduction512-diagnostic-2026-10-20T13-21-29-075Z",
+  "work": "artifacts/reduction512-diagnostic-2026-10-20T13-21-29-075Z",
+  "sourceCommit": "3d94d41920dd991bfa0a49fccb01b8076b371958",
+  "sourceSha256": "4b8ec7fc3b325473b695f11ab318f27491b68499f15a8cd7b897647cb2ff2ef3",
+  "engineSnapshots": {
+    "baseline": {
+      "version": "0.1.0",
+      "core": "artifacts/reduction512-diagnostic-2026-10-20T13-21-29-075Z/baseline.mjs",
+      "sha256": "6c76b3be6c45ff633232568b3ffed3c1393ade3b4d012ee5c21c49cbb8dcf97b"
+    },
+    "current": {
+      "version": "0.1.1",
+      "core": "artifacts/reduction512-diagnostic-2026-10-20T13-21-29-075Z/current.mjs",
+      "sha256": "8f221e9935b867ebc797f8dce8285adfc3c00f9a5c0fbd1e4d1f8b60f3662af6"
+    }
+  },
+  "baselineProvenance": {
+    "publicUrl": "https://github.com/HhWw96/moontxnwitness/releases/download/v0.1.0/MoonTxnWitness-v0.1.0-portable.zip",
+    "archiveSha256": "d7495482b8267f327edf40e95111acbd2502290fc97e5f1e5e1203e7bc59488c",
+    "coreSha256": "6c76b3be6c45ff633232568b3ffed3c1393ade3b4d012ee5c21c49cbb8dcf97b",
+    "publishedSourceCommit": "540a9e390ed54f8b5e6d3b87aba3367c971c18b3",
+    "sourceSha256": "dcc8653278a9f98dc6056d23c8b7d7d9db3fc6b8406b22987fc9ff03997dd830",
+    "transport": "verified-local-copy-of-pinned-public-archive",
+    "publishedBuildManifest": {
+      "version": "0.1.0",
+      "toolchain": {
+        "compiler": "v0.10.14+7d59c7ec9",
+        "moon": "moon 0.1.20260920"
+      },
+      "sourceSha256": "dcc8653278a9f98dc6056d23c8b7d7d9db3fc6b8406b22987fc9ff03997dd830",
+      "coreSha256": "6c76b3be6c45ff633232568b3ffed3c1393ade3b4d012ee5c21c49cbb8dcf97b"
+    },
+    "source": "Pinned published release bytes; no current-working-tree compilation or dist/core.mjs used",
+    "tagSourceFingerprintVerified": true
+  },
+  "fixture": {
+    "name": "reduction-512",
+    "group": "reduction-large",
+    "file": "verification/fixtures/v010-comparison/reduction-512.json",
+    "seed": null,
+    "fixtureSha256": "9addf2d3356b3d45e4c5172977b538b247a70cf6b748a504bcaf039b0461ede6",
+    "historySha256": "dbd089aee80724a87daffe09998b99af864e55369e09d6bdebc21cf9385bdc20",
+    "inputBytes": 61692,
+    "transactions": 512,
+    "operations": 514
+  },
+  "worker": {
+    "file": "artifacts/reduction512-diagnostic-2026-10-20T13-21-29-075Z/diagnose-worker.mjs",
+    "sha256": "77e8b95f3401395118868136897400458ff131bef161e2537766927add11e582",
+    "derivedFrom": "scripts/diagnose-analysis.mjs",
+    "modified": false
+  },
+  "orchestrator": {
+    "file": "scripts/diagnose-reduction512.mjs",
+    "sha256": "091f285504ff62ed07e6fe91a8d2f064ea4708c9197f9e2a172ad70526788a8a"
+  },
+  "protocol": {
+    "independentBatches": 3,
+    "warmups": 5,
+    "samplesPerBatch": 30,
+    "operation": "JSON.parse(core.shrink_options_json(frozenHistoryText, \"{}\")); full output retained during each operation",
+    "profilerSamplingIntervalUs": 1000,
+    "gcObserver": true,
+    "forcedGc": false,
+    "perSample": [
+      "wall time",
+      "user/system CPU",
+      "heap before/after",
+      "GC overlap"
+    ],
+    "batchEngineOrders": [
+      [
+        "current",
+        "baseline"
+      ],
+      [
+        "baseline",
+        "current"
+      ],
+      [
+        "current",
+        "baseline"
+      ]
+    ],
+    "p50Definition": "Existing diagnostic worker nearest-rank P50 (30 samples index 14); distinct from formal worker index 15",
+    "aggregate": "Median of three worker statistics; GC overlap/time also pooled descriptively",
+    "instrumentation": "Both engines run the identical copied diagnostic worker and Node executable",
+    "cpuWindow": "Profiler includes warmups and measured operations; timings/GC summaries select 30 measured samples",
+    "rssCaveat": "Diagnostic maxRSS includes profiler/observer, unlike the formal gate RSS point",
+    "semanticAgreement": {
+      "basis": "Prior complete formal run independently validated these exact fixture/core snapshots against frozen full output",
+      "receipt": "verification/releases/0.1.1/performance-v010-formal-2026-10-20T12-47-56-435Z.checkpoints/000038-5334bf6a-e1ce-433e-9fa5-c302f0fcfbdd.json",
+      "receiptSha256": "bda7cfab146cbc88e5044ba57076d7ea95e2dc85e1ca8fe5470623f4677fa6c6",
+      "currentAndBaselineOutputBytes": 122250,
+      "diagnosticWorkerChecks": "Final output status equals fixture status; output byte count must agree with prior formal output"
+    },
+    "retries": "No workload/process retries. A failed worker terminates this diagnostic and preserves the failure."
+  },
+  "environment": {
+    "node": "v24.13.0",
+    "nodeExecutableSha256": "d14ba95cdce1ef7dc9ad3ac74949ca5db38b27378ee30f30a23cf26f9e875a11",
+    "os": "win32",
+    "release": "10.0.22000",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 7 5800H with Radeon Graphics         ",
+    "logicalCpus": 16
+  },
+  "privacy": "Raw CPU profiles and unredacted worker records remain ignored artifacts; public summaries omit absolute profile paths",
+  "bounds": "Only reduction-512. No database, compilation, forced GC, cache eviction, or formal gate run."
+}

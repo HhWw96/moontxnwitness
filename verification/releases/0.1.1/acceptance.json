@@ -4,17 +4,29 @@
   "releaseReady": false,
   "scope": "Development checkpoint only. Passing component tests does not complete the milestone or authorize a stable release.",
   "performanceReceipt": "performance-v010-formal-2026-10-20T12-47-56-435Z.checkpoints/000038-5334bf6a-e1ce-433e-9fa5-c302f0fcfbdd.json",
-  "performanceMeasurementCompleted": true,
+  "performanceMeasurementCompleted": false,
   "performanceTargetsMet": false,
   "implementation": {
-    "sourceSha256": "4b8ec7fc3b325473b695f11ab318f27491b68499f15a8cd7b897647cb2ff2ef3",
-    "coreSha256": "8f221e9935b867ebc797f8dce8285adfc3c00f9a5c0fbd1e4d1f8b60f3662af6",
-    "captureCoreSha256": "5254db66f9e5261ebd96c3d45b8a1ef9eeca5f043816d1077eec170c8d1fb6f1"
+    "sourceSha256": "4f1a51358ac60eb6cb2d34443556ab67a79ee6482038590fa7390800a8029fba",
+    "coreSha256": "f2a0b6d1a07152aa599ce9e799e9b2a7b993b5bf87a73faada8705a1735c2d91",
+    "captureCoreSha256": "a2d73eeae3283b535aad8def68176abb9a0129308d5f96505e53bc6e50166a17"
   },
   "existingBusinessIntegration": {
     "passed": false,
-    "reason": "License-clear published components were inspected at immutable commits; neither fits the current two-SQL profile without losing business predicates or returned columns. No pre-existing application has completed integration and independent provenance verification.",
-    "syntheticExamplesCountAsApplicationAdoption": false
+    "reason": "The original frozen MIT dislock lease helpers passed a bounded controlled PostgreSQL slice. First acquisition, cleanup, full LeaseLock/CLI/heartbeat, reconnect and deployment remain outside coverage; this does not complete existing-application acceptance.",
+    "syntheticExamplesCountAsApplicationAdoption": false,
+    "boundedUpstreamSlice": {
+      "passedControlledChecks": true,
+      "upstreamCommit": "f9946f07159054433d9071c3805e41223cb47856",
+      "license": "MIT",
+      "sourceModified": false,
+      "actualDatabaseExecution": true,
+      "receipt": "../../business/dislock/run-c65e07733d4e4c12a84a420f7e79f12e/business-receipt.json",
+      "scenarios": 7,
+      "replayedCapsules": 4,
+      "fullApplicationAdoption": false,
+      "fullCaptureCostsMeasured": false
+    }
   },
   "localEvidence": {
     "tests": "../../summary.json",
@@ -23,23 +35,20 @@
     "freshConsumers": "../../package.json",
     "baseline": "../../baselines/0.1.0/",
     "failures": "development-failures.json",
-    "performanceDiagnosis": "performance-v010-diagnosis.md"
+    "performanceDiagnosis": "performance-v010-diagnosis.md",
+    "experimentalCaptureUnit": "experimental-capture-unit-2026-10-20.json",
+    "reductionCompatibility": "reduction-compatibility-assessment-2026-10-20T13-54-05-372Z.json",
+    "reductionDiagnostic": "reduction512-diagnostic-2026-10-20T13-21-29-075Z-result.json"
   },
   "independentCI": {
-    "status": "verified-for-implementation-source",
-    "sourceCommit": "3d94d41920dd991bfa0a49fccb01b8076b371958",
-    "receipt": "independent-ci-3d94d41.json",
-    "previousReceipts": [
-      "independent-ci.json",
-      "independent-ci-d9a14a2.json"
-    ],
+    "status": "pending-current-source",
+    "previousVerifiedSourceCommit": "3d94d41920dd991bfa0a49fccb01b8076b371958",
+    "previousReceipt": "independent-ci-3d94d41.json",
     "requiredWorkflows": [
       "ci.yml",
       "postgres.yml"
     ],
-    "sourceSha256": "4b8ec7fc3b325473b695f11ab318f27491b68499f15a8cd7b897647cb2ff2ef3",
-    "coreBytesIndependentlyDownloaded": false,
-    "limitation": "Source fingerprint and actual uploaded result/log bytes were independently verified. Compiled core digests are CI runtime records; dist/core bytes are not present in the uploaded CI artifacts."
+    "currentSourceSha256": "4f1a51358ac60eb6cb2d34443556ab67a79ee6482038590fa7390800a8029fba"
   },
   "experimentalNextMilestone": {
     "version": "0.1.2",
@@ -56,7 +65,7 @@
     "ordinaryTableProfile": {
       "passedControlledChecks": true,
       "stable": false,
-      "receipt": "../../provenance-profile/run-82f5ef89a9e54fa59b9ab91984713f4c/profile-receipt.json",
+      "receipt": "../../provenance-profile/run-51d03914f09a461b936117caeed4e40b/profile-receipt.json",
       "scenarios": 4,
       "rejectionChecks": 11,
       "replayedCapsules": 2,
@@ -67,13 +76,13 @@
   "humanAcceptance": "not recorded for this development milestone",
   "organizerAcceptance": "not requested or inferred by this checkpoint",
   "newPublicRelease": "not published; stable public version remains 0.1.0",
-  "performanceReceiptAppliesToCurrentImplementation": true,
+  "performanceReceiptAppliesToCurrentImplementation": false,
   "previousFormalMeasurement": {
     "complete": true,
     "correctnessPassed": true,
     "formalReleaseGatePassed": false,
-    "sourceSha256": "8d6c54792dcc38a7acda1ebd36f988d19afdd69aa3612bcc83b8e9002e559841",
-    "failedScenario": "completion-impossible-12"
+    "sourceSha256": "4b8ec7fc3b325473b695f11ab318f27491b68499f15a8cd7b897647cb2ff2ef3",
+    "failedScenario": "reduction-512"
   },
   "performanceCorrectnessPassed": true,
   "performanceRegressionGatePassed": false,

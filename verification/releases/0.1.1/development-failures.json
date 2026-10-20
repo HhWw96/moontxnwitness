@@ -69,6 +69,11 @@
       "receipt": "performance-v010-formal-2026-10-20T12-47-56-435Z.checkpoints/000038-5334bf6a-e1ce-433e-9fa5-c302f0fcfbdd.json",
       "reason": "Full 20 workload / 15 phase measurement and complete-output agreement passed, including the formerly failing 12-transaction search. The sole reduction-512 P95 increased 2.8353 ms versus a 2 ms allowance.",
       "repair": "Retain every batch and gate failure. No repeat of the same implementation; a dedicated immutable diagnostic is required before a further reduction-path optimization. No GC or scheduling cause is inferred."
+    },
+    {
+      "stage": "reduction-cache-full-check-format",
+      "reason": "The first unified full-check attempt stopped at the official MoonBit format check for the new reduction helper and one test. No core/oracle/CLI checks ran in that attempt.",
+      "repair": "Apply moon fmt without changing runtime semantics, then run the entire check suite from the beginning. Retain the separate pre-format exact-byte comparison, including the changed automatic invalid-options source location."
     }
   ]
 }

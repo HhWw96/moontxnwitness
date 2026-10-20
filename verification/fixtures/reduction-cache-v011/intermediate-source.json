@@ -1,0 +1,51 @@
+{
+  "name": "intermediate-source",
+  "options": {},
+  "history": {
+    "schemaVersion": 1,
+    "initial": {
+      "x": "x0",
+      "y": "y0"
+    },
+    "transactions": [
+      {
+        "id": "writer",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "write",
+            "key": "x",
+            "version": "x1"
+          },
+          {
+            "type": "write",
+            "key": "x",
+            "version": "x2"
+          }
+        ]
+      },
+      {
+        "id": "reader",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "read",
+            "key": "x",
+            "version": "x1"
+          }
+        ]
+      },
+      {
+        "id": "noise",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "read",
+            "key": "y",
+            "version": "y0"
+          }
+        ]
+      }
+    ]
+  }
+}

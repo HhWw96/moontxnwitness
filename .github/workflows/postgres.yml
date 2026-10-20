@@ -86,6 +86,15 @@ jobs:
             python experiments/provenance/test_capture_profile.py
             node experiments/provenance/capture_profile_e2e.mjs --schema mtw_provenance_profile_ci --output verification/provenance-profile/ci
           fi
+      - name: Verify frozen existing-lease business integration
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          if [ -f experiments/business/dislock/e2e.mjs ]; then
+            python experiments/provenance/test_returning_profile.py
+            python experiments/business/dislock/test_business.py
+            node experiments/business/dislock/e2e.mjs --schema mtw_provenance_dislock_ci --output verification/business/dislock/ci
+          fi
       - name: Preserve actual database server logs
         if: always()
         env:
@@ -106,3 +115,4 @@ jobs:
             verification/releases/*/capture/
             verification/provenance-prototypes/ci/
             verification/provenance-profile/ci/
+            verification/business/dislock/ci/

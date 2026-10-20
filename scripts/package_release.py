@@ -153,6 +153,14 @@ for kind in ("portable", "source"):
             assert profile.strip() == 'ColumnPointProfile'
             assert (consumer / 'experiments/provenance/CAPTURE_PROFILE.md').is_file()
             checks.append(kind + ' experimental ordinary-table profile and documentation import without database access')
+        if (ROOT / 'experiments/provenance/returning_profile.py').exists():
+            profile = run([sys.executable, '-c', "import sys; sys.path.insert(0,'experiments/provenance'); from returning_profile import ReturningPointProfile; print(ReturningPointProfile.__name__)"], consumer)
+            assert profile.strip() == 'ReturningPointProfile'
+            checks.append(kind + ' experimental existing-RETURNING profile import without database access')
+        if (ROOT / 'experiments/business/dislock/business.py').exists():
+            source = run([sys.executable, '-c', "import sys; sys.path.insert(0,'experiments/business/dislock'); from business import verify_sources; print(verify_sources()['commit'])"], consumer)
+            assert source.strip() == 'f9946f07159054433d9071c3805e41223cb47856'
+            checks.append(kind + ' frozen MIT upstream business source integrity without executing its code')
     if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
         old_python = env.get('MTW_PYTHON')
         try:

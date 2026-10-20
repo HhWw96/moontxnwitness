@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "assessment": "Complete same-version reduction comparison with a source-location-only diagnostic difference",
+  "strictSuitePassed": false,
+  "strictCases": 14,
+  "strictExactByteMatches": 13,
+  "strictOriginalReceipt": "verification/releases/0.1.1/reduction-compatibility-2026-10-20T13-42-41-289Z.json",
+  "strictOriginalReceiptSha256": "33d5ea2e909ba6accd82d5faa84fce6b9cd536ea9b47a76a399d3a748e179edc",
+  "strictReceiptUnmodified": true,
+  "baselineManifest": "verification/fixtures/reduction-cache-v011/manifest.json",
+  "baselineManifestSha256": "f31a294ed9f335c4c2681efb35a98506101f96bb7f1c29f30610444a5f7a83bb",
+  "sameVersion": "0.1.1",
+  "oldCoreSha256": "8f221e9935b867ebc797f8dce8285adfc3c00f9a5c0fbd1e4d1f8b60f3662af6",
+  "newCoreSha256": "44c05da0ccd094b69f3ba89efe1a0ef3e44af3f5aadb53fedf538f35da64c9a1",
+  "newSourceSha256": "496949339b884618636e590e6f411f406ebb51763b83cd97347406012ad19ee1",
+  "validHistoryAndOptionsCases": {
+    "cases": 13,
+    "completeOutputBytesMatched": 13,
+    "ignoredFields": [],
+    "names": [
+      "noise-7",
+      "noise-32",
+      "noise-64",
+      "noise-512",
+      "noise-512-budget-0",
+      "noise-512-budget-1",
+      "noise-512-budget-2",
+      "similar-and-unicode-identifiers",
+      "asserted-source-chain",
+      "aborted-source",
+      "intermediate-source",
+      "coexisting-anomalies",
+      "consistent"
+    ]
+  },
+  "allCasesAccounting": {
+    "cases": 14,
+    "checksCacheCountersBudgetsMatched": 14
+  },
+  "invalidOptionsCase": {
+    "name": "invalid-options",
+    "input": "verification/fixtures/reduction-cache-v011/invalid-options.json",
+    "inputSha256": "82436263a9ca92dfe1a409839444cd7393bc57136556bfd9a20814696e34d54c",
+    "options": {
+      "maxChecks": 257
+    },
+    "oldReason": "Failure(src/reduce_optimized.mbt:360:12-360:58@HhWw96/moontxnwitness FAILED: maxChecks must be an integer in 0..256)",
+    "newReason": "Failure(src/reduce_optimized.mbt:384:12-384:58@HhWw96/moontxnwitness FAILED: maxChecks must be an integer in 0..256)",
+    "onlyChangedJsonPath": "$.reason",
+    "oldSourceLocation": "src/reduce_optimized.mbt:360:12-360:58",
+    "newSourceLocation": "src/reduce_optimized.mbt:384:12-384:58",
+    "unchangedStatus": "invalid",
+    "unchangedOneMinimal": false,
+    "unchangedReducedHistory": null,
+    "unchangedReport": null,
+    "refusalConditionUnchanged": "maxChecks must be an integer in 0..256",
+    "locationPaddingApplied": false,
+    "reasonNormalizationApplied": false,
+    "sourceLocationHardcoded": false
+  },
+  "interpretation": {
+    "algorithmOrBudgetDifferenceDetected": false,
+    "sourceDiagnosticStringChanged": true,
+    "wholeStrictSuiteCanBeCalledPassed": false,
+    "validOutputByteCompatibilityEstablished": true,
+    "formalPerformanceAcceptanceEstablished": false,
+    "caveat": "The rejected-options diagnostic exposes its actual compiler source location. This string difference is preserved and documented; no old location is fabricated and no comparison field is ignored."
+  },
+  "validation": {
+    "targetedJsTests": 15,
+    "targetedJsPassed": 15,
+    "fullSuite": "Root owns the unified tests, actual PG and packaging; not certified by this assessment"
+  },
+  "sourceFreeze": "No further source edit or compilation by this task after the JS build identified in the original strict receipt."
+}

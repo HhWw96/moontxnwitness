@@ -31,23 +31,42 @@ priv struct ReductionContext {
   original : History
   writes : Map[String, Map[String, WriteRef]]
   options : ReductionOptions
+  original_indices : Map[String, Int]
   negative_candidates : Map[String, Bool]
   mut checks : Int
   mut hits : Int
 }
 
 ///|
+fn reduction_candidate_key(
+  ctx : ReductionContext,
+  txs : Array[Transaction],
+) -> String {
+  // Candidate histories are subsequences of one validated original history.
+  // Its at most 512 unique transaction IDs have indices 0..511, each encoded
+  // losslessly as one character below the surrogate range. The cache is private
+  // to this original, so neither separators nor a full original-length bitmap
+  // are needed. Long/Unicode IDs never enlarge a key beyond 512 characters.
+  if ctx.original_indices.is_empty() {
+    for i, tx in ctx.original.transactions {
+      ctx.original_indices[tx.id] = i
+    }
+  }
+  let key = StringBuilder(size_hint=txs.length())
+  for tx in txs {
+    key.write_char(ctx.original_indices.at(tx.id).unsafe_to_char())
+  }
+  key.to_string()
+}
+
+///|
 fn indexed_candidate(
   ctx : ReductionContext,
   txs : Array[Transaction],
-) -> (History, Map[String, Map[String, WriteRef]], String) {
+) -> (History, Map[String, Map[String, WriteRef]]) {
   let local_ids : Map[String, Int] = Map([])
   for i, tx in txs {
     local_ids[tx.id] = i
-  }
-  let signature = StringBuilder()
-  for tx in ctx.original.transactions {
-    signature.write_char(if local_ids.contains(tx.id) { '1' } else { '0' })
   }
   let writes : Map[String, Map[String, WriteRef]] = Map([])
   for key, versions in ctx.writes {
@@ -75,11 +94,7 @@ fn indexed_candidate(
       }
     })
   }
-  (
-    { ..ctx.original, transactions: txs, version_orders: orders, },
-    writes,
-    signature.to_string(),
-  )
+  ({ ..ctx.original, transactions: txs, version_orders: orders, }, writes)
 }
 
 ///|
@@ -87,7 +102,11 @@ fn reduction_trial(
   ctx : ReductionContext,
   txs : Array[Transaction],
 ) -> (History, AnalysisResult)? {
-  let (h, writes, key) = indexed_candidate(ctx, txs)
+  // With no recorded failures an exhausted budget cannot yield a cached hit.
+  if ctx.checks >= ctx.options.max_checks && ctx.negative_candidates.is_empty() {
+    return None
+  }
+  let key = reduction_candidate_key(ctx, txs)
   if ctx.negative_candidates.contains(key) {
     ctx.hits += 1
     return None
@@ -95,6 +114,7 @@ fn reduction_trial(
   if ctx.checks >= ctx.options.max_checks {
     return None
   }
+  let (h, writes) = indexed_candidate(ctx, txs)
   ctx.checks += 1
   // Deleting transactions from the already-validated original and pruning its
   // asserted orders preserves input invariants. Intermediate diagnostics are
@@ -211,6 +231,7 @@ pub fn reduce_with_options(
     original: h,
     writes,
     options,
+    original_indices: Map([]),
     negative_candidates: Map([]),
     checks: 0,
     hits: 0,
@@ -291,7 +312,7 @@ pub fn reduce_with_options(
   for tx in current.transactions {
     kept[tx.id] = true
   }
-  let (_, final_writes, _) = indexed_candidate(ctx, current.transactions)
+  let (_, final_writes) = indexed_candidate(ctx, current.transactions)
   analysis = if !analysis.report.graph.analyzed &&
     analysis.report.outcome != Invalid {
     analyze_balanced_indexed(current, options.analysis, final_writes)

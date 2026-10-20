@@ -1,5 +1,15 @@
 # 0.1.1 — development
 
+- Avoid rescanning the entire original history for every reduction cache key.
+  Encode retained original transaction indices in bounded keys and skip index
+  reconstruction on cached failures or exhausted budgets. Valid frozen reports
+  retain exact bytes and accounting; the separately recorded invalid-options
+  diagnostic reflects its new source location.
+- Exercise the frozen MIT dislock component's original lease-renewal helpers
+  through an experimental OLD/NEW RETURNING profile, preserving owner checks,
+  database time and business result columns. Seven actual PostgreSQL cases
+  include real lock waiting; four complete histories replay. Full acquisition,
+  cleanup, heartbeat, reconnect and application adoption remain unverified.
 - Encode the complete bounded search cache state in fixed-width numeric
   characters after CPU diagnostics. Preserve every current version, declared
   position, traversal, budget and counter; add collision and exact-limit tests.

@@ -1,0 +1,277 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-26ec70c5a9414710a2068ab046f28b08",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 94000,
+      "initial": {
+        "[\"mtw_provenance_dislock_2ba8af56b625.renew_rollback\",\"text\",\"cronjob-lock:lease:importer\"]": "5340c721-7126-4271-b853-d7a9e363200a",
+        "[\"mtw_provenance_dislock_2ba8af56b625.renew_rollback\",\"text\",\"cronjob-lock:lease:synchronizer\"]": "e23be1f7-cf28-4be3-9a22-a94b9d5bf6d9"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 281000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 281000,
+      "phase": "execute-request",
+      "sql": "\n        SELECT expire_at, value\n        FROM \"mtw_provenance_dislock_2ba8af56b625\".\"renew_rollback\"\n        WHERE key = %s;\n        ",
+      "parameters": [
+        "cronjob-lock:lease:importer"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 281000,
+      "phase": "execute-ack",
+      "sql": "\n        SELECT expire_at, value,\"mtwp_55246b778fe2001f_version\"::text\n        FROM \"mtw_provenance_dislock_2ba8af56b625\".\"renew_rollback\"\n        WHERE key = %s;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 281000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-20 22:03:06.935940+08:00"
+          },
+          "mtw-dislock:1001",
+          "5340c721-7126-4271-b853-d7a9e363200a"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "op",
+      "time": 281000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_2ba8af56b625.renew_rollback\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "5340c721-7126-4271-b853-d7a9e363200a"
+      }
+    },
+    {
+      "seq": 7,
+      "kind": "sql",
+      "time": 281000,
+      "phase": "execute-request",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_2ba8af56b625\".\"renew_rollback\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at;\n        ",
+      "parameters": [
+        300,
+        "cronjob-lock:lease:importer",
+        "mtw-dislock:1001"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 297000,
+      "phase": "execute-ack",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_2ba8af56b625\".\"renew_rollback\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at,OLD.\"mtwp_55246b778fe2001f_version\"::text,NEW.\"mtwp_55246b778fe2001f_version\"::text;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 9,
+      "kind": "sql",
+      "time": 297000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-20 21:58:07.216267+08:00"
+          },
+          "5340c721-7126-4271-b853-d7a9e363200a",
+          "b0535594-74c9-474e-ac23-e4e59d413e05"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 10,
+      "kind": "op",
+      "time": 297000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_2ba8af56b625.renew_rollback\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "5340c721-7126-4271-b853-d7a9e363200a"
+      }
+    },
+    {
+      "seq": 11,
+      "kind": "op",
+      "time": 297000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_dislock_2ba8af56b625.renew_rollback\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "b0535594-74c9-474e-ac23-e4e59d413e05"
+      }
+    },
+    {
+      "seq": 12,
+      "kind": "sql",
+      "time": 297000,
+      "phase": "execute-request",
+      "sql": "\n        SELECT expire_at, value\n        FROM \"mtw_provenance_dislock_2ba8af56b625\".\"renew_rollback\"\n        WHERE key = %s;\n        ",
+      "parameters": [
+        "cronjob-lock:lease:importer"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 13,
+      "kind": "sql",
+      "time": 297000,
+      "phase": "execute-ack",
+      "sql": "\n        SELECT expire_at, value,\"mtwp_55246b778fe2001f_version\"::text\n        FROM \"mtw_provenance_dislock_2ba8af56b625\".\"renew_rollback\"\n        WHERE key = %s;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 14,
+      "kind": "sql",
+      "time": 297000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-20 21:58:07.216267+08:00"
+          },
+          "mtw-dislock:1001",
+          "b0535594-74c9-474e-ac23-e4e59d413e05"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 15,
+      "kind": "op",
+      "time": 297000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_2ba8af56b625.renew_rollback\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "b0535594-74c9-474e-ac23-e4e59d413e05"
+      }
+    },
+    {
+      "seq": 16,
+      "kind": "sql",
+      "time": 297000,
+      "phase": "rollback-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 17,
+      "kind": "end",
+      "time": 297000,
+      "tx": "tx-1",
+      "status": "aborted"
+    },
+    {
+      "seq": 18,
+      "kind": "begin",
+      "time": 297000,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 19,
+      "kind": "sql",
+      "time": 297000,
+      "phase": "execute-request",
+      "sql": "\n        SELECT expire_at, value\n        FROM \"mtw_provenance_dislock_2ba8af56b625\".\"renew_rollback\"\n        WHERE key = %s;\n        ",
+      "parameters": [
+        "cronjob-lock:lease:importer"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 20,
+      "kind": "sql",
+      "time": 297000,
+      "phase": "execute-ack",
+      "sql": "\n        SELECT expire_at, value,\"mtwp_55246b778fe2001f_version\"::text\n        FROM \"mtw_provenance_dislock_2ba8af56b625\".\"renew_rollback\"\n        WHERE key = %s;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 21,
+      "kind": "sql",
+      "time": 297000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-20 22:03:06.935940+08:00"
+          },
+          "mtw-dislock:1001",
+          "5340c721-7126-4271-b853-d7a9e363200a"
+        ]
+      ],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 22,
+      "kind": "op",
+      "time": 297000,
+      "tx": "tx-2",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_2ba8af56b625.renew_rollback\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "5340c721-7126-4271-b853-d7a9e363200a"
+      }
+    },
+    {
+      "seq": 23,
+      "kind": "sql",
+      "time": 297000,
+      "phase": "commit-ack",
+      "tx": "tx-2"
+    },
+    {
+      "seq": 24,
+      "kind": "end",
+      "time": 297000,
+      "tx": "tx-2",
+      "status": "committed"
+    }
+  ],
+  "gaps": []
+}

@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--bin', default=str(ROOT / 'artifacts/postgres18-tools/pgsql/bin'))
-    parser.add_argument('--suite', choices=['capture', 'legacy', 'all', 'provenance', 'provenance-cost', 'provenance-profile', 'capture-with-profile'], default='capture')
+    parser.add_argument('--suite', choices=['capture', 'legacy', 'all', 'provenance', 'provenance-cost', 'provenance-profile', 'capture-with-profile', 'dislock', 'capture-with-dislock'], default='capture')
     args = parser.parse_args()
     parent = (ROOT / 'artifacts/capture-postgres').resolve()
     parent.mkdir(parents=True, exist_ok=True)
@@ -80,8 +80,17 @@ def main():
             'dbname':'postgres', 'user':'mtw', 'password':password}), encoding='utf8')
         env['MTW_PG_CONNECTION_FILE'] = str(connection_file)
         suites = (['legacy','capture'] if args.suite == 'all' else
+                  ['capture','provenance-profile','dislock'] if args.suite == 'capture-with-dislock' else
                   ['capture','provenance-profile'] if args.suite == 'capture-with-profile' else [args.suite])
         for suite in suites:
+            if suite == 'dislock':
+                output = ROOT / 'verification/business/dislock' / ('run-' + uuid.uuid4().hex)
+                result = subprocess.run(['node', str(ROOT / 'experiments/business/dislock/e2e.mjs'),
+                    '--schema', 'mtw_provenance_dislock_' + uuid.uuid4().hex[:12], '--output', str(output)],
+                    cwd=ROOT, env=env, creationflags=flags)
+                if result.returncode:
+                    return result.returncode
+                continue
             if suite == 'provenance-profile':
                 output = ROOT / 'verification/provenance-profile' / ('run-' + uuid.uuid4().hex)
                 result = subprocess.run(['node', str(ROOT / 'experiments/provenance/capture_profile_e2e.mjs'),

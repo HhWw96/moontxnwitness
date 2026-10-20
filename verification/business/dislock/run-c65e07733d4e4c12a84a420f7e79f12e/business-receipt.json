@@ -1,0 +1,389 @@
+{
+  "status": "passed",
+  "actualDatabaseExecution": true,
+  "server": "PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35229, 64-bit",
+  "driver": "3.3.6",
+  "python": "3.12.5",
+  "upstream": {
+    "repository": "Actticus/dislock",
+    "commit": "f9946f07159054433d9071c3805e41223cb47856",
+    "archiveSha256": "78f9be44f0bf0095b64e8c767f933d155d85092c8328afdf5b9749e97c9922d0",
+    "archiveBytes": 56046,
+    "license": "MIT",
+    "files": {
+      "LICENSE": {
+        "sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685",
+        "bytes": 1056
+      },
+      "README.md": {
+        "sha256": "4d278c8671a50648d34c0580f603248f2e0950b1432ae5cb53a7ed6ddab5f129",
+        "bytes": 14575
+      },
+      "dislock/__init__.py": {
+        "sha256": "0b161459c6ad01a1cbbe053995ea89fcf0287b26d278e44f34f3e7e76cd41548",
+        "bytes": 848
+      },
+      "dislock/__main__.py": {
+        "sha256": "3d2438ae92f4746e9ffaa1f837b1fe803f6281091d1f31f8c95643716f257d9a",
+        "bytes": 80
+      },
+      "dislock/_queries.py": {
+        "sha256": "dcac2aa0015e43396add2eb7b41bbf4abaae3cb9abb15d7c6c9be15f0f130234",
+        "bytes": 2540
+      },
+      "dislock/aio.py": {
+        "sha256": "74361ca82cb4f327d361f534631377884714b9ae9297540d7a3c3a2076bf09ff",
+        "bytes": 19153
+      },
+      "dislock/cli.py": {
+        "sha256": "13cd578ab836a39c7368b2fedfa3bda46a73a49d1748ba4e6e921e82cf0bf283",
+        "bytes": 5700
+      },
+      "dislock/core.py": {
+        "sha256": "a5384bb131c4833ca574bfb533ae37c1617ade2d409a9ea7fb2e506dbb1c594f",
+        "bytes": 21642
+      },
+      "dislock/exceptions.py": {
+        "sha256": "ad883314c04b8917856695ba9aa38b2db2d3d85dde913d82fef41a2ec05bea13",
+        "bytes": 416
+      },
+      "dislock/logging.py": {
+        "sha256": "be001e24c3fa4e45f244b4c6afabd97a17034e25a5965e3a4e6f3b44eb2fa92e",
+        "bytes": 728
+      },
+      "pyproject.toml": {
+        "sha256": "088b49d91d2d4cab6d93e89d9f8c1b8747d2e67b8794ce8ba49a29d02b81ac55",
+        "bytes": 1441
+      }
+    },
+    "sourceModified": false
+  },
+  "upstreamFunctionsExecuted": [
+    "core.try_acquire_run_lock (setup)",
+    "core.renew_lease",
+    "_queries.read_current_query",
+    "_queries.renew_lease_query"
+  ],
+  "scenarios": [
+    {
+      "name": "real-renew-same-expiry",
+      "trace": "real-renew-same-expiry.trace.json",
+      "expectedStatus": "ready",
+      "expectedVerdict": "consistent",
+      "facts": {
+        "actualUpstreamFunction": "core.renew_lease",
+        "renewals": 2,
+        "repeatedExpiry": "2026-10-20T21:55:07.226988+08:00",
+        "ownerUnchanged": true,
+        "intermediateWriteTokens": [
+          "6fb3287c-8b16-4cd4-842a-8db1ef855280",
+          "6c33f67f-d8de-4d87-8ab0-5d0e9aa5ba43"
+        ],
+        "timeClaim": "same transaction's NOW with unchanged TTL; no cross-transaction absolute comparison"
+      },
+      "audit": {
+        "versions": 4,
+        "writes": 2,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "uninstallPreservedBusinessRows": true,
+      "projectionVersion": "column-old-new-register-v0.1.2-experimental",
+      "artifactBindings": {
+        "trace": {
+          "path": "real-renew-same-expiry.trace.json",
+          "sha256": "516ae018b48bb34819bfa7673ec7e246b3439e0aaafa406944d3d4e31f1bfd00",
+          "bytes": 9630
+        },
+        "coverage": {
+          "path": "real-renew-same-expiry.coverage.json",
+          "sha256": "0335d85af74b5c157e39a684e4d67d46d37935f8380bd5c00afccdaf42437f78",
+          "bytes": 2325
+        },
+        "history": {
+          "path": "real-renew-same-expiry.history.json",
+          "sha256": "8f59d01e33bdcbab5a2647b175002c0685cf5f4804f65520903e057f307d42b0",
+          "bytes": 2108
+        },
+        "report": {
+          "path": "real-renew-same-expiry.report.json",
+          "sha256": "a59af55f792b43231297df42989ce23e5743358d4b1888c7b4507431510796d8",
+          "bytes": 2477
+        },
+        "capsule": {
+          "path": "real-renew-same-expiry.capsule.json",
+          "sha256": "6f205cfeffc44dd6e8966f39fcdf7583944030dad69805604fe859c46f6ca949",
+          "bytes": 4459
+        }
+      }
+    },
+    {
+      "name": "real-renew-rollback",
+      "trace": "real-renew-rollback.trace.json",
+      "expectedStatus": "ready",
+      "expectedVerdict": "consistent",
+      "facts": {
+        "abortedToken": "b0535594-74c9-474e-ac23-e4e59d413e05",
+        "originalRowRestored": true
+      },
+      "audit": {
+        "versions": 2,
+        "writes": 0,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "uninstallPreservedBusinessRows": true,
+      "projectionVersion": "column-old-new-register-v0.1.2-experimental",
+      "artifactBindings": {
+        "trace": {
+          "path": "real-renew-rollback.trace.json",
+          "sha256": "34c690cb2458c3e42c0f9d5de21b211fe2e3fd279423f1facdc5d3bd62f1adcd",
+          "bytes": 7904
+        },
+        "coverage": {
+          "path": "real-renew-rollback.coverage.json",
+          "sha256": "3eb2d04e277ca527dccc964a81fbdc2a6d9382522613791a865eb353ca78ec16",
+          "bytes": 2005
+        },
+        "history": {
+          "path": "real-renew-rollback.history.json",
+          "sha256": "91d82ec10b0897bb5f18c49ab3b45e96d70ae8c0ab257d6df3215731907339da",
+          "bytes": 1792
+        },
+        "report": {
+          "path": "real-renew-rollback.report.json",
+          "sha256": "7e1cb15d28cbfbbf90124089a93c34a29799ff6c69b9edd447bea77b6130c868",
+          "bytes": 2437
+        },
+        "capsule": {
+          "path": "real-renew-rollback.capsule.json",
+          "sha256": "3a2fe9403073317a2fa68c24644e031af9d6203a1c314a5359ee7ee6284d4e77",
+          "bytes": 4125
+        }
+      }
+    },
+    {
+      "name": "real-owner-guard-false",
+      "trace": "real-owner-guard-false.trace.json",
+      "expectedStatus": "inconclusive",
+      "expectedVerdict": null,
+      "facts": {
+        "upstreamReturnedFalse": true,
+        "noInventedWrite": true,
+        "originalRowUnchanged": true
+      },
+      "audit": {
+        "versions": 2,
+        "writes": 0,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "uninstallPreservedBusinessRows": true,
+      "projectionVersion": "column-old-new-register-v0.1.2-experimental",
+      "artifactBindings": {
+        "trace": {
+          "path": "real-owner-guard-false.trace.json",
+          "sha256": "8c99ed8ed9ca5640701e794431a90f4406038ca378c4f46c8a1603d32745397a",
+          "bytes": 5320
+        },
+        "coverage": {
+          "path": "real-owner-guard-false.coverage.json",
+          "sha256": "5fcc3a268abf12ff113d4533e5585f46745ba2b89a54f9b308e3604e749ad3b6",
+          "bytes": 323
+        }
+      }
+    },
+    {
+      "name": "same-transaction-original-sql-surface",
+      "trace": "same-transaction-original-sql-surface.trace.json",
+      "expectedStatus": "inconclusive",
+      "expectedVerdict": null,
+      "facts": {
+        "businessColumnsAndReturningPreserved": true,
+        "originalAndObservedShareTransactionNow": true,
+        "exactExpiryDeltaSeconds": 120.5,
+        "closedCursorErrorMatched": true,
+        "coverageReason": "plain-mirror and verifier SQL intentionally outside the declared business profile; comparison is not a complete trace"
+      },
+      "audit": {
+        "versions": 3,
+        "writes": 1,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "uninstallPreservedBusinessRows": true,
+      "projectionVersion": "column-old-new-register-v0.1.2-experimental",
+      "artifactBindings": {
+        "trace": {
+          "path": "same-transaction-original-sql-surface.trace.json",
+          "sha256": "433a214e295a32cc8d13091d2bd57e4db130782517036c640303d5f5c4336be2",
+          "bytes": 8097
+        },
+        "coverage": {
+          "path": "same-transaction-original-sql-surface.coverage.json",
+          "sha256": "dbfb6bc1e4266a9d20967238f2e41d60095cdee3e71cecb1b5a22586cd0d3e52",
+          "bytes": 760
+        }
+      }
+    },
+    {
+      "name": "unconsumed-original-returning",
+      "trace": "unconsumed-original-returning.trace.json",
+      "expectedStatus": "inconclusive",
+      "expectedVerdict": null,
+      "facts": {
+        "scope": "adversarial cursor-contract check, not core.renew_lease behavior"
+      },
+      "audit": {
+        "versions": 3,
+        "writes": 1,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "uninstallPreservedBusinessRows": true,
+      "projectionVersion": "column-old-new-register-v0.1.2-experimental",
+      "artifactBindings": {
+        "trace": {
+          "path": "unconsumed-original-returning.trace.json",
+          "sha256": "62a2945fb829bc072b99191abfb80f4991c2b6d90d51df9882d8815a56e047fc",
+          "bytes": 3238
+        },
+        "coverage": {
+          "path": "unconsumed-original-returning.coverage.json",
+          "sha256": "60786d4f5c203e491494adfcb957fa53acb91ea458400a57008fff7413f2427e",
+          "bytes": 290
+        }
+      }
+    },
+    {
+      "name": "original-business-error-rollback",
+      "trace": "original-business-error-rollback.trace.json",
+      "expectedStatus": "ready",
+      "expectedVerdict": "consistent",
+      "facts": {
+        "originalErrorClass": "NotNullViolation",
+        "originalSqlstate": "23502",
+        "noFailedWriteInvented": true
+      },
+      "audit": {
+        "versions": 2,
+        "writes": 0,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "uninstallPreservedBusinessRows": true,
+      "projectionVersion": "column-old-new-register-v0.1.2-experimental",
+      "artifactBindings": {
+        "trace": {
+          "path": "original-business-error-rollback.trace.json",
+          "sha256": "96550fedf7300e133c8a471b20aba895bf3ced88c73b265c71f6c5028477de2a",
+          "bytes": 5350
+        },
+        "coverage": {
+          "path": "original-business-error-rollback.coverage.json",
+          "sha256": "94e71728565435c60dc03256ecae0f1dc44aa7cc5acde178465e1d8aeb0d0b4d",
+          "bytes": 1295
+        },
+        "history": {
+          "path": "original-business-error-rollback.history.json",
+          "sha256": "d03997f9cc22835149920c341089eb5eb5942ad4ec2b3197e924d7bc47205ea2",
+          "bytes": 1112
+        },
+        "report": {
+          "path": "original-business-error-rollback.report.json",
+          "sha256": "ea0e45a86546a6e4a017c6bcf040d1302b6e688f37f64b5a8424f1bfd1c8171e",
+          "bytes": 2431
+        },
+        "capsule": {
+          "path": "original-business-error-rollback.capsule.json",
+          "sha256": "1fa597c5dbf345e6cc3ecde7b172dac4cf4942a8a44cb8073fb9b4bd89a62f48",
+          "bytes": 3529
+        }
+      }
+    },
+    {
+      "name": "read-committed-wait-old-source",
+      "trace": "read-committed-wait-old-source.trace.json",
+      "expectedStatus": "ready",
+      "expectedVerdict": "consistent",
+      "facts": {
+        "blockingPidObserved": true,
+        "firstBackendPid": 39140,
+        "secondBackendPid": 85444,
+        "configuredIsolation": "READ COMMITTED; driver setting assigned while idle before wrapping",
+        "previousCommittedReadToken": "53c9fc6f-a58a-4b26-83cc-bfa045927cb4",
+        "firstWriteToken": "8d8a15c5-682e-4a83-9ed6-923e95886b26",
+        "secondUpdateOldToken": "8d8a15c5-682e-4a83-9ed6-923e95886b26",
+        "secondWriteToken": "fcff24eb-e04f-486e-b141-ac925a0aba79",
+        "workerCommittedAndClosed": true,
+        "versionOrderingClaim": "actual same-statement OLD/NEW and predecessor facts only; no order inferred from UUIDs, clocks or threads"
+      },
+      "protocol": "read-committed-wait.protocol.json",
+      "audit": {
+        "versions": 4,
+        "writes": 2,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "uninstallPreservedBusinessRows": true,
+      "projectionVersion": "column-old-new-register-v0.1.2-experimental",
+      "artifactBindings": {
+        "trace": {
+          "path": "read-committed-wait-old-source.trace.json",
+          "sha256": "88d121e7317185e206213037cb2f71f04e7b90a558ecc60a474c52c4d2092062",
+          "bytes": 7368
+        },
+        "coverage": {
+          "path": "read-committed-wait-old-source.coverage.json",
+          "sha256": "c0e0762f3a0b636963cc4f91bb1d0904a7b5d00ddde5e0a8338e7c1c685fc098",
+          "bytes": 2152
+        },
+        "protocol": {
+          "path": "read-committed-wait.protocol.json",
+          "sha256": "e3686dd6d96ec02b5ecafc444f408c5f86f1f920c3668e1887c2fdd5e5062250",
+          "bytes": 616
+        },
+        "history": {
+          "path": "read-committed-wait-old-source.history.json",
+          "sha256": "704c06b7280c13443d581bcd8075b631ff29252403c9520ec7c177ffcd5c5be7",
+          "bytes": 1923
+        },
+        "report": {
+          "path": "read-committed-wait-old-source.report.json",
+          "sha256": "397ca90583d27fa81cb195692654c8b7e3fdf730a5213167abcc044d487a681b",
+          "bytes": 4359
+        },
+        "capsule": {
+          "path": "read-committed-wait-old-source.capsule.json",
+          "sha256": "4692d8a2238a7e8f024c0e0e0ffcde5fc2cc6c4e3df14899950f0e38b815ce15",
+          "bytes": 5964
+        }
+      }
+    }
+  ],
+  "schemaRetained": false,
+  "adoptionScope": "existing upstream component with controlled data; not a production deployment, historical defect, full CLI/heartbeat test or full v0.1.7 acceptance",
+  "notMeasured": [
+    "full capture C/A",
+    "CPU/RSS",
+    "thread/reconnect/cleanup coverage",
+    "contended multi-worker outcomes"
+  ],
+  "sources": {
+    "experiments/business/dislock/postgres_test.py": "2ac0074d75756ccc0d694113a10b4df0eee4f103db7a8c50defe30545fa0fa82",
+    "experiments/business/dislock/business.py": "d174712c7da09d18f82000c76cd03b976966f4d74ab9b5067f33668da5138d69",
+    "experiments/provenance/returning_profile.py": "4a646e743bcbe4f9ed2aab6c7b5d78deaab8d15ffc0a6ef196cc75aa4197fce1",
+    "experiments/provenance/capture_profile.py": "4ba5559a8c618f584ace50981723a9ee53300718e95dc7650c5ff40bf9ca0c8f"
+  },
+  "passed": true,
+  "coreVersion": "0.1.1",
+  "captureSource": {
+    "adapterSha256": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e",
+    "analysisCoreSha256": "f2a0b6d1a07152aa599ce9e799e9b2a7b993b5bf87a73faada8705a1735c2d91",
+    "captureCoreSha256": "a2d73eeae3283b535aad8def68176abb9a0129308d5f96505e53bc6e50166a17",
+    "buildManifestSha256": "f66670e2e8ce865b99f26e38508e929cb8140dcfe7dd96324732fabf73e67baa",
+    "buildManifestSourceSha256": "4f1a51358ac60eb6cb2d34443556ab67a79ee6482038590fa7390800a8029fba",
+    "e2eSha256": "7ff0283fa4093fe8d0dad5956344d6519ef5c30fed71cb65554c4bbe89e98797"
+  },
+  "replayedCapsules": 4,
+  "generatedAt": "2026-10-20T13:53:10.312Z",
+  "projection": {
+    "version": "column-old-new-register-v0.1.2-experimental",
+    "scope": "fixed existing leases; successful same-statement OLD reads and NEW writes; unsupported/failed predicates remain gaps",
+    "bindingClaim": "file SHA-256 and byte counts detect receipt/artifact mismatches; they do not authenticate collection or complete evidence v3"
+  },
+  "analysisScope": "unique-version point-register projection; no proof of the entire lease/CLI/heartbeat system"
+}
