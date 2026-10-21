@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "kind": "independent-static-shared-input-domain-finding",
+  "reportedBy": "perf_value_roadmap",
+  "previousCandidateIndexSha256": "65e058fafe4208c540f9939f86468032b8659acec0c2fdfb2ef59865ea88dc41",
+  "fixedToolSourceFingerprint": "b6638ee56395a14284d1440a92a0d975c4ea4073f42ccab6d8d39e359d928096",
+  "primaryLocalSource": "src/json_guard.mbt:168 valid_identifier",
+  "finding": "The v1 adapter identity predicate accepted ASCII controls U+0000..001F and U+007F, while the fixed tool rejects them. Such an input could be mislabeled common-range eligible and later look like a consistency discrepancy. None of the original fifteen ASCII smoke inputs contains these controls.",
+  "newCandidateChange": "Reject the same ASCII control scalar set and apply the identity validator explicitly to write.predecessor. Preserve whitespace, non-ASCII scalar characters and the 256 UTF16-unit boundary without normalization.",
+  "frozenTests": {"file": "identity-boundaries-v2.json", "identityCases": 30, "rawTraceCases": 39, "totalChecks": 69},
+  "unchanged": ["original fifteen raw smoke inputs and expectations", "upstream Elle source and checker options", "actual eight checker cases", "comparison helper", "original contract as a historical artifact"],
+  "actualCheckerExecuted": false,
+  "localBoundaryTestsExecutedAtAuthoring": false
+}

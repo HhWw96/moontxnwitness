@@ -1,0 +1,1188 @@
+{
+  "schema": 1,
+  "kind": "frozen-raw-Elle-smoke-before-adapter-execution",
+  "cases": [
+    {
+      "id": "register-wr-chain",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "A",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "A"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "begin",
+            "tx": "B",
+            "connection": "B"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "read",
+            "tx": "B",
+            "key": "x",
+            "version": "x1"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "B"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "B"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": true,
+        "toolStatus": "consistent"
+      }
+    },
+    {
+      "id": "register-initial-write-skew",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "begin",
+            "tx": "B",
+            "connection": "B"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "read",
+            "tx": "A",
+            "key": "y",
+            "version": "y0"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "read",
+            "tx": "B",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "write",
+            "tx": "A",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "write",
+            "tx": "B",
+            "key": "y",
+            "version": "y1",
+            "predecessor": "y0"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "A"
+          },
+          {
+            "seq": 10,
+            "time": 9,
+            "kind": "commit_request",
+            "tx": "B"
+          },
+          {
+            "seq": 11,
+            "time": 10,
+            "kind": "commit_ok",
+            "tx": "B"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": false,
+        "toolStatus": "violation"
+      }
+    },
+    {
+      "id": "register-wr-cycle",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "begin",
+            "tx": "B",
+            "connection": "B"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "write",
+            "tx": "A",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "write",
+            "tx": "B",
+            "key": "y",
+            "version": "y1",
+            "predecessor": "y0"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "read",
+            "tx": "A",
+            "key": "y",
+            "version": "y1"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "read",
+            "tx": "B",
+            "key": "x",
+            "version": "x1"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "A"
+          },
+          {
+            "seq": 10,
+            "time": 9,
+            "kind": "commit_request",
+            "tx": "B"
+          },
+          {
+            "seq": 11,
+            "time": 10,
+            "kind": "commit_ok",
+            "tx": "B"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": false,
+        "toolStatus": "violation"
+      }
+    },
+    {
+      "id": "register-empty-dependency-graph",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "A",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "A"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": "unknown",
+        "toolStatus": "consistent"
+      }
+    },
+    {
+      "id": "register-multiple-writers-not-total-order",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "A",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "A"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "begin",
+            "tx": "B",
+            "connection": "B"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "write",
+            "tx": "B",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "B"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "B"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "outside",
+        "elleValid": null,
+        "toolStatus": null
+      }
+    },
+    {
+      "id": "register-unknown-read-source",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "read",
+            "tx": "A",
+            "key": "x",
+            "version": "missing"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "A"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "outside",
+        "elleValid": null,
+        "toolStatus": null
+      }
+    },
+    {
+      "id": "list-wr-chain",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "append-list-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": [],
+              "y": []
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "append",
+            "tx": "A",
+            "key": "x",
+            "id": "a",
+            "value": "same"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "A"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "begin",
+            "tx": "B",
+            "connection": "B"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "list_read",
+            "tx": "B",
+            "key": "x",
+            "items": [
+              {
+                "id": "a",
+                "value": "same"
+              }
+            ]
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "B"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "B"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": true,
+        "toolStatus": "consistent"
+      }
+    },
+    {
+      "id": "list-wr-cycle",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "append-list-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": [],
+              "y": []
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "begin",
+            "tx": "B",
+            "connection": "B"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "append",
+            "tx": "A",
+            "key": "x",
+            "id": "a",
+            "value": "same"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "append",
+            "tx": "B",
+            "key": "y",
+            "id": "b",
+            "value": "same"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "list_read",
+            "tx": "A",
+            "key": "y",
+            "items": [
+              {
+                "id": "b",
+                "value": "same"
+              }
+            ]
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "list_read",
+            "tx": "B",
+            "key": "x",
+            "items": [
+              {
+                "id": "a",
+                "value": "same"
+              }
+            ]
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "A"
+          },
+          {
+            "seq": 10,
+            "time": 9,
+            "kind": "commit_request",
+            "tx": "B"
+          },
+          {
+            "seq": 11,
+            "time": 10,
+            "kind": "commit_ok",
+            "tx": "B"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": false,
+        "toolStatus": "violation"
+      }
+    },
+    {
+      "id": "list-duplicate-observed-identity",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "append-list-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": [],
+              "y": []
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "append",
+            "tx": "A",
+            "key": "x",
+            "id": "a",
+            "value": "same"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "A"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "begin",
+            "tx": "B",
+            "connection": "B"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "list_read",
+            "tx": "B",
+            "key": "x",
+            "items": [
+              {
+                "id": "a",
+                "value": "same"
+              },
+              {
+                "id": "a",
+                "value": "same"
+              }
+            ]
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "B"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "B"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": false,
+        "toolStatus": "violation"
+      }
+    },
+    {
+      "id": "list-empty-dependency-graph",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "append-list-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": [],
+              "y": []
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "append",
+            "tx": "A",
+            "key": "x",
+            "id": "a",
+            "value": "same"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "A"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": "unknown",
+        "toolStatus": "consistent"
+      }
+    },
+    {
+      "id": "list-nonempty-initial-not-fabricated-append",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "append-list-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": [
+                {
+                  "id": "seed",
+                  "value": "same"
+                }
+              ]
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "list_read",
+            "tx": "A",
+            "key": "x",
+            "items": [
+              {
+                "id": "seed",
+                "value": "same"
+              }
+            ]
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "A"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "outside",
+        "elleValid": null,
+        "toolStatus": null
+      }
+    },
+    {
+      "id": "scope-is-not-flattened",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "savepoint",
+            "tx": "A",
+            "name": "s",
+            "instance": "s1"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "read",
+            "tx": "A",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "release",
+            "tx": "A",
+            "instance": "s1"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "commit_ok",
+            "tx": "A"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "outside",
+        "elleValid": null,
+        "toolStatus": null
+      }
+    },
+    {
+      "id": "invalid-original-sequence",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 99,
+            "time": 2,
+            "kind": "read",
+            "tx": "A",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "A"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "invalid",
+        "elleValid": null,
+        "toolStatus": null
+      }
+    },
+    {
+      "id": "invalid-duplicate-global-write-identity",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "A",
+            "key": "x",
+            "version": "same-id",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "write",
+            "tx": "A",
+            "key": "y",
+            "version": "same-id",
+            "predecessor": "y0"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "commit_ok",
+            "tx": "A"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "invalid",
+        "elleValid": null,
+        "toolStatus": null
+      }
+    },
+    {
+      "id": "list-known-identity-wrong-payload-not-erased",
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "append-list-v1",
+        "clockDomain": "fixed-raw-smoke",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "events": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": [],
+              "y": []
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "A",
+            "connection": "A"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "append",
+            "tx": "A",
+            "key": "x",
+            "id": "a",
+            "value": "same"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "A"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "A"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "begin",
+            "tx": "B",
+            "connection": "B"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "list_read",
+            "tx": "B",
+            "key": "x",
+            "items": [
+              {
+                "id": "a",
+                "value": "different"
+              }
+            ]
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "B"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "B"
+          }
+        ],
+        "gaps": []
+      },
+      "expected": {
+        "adapter": "outside",
+        "elleValid": null,
+        "toolStatus": null
+      }
+    }
+  ]
+}
+

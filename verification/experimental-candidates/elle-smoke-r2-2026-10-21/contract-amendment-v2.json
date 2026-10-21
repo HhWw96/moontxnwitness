@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "kind": "shared-identity-domain-amendment-before-remote-execution",
+  "previousCandidateIndexSha256": "65e058fafe4208c540f9939f86468032b8659acec0c2fdfb2ef59865ea88dc41",
+  "originalContractSha256": "c3891d830804755bf4f623585d1a38b80b8d42987e59931034bb360453890b7b",
+  "originalSmokeInputSha256": "e9430dbf5faca86c337fca8a090464004a362370c6e134f710a344f5b8ef8d90",
+  "reason": "Independent source review found that the raw adapter accepted ASCII control identifiers which the fixed MoonTxnWitness b663 core rejects. This is a representation-domain issue, not a checker consistency discrepancy. The original fifteen ASCII cases and all expectations are unchanged.",
+  "identity": {
+    "type": "nonempty Unicode scalar string",
+    "maxUtf16Units": 256,
+    "forbiddenScalars": "U+0000 through U+001F inclusive, U+007F; unpaired surrogate code units are invalid Unicode",
+    "allowedExamples": "U+0020 space, leading/trailing spaces, U+0080, scalar noncharacters, supplementary scalar characters within the UTF16 limit",
+    "appliesTo": ["clockDomain", "tx", "connection", "key", "initial register version", "write version", "write predecessor", "read version", "append identity", "observed list identity"],
+    "outsideScope": "String business values are not identifiers. No normalization, trimming, case folding or Unicode equivalence is applied."
+  },
+  "boundaryPolicy": "The new frozen boundary fixture is checked remotely by importing the actual v2 adapter. Direct identity and full-trace cases have fixed expectations. Boundary cases do not invoke Elle and are not counted among the original eight actual checker cases.",
+  "additionalNotice": {"file": "primary-references/LEININGEN-COPYING", "bytes": 31979, "sha256": "721fc8dd7fb2419c5360287b591b918084f350cd17d71130a942bc0f81546ea3"},
+  "actualElleExecuted": false,
+  "localBoundaryChecksExecuted": false,
+  "localJavaClojureNodeCompilerExecuted": false
+}

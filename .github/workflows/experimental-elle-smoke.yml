@@ -1,0 +1,37 @@
+name: Compare fixed actual Elle with MoonTxnWitness
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  actual-upstream-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.13.0'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install pinned official MoonBit for the separate tool comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$MOONBIT_INSTALL_VERSION"
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Run fixed raw adapter, actual JDK21 upstream checkers and SDK comparison
+        run: python -B scripts/experimental_elle_smoke_ci.py --work "${{ runner.temp }}/mtw-elle-first-smoke"
+      - name: Preserve first original inputs, actual checker results and runtime bindings
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: actual-fixed-elle-first-smoke
+          path: ${{ runner.temp }}/mtw-elle-first-smoke/evidence/
+          if-no-files-found: error
+          compression-level: 6
