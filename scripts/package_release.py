@@ -9,6 +9,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 from package_archive import sha256, write_archive
+from publication_privacy import private_home_paths
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -37,8 +38,11 @@ for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'demo.mjs', 'po
 
 
 def archive(files, path):
+    home_paths = private_home_paths(
+        str(Path.home()), github_actions=os.environ.get('GITHUB_ACTIONS') == 'true',
+        runner_environment=os.environ.get('RUNNER_ENVIRONMENT', ''))
     return write_archive(ROOT, files, path, NAME,
-                         (str(ROOT), ROOT.as_posix(), str(Path.home()), Path.home().as_posix()))
+                         {str(ROOT), ROOT.as_posix(), *home_paths})
 
 
 excluded_dirs = {".git", "_build", ".mooncakes", "node_modules", "artifacts", "dist", "__pycache__", ".venv-pg"}

@@ -7,9 +7,44 @@ from unittest.mock import patch
 import zipfile
 
 from package_archive import CHUNK_BYTES, sha256, write_archive
+from publication_privacy import private_home_paths
 
 
 class ArchiveTests(unittest.TestCase):
+    def test_public_hosted_runner_evidence_can_be_archived(self):
+        with tempfile.TemporaryDirectory(prefix='mtw-zip-public-ci-') as temporary:
+            root = Path(temporary)
+            evidence = b'{"observedPath":"/home/runner/work/_temp/actual-evidence.json"}'
+            (root / 'receipt.json').write_bytes(evidence)
+            private = private_home_paths('/home/runner', github_actions=True,
+                                         runner_environment='github-hosted')
+            write_archive(root, ['receipt.json'], root / 'result.zip', 'fixture', private)
+            with zipfile.ZipFile(root / 'result.zip') as built:
+                self.assertEqual(built.read('fixture/receipt.json'), evidence)
+
+    def test_hosted_exception_does_not_exclude_publisher_or_self_hosted_home(self):
+        for home, actions, environment in (
+            ('/home/publisher', True, 'github-hosted'),
+            ('/home/runner', True, 'self-hosted'),
+            ('/home/runner', False, 'github-hosted'),
+            ('C:\\Users\\runneradmin', True, ''),
+        ):
+            with self.subTest(home=home, actions=actions, environment=environment):
+                with tempfile.TemporaryDirectory(prefix='mtw-zip-private-ci-') as temporary:
+                    root = Path(temporary)
+                    (root / 'receipt.json').write_text(home, encoding='utf8')
+                    private = private_home_paths(home, github_actions=actions,
+                                                 runner_environment=environment)
+                    with self.assertRaisesRegex(AssertionError, 'Local path found'):
+                        write_archive(root, ['receipt.json'], root / 'rejected.zip', 'fixture', private)
+
+    def test_windows_hosted_exception_is_exact_and_case_insensitive(self):
+        self.assertEqual(private_home_paths('C:\\Users\\RunnerAdmin', github_actions=True,
+                                           runner_environment='github-hosted'), set())
+        self.assertIn('C:/Users/runneradmin-private', private_home_paths(
+            'C:/Users/runneradmin-private', github_actions=True,
+            runner_environment='github-hosted'))
+
     def test_large_output_without_whole_file_reads(self):
         with tempfile.TemporaryDirectory(prefix='mtw-zip-stream-') as temporary:
             root = Path(temporary)
