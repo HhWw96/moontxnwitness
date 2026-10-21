@@ -36,7 +36,10 @@ def main():
         assert index["candidateIndexSha256"] == candidate_sha
         clone = work / "isolated-checkout"
         clone.mkdir()
-        before = {}
+        # The independent locator requires the real module marker as well as
+        # integrations/python. The frozen author bundle deliberately omits it.
+        shutil.copyfile(ROOT / "moon.mod", clone / "moon.mod")
+        before = {"moon.mod": binding(clone / "moon.mod")}
         for name, item in index["files"].items():
             original = bundle / relative(item["bundleFile"])
             assert not original.is_symlink() and binding(original) == {key: item[key] for key in ("bytes", "sha256")}
