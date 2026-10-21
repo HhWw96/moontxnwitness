@@ -14,9 +14,11 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent.parent
-BUNDLE = ROOT / "verification/experimental-candidates/orm-source2-2026-10-21"
 SOURCE_BASELINE = "b6638ee56395a14284d1440a92a0d975c4ea4073f42ccab6d8d39e359d928096"
-CANDIDATE_SHA = "3cc3bab0339703acb4f1237ae833d98def66d1aa5c7772c99d5690d864164390"
+PROFILES = {
+    "r1": ("orm-source2-2026-10-21", "3cc3bab0339703acb4f1237ae833d98def66d1aa5c7772c99d5690d864164390", 22),
+    "r2": ("orm-source2-r2-2026-10-21", "2ba6e9ad40c99999d3b5c214846b114ed7a646275e3fa8344924bb97d02d144f", 27),
+}
 
 
 def binding(path):
@@ -46,7 +48,10 @@ def relative(name):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--work", required=True, type=Path)
+    parser.add_argument("--candidate", choices=tuple(PROFILES), default="r2")
     args = parser.parse_args()
+    bundle_name, candidate_sha, candidate_files = PROFILES[args.candidate]
+    bundle = ROOT / "verification/experimental-candidates" / bundle_name
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=False)
     output = work / "evidence"
@@ -54,20 +59,20 @@ def main():
     receipt = {"schema": 1, "kind": "experimental-orm-source2-execution", "passed": False,
                "workflowCommit": os.environ.get("GITHUB_SHA"), "platform": platform.platform(),
                "python": sys.version, "started": datetime.now(timezone.utc).isoformat(),
-               "candidateIndexSha256": CANDIDATE_SHA, "stages": [], "failures": [],
+               "candidateIndexSha256": candidate_sha, "stages": [], "failures": [],
                "actualDatabaseExecution": False, "formalPerformanceMeasurement": False,
                "independentAcceptance": False, "stableApiChanged": False,
                "productionModelCoverageAccepted": False, "fullApplicationIntegration": False}
     try:
         assert fingerprint(ROOT) == SOURCE_BASELINE, "Unexpected production source baseline"
         receipt["baselineSourceSha256"] = SOURCE_BASELINE
-        raw = (BUNDLE / "candidate-manifest-static-v1.json").read_bytes()
-        assert hashlib.sha256(raw).hexdigest() == CANDIDATE_SHA
+        raw = (bundle / "candidate-manifest-static-v1.json").read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == candidate_sha
         manifest = json.loads(raw)
-        assert len(manifest["files"]) == 22
+        assert len(manifest["files"]) == candidate_files
         before = {}
         for item in manifest["files"]:
-            original = BUNDLE / relative(item["path"])
+            original = bundle / relative(item["path"])
             assert not original.is_symlink()
             actual = binding(original)
             assert actual == {key: item[key] for key in ("bytes", "sha256")}
@@ -87,7 +92,7 @@ def main():
                                else "src/" + PurePosixPath(name).name)
                 target = clone / relative(target_name)
                 assert not target.exists(), "Do not silently replace an existing source file"
-                shutil.copyfile(BUNDLE / relative(name), target)
+                shutil.copyfile(bundle / relative(name), target)
                 overlays[target_name] = binding(target)
         # The old diagnostic had these imports in its private build. Add them
         # explicitly in this clone; never mutate the production package file.
@@ -100,15 +105,15 @@ def main():
                            for path in (clone / "src").rglob("*.mbt"))
         assert actual_count == expected_count == 615
         receipt["declaredCoreTests"] = actual_count
-        commands = [("fixed-template-AST", [sys.executable, "-B", str(BUNDLE / "generate_control_templates.py"), "--check"]),
+        commands = [("fixed-template-AST", [sys.executable, "-B", str(bundle / "generate_control_templates.py"), "--check"]),
                     ("check-all", ["node", "scripts/moon.mjs", "check", "--target", "all", "--deny-warn", "--jobs", "1"])]
         commands.extend(("test-" + target, ["node", "scripts/moon.mjs", "test", "--target", target, "--deny-warn", "--jobs", "1"])
                         for target in ("js", "wasm-gc", "wasm", "native"))
         commands.extend([
             ("build-js", ["node", "scripts/moon.mjs", "build", "--target", "js", "--release", "--deny-warn", "--jobs", "1"]),
-            ("raw-source-and-tamper", ["node", str(BUNDLE / "check-source2.mjs"),
+            ("raw-source-and-tamper", ["node", str(bundle / "check-source2.mjs"),
               str(clone / "_build/js/release/build/capture_bridge/capture_bridge.js"),
-              str(BUNDLE / "fixtures"), str(output / "source2-functional-first.json")])])
+              str(bundle / "fixtures"), str(output / "source2-functional-first.json")])])
         receipt["stages"] = [{"name": name, "status": "not-executed"} for name, _ in commands]
         env = {key: value for key, value in os.environ.items()
                if not any(word in key.upper() for word in ("TOKEN", "SECRET", "PASSWORD", "AUTHORIZATION", "PRIVATE_KEY"))}
@@ -140,7 +145,7 @@ def main():
         runtime = clone / "_build/js/release/build/capture_bridge/capture_bridge.js"
         shutil.copyfile(runtime, output / "experimental-capture-core.mjs")
         receipt["actualRuntimeBinding"] = binding(output / "experimental-capture-core.mjs")
-        receipt["sourceBindingsUnchanged"] = (before == {name: binding(BUNDLE / relative(name)) for name in before}
+        receipt["sourceBindingsUnchanged"] = (before == {name: binding(bundle / relative(name)) for name in before}
                                                and fingerprint(clone) == receipt["experimentalSourceSha256"])
         assert receipt["sourceBindingsUnchanged"]
         receipt["passed"] = True
