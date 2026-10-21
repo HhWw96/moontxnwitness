@@ -2,7 +2,8 @@
 import { openSync, readSync, closeSync, writeFileSync, existsSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { run_json, run_options_json, verify_certificate_json, shrink_json, shrink_options_json, compare_models_json, version } from './core.mjs';
-import { makeCapsule, replayCapsule } from './evidence.mjs';
+import { makeCapsule, replayCapsule, makeCapsuleV3, replayCapsuleV3 } from './evidence.mjs';
+import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3 } from './sdk.mjs';
 
 const help = `MoonTxnWitness v${version()}
 用法：
@@ -13,6 +14,11 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs ingest TRACE.json [--output COVERAGE.json] [--history HISTORY.json]
   node dist/moontxnwitness.mjs ingest-presence TRACE2.json [--output COVERAGE.json] [--history HISTORY.json]
   node dist/moontxnwitness.mjs replay CAPSULE.json
+  node dist/moontxnwitness.mjs ingest-v3 TRACE3.json [--output NORMALIZED.json]
+  node dist/moontxnwitness.mjs check-v3 TRACE3.json [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs reduce-v3 TRACE3.json [--output REDUCTION.json] [--capture MINI.json] [--max-checks N]
+  node dist/moontxnwitness.mjs verify-v3 TRACE3.json REPORT.json
+  node dist/moontxnwitness.mjs replay-v3 CAPSULE.json
   check 也支持 --capsule FILE 导出含日志、报告和 SHA-256 的自包含复现包。
   check 支持 --profile balanced 使用 12 事务搜索和 v2 证据；默认 compat 保留旧接口行为。
   node dist/moontxnwitness.mjs --help | --version
@@ -103,6 +109,31 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (['ingest-v3', 'check-v3', 'reduce-v3', 'verify-v3', 'replay-v3'].includes(args[0])) {
+    const command = args[0];
+    const allowed = command === 'check-v3' ? ['--output','--capsule'] : command === 'reduce-v3' ? ['--output','--capture','--max-checks'] : command === 'ingest-v3' ? ['--output'] : [];
+    const {paths,options} = localArgs(args.slice(1),allowed,command === 'verify-v3' ? 2 : 1);
+    const text = readBounded(paths[0],command === 'replay-v3' ? 32*1024*1024 : 8*1024*1024);
+    let result;
+    const companions = [];
+    if (command === 'ingest-v3') result = normalizeCaptureV3(text);
+    if (command === 'check-v3') {
+      result = analyzeV3(text);
+      if (options['--capsule']) companions.push([options['--capsule'],makeCapsuleV3(text,result)]);
+    }
+    if (command === 'reduce-v3') {
+      const count = options['--max-checks'];
+      if (count !== undefined && !/^(0|[1-9][0-9]*)$/.test(count)) throw new Error('max-checks 必须为 0..256 整数');
+      result = reduceV3(text,count === undefined ? {} : {maxChecks:Number(count)});
+      if (options['--capture']) {
+        if (!result.reducedCapture) throw new Error('无有效 v3 缩减记录可导出');
+        companions.push([options['--capture'],JSON.stringify(result.reducedCapture,null,2)+'\n']);
+      }
+    }
+    if (command === 'verify-v3') result = verifyV3(text,readBounded(paths[1],32*1024*1024));
+    if (command === 'replay-v3') result = replayCapsuleV3(text);
+    emitJSON(result,options['--output'],paths,companions);
+    process.exitCode = 'valid' in result ? (result.valid ? 0 : 2) : ['ready','consistent','reduced','unchanged'].includes(result.status) ? 0 : result.status === 'violation' ? 1 : result.status === 'invalid' ? 2 : 3;
   } else if (args[0] === 'verify') {
     if (args.length !== 3 || args[1] === '-' || args[2] === '-') throw new Error('verify 需要历史文件和证据文件两个路径');
     const result = JSON.parse(verify_certificate_json(readBounded(args[1], 2 * 1024 * 1024), readBounded(args[2], 32 * 1024 * 1024)));

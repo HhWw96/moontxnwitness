@@ -1,0 +1,4722 @@
+{
+  "schema": 1,
+  "independentReference": true,
+  "actualDatabaseExecution": false,
+  "passed": true,
+  "cases": [
+    {
+      "id": "empty-snapshot",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          }
+        ],
+        "effects": [],
+        "transactions": [],
+        "retainedReads": [],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": []
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "initial-read-commit",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 1,
+        "legacyReadCount": 1
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          }
+        ],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "read",
+                  "key": "x",
+                  "version": "x0"
+                }
+              ],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "same-key-multiple-writes",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [
+          "x1",
+          "x2"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "x2"
+        ],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          },
+          {
+            "seq": 4,
+            "tx": "T",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 6,
+            "events": [
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "finalWrites": [
+              4
+            ]
+          }
+        ],
+        "retainedReads": [],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x2"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "write",
+                  "key": "x",
+                  "version": "x1"
+                },
+                {
+                  "type": "write",
+                  "key": "x",
+                  "version": "x2"
+                }
+              ],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "own-read-preserved-as-observation",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [
+          "x1"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "x1"
+        ],
+        "readCount": 1,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "x1"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 6,
+            "events": [
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "finalWrites": [
+              3
+            ]
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 4,
+            "tx": "T",
+            "key": "x",
+            "version": "x1"
+          }
+        ],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "write",
+                  "key": "x",
+                  "version": "x1"
+                }
+              ],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "rollback-revokes-write-retains-read",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "aborted"
+        },
+        "activeVersions": [],
+        "revertedVersions": [
+          "x1"
+        ],
+        "finalVersions": [],
+        "readCount": 1,
+        "legacyReadCount": 1
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "rollback_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 4,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": 5
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "aborted",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          }
+        ],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "aborted",
+              "ops": [
+                {
+                  "type": "read",
+                  "key": "x",
+                  "version": "x0"
+                }
+              ],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "rollback-to-restores-overlay",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [
+          "x1"
+        ],
+        "revertedVersions": [
+          "x2"
+        ],
+        "finalVersions": [
+          "x1"
+        ],
+        "readCount": 1,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "savepoint",
+            "tx": "T",
+            "name": "same",
+            "instance": "s1"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "rollback_to",
+            "tx": "T",
+            "instance": "s1"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "x1"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          },
+          {
+            "seq": 5,
+            "tx": "T",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1",
+            "revertedBy": 6
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 9,
+            "events": [
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "finalWrites": [
+              3
+            ]
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 7,
+            "tx": "T",
+            "key": "x",
+            "version": "x1"
+          }
+        ],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "write",
+                  "key": "x",
+                  "version": "x1"
+                }
+              ],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "read-of-later-reverted-own-write",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [
+          "x1"
+        ],
+        "finalVersions": [],
+        "readCount": 1,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "own_read_mismatch"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "savepoint",
+            "tx": "T",
+            "name": "same",
+            "instance": "s1"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "x1"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "rollback_to",
+            "tx": "T",
+            "instance": "s1"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 4,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": 6
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 8,
+            "events": [
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 5,
+            "tx": "T",
+            "key": "x",
+            "version": "x1"
+          }
+        ],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "release-is-not-commit",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "unknown"
+        },
+        "activeVersions": [
+          "x1"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "x1"
+        ],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "outstanding_transaction"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "savepoint",
+            "tx": "T",
+            "name": "same",
+            "instance": "s1"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "release",
+            "tx": "T",
+            "instance": "s1"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 4,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "unknown",
+            "beginSeq": 2,
+            "endSeq": null,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": [
+              4
+            ]
+          }
+        ],
+        "retainedReads": [],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "released-inner-write-outer-rollback",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [
+          "x1"
+        ],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "savepoint",
+            "tx": "T",
+            "name": "same",
+            "instance": "outer"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "savepoint",
+            "tx": "T",
+            "name": "same",
+            "instance": "inner"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "release",
+            "tx": "T",
+            "instance": "inner"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "rollback_to",
+            "tx": "T",
+            "instance": "outer"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 5,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": 7
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 9,
+            "events": [
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "committed",
+              "ops": [],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "same-name-different-instances",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [
+          "x1"
+        ],
+        "revertedVersions": [
+          "x2"
+        ],
+        "finalVersions": [
+          "x1"
+        ],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "savepoint",
+            "tx": "T",
+            "name": "same",
+            "instance": "s1"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "savepoint",
+            "tx": "T",
+            "name": "same",
+            "instance": "s2"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "rollback_to",
+            "tx": "T",
+            "instance": "s2"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "release",
+            "tx": "T",
+            "instance": "s2"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "release",
+            "tx": "T",
+            "instance": "s1"
+          },
+          {
+            "seq": 10,
+            "time": 9,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 11,
+            "time": 10,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 4,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          },
+          {
+            "seq": 6,
+            "tx": "T",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1",
+            "revertedBy": 7
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 11,
+            "events": [
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "finalWrites": [
+              4
+            ]
+          }
+        ],
+        "retainedReads": [],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "write",
+                  "key": "x",
+                  "version": "x1"
+                }
+              ],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "rollback-to-target-remains-active",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [
+          "x1",
+          "x2"
+        ],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "savepoint",
+            "tx": "T",
+            "name": "same",
+            "instance": "s1"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "rollback_to",
+            "tx": "T",
+            "instance": "s1"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "rollback_to",
+            "tx": "T",
+            "instance": "s1"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 4,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": 5
+          },
+          {
+            "seq": 6,
+            "tx": "T",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x0",
+            "revertedBy": 7
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 9,
+            "events": [
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "committed",
+              "ops": [],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "released-instance-cannot-be-reused",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "scope instance/depth",
+        "history": null
+      }
+    },
+    {
+      "id": "rollback-descendant-destroyed",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "inactive or foreign scope instance",
+        "history": null
+      }
+    },
+    {
+      "id": "foreign-savepoint-instance",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "inactive or foreign scope instance",
+        "history": null
+      }
+    },
+    {
+      "id": "commit-ack-needs-request",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "commit acknowledgement without request",
+        "history": null
+      }
+    },
+    {
+      "id": "repeated-commit-request",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "operation after commit request",
+        "history": null
+      }
+    },
+    {
+      "id": "operation-after-commit-request",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "operation after commit request",
+        "history": null
+      }
+    },
+    {
+      "id": "disconnect-after-request",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "unknown"
+        },
+        "activeVersions": [
+          "x1"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "x1"
+        ],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "unknown_commit"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "disconnect",
+            "tx": "T"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "unknown",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": [
+              3
+            ]
+          }
+        ],
+        "retainedReads": [],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "rollback-after-request-not-proof",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "unknown"
+        },
+        "activeVersions": [
+          "x1"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "x1"
+        ],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "unknown_commit"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "rollback_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "unknown",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": [
+              3
+            ]
+          }
+        ],
+        "retainedReads": [],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "connection-reuse-does-not-resolve-unknown",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "unknown",
+          "U": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "unknown_commit"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "disconnect",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "begin",
+            "tx": "U",
+            "connection": "C"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "commit_request",
+            "tx": "U"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "commit_ok",
+            "tx": "U"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "unknown",
+            "beginSeq": 2,
+            "endSeq": 4,
+            "events": [
+              2,
+              3,
+              4
+            ],
+            "finalWrites": []
+          },
+          {
+            "id": "U",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 5,
+            "endSeq": 7,
+            "events": [
+              5,
+              6,
+              7
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "connection-reuse-after-known-commit",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "committed",
+          "U": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 1,
+        "legacyReadCount": 1
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_ok",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "begin",
+            "tx": "U",
+            "connection": "C"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "read",
+            "tx": "U",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "commit_request",
+            "tx": "U"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_ok",
+            "tx": "U"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 4,
+            "events": [
+              2,
+              3,
+              4
+            ],
+            "finalWrites": []
+          },
+          {
+            "id": "U",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 5,
+            "endSeq": 8,
+            "events": [
+              5,
+              6,
+              7,
+              8
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 6,
+            "tx": "U",
+            "key": "x",
+            "version": "x0"
+          }
+        ],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "committed",
+              "ops": [],
+              "start": null,
+              "end": null
+            },
+            {
+              "id": "U",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "read",
+                  "key": "x",
+                  "version": "x0"
+                }
+              ],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "overlapping-connection-transactions",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "transaction/connection reuse",
+        "history": null
+      }
+    },
+    {
+      "id": "transaction-id-reuse",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "transaction/connection reuse",
+        "history": null
+      }
+    },
+    {
+      "id": "missing-read-version-never-inferred",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 1,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "missing_version_source"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "missing"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "missing"
+          }
+        ],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "future-write-does-not-repair-missing-source",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed",
+          "U": "committed"
+        },
+        "activeVersions": [
+          "later"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "later"
+        ],
+        "readCount": 1,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "missing_version_source"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "later"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "begin",
+            "tx": "U",
+            "connection": "D"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "write",
+            "tx": "U",
+            "key": "x",
+            "version": "later",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "U"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "U"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 7,
+            "tx": "U",
+            "key": "x",
+            "version": "later",
+            "predecessor": "x0",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": []
+          },
+          {
+            "id": "U",
+            "connection": "D",
+            "status": "committed",
+            "beginSeq": 6,
+            "endSeq": 9,
+            "events": [
+              6,
+              7,
+              8,
+              9
+            ],
+            "finalWrites": [
+              7
+            ]
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "later"
+          }
+        ],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "external-read-before-commit-log",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "committed",
+          "U": "committed"
+        },
+        "activeVersions": [
+          "x1"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "x1"
+        ],
+        "readCount": 1,
+        "legacyReadCount": 1
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "begin",
+            "tx": "U",
+            "connection": "D"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "read",
+            "tx": "U",
+            "key": "x",
+            "version": "x1"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "commit_ok",
+            "tx": "T"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "U"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "U"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 7,
+            "events": [
+              2,
+              3,
+              4,
+              7
+            ],
+            "finalWrites": [
+              3
+            ]
+          },
+          {
+            "id": "U",
+            "connection": "D",
+            "status": "committed",
+            "beginSeq": 5,
+            "endSeq": 9,
+            "events": [
+              5,
+              6,
+              8,
+              9
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 6,
+            "tx": "U",
+            "key": "x",
+            "version": "x1"
+          }
+        ],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "write",
+                  "key": "x",
+                  "version": "x1"
+                }
+              ],
+              "start": null,
+              "end": null
+            },
+            {
+              "id": "U",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "read",
+                  "key": "x",
+                  "version": "x1"
+                }
+              ],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "aborted-external-read-not-complete",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "aborted",
+          "U": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [
+          "x1"
+        ],
+        "finalVersions": [],
+        "readCount": 1,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "unsafe_read_source"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "rollback_ok",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "begin",
+            "tx": "U",
+            "connection": "D"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "read",
+            "tx": "U",
+            "key": "x",
+            "version": "x1"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "commit_request",
+            "tx": "U"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_ok",
+            "tx": "U"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": 4
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "aborted",
+            "beginSeq": 2,
+            "endSeq": 4,
+            "events": [
+              2,
+              3,
+              4
+            ],
+            "finalWrites": []
+          },
+          {
+            "id": "U",
+            "connection": "D",
+            "status": "committed",
+            "beginSeq": 5,
+            "endSeq": 8,
+            "events": [
+              5,
+              6,
+              7,
+              8
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 6,
+            "tx": "U",
+            "key": "x",
+            "version": "x1"
+          }
+        ],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "intermediate-external-read-not-complete",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed",
+          "U": "committed"
+        },
+        "activeVersions": [
+          "x1",
+          "x2"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "x2"
+        ],
+        "readCount": 1,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "unsafe_read_source"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "commit_ok",
+            "tx": "T"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "begin",
+            "tx": "U",
+            "connection": "D"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "read",
+            "tx": "U",
+            "key": "x",
+            "version": "x1"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_request",
+            "tx": "U"
+          },
+          {
+            "seq": 10,
+            "time": 9,
+            "kind": "commit_ok",
+            "tx": "U"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          },
+          {
+            "seq": 4,
+            "tx": "T",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 6,
+            "events": [
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "finalWrites": [
+              4
+            ]
+          },
+          {
+            "id": "U",
+            "connection": "D",
+            "status": "committed",
+            "beginSeq": 7,
+            "endSeq": 10,
+            "events": [
+              7,
+              8,
+              9,
+              10
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 8,
+            "tx": "U",
+            "key": "x",
+            "version": "x1"
+          }
+        ],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "committed-predecessor-fork-not-log-order",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed",
+          "U": "committed"
+        },
+        "activeVersions": [
+          "x1",
+          "x2"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "x1",
+          "x2"
+        ],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "version_order_gap"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "begin",
+            "tx": "U",
+            "connection": "D"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "write",
+            "tx": "U",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "U"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "U"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          },
+          {
+            "seq": 7,
+            "tx": "U",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x0",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": [
+              3
+            ]
+          },
+          {
+            "id": "U",
+            "connection": "D",
+            "status": "committed",
+            "beginSeq": 6,
+            "endSeq": 9,
+            "events": [
+              6,
+              7,
+              8,
+              9
+            ],
+            "finalWrites": [
+              7
+            ]
+          }
+        ],
+        "retainedReads": [],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "proven-external-predecessor-chain",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "committed",
+          "U": "committed"
+        },
+        "activeVersions": [
+          "x1",
+          "x2"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "x1",
+          "x2"
+        ],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "begin",
+            "tx": "U",
+            "connection": "D"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "write",
+            "tx": "U",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "U"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "U"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          },
+          {
+            "seq": 7,
+            "tx": "U",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": [
+              3
+            ]
+          },
+          {
+            "id": "U",
+            "connection": "D",
+            "status": "committed",
+            "beginSeq": 6,
+            "endSeq": 9,
+            "events": [
+              6,
+              7,
+              8,
+              9
+            ],
+            "finalWrites": [
+              7
+            ]
+          }
+        ],
+        "retainedReads": [],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1",
+              "x2"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "write",
+                  "key": "x",
+                  "version": "x1"
+                }
+              ],
+              "start": null,
+              "end": null
+            },
+            {
+              "id": "U",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "write",
+                  "key": "x",
+                  "version": "x2"
+                }
+              ],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": true
+      }
+    },
+    {
+      "id": "global-version-id-reuse-across-keys",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "global version reuse/self predecessor",
+        "history": null
+      }
+    },
+    {
+      "id": "predecessor-wrong-key",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "predecessor key/order",
+        "history": null
+      }
+    },
+    {
+      "id": "unknown-predecessor-not-invented",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [
+          "x1"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "x1"
+        ],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "missing_version_source",
+          "version_order_gap"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "write",
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "missing"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "missing",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": [
+              3
+            ]
+          }
+        ],
+        "retainedReads": [],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "false-condition-still-observation",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "unsupported_condition"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "condition",
+            "tx": "T",
+            "predicate": {
+              "field": "balance",
+              "operator": ">",
+              "value": 0
+            },
+            "matched": false
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "condition-source-not-a-supported-mapping",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "unsupported_condition"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "condition",
+            "tx": "T",
+            "predicate": {
+              "equals": [
+                "x",
+                "x0"
+              ]
+            },
+            "matched": true,
+            "sourceVersion": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "statement-without-semantic-map",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "unmapped_statement"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "statement",
+            "tx": "T",
+            "sql": "DELETE FROM business"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "complete-rows-do-not-prove-mapping",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "unmapped_statement"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "statement",
+            "tx": "T",
+            "sql": "SELECT value FROM business",
+            "parameters": []
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "rows",
+            "tx": "T",
+            "statement": 3,
+            "rows": [
+              [
+                "x0"
+              ]
+            ],
+            "complete": true
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 6,
+            "events": [
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "unconsumed-row-result",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "unmapped_statement",
+          "incomplete_rows"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "statement",
+            "tx": "T",
+            "sql": "SELECT value FROM business"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "rows",
+            "tx": "T",
+            "statement": 3,
+            "rows": [],
+            "complete": false
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 6,
+            "events": [
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "rows-reference-other-transaction",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "rows source statement",
+        "history": null
+      }
+    },
+    {
+      "id": "self-asserted-mapped-field-rejected",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "unknown or missing field",
+        "history": null
+      }
+    },
+    {
+      "id": "write-skew-safe-projection",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "ready",
+        "txOutcomes": {
+          "T": "committed",
+          "U": "committed"
+        },
+        "activeVersions": [
+          "y1",
+          "x1"
+        ],
+        "revertedVersions": [],
+        "finalVersions": [
+          "y1",
+          "x1"
+        ],
+        "readCount": 2,
+        "legacyReadCount": 2
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "ready",
+        "complete": true,
+        "issues": [],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "begin",
+            "tx": "U",
+            "connection": "D"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "read",
+            "tx": "U",
+            "key": "y",
+            "version": "y0"
+          },
+          {
+            "seq": 6,
+            "time": 5,
+            "kind": "write",
+            "tx": "T",
+            "key": "y",
+            "version": "y1",
+            "predecessor": "y0"
+          },
+          {
+            "seq": 7,
+            "time": 6,
+            "kind": "write",
+            "tx": "U",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0"
+          },
+          {
+            "seq": 8,
+            "time": 7,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 9,
+            "time": 8,
+            "kind": "commit_ok",
+            "tx": "T"
+          },
+          {
+            "seq": 10,
+            "time": 9,
+            "kind": "commit_request",
+            "tx": "U"
+          },
+          {
+            "seq": 11,
+            "time": 10,
+            "kind": "commit_ok",
+            "tx": "U"
+          }
+        ],
+        "effects": [
+          {
+            "seq": 6,
+            "tx": "T",
+            "key": "y",
+            "version": "y1",
+            "predecessor": "y0",
+            "revertedBy": null
+          },
+          {
+            "seq": 7,
+            "tx": "U",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "revertedBy": null
+          }
+        ],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 9,
+            "events": [
+              2,
+              4,
+              6,
+              8,
+              9
+            ],
+            "finalWrites": [
+              6
+            ]
+          },
+          {
+            "id": "U",
+            "connection": "D",
+            "status": "committed",
+            "beginSeq": 3,
+            "endSeq": 11,
+            "events": [
+              3,
+              5,
+              7,
+              10,
+              11
+            ],
+            "finalWrites": [
+              7
+            ]
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 4,
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 5,
+            "tx": "U",
+            "key": "y",
+            "version": "y0"
+          }
+        ],
+        "history": {
+          "schemaVersion": 1,
+          "model": "serializable",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1"
+            ],
+            "y": [
+              "y0",
+              "y1"
+            ]
+          },
+          "transactions": [
+            {
+              "id": "T",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "read",
+                  "key": "x",
+                  "version": "x0"
+                },
+                {
+                  "type": "write",
+                  "key": "y",
+                  "version": "y1"
+                }
+              ],
+              "start": null,
+              "end": null
+            },
+            {
+              "id": "U",
+              "status": "committed",
+              "ops": [
+                {
+                  "type": "read",
+                  "key": "y",
+                  "version": "y0"
+                },
+                {
+                  "type": "write",
+                  "key": "x",
+                  "version": "x1"
+                }
+              ],
+              "start": null,
+              "end": null
+            }
+          ]
+        },
+        "serialFeasible": false
+      }
+    },
+    {
+      "id": "sequence-gap",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 1,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "sequence_gap"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 4,
+            "time": 2,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 5,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 6,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 6,
+            "events": [
+              2,
+              4,
+              5,
+              6
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 4,
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          }
+        ],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "duplicate-sequence",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "sequence or time reversal",
+        "history": null
+      }
+    },
+    {
+      "id": "backwards-clock",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "sequence or time reversal",
+        "history": null
+      }
+    },
+    {
+      "id": "unproven-writer-scope",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 1,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "writer_scope_unproven"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          }
+        ],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "inconsistent-initial-snapshot",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 1,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "inconsistent_snapshot"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": false
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          }
+        ],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "explicit-log-write-failure",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "inconclusive",
+        "txOutcomes": {
+          "T": "committed"
+        },
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 1,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "inconclusive",
+        "complete": false,
+        "issues": [
+          "log_write_failed"
+        ],
+        "observations": [
+          {
+            "seq": 1,
+            "time": 0,
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true
+          },
+          {
+            "seq": 2,
+            "time": 1,
+            "kind": "begin",
+            "tx": "T",
+            "connection": "C"
+          },
+          {
+            "seq": 3,
+            "time": 2,
+            "kind": "read",
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "seq": 4,
+            "time": 3,
+            "kind": "commit_request",
+            "tx": "T"
+          },
+          {
+            "seq": 5,
+            "time": 4,
+            "kind": "commit_ok",
+            "tx": "T"
+          }
+        ],
+        "effects": [],
+        "transactions": [
+          {
+            "id": "T",
+            "connection": "C",
+            "status": "committed",
+            "beginSeq": 2,
+            "endSeq": 5,
+            "events": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "finalWrites": []
+          }
+        ],
+        "retainedReads": [
+          {
+            "seq": 3,
+            "tx": "T",
+            "key": "x",
+            "version": "x0"
+          }
+        ],
+        "history": null,
+        "serialFeasible": null
+      }
+    },
+    {
+      "id": "unsupported-root-field",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "unknown or missing field",
+        "history": null
+      }
+    },
+    {
+      "id": "wrong-schema",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "trace schema",
+        "history": null
+      }
+    },
+    {
+      "id": "fractional-sequence",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "safe integer required",
+        "history": null
+      }
+    },
+    {
+      "id": "unsafe-clock-integer",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "safe integer required",
+        "history": null
+      }
+    },
+    {
+      "id": "boolean-schema-not-integer",
+      "manualExpectationsPassed": true,
+      "failedExpectedFields": [],
+      "summary": {
+        "status": "invalid",
+        "txOutcomes": {},
+        "activeVersions": [],
+        "revertedVersions": [],
+        "finalVersions": [],
+        "readCount": 0,
+        "legacyReadCount": 0
+      },
+      "reference": {
+        "schema": 1,
+        "independentReference": true,
+        "status": "invalid",
+        "complete": false,
+        "issues": [
+          "invalid_capture_v3"
+        ],
+        "reason": "safe integer required",
+        "history": null
+      }
+    }
+  ],
+  "sourceSha256": "b45a754868ad6b807df5f5a792a0cf6e7b08142b48c7305edee840eca3632fc7",
+  "fixtureManifestSha256": "2819d0b21f5b4f8f89ac3121cbee52a639304f2687e4eabfbda190f9fea9d86c"
+}

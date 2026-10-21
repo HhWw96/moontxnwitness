@@ -22,7 +22,7 @@ def main():
     parser.add_argument('--bin', default=str(ROOT / 'artifacts/postgres18-tools/pgsql/bin'))
     parser.add_argument('--work-root', type=Path, default=ROOT / 'artifacts/capture-postgres',
                         help='Parent for new owned cluster files; existing runs are never reused or removed')
-    parser.add_argument('--suite', choices=['capture', 'legacy', 'all', 'provenance', 'provenance-cost', 'provenance-profile', 'capture-with-profile', 'dislock', 'capture-with-dislock', 'presence', 'presence-database', 'capture-with-presence', 'all-with-presence'], default='capture')
+    parser.add_argument('--suite', choices=['capture', 'legacy', 'all', 'provenance', 'provenance-cost', 'provenance-profile', 'capture-with-profile', 'dislock', 'capture-with-dislock', 'presence', 'presence-database', 'capture-with-presence', 'all-with-presence', 'v3-lifecycle'], default='capture')
     args = parser.parse_args()
     parent = args.work_root.resolve()
     parent.mkdir(parents=True, exist_ok=True)
@@ -87,6 +87,17 @@ def main():
                   ['capture','provenance-profile','dislock'] if args.suite == 'capture-with-dislock' else
                   ['capture','provenance-profile'] if args.suite == 'capture-with-profile' else [args.suite])
         for suite in suites:
+            if suite == 'v3-lifecycle':
+                output = ROOT / 'verification/v3' / ('postgres-' + uuid.uuid4().hex)
+                result = subprocess.run([sys.executable, '-B', str(ROOT / 'experiments/lifecycle_v3/postgres.py'),
+                    '--output', str(output)], cwd=ROOT, env=env, creationflags=flags)
+                if result.returncode:
+                    return result.returncode
+                replay = subprocess.run(['node', str(ROOT / 'experiments/lifecycle_v3/e2e.mjs'), str(output)],
+                    cwd=ROOT, env=env, creationflags=flags)
+                if replay.returncode:
+                    return replay.returncode
+                continue
             if suite in ('presence', 'presence-database'):
                 output = ROOT / 'verification/provenance-presence' / ('run-' + uuid.uuid4().hex)
                 command = (['node', str(ROOT / 'experiments/provenance/presence_e2e.mjs')]

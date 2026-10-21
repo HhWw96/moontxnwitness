@@ -5,6 +5,7 @@ import { root, runMoon, coreTestCount } from './moon.mjs';
 import assert from 'node:assert/strict';
 import {verificationFingerprint} from './verification-fingerprint.mjs';
 import {writeVerifiedJson} from './performance-evidence.mjs';
+import {tmpdir} from 'node:os';
 
 // Default tests cover the shipped JS runtime and both bundled Wasm runtimes.
 // --all also executes native tests, requiring a supported system C compiler.
@@ -26,10 +27,32 @@ const presence = (await import('./presence-cli-test.mjs')).runPresenceCliTests()
 const adapter = spawnSync(process.env.MTW_PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), ['scripts/capture-unit-test.py'], {cwd:root,stdio:'inherit',windowsHide:true});
 if (adapter.error) throw adapter.error;
 if (adapter.status !== 0) throw new Error('Capture adapter unit tests failed: ' + adapter.status);
+function pythonJSON(arguments_, label) {
+  const child = spawnSync(process.env.MTW_PYTHON || process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), arguments_, {cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:16*1024*1024});
+  if (child.error) throw child.error;
+  if (child.status !== 0) throw new Error(label + ' failed: ' + child.stdout + child.stderr);
+  return child.stdout;
+}
+const v3Oracle = JSON.parse(pythonJSON(['-B','scripts/v3-independent-oracle.py','--self-test'],'Independent v3 reference'));
+const v3Child = spawnSync(process.execPath,['scripts/v3-acceptance.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:16*1024*1024});
+if (v3Child.error) throw v3Child.error;
+if (v3Child.status !== 0) throw new Error('Independent v3 acceptance failed: ' + v3Child.stdout + v3Child.stderr);
+const v3Acceptance = JSON.parse(v3Child.stdout);
+const journalOutput = pythonJSON(['-B','integrations/python/moontxnwitness_capture/test_journal_v3.py'],'Segmented v3 journal');
+const journalFolder = journalOutput.match(/^Journal IO artifacts: (.+)$/m)?.[1]?.trim();
+if (!journalFolder) throw new Error('Journal suite did not identify its retained evidence');
+const journalReceipt = JSON.parse(readFileSync(resolve(journalFolder,'journal-unit-receipt.json'),'utf8'));
+const journalEvidence = 'verification/v3/journal-' + new Date().toISOString().replace(/[:.]/g,'-') + '.json';
+writeVerifiedJson(resolve(root,journalEvidence),journalReceipt);
+const journalScratch = process.env.MTW_JOURNAL_SCRATCH || process.env.MTW_JOURNAL_TEST_ROOT || tmpdir();
+mkdirSync(journalScratch,{recursive:true});
+const journalAudit = JSON.parse(pythonJSON(['-B','scripts/v3-independent-oracle.py','--journal-audit','--scratch',journalScratch],'Independent v3 storage audit'));
+console.log(`Independent v3 reference ${v3Oracle.cases} traces; ${v3Acceptance.checks} SDK/CLI/evidence checks; journal ${journalReceipt.testsRun-journalReceipt.skipped.length} executed, ${journalReceipt.skipped.length} skipped.`);
 const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version, passed: true, checkedTargets: ['js', 'wasm-gc', 'wasm', 'native'], executedTargets: targets, coreTestsPerTarget: coreTestCount(), parserDifferentialInputs: parser.checked, oracleHistories: oracle.counts.exhaustive + oracle.counts.generated + oracle.counts.completion, verifiedCycleCertificates: oracle.counts.certificates, cliChecks: cli.checks, node: process.version, generatedAt: new Date().toISOString(), boundaries: ['Database observations do not certify every database execution', 'Public release and organizer states are recorded separately'] };
 mkdirSync(resolve(root, 'verification'), { recursive: true });
 receipt.captureCliChecks = capture.checks;
 receipt.experimentalPresenceCliChecks = presence.checks;
+receipt.experimentalV3 = {foundationOnly:true,independentReference:v3Oracle,acceptance:v3Acceptance,journal:{receipt:journalEvidence,...journalReceipt},independentStorageAudit:journalAudit,fullBusinessLifecycle:false,formalPerformanceMeasured:false};
 receipt.buildManifest = JSON.parse(readFileSync(resolve(root, 'dist/build-manifest.json'), 'utf8'));
 assert.deepEqual(verificationFingerprint(root),testedFiles,'Executable sources or runtime changed during verification');
 receipt.testedFileSha256 = testedFiles;

@@ -1,5 +1,17 @@
 # 0.1.1 — development
 
+- Add experimental, separate v3 normalize/analyze/reduce/verify SDK and CLI
+  entries and SHA-bound replay capsules. The MoonBit lifecycle journal preserves
+  delivered reads across savepoint rollback and keeps unknown commits visible.
+- Add bounded segmented disk storage with a SQLite identity index, explicit
+  backpressure, synchronized tails, streaming verification and bounded export.
+  Independent fault checks found and fixed close/sync double-failure, foreign
+  WAL archive and concurrent-reopen integrity gaps; original failures remain.
+- Verify 34 new core lifecycle tests, 57 independent traces, 32 registered
+  tampering variants, 167 combined SDK/CLI checks and six real PostgreSQL
+  savepoint/cursor scenarios. Full dislock/ORM integration and source-closed
+  window selection are still pending; raw unmapped SQL remains inconclusive.
+
 - Add a separate experimental trace-2 presence projection for frozen-key ordinary
   tables: observed negative reads, INSERT/UPDATE/DELETE, tombstones and reinserts.
   MoonBit validates operation/fact bindings and factual committed source chains;

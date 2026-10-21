@@ -2,6 +2,20 @@
 
 记录日期：2026 年 10 月 21 日。当前包仍为 v0.1.1 开发版；公开稳定版本为 v0.1.0。普通表 CRUD 使用独立实验入口，尚未作为 v0.1.2 稳定接口发布。实现、公开发布、人工验收及赛事审核分别记录。
 
+## v3 共同底座的首批实现
+
+已从 `6f37245` 按[剩余执行计划](remaining-execution-plan.md)开发；当前切片契约见 [v3](v3-contract.md)。新增独立 `normalizeCaptureV3` / `analyzeV3` / `reduceV3` / `verifyV3`、对应 CLI 及 v3 复现包。MoonBit 区分不可变观察和可撤销写效果；同名保存点按实例处理，未知 COMMIT 不当作回滚，条件写和未映射 SQL 保持覆盖缺口。
+
+本轮统一回归的 [summary](../verification/summary.json)记录 JS、Wasm GC、Wasm **各 187 项**核心测试，以及原有 10,320 份历史、6,373 份环证据和 2,542 份解析差分。新增独立解释器 57 条轨迹及 SDK/CLI/证据 167 项检查；其中注册篡改变体 32 种。磁盘日志 55 项测试中 54 通过，Windows 因账户无法创建符号链接跳过 1 项；独立存储故障审计 10 项通过。当前源码的 Linux Native 与独立 CI 状态另行记录，不能借用下文原基线的通过结果。
+
+分段日志使用默认 4 MiB 队列、16 MiB 段、256 KiB 或 100 ms 同步、SQLite 磁盘事务索引及流式验证；4,100 个已完成事务的历史身份不会持续保留在内存集合中。独立审计实际发现并修复双重 IO 失败后误判完整、WAL 归档缺失和读取期间重开竞态。原失败、原 52 例冻结清单与参考解释器时态修正说明均保留在 [v3 证据目录](../verification/v3/)及 [修正记录](../fixtures/v3/protocol-correction-1.json)。
+
+[PostgreSQL 18.6 的六个实际场景](../verification/v3/postgres-7b441738d1a545f4b8aefc0b9a421c5a/database-receipt.json)核对回滚前后自身读、释放子保存点后父回滚、重复名称恢复、重复回滚及游标位置；六份原始日志的 [MoonBit 核对及复现](../verification/v3/postgres-7b441738d1a545f4b8aefc0b9a421c5a/model-receipt.json)通过。原始 SQL 尚无映射证明，六份报告都保留 `unmapped_statement`，没有声称完整 SQL 分析。
+
+这是共同底座的首批切片。旧驱动仍需迁到新存储；来源闭包窗口选择、安全清理、完整 dislock、ORM、多模型、最终性能和发布验收尚未完成。`prune` 保守拒绝删除全部来源，不能称来源 GC 已实现。技术验证按独立 AI 验收记录，真人反馈、生产采用及赛事审核仍分别记录。
+
+## 已验收的前一实现基线
+
 | 工作 | 当前证据 | 状态 |
 | --- | --- | --- |
 | 同步、异步 psycopg 采集 | 62 项驱动接口单元测试；一致快照、真实 fetch、提交/回滚、日志及聚合预算 | 已实现，本地通过 |
@@ -22,7 +36,7 @@
 | 新实现独立 CI | e6d57a1 的两工作流、三任务及三份 artifact；各平台 121 项源码绑定、9 项文件故障、60 项消费者及真实 PostgreSQL 全链路 | 已下载摘要、日志及完整证据，逐项核验通过 |
 | GitHub / Mooncakes 新稳定版 | 须完成适用发布门槛 | 尚未发布 |
 
-当前 MoonBit 源码指纹为 `c00c514defb7f551aae417245c5f6642284874cbdaf1a0fe77e717a433265bb1`，分析 core 为 `a8b94cd9e8db7a643523e7cd201ff5bce65b4382d25e41892cb6e431eebca3c3`，采集 core 为 `33c14cf537fb454e2177eaa17c4f7467c4c28316b9de04e1e8d4c9c665e57506`。测试回执另保存实际可执行文件逐路径摘要，文档更新不借用旧源码的 CI。
+前一实现的 MoonBit 源码指纹为 `c00c514defb7f551aae417245c5f6642284874cbdaf1a0fe77e717a433265bb1`，分析 core 为 `a8b94cd9e8db7a643523e7cd201ff5bce65b4382d25e41892cb6e431eebca3c3`，采集 core 为 `33c14cf537fb454e2177eaa17c4f7467c4c28316b9de04e1e8d4c9c665e57506`。本轮运行文件以新 summary 的逐路径摘要为准，不借用旧源码的 CI 或正式性能成绩。
 
 ## 普通表实验的完整证据
 

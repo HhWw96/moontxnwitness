@@ -1,0 +1,84 @@
+{
+  "traceSchema": 3,
+  "clockDomain": "independent-source-closure-clock",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "gaps": [],
+  "events": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "x": "x0",
+        "y": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "source",
+      "connection": "source-connection"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "write",
+      "tx": "source",
+      "key": "x",
+      "version": "x1",
+      "predecessor": "x0"
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "commit_request",
+      "tx": "source"
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "commit_ok",
+      "tx": "source"
+    },
+    {
+      "seq": 6,
+      "time": 9,
+      "kind": "begin",
+      "tx": "A",
+      "connection": "A-connection"
+    },
+    {
+      "seq": 7,
+      "time": 11,
+      "kind": "read",
+      "tx": "A",
+      "key": "x",
+      "version": "x1"
+    },
+    {
+      "seq": 8,
+      "time": 13,
+      "kind": "write",
+      "tx": "A",
+      "key": "y",
+      "version": "y1",
+      "predecessor": "y0"
+    },
+    {
+      "seq": 9,
+      "time": 15,
+      "kind": "commit_request",
+      "tx": "A"
+    },
+    {
+      "seq": 10,
+      "time": 16,
+      "kind": "commit_ok",
+      "tx": "A"
+    }
+  ]
+}

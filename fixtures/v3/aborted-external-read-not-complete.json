@@ -1,0 +1,69 @@
+{
+  "traceSchema": 3,
+  "clockDomain": "independent-fixture-clock",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "x": "x0",
+        "y": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "T",
+      "connection": "C"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "write",
+      "tx": "T",
+      "key": "x",
+      "version": "x1",
+      "predecessor": "x0"
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "rollback_ok",
+      "tx": "T"
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "begin",
+      "tx": "U",
+      "connection": "D"
+    },
+    {
+      "seq": 6,
+      "time": 5,
+      "kind": "read",
+      "tx": "U",
+      "key": "x",
+      "version": "x1"
+    },
+    {
+      "seq": 7,
+      "time": 6,
+      "kind": "commit_request",
+      "tx": "U"
+    },
+    {
+      "seq": 8,
+      "time": 7,
+      "kind": "commit_ok",
+      "tx": "U"
+    }
+  ],
+  "gaps": []
+}

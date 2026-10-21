@@ -5,6 +5,30 @@ pub fn version() -> String {
 }
 
 ///|
+#export_name("analyze_v3_json")
+pub fn analyze_v3_json(text : String, options : String) -> String {
+  @txn.analyze_v3_json(text, options)
+}
+
+///|
+#export_name("reduce_v3_json")
+pub fn reduce_v3_json(text : String, options : String) -> String {
+  @txn.reduce_v3_json(text, options)
+}
+
+///|
+#export_name("verify_v3_json")
+pub fn verify_v3_json(text : String, report : String) -> String {
+  @txn.verify_v3_json(text, report)
+}
+
+///|
+#export_name("capsule_v3_content_json")
+pub fn capsule_v3_content_json(text : String) -> String {
+  @txn.capsule_v3_content_json(text)
+}
+
+///|
 #export_name("shrink_json")
 pub fn shrink_json(text : String) -> String {
   @txn.shrink_json(text)

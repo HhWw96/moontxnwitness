@@ -1,0 +1,55 @@
+{
+  "traceSchema": 3,
+  "clockDomain": "independent-fixture-clock",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "x": "x0",
+        "y": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "T",
+      "connection": "C"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "statement",
+      "tx": "T",
+      "sql": "SELECT value FROM business"
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "rows",
+      "tx": "T",
+      "statement": 3,
+      "rows": [],
+      "complete": false
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "commit_request",
+      "tx": "T"
+    },
+    {
+      "seq": 6,
+      "time": 5,
+      "kind": "commit_ok",
+      "tx": "T"
+    }
+  ],
+  "gaps": []
+}

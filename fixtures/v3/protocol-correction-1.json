@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "contract": "v3-lifecycle-1",
+  "kind": "explicit-reference-protocol-correction",
+  "originalManifestSha256": "2819d0b21f5b4f8f89ac3121cbee52a639304f2687e4eabfbda190f9fea9d86c",
+  "firstFailedAcceptance": {
+    "file": "verification/v3/acceptance-2026-10-21T02-10-46-492Z/receipt.json",
+    "sha256": "7fa2cceb57e05ec9ec1c115b9fae6e804dfd47bf97d6a23fd246d3c23d380760"
+  },
+  "reason": "The original independent oracle applied the final revertedBy flag to an earlier own read. The own overlay must instead be checked at the read event. A later rollback revokes a write effect, but does not invalidate a previously valid own read. Observations remain intact and valid own reads can be omitted from the intertransaction register projection. Reading a revoked version after rollback remains inconclusive. Both directions are covered below.",
+  "productionImplementationChanged": false,
+  "historicalArtifactsModified": false,
+  "additionalScopeRule": "A named savepoint resolves to the most recent active mark of that name. Referencing an older hidden instance is invalid; releasing the newer mark reveals the older one. Distinct instances remain permanently unique.",
+  "supersedingExpectations": [
+    {
+      "id": "read-of-later-reverted-own-write",
+      "traceSha256": "a6ec141029f8aca31afbdaadaf36c05127c026a2d51a80ba46ac24327f8b50bd",
+      "originalExpected": {
+        "status": "inconclusive",
+        "issue": "own_read_mismatch",
+        "readCount": 1
+      },
+      "correctedExpected": {
+        "status": "ready",
+        "revertedVersions": [
+          "x1"
+        ],
+        "finalVersions": [],
+        "readCount": 1,
+        "legacyReadCount": 0
+      }
+    }
+  ],
+  "additionalCases": [
+    {
+      "id": "read-after-rollback-revoked-own-write",
+      "trace": "fixtures/v3/read-after-rollback-revoked-own-write.json",
+      "sha256": "bfec1edc65305ff192ec876c505cf46012a13b8282bff48c8d35efa5ef1fc74e",
+      "expected": {
+        "status": "inconclusive",
+        "issue": "own_read_mismatch",
+        "readCount": 1
+      }
+    },
+    {
+      "id": "released-own-read-before-parent-rollback",
+      "trace": "fixtures/v3/released-own-read-before-parent-rollback.json",
+      "sha256": "15ae0fc7e0628b72ad1e66f2fa7a7204a5f6c33c9d27de7ff95302de926a73f4",
+      "expected": {
+        "status": "ready",
+        "revertedVersions": [
+          "x1"
+        ],
+        "readCount": 1,
+        "legacyReadCount": 0
+      }
+    },
+    {
+      "id": "hidden-same-name-rollback-rejected",
+      "trace": "fixtures/v3/hidden-same-name-rollback-rejected.json",
+      "sha256": "ab45bc449c886a1dcbca81c83427cf40bec97c3e71a1c6a1471049b1b24266ab",
+      "expected": {
+        "status": "invalid"
+      }
+    },
+    {
+      "id": "hidden-same-name-release-rejected",
+      "trace": "fixtures/v3/hidden-same-name-release-rejected.json",
+      "sha256": "08b9cf2bf4bc94920ae0bd873616d613a3094e06541fef06fb65c8a59d2e8142",
+      "expected": {
+        "status": "invalid"
+      }
+    },
+    {
+      "id": "same-name-restored-after-newer-release",
+      "trace": "fixtures/v3/same-name-restored-after-newer-release.json",
+      "sha256": "320e60d7a9fbc0b687014dba98dbe13262c0c8db4a50944a6ab2375f09c4d2a5",
+      "expected": {
+        "status": "ready",
+        "revertedVersions": [
+          "x1"
+        ],
+        "finalVersions": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,163 @@
+{
+  "traceSchema": 3,
+  "clockDomain": "owned-postgres-fixture-clock",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "gaps": [],
+  "events": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "consistent": true,
+      "initial": {
+        "x": "x0"
+      }
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "T",
+      "connection": "C"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "statement",
+      "tx": "T",
+      "sql": "DECLARE c CURSOR FOR SELECT n FROM generate_series(1,3) AS n",
+      "parameters": null
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "rows",
+      "tx": "T",
+      "statement": 3,
+      "rows": [],
+      "complete": true
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "statement",
+      "tx": "T",
+      "sql": "SAVEPOINT \"work\"",
+      "parameters": null
+    },
+    {
+      "seq": 6,
+      "time": 5,
+      "kind": "rows",
+      "tx": "T",
+      "statement": 5,
+      "rows": [],
+      "complete": true
+    },
+    {
+      "seq": 7,
+      "time": 6,
+      "kind": "savepoint",
+      "tx": "T",
+      "name": "work",
+      "instance": "S1"
+    },
+    {
+      "seq": 8,
+      "time": 7,
+      "kind": "statement",
+      "tx": "T",
+      "sql": "FETCH 1 FROM c",
+      "parameters": null
+    },
+    {
+      "seq": 9,
+      "time": 8,
+      "kind": "rows",
+      "tx": "T",
+      "statement": 8,
+      "rows": [
+        [
+          1
+        ]
+      ],
+      "complete": true
+    },
+    {
+      "seq": 10,
+      "time": 9,
+      "kind": "statement",
+      "tx": "T",
+      "sql": "ROLLBACK TO SAVEPOINT \"work\"",
+      "parameters": null
+    },
+    {
+      "seq": 11,
+      "time": 10,
+      "kind": "rows",
+      "tx": "T",
+      "statement": 10,
+      "rows": [],
+      "complete": true
+    },
+    {
+      "seq": 12,
+      "time": 11,
+      "kind": "rollback_to",
+      "tx": "T",
+      "instance": "S1"
+    },
+    {
+      "seq": 13,
+      "time": 12,
+      "kind": "statement",
+      "tx": "T",
+      "sql": "FETCH 1 FROM c",
+      "parameters": null
+    },
+    {
+      "seq": 14,
+      "time": 13,
+      "kind": "rows",
+      "tx": "T",
+      "statement": 13,
+      "rows": [
+        [
+          2
+        ]
+      ],
+      "complete": true
+    },
+    {
+      "seq": 15,
+      "time": 14,
+      "kind": "statement",
+      "tx": "T",
+      "sql": "CLOSE c",
+      "parameters": null
+    },
+    {
+      "seq": 16,
+      "time": 15,
+      "kind": "rows",
+      "tx": "T",
+      "statement": 15,
+      "rows": [],
+      "complete": true
+    },
+    {
+      "seq": 17,
+      "time": 16,
+      "kind": "commit_request",
+      "tx": "T"
+    },
+    {
+      "seq": 18,
+      "time": 17,
+      "kind": "commit_ok",
+      "tx": "T"
+    }
+  ]
+}

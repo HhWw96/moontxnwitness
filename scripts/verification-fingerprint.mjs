@@ -14,7 +14,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
       else if(/\.(?:mbt|mjs|py|json|tar\.gz)$/.test(name) || entry.name==='moon.pkg')names.push(name);
     }
   }
-  for(const folder of ['cmd','src','scripts','integrations','experiments',...(includeDist?['dist']:[])])visit(folder);
+  for(const folder of ['cmd','src','scripts','integrations','experiments','fixtures',...(includeDist?['dist']:[])])visit(folder);
   return Object.fromEntries(names.sort().map(name=>[name,
     createHash('sha256').update(readFileSync(resolve(root,name))).digest('hex')]));
 }

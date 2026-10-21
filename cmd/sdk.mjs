@@ -1,7 +1,26 @@
-import { analyze_json, analyze_options_json, verify_certificate_json, shrink_json, shrink_options_json, replay_report_json, compare_models_json, version } from './core.mjs';
-import { normalize_capture_json, normalize_presence_json } from './capture-core.mjs';
+import { analyze_json, analyze_options_json, verify_certificate_json, shrink_json, shrink_options_json, replay_report_json, compare_models_json, version, analyze_v3_json, reduce_v3_json, verify_v3_json } from './core.mjs';
+import { normalize_capture_json, normalize_presence_json, normalize_capture_v3_json } from './capture-core.mjs';
 
 export { version };
+export { makeCapsuleV3, replayCapsuleV3 } from './evidence.mjs';
+const inputText = value => typeof value === 'string' ? value : JSON.stringify(value);
+function v3Text(value, maximum) {
+  const text = inputText(value);
+  if (Buffer.byteLength(text, 'utf8') > maximum) throw new RangeError(`v3 input exceeds ${maximum} UTF-8 bytes`);
+  return text;
+}
+export function normalizeCaptureV3(trace) {
+  return JSON.parse(normalize_capture_v3_json(v3Text(trace, 8 * 1024 * 1024)));
+}
+export function analyzeV3(trace, options = {}) {
+  return JSON.parse(analyze_v3_json(v3Text(trace, 8 * 1024 * 1024), v3Text(options, 4096)));
+}
+export function reduceV3(trace, options = {}) {
+  return JSON.parse(reduce_v3_json(v3Text(trace, 8 * 1024 * 1024), v3Text(options, 4096)));
+}
+export function verifyV3(trace, report) {
+  return JSON.parse(verify_v3_json(v3Text(trace, 8 * 1024 * 1024), v3Text(report, 32 * 1024 * 1024)));
+}
 export function normalizeCapture(trace) {
   return JSON.parse(normalize_capture_json(typeof trace === 'string' ? trace : JSON.stringify(trace)));
 }

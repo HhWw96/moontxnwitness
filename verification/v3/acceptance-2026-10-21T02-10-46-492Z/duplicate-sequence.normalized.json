@@ -1,0 +1,69 @@
+{
+  "schema": 3,
+  "algorithm": "v3-lifecycle-1",
+  "status": "invalid",
+  "coverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "invalid_capture_v3",
+        "message": "Failure(src/capture_v3.mbt:301:9-301:69@HhWw96/moontxnwitness FAILED: Event sequence numbers must be unique and increasing)"
+      }
+    ]
+  },
+  "observations": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "x": "x0",
+        "y": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "T",
+      "connection": "C"
+    },
+    {
+      "seq": 2,
+      "time": 2,
+      "kind": "read",
+      "tx": "T",
+      "key": "x",
+      "version": "x0"
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "commit_request",
+      "tx": "T"
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "commit_ok",
+      "tx": "T"
+    }
+  ],
+  "effects": [],
+  "transactions": [
+    {
+      "id": "T",
+      "connection": "C",
+      "status": "unknown",
+      "beginSeq": 2,
+      "endSeq": null,
+      "events": [
+        2
+      ],
+      "finalWrites": []
+    }
+  ],
+  "history": null,
+  "error": "Failure(src/capture_v3.mbt:301:9-301:69@HhWw96/moontxnwitness FAILED: Event sequence numbers must be unique and increasing)"
+}

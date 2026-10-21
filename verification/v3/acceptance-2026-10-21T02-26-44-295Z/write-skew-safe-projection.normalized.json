@@ -1,0 +1,203 @@
+{
+  "schema": 3,
+  "algorithm": "v3-lifecycle-1",
+  "status": "ready",
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "observations": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "x": "x0",
+        "y": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "T",
+      "connection": "C"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "begin",
+      "tx": "U",
+      "connection": "D"
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "read",
+      "tx": "T",
+      "key": "x",
+      "version": "x0"
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "read",
+      "tx": "U",
+      "key": "y",
+      "version": "y0"
+    },
+    {
+      "seq": 6,
+      "time": 5,
+      "kind": "write",
+      "tx": "T",
+      "key": "y",
+      "version": "y1",
+      "predecessor": "y0"
+    },
+    {
+      "seq": 7,
+      "time": 6,
+      "kind": "write",
+      "tx": "U",
+      "key": "x",
+      "version": "x1",
+      "predecessor": "x0"
+    },
+    {
+      "seq": 8,
+      "time": 7,
+      "kind": "commit_request",
+      "tx": "T"
+    },
+    {
+      "seq": 9,
+      "time": 8,
+      "kind": "commit_ok",
+      "tx": "T"
+    },
+    {
+      "seq": 10,
+      "time": 9,
+      "kind": "commit_request",
+      "tx": "U"
+    },
+    {
+      "seq": 11,
+      "time": 10,
+      "kind": "commit_ok",
+      "tx": "U"
+    }
+  ],
+  "effects": [
+    {
+      "seq": 6,
+      "tx": "T",
+      "key": "y",
+      "version": "y1",
+      "predecessor": "y0",
+      "revertedBy": null
+    },
+    {
+      "seq": 7,
+      "tx": "U",
+      "key": "x",
+      "version": "x1",
+      "predecessor": "x0",
+      "revertedBy": null
+    }
+  ],
+  "transactions": [
+    {
+      "id": "T",
+      "connection": "C",
+      "status": "committed",
+      "beginSeq": 2,
+      "endSeq": 9,
+      "events": [
+        2,
+        4,
+        6,
+        8,
+        9
+      ],
+      "finalWrites": [
+        6
+      ]
+    },
+    {
+      "id": "U",
+      "connection": "D",
+      "status": "committed",
+      "beginSeq": 3,
+      "endSeq": 11,
+      "events": [
+        3,
+        5,
+        7,
+        10,
+        11
+      ],
+      "finalWrites": [
+        7
+      ]
+    }
+  ],
+  "history": {
+    "schemaVersion": 1,
+    "model": "serializable",
+    "initial": {
+      "x": "x0",
+      "y": "y0"
+    },
+    "versionOrders": {
+      "x": [
+        "x0",
+        "x1"
+      ],
+      "y": [
+        "y0",
+        "y1"
+      ]
+    },
+    "transactions": [
+      {
+        "id": "T",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "read",
+            "key": "x",
+            "version": "x0"
+          },
+          {
+            "type": "write",
+            "key": "y",
+            "version": "y1"
+          }
+        ],
+        "start": null,
+        "end": null
+      },
+      {
+        "id": "U",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "read",
+            "key": "y",
+            "version": "y0"
+          },
+          {
+            "type": "write",
+            "key": "x",
+            "version": "x1"
+          }
+        ],
+        "start": null,
+        "end": null
+      }
+    ]
+  }
+}

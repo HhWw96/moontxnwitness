@@ -110,6 +110,12 @@ jobs:
         run: |
           mkdir -p verification
           docker logs "$MTW_SERVICE_ID" > verification/postgres-server.log 2>&1
+      - name: Verify v3 savepoint and cursor observations on PostgreSQL
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          python -B experiments/lifecycle_v3/postgres.py --schema mtw_provenance_lifecycle_v3_ci --output verification/v3/postgres-ci
+          node experiments/lifecycle_v3/e2e.mjs verification/v3/postgres-ci
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -125,3 +131,5 @@ jobs:
             verification/provenance-profile/ci/
             verification/business/dislock/ci/
             verification/provenance-presence/ci/
+            verification/v3/postgres-ci/
+            dist/

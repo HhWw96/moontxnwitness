@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.1.1",
+  "algorithm": "v3-register-1",
+  "status": "invalid",
+  "modelDefinition": {
+    "id": "register-serializable-v1",
+    "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+  },
+  "coverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "invalid_capture_v3",
+        "message": "Failure(src/parse.mbt:49:9-49:70@HhWw96/moontxnwitness FAILED: event.time must be a non-negative safe integer)"
+      }
+    ]
+  },
+  "normalized": {
+    "schema": 3,
+    "algorithm": "v3-lifecycle-1",
+    "status": "invalid",
+    "coverage": {
+      "complete": false,
+      "gaps": [
+        {
+          "code": "invalid_capture_v3",
+          "message": "Failure(src/parse.mbt:49:9-49:70@HhWw96/moontxnwitness FAILED: event.time must be a non-negative safe integer)"
+        }
+      ]
+    },
+    "observations": [
+      {
+        "seq": 1,
+        "time": 0,
+        "kind": "snapshot",
+        "initial": {
+          "x": "x0",
+          "y": "y0"
+        },
+        "consistent": true
+      },
+      {
+        "seq": 2,
+        "time": 1,
+        "kind": "begin",
+        "tx": "T",
+        "connection": "C"
+      },
+      {
+        "seq": 3,
+        "time": 9007199254740992,
+        "kind": "read",
+        "tx": "T",
+        "key": "x",
+        "version": "x0"
+      },
+      {
+        "seq": 4,
+        "time": 3,
+        "kind": "commit_request",
+        "tx": "T"
+      },
+      {
+        "seq": 5,
+        "time": 4,
+        "kind": "commit_ok",
+        "tx": "T"
+      }
+    ],
+    "effects": [],
+    "transactions": [
+      {
+        "id": "T",
+        "connection": "C",
+        "status": "unknown",
+        "beginSeq": 2,
+        "endSeq": null,
+        "events": [
+          2
+        ],
+        "finalWrites": []
+      }
+    ],
+    "history": null,
+    "error": "Failure(src/parse.mbt:49:9-49:70@HhWw96/moontxnwitness FAILED: event.time must be a non-negative safe integer)"
+  },
+  "evidence": null,
+  "execution": {
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "metrics": null
+  }
+}
