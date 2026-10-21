@@ -1,0 +1,219 @@
+Error: [4014]
+    ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_profile2.mbt:80:86 ]
+    │
+ 80 │       { "captureType": "psycopg-jsonb", "objectDumps": "stdlib-json-dumps", "value": image }
+    │                                                                                      ──┬──  
+    │                                                                                        ╰──── Expr Type Mismatch
+        has type : Json
+        wanted   : String
+────╯
+Error: [4014]
+    ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_profile2.mbt:82:7 ]
+    │
+ 82 │       Json::null()
+    │       ──────┬─────  
+    │             ╰─────── Expr Type Mismatch
+        has type : Json
+        wanted   : Map[String, String]
+────╯
+Error: [0035]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_profile2.mbt:140:9 ]
+     │
+ 140 │     let final = object_fields(required(functions, name, "final functions"), "function")
+     │         ──┬──  
+     │           ╰──── Error Warning (reserved_keyword): The word `final` is reserved for possible future use. Please consider using another name.
+─────╯
+Error: [0035]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_profile2.mbt:142:26 ]
+     │
+ 142 │       orm_equal(required(final, field, "final function"), required(first, field, "original function"), "Stable function identity/body/config")
+     │                          ──┬──  
+     │                            ╰──── Error Warning (reserved_keyword): The word `final` is reserved for possible future use. Please consider using another name.
+─────╯
+Error: [0035]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_profile2.mbt:145:74 ]
+     │
+ 145 │       for field in ["triggerOid", "triggerCatalog"] { orm_equal(required(final, field, "final trigger"), required(first, field, "original trigger"), "Stable trigger identity/config") }
+     │                                                                          ──┬──  
+     │                                                                            ╰──── Error Warning (reserved_keyword): The word `final` is reserved for possible future use. Please consider using another name.
+─────╯
+Error: [0027]
+    ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:66:22 ]
+    │
+ 66 │   orm2_expect_reject(fn() { ignore(orm2_array_cell("{32768}", 21)) })
+    │                      ─┬  
+    │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+────╯
+Error: [0027]
+    ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:72:22 ]
+    │
+ 72 │   orm2_expect_reject(fn() { ignore(orm2_array_cell("{true}", 16)) })
+    │                      ─┬  
+    │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+────╯
+Error: [0027]
+    ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:78:24 ]
+    │
+ 78 │     orm2_expect_reject(fn() { ignore(orm2_array_cell(input, 25)) })
+    │                        ─┬  
+    │                         ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+────╯
+Error: [0027]
+    ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:85:24 ]
+    │
+ 85 │     orm2_expect_reject(fn() { ignore(orm2_array_cell(input, 25)) })
+    │                        ─┬  
+    │                         ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+────╯
+Error: [0027]
+    ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:93:24 ]
+    │
+ 93 │     orm2_expect_reject(fn() { ignore(orm2_text_integer(input)) })
+    │                        ─┬  
+    │                         ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:100:22 ]
+     │
+ 100 │   orm2_expect_reject(fn() { ignore(orm2_decode_cell(orm2_test_raw("{\"x\":1,\"x\":2}"), 3802)) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:105:22 ]
+     │
+ 105 │   orm2_expect_reject(fn() { ignore(orm2_decode_cell({ "captureType": "bytes", "base64": "/w==" }, 25)) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:106:22 ]
+     │
+ 106 │   orm2_expect_reject(fn() { ignore(orm2_decode_cell({ "captureType": "bytes", "base64": "YQ==\n" }, 25)) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:111:22 ]
+     │
+ 111 │   orm2_expect_reject(fn() { ignore(orm2_control(orm2_test_select(16, false.to_json(), "t"))) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:116:22 ]
+     │
+ 116 │   orm2_expect_reject(fn() { ignore(orm2_control(orm2_test_select(1005, [1, 2], "{1,3}"))) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:121:22 ]
+     │
+ 121 │   orm2_expect_reject(fn() { ignore(orm2_control(orm2_test_select(25, Json::null(), "x"))) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [4014]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:128:55 ]
+     │
+ 128 │   result["columns"] = [{ "name": "value", "typeCode": 16 }].to_json()
+     │                                                       ─┬  
+     │                                                        ╰── Expr Type Mismatch
+        has type : Int
+        wanted   : String
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:131:22 ]
+     │
+ 131 │   orm2_expect_reject(fn() { ignore(orm2_control(root.to_json())) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:143:22 ]
+     │
+ 143 │   orm2_expect_reject(fn() { ignore(orm2_control(root.to_json())) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:149:22 ]
+     │
+ 149 │   orm2_expect_reject(fn() { ignore(orm2_control(orm2_test_select(25, text.to_json(), text))) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:162:22 ]
+     │
+ 162 │   orm2_expect_reject(fn() { ignore(orm2_command(cursor, "INSERT setup", Json::null(), "INSERT 0 1", None)) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:172:22 ]
+     │
+ 172 │   orm2_expect_reject(fn() { ignore(orm2_control(root.to_json())) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:183:24 ]
+     │
+ 183 │     orm2_expect_reject(fn() { ignore(orm2_take(cursor, "SELECT metadata", Json::null())) })
+     │                        ─┬  
+     │                         ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:194:22 ]
+     │
+ 194 │   orm2_expect_reject(fn() { ignore(orm2_take(cursor, "SELECT metadata", Json::null())) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:200:22 ]
+     │
+ 200 │   orm2_expect_reject(fn() { ignore(orm2_take(cursor, "SELECT other", Json::null())) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:202:22 ]
+     │
+ 202 │   orm2_expect_reject(fn() { ignore(orm2_take(cursor, "SELECT metadata", ["invented"].to_json())) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [4014]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:212:135 ]
+     │
+ 212 │   orm2_snapshot_rows([[key.to_json(), token.to_json(), false.to_json(), Json::null(), Json::null(), Json::null(), absent].to_json()], state, known)
+     │                                                                                                                                       ──┬──  
+     │                                                                                                                                         ╰──── Expr Type Mismatch
+        has type : Map[String, Map[String, Json]]
+        wanted   : Map[String, Json]
+─────╯
+Error: [0027]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:213:22 ]
+     │
+ 213 │   orm2_expect_reject(fn() { orm2_snapshot_rows([[key.to_json(), token.to_json(), false.to_json(), Json::null(), Json::null(), Json::null(), Json::null()].to_json()], state, known) })
+     │                      ─┬  
+     │                       ╰── Error Warning (deprecated_syntax): This `fn` may raise error but is not annotated with `raise`, this kind of effect inference is deprecated, use arrow function `(..) => ...` instead or add explicit `raise` annotation.
+─────╯
+Error: [4014]
+     ╭─[ /home/runner/work/_temp/mtw-orm-source2/isolated-checkout/src/orm_control_source2_wbtest.mbt:213:167 ]
+     │
+ 213 │   orm2_expect_reject(fn() { orm2_snapshot_rows([[key.to_json(), token.to_json(), false.to_json(), Json::null(), Json::null(), Json::null(), Json::null()].to_json()], state, known) })
+     │                                                                                                                                                                       ──┬──  
+     │                                                                                                                                                                         ╰──── Expr Type Mismatch
+        has type : Map[String, Map[String, Json]]
+        wanted   : Map[String, Json]
+─────╯
+Failed with 0 warnings, 29 errors.
+Error: failed to run check for targets [Wasm, WasmGC, Js, Native]
+
+Caused by:
+    failed when checking project
+MoonBit exited with 255
