@@ -4,6 +4,35 @@
 
 ## v3 共同底座的首批实现
 
+### 第七批：主线安装回归、普通表持久化与真实 Elle 前置验收
+
+源码 `ec35d4a6` 的主线新增 ORM 来源诊断已通过四目标各 **616 项**核心回归。
+首次公开构建 `41a6363` 的 Linux 打包把公共 GitHub hosted 账号路径误判为私人路径；
+原失败日志与诊断保留。修复为打包与发布扫描共用已有的严格 hosted 账号识别，
+另加归档检查，私人或 self-hosted 目录仍拒绝。修复提交 `73695cc` 的
+[跨平台核心及全新消费者](https://github.com/HhWw96/moontxnwitness/actions/runs/39605151684)与
+[真实 PostgreSQL 回归](https://github.com/HhWw96/moontxnwitness/actions/runs/39605151584)均成功。
+CI 已同时上传实际源码和便携 ZIP；独立公开包下载验收另记，不借用这一步代替。
+
+普通表 R2 持久化实验的[实际 Linux 流程](https://github.com/HhWw96/moontxnwitness/actions/runs/39604038471)
+执行 **31 项基础检查与 7 个 PostgreSQL 18.6 场景**，作者支持核对确认原始文件绑定。
+四个受支持场景封闭，错误、域外 SQL 与 ledger 预算耗尽保持缺口。
+独立原始来源审计正在执行；SQL 核心证明、两个真实窗口交接、超过 64 个现有键及完整 C/A 成本均未完成。
+
+真实 Elle 原 15 输入、8 实际 checker 结果及 69 转换边界现已通过
+[95 项独立 AI 检查](../verification/experimental-candidates/elle-smoke-r2-2026-10-21/actual-ci-39599513353/independent-r2/independent-smoke-receipt-r2.json)。
+六个明确结果一致，两个空图 unknown 差异保持；固定旧 b663，不覆盖新 ec35 主线。
+两次环境失败与首次独立验收器标签错误保留。后续 **1,000＋1,000 原始历史**
+已启动[单次、仅生成流程](https://github.com/HhWw96/moontxnwitness/actions/runs/39606834359)，
+必须完成独立输入去重和域审查后才可开始批量评估。
+
+[解析器分配实验](../verification/experimental-candidates/ascii-parser-ec35-2026-10-21/README.md)
+在隔离源上通过三目标各 **625 项**、2,542 份解析差分与 **117 份完整输出逐字节核对**。
+单次固定采样的分配比分别为 0.903909 与 0.983525；它们不是正式速度、P95 或 RSS 验收。
+主线仍保留原解析器，独立审查及正式性能门槛待完成。
+
+公开稳定版本继续为 v0.1.0；上述均不是 v0.1.1／v0.1.2 联合发布或 v0.2.0 验收。
+
 ### 第六批：来源证明修复与受保护的日志收尾
 
 主线现已集成显式 `inspectOrmSourceV3` / `inspect-orm-source-v3`，用法见[来源诊断](orm-source-v3.md)。本地完整回归通过三目标各 **616 项**、原解析/串行历史/环证据及旧CLI，新增 **12项**SDK/CLI检查；源码指纹 `ec35d4a61267af9c5600baf6e62197219aa979fdc1f36ca17a9a4bc40f1d9787`。首次本地回归使用缺少可选驱动的Python，在关系fixture的环境断言失败；换用原固定psycopg3.3.6环境后完整通过，原断言未改。两个本地符号链接权限跳过仍保留，Native和新公开构建以后续隔离CI为准。
