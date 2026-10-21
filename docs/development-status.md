@@ -13,6 +13,10 @@
 [跨平台核心及全新消费者](https://github.com/HhWw96/moontxnwitness/actions/runs/39605151684)与
 [真实 PostgreSQL 回归](https://github.com/HhWw96/moontxnwitness/actions/runs/39605151584)均成功。
 CI 已同时上传实际源码和便携 ZIP；独立公开包下载验收另记，不借用这一步代替。
+第一次主线公开产物另已完成
+[1,478 项来源／运行文件／收据核对](../verification/experimental-candidates/orm-integrated-ec35-2026-10-21/actual-main-ci-39602851503/README.md)，
+两种实际下载运行文件各通过原 **332 项**消费者及 **24 项** ORM 语义检查；严格报告字节仍为 23/24。
+Linux 首次失败产物中的旧 76 项打包记录未被接受；它不能代替修复后 73695 新 ZIP 的独立安装验收。
 
 普通表 R2 持久化实验的[实际 Linux 流程](https://github.com/HhWw96/moontxnwitness/actions/runs/39604038471)
 执行 **31 项基础检查与 7 个 PostgreSQL 18.6 场景**，作者支持核对确认原始文件绑定。
