@@ -1,0 +1,19 @@
+--- r1/runtime.mjs
++++ r2/runtime.mjs
+@@ -47,7 +47,15 @@
+  let data;
+  if(batch.operation==='get'){
+   const image=row[7]?Object.fromEntries(['id','email','hashed_password','is_active','is_superuser','is_verified'].map((k,i)=>[k,row[i]])):null;
+-  data={key:String(batch.parameters.id_1),version:row[6],present:row[7],image};
++  // Select the actual named bind in the frozen original SQL, then cross-check
++  // independently delivered PG identity and source metadata. Never infer from output.
++  const names=[...batch.originalSql.matchAll(/%\(([A-Za-z_][A-Za-z0-9_]*)\)s/g)].map(m=>m[1]);
++  assert.equal(names.length,1);assert(['id_1','pk_1'].includes(names[0]));
++  assert.deepEqual(Object.keys(batch.parameters),names);
++  const readKey=plain(batch.parameters[names[0]]);assert.equal(typeof readKey,'string');
++  assert.equal(batch.observation.source.key,readKey);
++  assert.equal(row[0],row[7]?readKey:null);
++  data={key:readKey,version:row[6],present:row[7],image};
+   assert.deepEqual(plain(rowEvent.rows),row[7]?[row.slice(0,6)]:[]);
+   assert.equal(batch.observation.source.version,data.version);assert.equal(batch.observation.source.present,data.present);
+  }else{
