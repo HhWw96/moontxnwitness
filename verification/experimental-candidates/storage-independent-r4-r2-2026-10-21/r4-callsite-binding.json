@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "kind": "frozen-r4-independent-actual-callsite-binding",
+  "candidateIndexSha256": "223e61bcb41b64f2d47f0d96e8c8e99e88a1a9c1fed856467a7b01a45c920124",
+  "managedSource": {
+    "bytes": 38131,
+    "sha256": "290913bd62c125f850af1cbd6e11c4ca268ff49047f48fbc51fe7939961ebd8c"
+  },
+  "finalSync": {
+    "function": "_release_operation",
+    "line": 331,
+    "primitive": "point.sync_directory",
+    "conditions": "Actual finalized manifest/pending null/completedPlan exact, absent prepared intent, original owner authority present, independent native contention on coordination.lock."
+  },
+  "secondaryMarkerIO": {
+    "function": "_failure_marker",
+    "line": 357,
+    "primitive": "Path.open(operation-failed.json, xb)",
+    "conditions": "Only after the exact final sync fault, with the same actual owner authority still present; no author test flag."
+  },
+  "mutex": {
+    "path": "coordination.lock",
+    "permanent": true,
+    "ownerFile": "operation.lock",
+    "ownerFileNativeLockExpectation": false
+  },
+  "staticReview": {
+    "previousUnlockThenUnlinkRaceClosedWithinCooperativeProtocol": true,
+    "ownerDeletionStillUnderPermanentMutex": true,
+    "noDataSyncAfterOwnerUnlinkInReleaseOperation": true,
+    "postCommitNativeFailureBoundary": "Only native release diagnostics after data/intent final sync and owner cleanup; all subsequent diagnostic IO failure may be unobservable to a fresh process as explicitly amended.",
+    "dataSyncAndMarkerSafetyObligationsWeakened": false
+  },
+  "oldR3NormalLockAbsentSyncTarget": {
+    "status": "inapplicable-not-executed",
+    "passed": false,
+    "oldFailedOriginalsChanged": false
+  },
+  "r4AuthorNewTestsRead": false,
+  "localExecution": false
+}

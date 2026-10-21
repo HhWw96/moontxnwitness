@@ -1,0 +1,1300 @@
+{
+  "schema": 1,
+  "kind": "independent-r4-protected-final-sync-two-fault-cases",
+  "passed": true,
+  "complete": true,
+  "cases": [
+    {
+      "name": "protected-final-sync-fails",
+      "passed": true,
+      "executionComplete": true,
+      "checks": [
+        {
+          "name": "actual-prepared-child-exit",
+          "actual": 73,
+          "expected": 73,
+          "passed": true
+        },
+        {
+          "name": "actual-prepared-fresh-incomplete",
+          "actual": false,
+          "expected": false,
+          "passed": true
+        },
+        {
+          "name": "qualified-actual-final-sync-injected-once",
+          "actual": 1,
+          "expected": 1,
+          "passed": true
+        },
+        {
+          "name": "permanent-native-mutex-actually-held-at-fault",
+          "actual": 17,
+          "expected": 17,
+          "passed": true
+        },
+        {
+          "name": "injected-primary-IO-preserved",
+          "actual": true,
+          "expected": true,
+          "passed": true
+        },
+        {
+          "name": "actual-owner-bound-persistent-guard",
+          "actual": true,
+          "expected": true,
+          "passed": true
+        },
+        {
+          "name": "live-instance-permanently-poisoned",
+          "actual": true,
+          "expected": true,
+          "passed": true
+        },
+        {
+          "name": "same-instance-incomplete-after-real-failure",
+          "actual": false,
+          "expected": false,
+          "passed": true
+        },
+        {
+          "name": "fresh-instance-incomplete-after-real-failure",
+          "actual": false,
+          "expected": false,
+          "passed": true
+        },
+        {
+          "name": "original-index-cache-fence-and-archive-unchanged",
+          "actual": {
+            "sourceIndex": {
+              "bytes": 1696,
+              "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+            },
+            "transactionCache": {
+              "bytes": 8192,
+              "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+            },
+            "sourceFence": {
+              "bytes": 266,
+              "sha256": "1bb43fcc51217370d15fef06bb7b9dd17c2c984012f365452a20cd29e3569974"
+            },
+            "originalArchive": {
+              "bytes": 2519,
+              "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+            }
+          },
+          "expected": {
+            "sourceIndex": {
+              "bytes": 1696,
+              "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+            },
+            "transactionCache": {
+              "bytes": 8192,
+              "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+            },
+            "sourceFence": {
+              "bytes": 266,
+              "sha256": "1bb43fcc51217370d15fef06bb7b9dd17c2c984012f365452a20cd29e3569974"
+            },
+            "originalArchive": {
+              "bytes": 2519,
+              "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+            }
+          },
+          "passed": true
+        },
+        {
+          "name": "permanent-mutex-inode-and-bytes-never-removed",
+          "actual": {
+            "device": 2049,
+            "inode": 4514972,
+            "bytes": 76,
+            "sha256": "7b61df4fa28b2b73a309f9e7634f00bd08ed8a55c56c7576dad6cbedfa568efe"
+          },
+          "expected": {
+            "device": 2049,
+            "inode": 4514972,
+            "bytes": 76,
+            "sha256": "7b61df4fa28b2b73a309f9e7634f00bd08ed8a55c56c7576dad6cbedfa568efe"
+          },
+          "passed": true
+        }
+      ],
+      "failures": [],
+      "prepared": {
+        "intent": {
+          "archive": {
+            "bytes": 2519,
+            "path": "/home/runner/work/_temp/mtw-storage-independent-r4/evidence/scenario/primary/original-source.zip",
+            "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+          },
+          "baseGeneration": 1,
+          "baseManifestSha256": "7987411e3788dbcbedddde88c744b34ae6bd8da398bbef8b5a78415610d00031",
+          "beforeSeq": 999,
+          "nonce": "d94b123d59164d418a3c0d7a9e119dd0",
+          "operationToken": "849b8c48e925474195a508cf55758534",
+          "plan": "1564a1e178f14e0da4f0301a2c2223b2",
+          "rootsSha256": "934890c9168b2e6e972a3ac574d0f6c503ce5383e8181928d4b84c9a8c452ac6",
+          "schema": 1,
+          "sourceIndexSha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3",
+          "targets": [
+            {
+              "bytes": 246,
+              "eventCount": 4,
+              "firstSeq": 4,
+              "lastSeq": 7,
+              "name": "segment-000002.jsonl",
+              "sha256": "ed5c3a9a7a608267470955a7e835e22c2ce76f87bb7630813cb8bb15f66f83fb"
+            },
+            {
+              "bytes": 229,
+              "eventCount": 4,
+              "firstSeq": 8,
+              "lastSeq": 11,
+              "name": "segment-000003.jsonl",
+              "sha256": "b155bbc87abf4ae2ea564186e1f445ccaba62008e392ef9e1f47309426ee2d64"
+            },
+            {
+              "bytes": 254,
+              "eventCount": 4,
+              "firstSeq": 12,
+              "lastSeq": 15,
+              "name": "segment-000004.jsonl",
+              "sha256": "27287bb0dfd3549d6737e16d6c48e5e53f184407b29d0c3a8fa83b4069029ab6"
+            },
+            {
+              "bytes": 172,
+              "eventCount": 3,
+              "firstSeq": 16,
+              "lastSeq": 18,
+              "name": "segment-000005.jsonl",
+              "sha256": "bc8416969b61847698a0aa5e74ba86a4b2a6503ec2f3cab4572fcd26cfb58d7b"
+            }
+          ]
+        },
+        "manifest": {
+          "archive": {
+            "bytes": 2519,
+            "path": "/home/runner/work/_temp/mtw-storage-independent-r4/evidence/scenario/primary/original-source.zip",
+            "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+          },
+          "checkpoints": {
+            "checkpoint": {
+              "archiveSha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8",
+              "sourceIndexSha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+            }
+          },
+          "dataModel": "point-register-v1",
+          "fenceSha256": "1bb43fcc51217370d15fef06bb7b9dd17c2c984012f365452a20cd29e3569974",
+          "generation": 2,
+          "locations": [
+            {
+              "name": "segment-000001.jsonl",
+              "storage": "hot"
+            },
+            {
+              "name": "segment-000002.jsonl",
+              "storage": "archive"
+            },
+            {
+              "name": "segment-000003.jsonl",
+              "storage": "archive"
+            },
+            {
+              "name": "segment-000004.jsonl",
+              "storage": "archive"
+            },
+            {
+              "name": "segment-000005.jsonl",
+              "storage": "archive"
+            }
+          ],
+          "manifestSha256": "ab0538f63fc63b08616801b7fb1480eb8c6f82d397b70bb1cff9821bab0fc816",
+          "nonce": "d94b123d59164d418a3c0d7a9e119dd0",
+          "pending": "1564a1e178f14e0da4f0301a2c2223b2",
+          "pins": {},
+          "schema": 1,
+          "source": "/home/runner/work/_temp/mtw-storage-independent-r4/evidence/scenario/primary/journal",
+          "sourceIndexSha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3",
+          "transactionBinding": {
+            "bytes": 8192,
+            "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+          }
+        },
+        "owner": {
+          "kind": "archive-operation/1",
+          "nonce": "d94b123d59164d418a3c0d7a9e119dd0",
+          "token": "849b8c48e925474195a508cf55758534"
+        },
+        "permanentMutexProbe": {
+          "exitCode": 17,
+          "stdout": {
+            "phase": "native-lock",
+            "result": "blocked",
+            "platform": "posix",
+            "device": 2049,
+            "inode": 4514972,
+            "mutexSha256": "7b61df4fa28b2b73a309f9e7634f00bd08ed8a55c56c7576dad6cbedfa568efe",
+            "errorClass": "BlockingIOError",
+            "errno": 11,
+            "winerror": null
+          },
+          "stderr": ""
+        },
+        "bindings": {
+          "prune-intent.json": {
+            "bytes": 1304,
+            "sha256": "3e55b3c90e44bcdfe82d48563fc4e0b3e3a251588184b2dff8fd10715ae83ee0"
+          },
+          "manifest.json": {
+            "bytes": 1295,
+            "sha256": "2bcb65275d294d4b2f0d0a67f5bc4dc7fe4f33c8c7ec1be21822702a7b57c2dc"
+          },
+          "operation.lock": {
+            "bytes": 116,
+            "sha256": "fb5c225c7cdea7ee942c429394ce1f8b2081ec87f19cc03cb1490f92604910b6"
+          },
+          "coordination.lock": {
+            "bytes": 76,
+            "sha256": "7b61df4fa28b2b73a309f9e7634f00bd08ed8a55c56c7576dad6cbedfa568efe"
+          }
+        }
+      },
+      "preparedFreshVerify": {
+        "valid": false,
+        "complete": false,
+        "gap": "FileExistsError: [Errno 17] File exists: '/home/runner/work/_temp/mtw-storage-independent-r4/evidence/scenario/primary/store/operation.lock'"
+      },
+      "primaryFaults": [
+        {
+          "callsite": {
+            "file": "managed.py",
+            "function": "_release_operation",
+            "line": 331
+          },
+          "pending": null,
+          "completedPlan": "1564a1e178f14e0da4f0301a2c2223b2",
+          "owner": {
+            "kind": "archive-operation/1",
+            "nonce": "d94b123d59164d418a3c0d7a9e119dd0",
+            "token": "849b8c48e925474195a508cf55758534"
+          },
+          "ownerBinding": {
+            "bytes": 116,
+            "sha256": "fb5c225c7cdea7ee942c429394ce1f8b2081ec87f19cc03cb1490f92604910b6"
+          },
+          "intentPresent": false,
+          "nativeProbe": {
+            "exitCode": 17,
+            "stdout": {
+              "phase": "native-lock",
+              "result": "blocked",
+              "platform": "posix",
+              "device": 2049,
+              "inode": 4514972,
+              "mutexSha256": "7b61df4fa28b2b73a309f9e7634f00bd08ed8a55c56c7576dad6cbedfa568efe",
+              "errorClass": "BlockingIOError",
+              "errno": 11,
+              "winerror": null
+            },
+            "stderr": ""
+          }
+        }
+      ],
+      "secondaryFaults": [],
+      "actualRecoveryError": {
+        "class": "OSError",
+        "message": "Independent r4 actual protected final data-sync IO failure",
+        "isOSError": true,
+        "trace": "Traceback (most recent call last):\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/storage-r4-independent-draft/counterexample.py\", line 252, in scenario\n    recovery.recover(expected_plan=intent['plan'], exclusive_recovery=True)\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/source-window-v3-archive-r4-draft/managed.py\", line 576, in recover\n    with self._operation(recover=True) as budget:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/contextlib.py\", line 144, in __exit__\n    next(self.gen)\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/source-window-v3-archive-r4-draft/managed.py\", line 279, in _operation\n    if raised is None and cleanup_error is not None:raise cleanup_error\n                                                    ^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/source-window-v3-archive-r4-draft/managed.py\", line 266, in _operation\n    released_guard=self._release_operation(file,target,owned=acquired,\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/source-window-v3-archive-r4-draft/managed.py\", line 331, in _release_operation\n    point.sync_directory(self.path)\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/unittest/mock.py\", line 1139, in __call__\n    return self._mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/unittest/mock.py\", line 1143, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/unittest/mock.py\", line 1204, in _execute_mock_call\n    result = effect(*args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/storage-r4-independent-draft/counterexample.py\", line 237, in fail_final_sync\n    raise OSError(PRIMARY)\nOSError: Independent r4 actual protected final data-sync IO failure\n"
+      },
+      "afterFailureFilesBeforeVerification": {
+        "actual-prepared-child.log": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "child-prepared-state.json": {
+          "bytes": 4487,
+          "sha256": "a9dd088d69a75c2d752d5ceaad19c7da83c93e04b69f50348e96a486d00d846b"
+        },
+        "journal/journal-index.json": {
+          "bytes": 1696,
+          "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+        },
+        "journal/segment-000001.jsonl": {
+          "bytes": 241,
+          "sha256": "e9979fde4e84a1fe22b12c2fead7242dfc90434aef8a690b68684d252b1bcc89"
+        },
+        "journal/transactions.sqlite3": {
+          "bytes": 8192,
+          "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+        },
+        "journal/writer.lock": {
+          "bytes": 266,
+          "sha256": "1bb43fcc51217370d15fef06bb7b9dd17c2c984012f365452a20cd29e3569974"
+        },
+        "original-source.zip": {
+          "bytes": 2519,
+          "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+        },
+        "prepared-original-bytes/coordination.lock": {
+          "bytes": 76,
+          "sha256": "7b61df4fa28b2b73a309f9e7634f00bd08ed8a55c56c7576dad6cbedfa568efe"
+        },
+        "prepared-original-bytes/manifest.json": {
+          "bytes": 1295,
+          "sha256": "2bcb65275d294d4b2f0d0a67f5bc4dc7fe4f33c8c7ec1be21822702a7b57c2dc"
+        },
+        "prepared-original-bytes/operation.lock": {
+          "bytes": 116,
+          "sha256": "fb5c225c7cdea7ee942c429394ce1f8b2081ec87f19cc03cb1490f92604910b6"
+        },
+        "prepared-original-bytes/prune-intent.json": {
+          "bytes": 1304,
+          "sha256": "3e55b3c90e44bcdfe82d48563fc4e0b3e3a251588184b2dff8fd10715ae83ee0"
+        },
+        "store/coordination.lock": {
+          "bytes": 76,
+          "sha256": "7b61df4fa28b2b73a309f9e7634f00bd08ed8a55c56c7576dad6cbedfa568efe"
+        },
+        "store/manifest.json": {
+          "bytes": 2639,
+          "sha256": "bae83781988a1433b3cb5dc406f396d20b0fcad2c87c4c627806520cd296be20"
+        },
+        "store/operation-failed.json": {
+          "bytes": 132,
+          "sha256": "45c194f5d8e679e00b78952a27afb205fc509c8f63a5b31a9267f46676af3296"
+        },
+        "store/operation.lock": {
+          "bytes": 116,
+          "sha256": "fb5c225c7cdea7ee942c429394ce1f8b2081ec87f19cc03cb1490f92604910b6"
+        }
+      },
+      "afterFailureOwner": {
+        "kind": "archive-operation/1",
+        "nonce": "d94b123d59164d418a3c0d7a9e119dd0",
+        "token": "849b8c48e925474195a508cf55758534"
+      },
+      "afterFailureMarker": {
+        "kind": "archive-operation-failed/1",
+        "nonce": "d94b123d59164d418a3c0d7a9e119dd0",
+        "operationToken": "849b8c48e925474195a508cf55758534"
+      },
+      "sameInstanceVerify": {
+        "valid": false,
+        "complete": false,
+        "gap": "Incomplete: Poisoned instance"
+      },
+      "freshInstanceVerify": {
+        "valid": false,
+        "complete": false,
+        "gap": "Incomplete: Persisted failed operation needs explicit recovery"
+      },
+      "originalBindingsBefore": {
+        "sourceIndex": {
+          "bytes": 1696,
+          "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+        },
+        "transactionCache": {
+          "bytes": 8192,
+          "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+        },
+        "sourceFence": {
+          "bytes": 266,
+          "sha256": "1bb43fcc51217370d15fef06bb7b9dd17c2c984012f365452a20cd29e3569974"
+        },
+        "originalArchive": {
+          "bytes": 2519,
+          "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+        }
+      },
+      "originalBindingsAfter": {
+        "sourceIndex": {
+          "bytes": 1696,
+          "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+        },
+        "transactionCache": {
+          "bytes": 8192,
+          "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+        },
+        "sourceFence": {
+          "bytes": 266,
+          "sha256": "1bb43fcc51217370d15fef06bb7b9dd17c2c984012f365452a20cd29e3569974"
+        },
+        "originalArchive": {
+          "bytes": 2519,
+          "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+        }
+      },
+      "permanentMutexBefore": {
+        "device": 2049,
+        "inode": 4514972,
+        "bytes": 76,
+        "sha256": "7b61df4fa28b2b73a309f9e7634f00bd08ed8a55c56c7576dad6cbedfa568efe"
+      },
+      "permanentMutexAfter": {
+        "device": 2049,
+        "inode": 4514972,
+        "bytes": 76,
+        "sha256": "7b61df4fa28b2b73a309f9e7634f00bd08ed8a55c56c7576dad6cbedfa568efe"
+      },
+      "afterVerificationFiles": {
+        "actual-prepared-child.log": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "child-prepared-state.json": {
+          "bytes": 4487,
+          "sha256": "a9dd088d69a75c2d752d5ceaad19c7da83c93e04b69f50348e96a486d00d846b"
+        },
+        "journal/journal-index.json": {
+          "bytes": 1696,
+          "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+        },
+        "journal/segment-000001.jsonl": {
+          "bytes": 241,
+          "sha256": "e9979fde4e84a1fe22b12c2fead7242dfc90434aef8a690b68684d252b1bcc89"
+        },
+        "journal/transactions.sqlite3": {
+          "bytes": 8192,
+          "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+        },
+        "journal/writer.lock": {
+          "bytes": 266,
+          "sha256": "1bb43fcc51217370d15fef06bb7b9dd17c2c984012f365452a20cd29e3569974"
+        },
+        "original-source.zip": {
+          "bytes": 2519,
+          "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+        },
+        "prepared-original-bytes/coordination.lock": {
+          "bytes": 76,
+          "sha256": "7b61df4fa28b2b73a309f9e7634f00bd08ed8a55c56c7576dad6cbedfa568efe"
+        },
+        "prepared-original-bytes/manifest.json": {
+          "bytes": 1295,
+          "sha256": "2bcb65275d294d4b2f0d0a67f5bc4dc7fe4f33c8c7ec1be21822702a7b57c2dc"
+        },
+        "prepared-original-bytes/operation.lock": {
+          "bytes": 116,
+          "sha256": "fb5c225c7cdea7ee942c429394ce1f8b2081ec87f19cc03cb1490f92604910b6"
+        },
+        "prepared-original-bytes/prune-intent.json": {
+          "bytes": 1304,
+          "sha256": "3e55b3c90e44bcdfe82d48563fc4e0b3e3a251588184b2dff8fd10715ae83ee0"
+        },
+        "store/coordination.lock": {
+          "bytes": 76,
+          "sha256": "7b61df4fa28b2b73a309f9e7634f00bd08ed8a55c56c7576dad6cbedfa568efe"
+        },
+        "store/manifest.json": {
+          "bytes": 2639,
+          "sha256": "bae83781988a1433b3cb5dc406f396d20b0fcad2c87c4c627806520cd296be20"
+        },
+        "store/operation-failed.json": {
+          "bytes": 132,
+          "sha256": "45c194f5d8e679e00b78952a27afb205fc509c8f63a5b31a9267f46676af3296"
+        },
+        "store/operation.lock": {
+          "bytes": 116,
+          "sha256": "fb5c225c7cdea7ee942c429394ce1f8b2081ec87f19cc03cb1490f92604910b6"
+        }
+      }
+    },
+    {
+      "name": "protected-final-sync-and-marker-io-fail",
+      "passed": true,
+      "executionComplete": true,
+      "checks": [
+        {
+          "name": "actual-prepared-child-exit",
+          "actual": 73,
+          "expected": 73,
+          "passed": true
+        },
+        {
+          "name": "actual-prepared-fresh-incomplete",
+          "actual": false,
+          "expected": false,
+          "passed": true
+        },
+        {
+          "name": "qualified-actual-final-sync-injected-once",
+          "actual": 1,
+          "expected": 1,
+          "passed": true
+        },
+        {
+          "name": "permanent-native-mutex-actually-held-at-fault",
+          "actual": 17,
+          "expected": 17,
+          "passed": true
+        },
+        {
+          "name": "injected-primary-IO-preserved",
+          "actual": true,
+          "expected": true,
+          "passed": true
+        },
+        {
+          "name": "actual-owner-bound-persistent-guard",
+          "actual": true,
+          "expected": true,
+          "passed": true
+        },
+        {
+          "name": "live-instance-permanently-poisoned",
+          "actual": true,
+          "expected": true,
+          "passed": true
+        },
+        {
+          "name": "same-instance-incomplete-after-real-failure",
+          "actual": false,
+          "expected": false,
+          "passed": true
+        },
+        {
+          "name": "fresh-instance-incomplete-after-real-failure",
+          "actual": false,
+          "expected": false,
+          "passed": true
+        },
+        {
+          "name": "original-index-cache-fence-and-archive-unchanged",
+          "actual": {
+            "sourceIndex": {
+              "bytes": 1696,
+              "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+            },
+            "transactionCache": {
+              "bytes": 8192,
+              "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+            },
+            "sourceFence": {
+              "bytes": 277,
+              "sha256": "1e2d487c103fbadbef37aa17b74e5c1735521955082eb0b7018e509ae6e7fea6"
+            },
+            "originalArchive": {
+              "bytes": 2519,
+              "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+            }
+          },
+          "expected": {
+            "sourceIndex": {
+              "bytes": 1696,
+              "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+            },
+            "transactionCache": {
+              "bytes": 8192,
+              "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+            },
+            "sourceFence": {
+              "bytes": 277,
+              "sha256": "1e2d487c103fbadbef37aa17b74e5c1735521955082eb0b7018e509ae6e7fea6"
+            },
+            "originalArchive": {
+              "bytes": 2519,
+              "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+            }
+          },
+          "passed": true
+        },
+        {
+          "name": "permanent-mutex-inode-and-bytes-never-removed",
+          "actual": {
+            "device": 2049,
+            "inode": 4514990,
+            "bytes": 76,
+            "sha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203"
+          },
+          "expected": {
+            "device": 2049,
+            "inode": 4514990,
+            "bytes": 76,
+            "sha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203"
+          },
+          "passed": true
+        },
+        {
+          "name": "actual-diagnostic-marker-IO-failed-once",
+          "actual": 1,
+          "expected": 1,
+          "passed": true
+        }
+      ],
+      "failures": [],
+      "prepared": {
+        "intent": {
+          "archive": {
+            "bytes": 2519,
+            "path": "/home/runner/work/_temp/mtw-storage-independent-r4/evidence/scenario/primary-and-marker/original-source.zip",
+            "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+          },
+          "baseGeneration": 1,
+          "baseManifestSha256": "90aca6f73a88220a5439bdafda5da85f180ebd0ffc2637aab1dc486025d79aab",
+          "beforeSeq": 999,
+          "nonce": "38721857b8b6466981400195cb69b92d",
+          "operationToken": "9c81d1d246c34e6fb872f99396ca48fb",
+          "plan": "99dfe2e7013143e5ae7f35baef8b129d",
+          "rootsSha256": "934890c9168b2e6e972a3ac574d0f6c503ce5383e8181928d4b84c9a8c452ac6",
+          "schema": 1,
+          "sourceIndexSha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3",
+          "targets": [
+            {
+              "bytes": 246,
+              "eventCount": 4,
+              "firstSeq": 4,
+              "lastSeq": 7,
+              "name": "segment-000002.jsonl",
+              "sha256": "ed5c3a9a7a608267470955a7e835e22c2ce76f87bb7630813cb8bb15f66f83fb"
+            },
+            {
+              "bytes": 229,
+              "eventCount": 4,
+              "firstSeq": 8,
+              "lastSeq": 11,
+              "name": "segment-000003.jsonl",
+              "sha256": "b155bbc87abf4ae2ea564186e1f445ccaba62008e392ef9e1f47309426ee2d64"
+            },
+            {
+              "bytes": 254,
+              "eventCount": 4,
+              "firstSeq": 12,
+              "lastSeq": 15,
+              "name": "segment-000004.jsonl",
+              "sha256": "27287bb0dfd3549d6737e16d6c48e5e53f184407b29d0c3a8fa83b4069029ab6"
+            },
+            {
+              "bytes": 172,
+              "eventCount": 3,
+              "firstSeq": 16,
+              "lastSeq": 18,
+              "name": "segment-000005.jsonl",
+              "sha256": "bc8416969b61847698a0aa5e74ba86a4b2a6503ec2f3cab4572fcd26cfb58d7b"
+            }
+          ]
+        },
+        "manifest": {
+          "archive": {
+            "bytes": 2519,
+            "path": "/home/runner/work/_temp/mtw-storage-independent-r4/evidence/scenario/primary-and-marker/original-source.zip",
+            "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+          },
+          "checkpoints": {
+            "checkpoint": {
+              "archiveSha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8",
+              "sourceIndexSha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+            }
+          },
+          "dataModel": "point-register-v1",
+          "fenceSha256": "1e2d487c103fbadbef37aa17b74e5c1735521955082eb0b7018e509ae6e7fea6",
+          "generation": 2,
+          "locations": [
+            {
+              "name": "segment-000001.jsonl",
+              "storage": "hot"
+            },
+            {
+              "name": "segment-000002.jsonl",
+              "storage": "archive"
+            },
+            {
+              "name": "segment-000003.jsonl",
+              "storage": "archive"
+            },
+            {
+              "name": "segment-000004.jsonl",
+              "storage": "archive"
+            },
+            {
+              "name": "segment-000005.jsonl",
+              "storage": "archive"
+            }
+          ],
+          "manifestSha256": "05d796ac557d175f75fc0b6902bb8bd2f29104613278085a324917600a96d33e",
+          "nonce": "38721857b8b6466981400195cb69b92d",
+          "pending": "99dfe2e7013143e5ae7f35baef8b129d",
+          "pins": {},
+          "schema": 1,
+          "source": "/home/runner/work/_temp/mtw-storage-independent-r4/evidence/scenario/primary-and-marker/journal",
+          "sourceIndexSha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3",
+          "transactionBinding": {
+            "bytes": 8192,
+            "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+          }
+        },
+        "owner": {
+          "kind": "archive-operation/1",
+          "nonce": "38721857b8b6466981400195cb69b92d",
+          "token": "9c81d1d246c34e6fb872f99396ca48fb"
+        },
+        "permanentMutexProbe": {
+          "exitCode": 17,
+          "stdout": {
+            "phase": "native-lock",
+            "result": "blocked",
+            "platform": "posix",
+            "device": 2049,
+            "inode": 4514990,
+            "mutexSha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203",
+            "errorClass": "BlockingIOError",
+            "errno": 11,
+            "winerror": null
+          },
+          "stderr": ""
+        },
+        "bindings": {
+          "prune-intent.json": {
+            "bytes": 1315,
+            "sha256": "64c55d61da515d3f095410c2fc55ea42995354ca61ed893bdd1514e619005df7"
+          },
+          "manifest.json": {
+            "bytes": 1317,
+            "sha256": "2f54e34a754e3d920ea958c88f19d39303ffc2163a5024bc04673639a3a18db7"
+          },
+          "operation.lock": {
+            "bytes": 116,
+            "sha256": "bc04306cb539b909abb420224d94566b9c3a9dfa1e200a552f0166d69ea01f31"
+          },
+          "coordination.lock": {
+            "bytes": 76,
+            "sha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203"
+          }
+        }
+      },
+      "preparedFreshVerify": {
+        "valid": false,
+        "complete": false,
+        "gap": "FileExistsError: [Errno 17] File exists: '/home/runner/work/_temp/mtw-storage-independent-r4/evidence/scenario/primary-and-marker/store/operation.lock'"
+      },
+      "primaryFaults": [
+        {
+          "callsite": {
+            "file": "managed.py",
+            "function": "_release_operation",
+            "line": 331
+          },
+          "pending": null,
+          "completedPlan": "99dfe2e7013143e5ae7f35baef8b129d",
+          "owner": {
+            "kind": "archive-operation/1",
+            "nonce": "38721857b8b6466981400195cb69b92d",
+            "token": "9c81d1d246c34e6fb872f99396ca48fb"
+          },
+          "ownerBinding": {
+            "bytes": 116,
+            "sha256": "bc04306cb539b909abb420224d94566b9c3a9dfa1e200a552f0166d69ea01f31"
+          },
+          "intentPresent": false,
+          "nativeProbe": {
+            "exitCode": 17,
+            "stdout": {
+              "phase": "native-lock",
+              "result": "blocked",
+              "platform": "posix",
+              "device": 2049,
+              "inode": 4514990,
+              "mutexSha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203",
+              "errorClass": "BlockingIOError",
+              "errno": 11,
+              "winerror": null
+            },
+            "stderr": ""
+          }
+        }
+      ],
+      "secondaryFaults": [
+        {
+          "callsite": {
+            "file": "managed.py",
+            "function": "_failure_marker",
+            "line": 357
+          },
+          "pending": null,
+          "completedPlan": "99dfe2e7013143e5ae7f35baef8b129d",
+          "owner": {
+            "kind": "archive-operation/1",
+            "nonce": "38721857b8b6466981400195cb69b92d",
+            "token": "9c81d1d246c34e6fb872f99396ca48fb"
+          },
+          "ownerBinding": {
+            "bytes": 116,
+            "sha256": "bc04306cb539b909abb420224d94566b9c3a9dfa1e200a552f0166d69ea01f31"
+          },
+          "intentPresent": false,
+          "nativeProbe": {
+            "exitCode": 17,
+            "stdout": {
+              "phase": "native-lock",
+              "result": "blocked",
+              "platform": "posix",
+              "device": 2049,
+              "inode": 4514990,
+              "mutexSha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203",
+              "errorClass": "BlockingIOError",
+              "errno": 11,
+              "winerror": null
+            },
+            "stderr": ""
+          }
+        }
+      ],
+      "actualRecoveryError": {
+        "class": "OSError",
+        "message": "Independent r4 actual protected final data-sync IO failure",
+        "isOSError": true,
+        "trace": "Traceback (most recent call last):\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/storage-r4-independent-draft/counterexample.py\", line 252, in scenario\n    recovery.recover(expected_plan=intent['plan'], exclusive_recovery=True)\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/source-window-v3-archive-r4-draft/managed.py\", line 576, in recover\n    with self._operation(recover=True) as budget:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/contextlib.py\", line 144, in __exit__\n    next(self.gen)\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/source-window-v3-archive-r4-draft/managed.py\", line 279, in _operation\n    if raised is None and cleanup_error is not None:raise cleanup_error\n                                                    ^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/source-window-v3-archive-r4-draft/managed.py\", line 266, in _operation\n    released_guard=self._release_operation(file,target,owned=acquired,\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/source-window-v3-archive-r4-draft/managed.py\", line 331, in _release_operation\n    point.sync_directory(self.path)\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/unittest/mock.py\", line 1139, in __call__\n    return self._mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/unittest/mock.py\", line 1143, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/unittest/mock.py\", line 1204, in _execute_mock_call\n    result = effect(*args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/_temp/mtw-storage-independent-r4/isolated-checkout/artifacts/storage-r4-independent-draft/counterexample.py\", line 237, in fail_final_sync\n    raise OSError(PRIMARY)\nOSError: Independent r4 actual protected final data-sync IO failure\n"
+      },
+      "afterFailureFilesBeforeVerification": {
+        "actual-prepared-child.log": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "child-prepared-state.json": {
+          "bytes": 4520,
+          "sha256": "9c1aba8b9b607e223560faabb4672b796769a8c5bc196d7271f69ccb2e9d6b9a"
+        },
+        "journal/journal-index.json": {
+          "bytes": 1696,
+          "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+        },
+        "journal/segment-000001.jsonl": {
+          "bytes": 241,
+          "sha256": "e9979fde4e84a1fe22b12c2fead7242dfc90434aef8a690b68684d252b1bcc89"
+        },
+        "journal/transactions.sqlite3": {
+          "bytes": 8192,
+          "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+        },
+        "journal/writer.lock": {
+          "bytes": 277,
+          "sha256": "1e2d487c103fbadbef37aa17b74e5c1735521955082eb0b7018e509ae6e7fea6"
+        },
+        "original-source.zip": {
+          "bytes": 2519,
+          "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+        },
+        "prepared-original-bytes/coordination.lock": {
+          "bytes": 76,
+          "sha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203"
+        },
+        "prepared-original-bytes/manifest.json": {
+          "bytes": 1317,
+          "sha256": "2f54e34a754e3d920ea958c88f19d39303ffc2163a5024bc04673639a3a18db7"
+        },
+        "prepared-original-bytes/operation.lock": {
+          "bytes": 116,
+          "sha256": "bc04306cb539b909abb420224d94566b9c3a9dfa1e200a552f0166d69ea01f31"
+        },
+        "prepared-original-bytes/prune-intent.json": {
+          "bytes": 1315,
+          "sha256": "64c55d61da515d3f095410c2fc55ea42995354ca61ed893bdd1514e619005df7"
+        },
+        "store/coordination.lock": {
+          "bytes": 76,
+          "sha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203"
+        },
+        "store/manifest.json": {
+          "bytes": 2672,
+          "sha256": "8e79a5ad24573cf51efde0ff6210757cd310661c61bb2e33859e994a2f4f79e5"
+        },
+        "store/operation.lock": {
+          "bytes": 116,
+          "sha256": "bc04306cb539b909abb420224d94566b9c3a9dfa1e200a552f0166d69ea01f31"
+        }
+      },
+      "afterFailureOwner": {
+        "kind": "archive-operation/1",
+        "nonce": "38721857b8b6466981400195cb69b92d",
+        "token": "9c81d1d246c34e6fb872f99396ca48fb"
+      },
+      "afterFailureMarker": null,
+      "sameInstanceVerify": {
+        "valid": false,
+        "complete": false,
+        "gap": "Incomplete: Poisoned instance"
+      },
+      "freshInstanceVerify": {
+        "valid": false,
+        "complete": false,
+        "gap": "FileExistsError: [Errno 17] File exists: '/home/runner/work/_temp/mtw-storage-independent-r4/evidence/scenario/primary-and-marker/store/operation.lock'"
+      },
+      "originalBindingsBefore": {
+        "sourceIndex": {
+          "bytes": 1696,
+          "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+        },
+        "transactionCache": {
+          "bytes": 8192,
+          "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+        },
+        "sourceFence": {
+          "bytes": 277,
+          "sha256": "1e2d487c103fbadbef37aa17b74e5c1735521955082eb0b7018e509ae6e7fea6"
+        },
+        "originalArchive": {
+          "bytes": 2519,
+          "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+        }
+      },
+      "originalBindingsAfter": {
+        "sourceIndex": {
+          "bytes": 1696,
+          "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+        },
+        "transactionCache": {
+          "bytes": 8192,
+          "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+        },
+        "sourceFence": {
+          "bytes": 277,
+          "sha256": "1e2d487c103fbadbef37aa17b74e5c1735521955082eb0b7018e509ae6e7fea6"
+        },
+        "originalArchive": {
+          "bytes": 2519,
+          "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+        }
+      },
+      "permanentMutexBefore": {
+        "device": 2049,
+        "inode": 4514990,
+        "bytes": 76,
+        "sha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203"
+      },
+      "permanentMutexAfter": {
+        "device": 2049,
+        "inode": 4514990,
+        "bytes": 76,
+        "sha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203"
+      },
+      "afterVerificationFiles": {
+        "actual-prepared-child.log": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "child-prepared-state.json": {
+          "bytes": 4520,
+          "sha256": "9c1aba8b9b607e223560faabb4672b796769a8c5bc196d7271f69ccb2e9d6b9a"
+        },
+        "journal/journal-index.json": {
+          "bytes": 1696,
+          "sha256": "daaff0b94fa3722b769e114949e65e7d32c6eeecf565539b982dd7b3e50558d3"
+        },
+        "journal/segment-000001.jsonl": {
+          "bytes": 241,
+          "sha256": "e9979fde4e84a1fe22b12c2fead7242dfc90434aef8a690b68684d252b1bcc89"
+        },
+        "journal/transactions.sqlite3": {
+          "bytes": 8192,
+          "sha256": "22d83132499eb2738a1e09b872713b3b54d988ff503d7e6f7ca31cca24b2d9bb"
+        },
+        "journal/writer.lock": {
+          "bytes": 277,
+          "sha256": "1e2d487c103fbadbef37aa17b74e5c1735521955082eb0b7018e509ae6e7fea6"
+        },
+        "original-source.zip": {
+          "bytes": 2519,
+          "sha256": "a709a6b8cf98620239a55d9b34ca7e477e667a2d85fb00e3c6d2700ee69b00f8"
+        },
+        "prepared-original-bytes/coordination.lock": {
+          "bytes": 76,
+          "sha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203"
+        },
+        "prepared-original-bytes/manifest.json": {
+          "bytes": 1317,
+          "sha256": "2f54e34a754e3d920ea958c88f19d39303ffc2163a5024bc04673639a3a18db7"
+        },
+        "prepared-original-bytes/operation.lock": {
+          "bytes": 116,
+          "sha256": "bc04306cb539b909abb420224d94566b9c3a9dfa1e200a552f0166d69ea01f31"
+        },
+        "prepared-original-bytes/prune-intent.json": {
+          "bytes": 1315,
+          "sha256": "64c55d61da515d3f095410c2fc55ea42995354ca61ed893bdd1514e619005df7"
+        },
+        "store/coordination.lock": {
+          "bytes": 76,
+          "sha256": "1ef1efcada27c74809375ab4325b58c80e72113345a25e53eb546f62e70a1203"
+        },
+        "store/manifest.json": {
+          "bytes": 2672,
+          "sha256": "8e79a5ad24573cf51efde0ff6210757cd310661c61bb2e33859e994a2f4f79e5"
+        },
+        "store/operation.lock": {
+          "bytes": 116,
+          "sha256": "bc04306cb539b909abb420224d94566b9c3a9dfa1e200a552f0166d69ea01f31"
+        }
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "candidate-and-independent-source-bytes-unchanged",
+      "passed": true
+    }
+  ],
+  "candidateIndexSha256": "223e61bcb41b64f2d47f0d96e8c8e99e88a1a9c1fed856467a7b01a45c920124",
+  "localHostExecutionBeforeRemote": false,
+  "actualFilesystemExecution": true,
+  "actualDatabaseExecution": false,
+  "nodeExecution": false,
+  "compilation": false,
+  "formalPerformanceMeasurement": false,
+  "stableAcceptance": false,
+  "oldR3FaultTarget": {
+    "status": "inapplicable-not-executed",
+    "passed": false,
+    "oldActualFailureChanged": false
+  },
+  "postCommitNativeAllDiagnosticIOFailure": "Explicit unexecuted boundary; not a waiver for these two data-sync failures.",
+  "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+  "python": "3.12.15 (main, Oct  1 2026, 02:35:59) [GCC 13.3.0]",
+  "started": "2026-10-21T11:44:10.235044+00:00",
+  "sourceBindingsBefore": {
+    "candidate/candidate-index.json": {
+      "bytes": 5375,
+      "sha256": "223e61bcb41b64f2d47f0d96e8c8e99e88a1a9c1fed856467a7b01a45c920124"
+    },
+    "candidate/actual-r2-failure-bindings.json": {
+      "bytes": 4317,
+      "sha256": "49d4ab8fb253cd05cc0ae62d50487195a887c981f06bff98e8a5c3bc51e5ddb0"
+    },
+    "candidate/actual-r3-result-bindings.json": {
+      "bytes": 7144,
+      "sha256": "f69aca7cd943072f6135c244a92e430228ea48faf188f83aedbabd2a1e6cc536"
+    },
+    "candidate/baseline-reference.json": {
+      "bytes": 694,
+      "sha256": "79179375821956f416eaa7a9ff724ce9bbfcd6903fe06b333edc4efdca9afca8"
+    },
+    "candidate/contract-r2-amendment.json": {
+      "bytes": 3150,
+      "sha256": "d3deb49b512e7496b682102dfa92ab005cf787cd26cffaee3d098917965e0344"
+    },
+    "candidate/contract-r3-amendment.json": {
+      "bytes": 2555,
+      "sha256": "247e97fa5b5026b2e94d615cf3dd6aa26eb2225bfc2aefe2d3c6b4b2c3013ef3"
+    },
+    "candidate/contract-r4-amendment.json": {
+      "bytes": 6879,
+      "sha256": "2d7fb093523db238f6237894a0732f32a2c8e346b14bc3202bb3a98e9348775a"
+    },
+    "candidate/contract-v1.json": {
+      "bytes": 7733,
+      "sha256": "61ebff20176485770a4595ef4ab57d83bce636dced1672bea3fd414524874da7"
+    },
+    "candidate/gap-test-plan.json": {
+      "bytes": 2591,
+      "sha256": "5cfb83b661365359facdc6d5d9c3cf4a38b3115a1510d641ecb134be6133cb9f"
+    },
+    "candidate/managed.py": {
+      "bytes": 38131,
+      "sha256": "290913bd62c125f850af1cbd6e11c4ca268ff49047f48fbc51fe7939961ebd8c"
+    },
+    "candidate/prior-evidence.json": {
+      "bytes": 1481,
+      "sha256": "208a90567fa42655604ed3ad51e3d0f63ee94846dfa43bdb9bb17eaf043988c3"
+    },
+    "candidate/protocol.py": {
+      "bytes": 8783,
+      "sha256": "ea9d679377d68f768201d14eec05791b85d3994486b476c2f8e1fe3ef3c8161c"
+    },
+    "candidate/README.md": {
+      "bytes": 4171,
+      "sha256": "2e499e49c235696a35e617579dec6a493049885e87bb1528535f1b8d07d872d4"
+    },
+    "candidate/repository-dependencies.json": {
+      "bytes": 1020,
+      "sha256": "2d667a3234c7c4191643406cff7ded558c3c8ee6b72aa18fbe6ecabf21798f08"
+    },
+    "candidate/snapshots/pre-stable-mutex/managed.py": {
+      "bytes": 35196,
+      "sha256": "1c113a9e910c133f6e7ef0383454e7bd7117c0142c7c18c798adf1e25ace5816"
+    },
+    "candidate/snapshots/pre-stable-mutex/snapshot-index.json": {
+      "bytes": 641,
+      "sha256": "4e66d2808f034db663ca0bc730a886a2c2a832161b90ffd0d3819a2821462e40"
+    },
+    "candidate/snapshots/pre-stable-mutex/test_gaps.py": {
+      "bytes": 37750,
+      "sha256": "36a0bbdb856d5757d469d224343bb7546fc4a35a44bfd93420b5469ca279d1ed"
+    },
+    "candidate/test_gaps.py": {
+      "bytes": 42654,
+      "sha256": "7236f11c6dbd5c977d93458f468a4465a867499c0d36ca7b7a5ac3c2ef0ae0f9"
+    },
+    "candidate/test_managed.py": {
+      "bytes": 17655,
+      "sha256": "88c64de159179df9d24abe7533d1d2502a15b548e4dfcf84c9655d35ab24f78b"
+    },
+    "candidate/test-plan.json": {
+      "bytes": 4058,
+      "sha256": "016b56aca85a46cbafeec9bf5b231554b93f35f9626b33a7017b3981d6245de1"
+    },
+    "repository/artifacts/source-window-v3-draft/windows.py": {
+      "bytes": 28026,
+      "sha256": "0c63c64fef00eaefd9f480e10bb79f932e0e62d7840fa93ca2d53b31ffacec05"
+    },
+    "repository/integrations/python/moontxnwitness_capture/__init__.py": {
+      "bytes": 564,
+      "sha256": "82ac16660a6e0ea61da6c19d27ef4f9711d475d2901a91fda4c7b0ea6948c3aa"
+    },
+    "repository/integrations/python/moontxnwitness_capture/capture.py": {
+      "bytes": 56812,
+      "sha256": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e"
+    },
+    "repository/integrations/python/moontxnwitness_capture/journal_v3.py": {
+      "bytes": 60881,
+      "sha256": "c2f367721bc5d82ee4d98e27ee33a02b000a08094ea055432ee2cb3ba8b16391"
+    },
+    "independent/contract-v1.json": {
+      "bytes": 6491,
+      "sha256": "66e3b568335c8f85ba16b1ac245b8b3a25ff3a8e52d332b26320b5a4eed64670"
+    },
+    "independent/preregistration-before-implementation.json": {
+      "bytes": 901,
+      "sha256": "a454c63041b026870038029f8828ab673e7197e16c7493c6b95bfa43583bbec1"
+    },
+    "independent/events-v1.json": {
+      "bytes": 1199,
+      "sha256": "8ff02ad102a7046907ab0b993e882e810acac0584d674a053a1857c30c61c91c"
+    },
+    "independent/contract-r4-stable-mutex-amendment.json": {
+      "bytes": 3513,
+      "sha256": "3d801be36a5e5d21d52e7b724b98fd778b136b0cdc2edb51a361cf4db2a9f901"
+    },
+    "independent/r4-callsite-binding.json": {
+      "bytes": 1721,
+      "sha256": "c1f303ec0dd1fc4283cff2f4ab25fedb2332dc21bdddf116face95802fe0f242"
+    },
+    "independent/counterexample.py": {
+      "bytes": 19989,
+      "sha256": "60c91d8fa2797090954e3c4b6c8cdfe0a4734c59c272ca58425d3e5c17020121"
+    }
+  },
+  "sourceBindingsAfter": {
+    "candidate/candidate-index.json": {
+      "bytes": 5375,
+      "sha256": "223e61bcb41b64f2d47f0d96e8c8e99e88a1a9c1fed856467a7b01a45c920124"
+    },
+    "candidate/actual-r2-failure-bindings.json": {
+      "bytes": 4317,
+      "sha256": "49d4ab8fb253cd05cc0ae62d50487195a887c981f06bff98e8a5c3bc51e5ddb0"
+    },
+    "candidate/actual-r3-result-bindings.json": {
+      "bytes": 7144,
+      "sha256": "f69aca7cd943072f6135c244a92e430228ea48faf188f83aedbabd2a1e6cc536"
+    },
+    "candidate/baseline-reference.json": {
+      "bytes": 694,
+      "sha256": "79179375821956f416eaa7a9ff724ce9bbfcd6903fe06b333edc4efdca9afca8"
+    },
+    "candidate/contract-r2-amendment.json": {
+      "bytes": 3150,
+      "sha256": "d3deb49b512e7496b682102dfa92ab005cf787cd26cffaee3d098917965e0344"
+    },
+    "candidate/contract-r3-amendment.json": {
+      "bytes": 2555,
+      "sha256": "247e97fa5b5026b2e94d615cf3dd6aa26eb2225bfc2aefe2d3c6b4b2c3013ef3"
+    },
+    "candidate/contract-r4-amendment.json": {
+      "bytes": 6879,
+      "sha256": "2d7fb093523db238f6237894a0732f32a2c8e346b14bc3202bb3a98e9348775a"
+    },
+    "candidate/contract-v1.json": {
+      "bytes": 7733,
+      "sha256": "61ebff20176485770a4595ef4ab57d83bce636dced1672bea3fd414524874da7"
+    },
+    "candidate/gap-test-plan.json": {
+      "bytes": 2591,
+      "sha256": "5cfb83b661365359facdc6d5d9c3cf4a38b3115a1510d641ecb134be6133cb9f"
+    },
+    "candidate/managed.py": {
+      "bytes": 38131,
+      "sha256": "290913bd62c125f850af1cbd6e11c4ca268ff49047f48fbc51fe7939961ebd8c"
+    },
+    "candidate/prior-evidence.json": {
+      "bytes": 1481,
+      "sha256": "208a90567fa42655604ed3ad51e3d0f63ee94846dfa43bdb9bb17eaf043988c3"
+    },
+    "candidate/protocol.py": {
+      "bytes": 8783,
+      "sha256": "ea9d679377d68f768201d14eec05791b85d3994486b476c2f8e1fe3ef3c8161c"
+    },
+    "candidate/README.md": {
+      "bytes": 4171,
+      "sha256": "2e499e49c235696a35e617579dec6a493049885e87bb1528535f1b8d07d872d4"
+    },
+    "candidate/repository-dependencies.json": {
+      "bytes": 1020,
+      "sha256": "2d667a3234c7c4191643406cff7ded558c3c8ee6b72aa18fbe6ecabf21798f08"
+    },
+    "candidate/snapshots/pre-stable-mutex/managed.py": {
+      "bytes": 35196,
+      "sha256": "1c113a9e910c133f6e7ef0383454e7bd7117c0142c7c18c798adf1e25ace5816"
+    },
+    "candidate/snapshots/pre-stable-mutex/snapshot-index.json": {
+      "bytes": 641,
+      "sha256": "4e66d2808f034db663ca0bc730a886a2c2a832161b90ffd0d3819a2821462e40"
+    },
+    "candidate/snapshots/pre-stable-mutex/test_gaps.py": {
+      "bytes": 37750,
+      "sha256": "36a0bbdb856d5757d469d224343bb7546fc4a35a44bfd93420b5469ca279d1ed"
+    },
+    "candidate/test_gaps.py": {
+      "bytes": 42654,
+      "sha256": "7236f11c6dbd5c977d93458f468a4465a867499c0d36ca7b7a5ac3c2ef0ae0f9"
+    },
+    "candidate/test_managed.py": {
+      "bytes": 17655,
+      "sha256": "88c64de159179df9d24abe7533d1d2502a15b548e4dfcf84c9655d35ab24f78b"
+    },
+    "candidate/test-plan.json": {
+      "bytes": 4058,
+      "sha256": "016b56aca85a46cbafeec9bf5b231554b93f35f9626b33a7017b3981d6245de1"
+    },
+    "repository/artifacts/source-window-v3-draft/windows.py": {
+      "bytes": 28026,
+      "sha256": "0c63c64fef00eaefd9f480e10bb79f932e0e62d7840fa93ca2d53b31ffacec05"
+    },
+    "repository/integrations/python/moontxnwitness_capture/__init__.py": {
+      "bytes": 564,
+      "sha256": "82ac16660a6e0ea61da6c19d27ef4f9711d475d2901a91fda4c7b0ea6948c3aa"
+    },
+    "repository/integrations/python/moontxnwitness_capture/capture.py": {
+      "bytes": 56812,
+      "sha256": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e"
+    },
+    "repository/integrations/python/moontxnwitness_capture/journal_v3.py": {
+      "bytes": 60881,
+      "sha256": "c2f367721bc5d82ee4d98e27ee33a02b000a08094ea055432ee2cb3ba8b16391"
+    },
+    "independent/contract-v1.json": {
+      "bytes": 6491,
+      "sha256": "66e3b568335c8f85ba16b1ac245b8b3a25ff3a8e52d332b26320b5a4eed64670"
+    },
+    "independent/preregistration-before-implementation.json": {
+      "bytes": 901,
+      "sha256": "a454c63041b026870038029f8828ab673e7197e16c7493c6b95bfa43583bbec1"
+    },
+    "independent/events-v1.json": {
+      "bytes": 1199,
+      "sha256": "8ff02ad102a7046907ab0b993e882e810acac0584d674a053a1857c30c61c91c"
+    },
+    "independent/contract-r4-stable-mutex-amendment.json": {
+      "bytes": 3513,
+      "sha256": "3d801be36a5e5d21d52e7b724b98fd778b136b0cdc2edb51a361cf4db2a9f901"
+    },
+    "independent/r4-callsite-binding.json": {
+      "bytes": 1721,
+      "sha256": "c1f303ec0dd1fc4283cff2f4ab25fedb2332dc21bdddf116face95802fe0f242"
+    },
+    "independent/counterexample.py": {
+      "bytes": 19989,
+      "sha256": "60c91d8fa2797090954e3c4b6c8cdfe0a4734c59c272ca58425d3e5c17020121"
+    }
+  },
+  "finished": "2026-10-21T11:44:12.579582+00:00",
+  "checksCount": 24
+}

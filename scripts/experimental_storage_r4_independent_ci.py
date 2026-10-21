@@ -12,8 +12,8 @@ import sys
 
 from experimental_storage_ci import ROOT, PROFILES, binding, relative, public_environment
 
-INDEPENDENT = ROOT / "verification/experimental-candidates/storage-independent-r4-2026-10-21"
-INDEX_SHA = "33636dba9e1a3bb4c3f26a50c7f47b79db7d15185a4fddab8f2a27cea228a6f6"
+INDEPENDENT = ROOT / "verification/experimental-candidates/storage-independent-r4-r2-2026-10-21"
+INDEX_SHA = "65e760435b51137e9ccdb6ce153f535e6eca3a30a09109c6c6d2d801cb207b33"
 
 
 def main():

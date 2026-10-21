@@ -1,0 +1,20 @@
+[
+  {"seq":1,"time":0,"kind":"snapshot","initial":{"x":"x0","y":"y0","z":"z0"},"consistent":true},
+  {"seq":2,"time":1,"kind":"begin","tx":"A","connection":"A"},
+  {"seq":3,"time":2,"kind":"write","tx":"A","key":"x","version":"x1","predecessor":"x0"},
+  {"seq":4,"time":3,"kind":"commit_request","tx":"A"},
+  {"seq":5,"time":4,"kind":"commit_ok","tx":"A"},
+  {"seq":6,"time":5,"kind":"begin","tx":"B","connection":"B"},
+  {"seq":7,"time":6,"kind":"write","tx":"B","key":"y","version":"y1","predecessor":"y0"},
+  {"seq":8,"time":7,"kind":"commit_request","tx":"B"},
+  {"seq":9,"time":8,"kind":"commit_ok","tx":"B"},
+  {"seq":10,"time":9,"kind":"begin","tx":"C","connection":"C"},
+  {"seq":11,"time":10,"kind":"read","tx":"C","key":"x","version":"x1"},
+  {"seq":12,"time":11,"kind":"write","tx":"C","key":"x","version":"x2","predecessor":"x1"},
+  {"seq":13,"time":12,"kind":"commit_request","tx":"C"},
+  {"seq":14,"time":13,"kind":"commit_ok","tx":"C"},
+  {"seq":15,"time":14,"kind":"begin","tx":"D","connection":"D"},
+  {"seq":16,"time":15,"kind":"read","tx":"D","key":"z","version":"z0"},
+  {"seq":17,"time":16,"kind":"commit_request","tx":"D"},
+  {"seq":18,"time":17,"kind":"commit_ok","tx":"D"}
+]
