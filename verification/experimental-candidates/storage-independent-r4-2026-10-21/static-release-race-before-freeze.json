@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "kind": "independent-static-r4-release-handoff-race",
+  "status": "must-fix-static-interleaving-not-executed",
+  "authorSource": {
+    "file": "artifacts/source-window-v3-archive-r4-draft/managed.py",
+    "bytes": 35196,
+    "sha256": "1c113a9e910c133f6e7ef0383454e7bd7117c0142c7c18c798adf1e25ace5816"
+  },
+  "preservedSourceSnapshot": "reviewed-author-source-1c113a9e910c133f6e7ef0383454e7bd7117c0142c7c18c798adf1e25ace5816.py",
+  "scope": "Cooperative recover/native-mutex ownership during release, not an adversarial raw filesystem writer.",
+  "locations": {
+    "release": "ManagedSource._release_operation unlock/close precede final inode/token checks and unlink",
+    "acquisition": "ManagedSource._operation recover=True opens the existing lock inode, acquires its OS lock and reuses nonce/token; path identity is not checked until release",
+    "mutation": "ManagedSource.recover may recreate prune-intent and _finish after opening the previously completed intent"
+  },
+  "interleaving": [
+    "A finishes valid recovery and final data sync while holding old inode L.",
+    "A unlocks/closes L but has not yet executed the owner-file unlink.",
+    "B opens the existing operation.lock inode L and acquires the OS mutex for recover. It reuses the same original nonce/token, so A path/token checks remain true.",
+    "A unlinks operation.lock while B owns L.",
+    "C creates operation.lock as new inode M for an ordinary operation and acquires M. B and C can now mutate with independent OS locks.",
+    "Even if B eventually detects the missing/replaced path during its own release, its recover body can already have recreated intent or changed state."
+  ],
+  "safetyImpact": "No cooperative live-owner guarantee from a nonblocking OS lock once its pathname may be removed by a previous owner after unlock. The exact checked token and inode do not close the check/unlink race.",
+  "repairConstraint": "Use a stable OS mutex pathname that is never removed, separate from removable owner/failed-operation metadata, or another provably atomic handoff protocol. Do not merely add another path check and claim atomicity.",
+  "twoFinalSyncFaultCasesUnchanged": true,
+  "r3CounterexampleChanged": false,
+  "authorSourceChangedByReviewer": false,
+  "localExecution": false,
+  "databaseExecution": false,
+  "nodeExecution": false,
+  "compilation": false
+}

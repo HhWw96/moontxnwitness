@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "kind": "additive-r4-stable-mutex-owner-authority-separation",
+  "originalContractSha256": "66e3b568335c8f85ba16b1ac245b8b3a25ff3a8e52d332b26320b5a4eed64670",
+  "originalContractChanged": false,
+  "originalCasesInputsAndSafetyExpectedChanged": false,
+  "newAuthorSourceReviewedAfterFinalFreeze": false,
+  "fixedPoint": "The source data/durability failure target remains the actual final store-directory sync before owner authority is removed.",
+  "mutex": {
+    "path": "coordination.lock",
+    "lifetime": "Permanent stable inode; never unlink, replace or recreate as routine lock release.",
+    "expectedAuthority": {
+      "kind": "archive-coordination/1",
+      "nonce": "Exact manager manifest nonce; bound to actual source epoch."
+    },
+    "independentNativeProbe": "Open the actual permanent coordination.lock through a separate native handle/process and attempt a nonblocking native exclusive lock. Denial must be the documented lock-contention result; other errors do not prove ownership.",
+    "requiredOrdering": "Hold this native mutex through all source/manifest/intent writes, final potentially failing data sync and temporary owner operation.lock cleanup. The permanent mutex is released only after these steps."
+  },
+  "ownerAuthority": {
+    "path": "operation.lock",
+    "notAnOsMutex": true,
+    "binding": "Keep the exact prepared archive-operation/1 nonce/token from actual intent. This is the owner-bound persistent guard checked after data-sync failure.",
+    "nativeProbeMustNotTargetOwnerRecord": true,
+    "removal": "Owner record may be removed only while the permanent OS mutex is still held. No previous owner may later unlink a mutex pathname used by another actor."
+  },
+  "postCommitNativeReleaseBoundary": {
+    "scope": "Only after all data/source/intent operations and successful final data synchronization plus temporary owner removal are complete.",
+    "liveRequirement": "If native unlock/close itself reports an error, poison the live instance and attempt bounded diagnostic persistence.",
+    "crossProcessLimit": "If every subsequent diagnostic IO also fails, a fresh process cannot necessarily observe a purely native post-commit release exception. No unconditional cross-process failed marker is claimed for that boundary.",
+    "doesNotApplyTo": [
+      "The two preregistered final-data-sync faults.",
+      "Any source or manifest write, archive/segment deletion, prune intent preparation or cleanup failure.",
+      "Any owner cleanup failure before data commit."
+    ],
+    "plannedIndependentExecution": "Not-executed; this boundary is a stated limitation, not a passing test or a waiver for data-sync failures."
+  },
+  "twoPreregisteredCasesRemain": {
+    "protected-final-sync-fails": "Owner guard exists and permanent coordination mutex is actually held at injected data-sync IO failure; guard/live poisoned/fresh incomplete all required.",
+    "protected-final-sync-and-marker-io-fail": "The same data failure plus actual failure-marker IO failure must retain the original owner authority, poison the live instance and leave fresh verification incomplete."
+  },
+  "oldR3AbsentLockSyncCase": "Inapplicable/not-executed under the new protocol if no post-unlink data sync exists; never counted as passed. Original r3 actual failures remain unchanged.",
+  "authorR4TestsRead": false,
+  "localExecution": false,
+  "nodeExecution": false,
+  "compilation": false,
+  "databaseExecution": false,
+  "frozenAt": "2026-10-21T11:06:13.040828+00:00"
+}

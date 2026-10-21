@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "kind": "independent-storage-r4-protected-final-barrier-fault",
+  "status": "frozen-before-independent-implementation-and-r4-source-review",
+  "scope": "Small real-filesystem recovery error paths only; no database, product model, benchmark or stable API acceptance.",
+  "candidateExpectedLocation": "artifacts/source-window-v3-archive-r4-draft",
+  "candidateSourceHash": "awaiting-author-freeze-not-read",
+  "input": {
+    "events": {
+      "file": "events-v1.json",
+      "bytes": 1199,
+      "sha256": "8ff02ad102a7046907ab0b993e882e810acac0584d674a053a1857c30c61c91c"
+    },
+    "setup": "Create and seal the eighteen original events through actual stable SegmentedJournal; adopt with exclusive source ownership; create an actual archive checkpoint. Every case uses a new directory.",
+    "preparedIntent": "A separate real child invokes prune and exits73 at the actual after-manifest boundary. The callback is only a crash trigger: before exit independently bind actual prepared intent/owner/manifest generation and plan; a stage name alone proves nothing. Do not construct/edit intent or source metadata.",
+    "recovery": "A new ManagedSource recovers the exact real prepared plan with explicit exclusive_recovery=True; no retry or cleanup after failure observation."
+  },
+  "newProtocolBoundary": {
+    "description": "The last potentially failing store-directory synchronization is executed while the original owner-bound operation.lock path exists and its OS mutex is still held. Only after successful synchronization may the temporary mutex be unlocked/closed/unlinked; no subsequent synchronization is required for that temporary mutex deletion.",
+    "notAssumed": "Do not assume operation.lock deletion itself is durable, nor that its absence alone means source completeness. A stale reappearing mutex may conservatively reject later work."
+  },
+  "faultQualification": {
+    "actualCall": "Patch only the actual directory-sync primitive at its terminal protected-release callsite; call all earlier syncs normally. Freeze the specific bound source callsite after r4 code is available.",
+    "filesystemEvidence": [
+      "Resolved actual sync target equals this case store.",
+      "Actual operation.lock is a regular file whose contents match the prepared nonce/token; bind its bytes, device/inode or equivalent file identity.",
+      "Independently attempted native nonblocking OS lock on a separately opened handle/child is denied because the owner mutex is held; unexpected OS errors are not evidence of ownership.",
+      "Actual manifest is finalized with pending=null/completedPlan matching the prepared plan; actual prune intent has been removed.",
+      "Bind archive/index/cache/source-fence bytes and the actual call stack/source line. No author boolean/stage callback is accepted as placement proof."
+    ],
+    "fault": "Raise the preregistered OSError exactly once at this qualified actual final sync. If no such call is observed, record not-executed or failed placement; never claim the case passed."
+  },
+  "cases": [
+    {
+      "id": "protected-final-sync-fails",
+      "faults": [
+        "Qualified final directory sync raises OSError; later diagnostic persistence uses actual normal IO."
+      ],
+      "expected": {
+        "qualifiedSyncFaults": 1,
+        "operationRaisesInjectedIO": true,
+        "ownerBoundPersistentGuard": true,
+        "liveInstancePermanentlyPoisoned": true,
+        "freshVerifyComplete": false,
+        "immutableIndexCacheFenceArchiveUnchanged": true
+      }
+    },
+    {
+      "id": "protected-final-sync-and-marker-io-fail",
+      "faults": [
+        "The same qualified final directory sync raises OSError.",
+        "At the resulting actual diagnostic marker persistence request for operation-failed.json, raise a second OSError before its atomic replacement/write can succeed. Qualify by actual resolved marker path plus the retained owner state and actual source callsite, never by an author flag."
+      ],
+      "expected": {
+        "qualifiedSyncFaults": 1,
+        "qualifiedMarkerFaults": 1,
+        "operationCannotReturnSuccess": true,
+        "originalOwnerLockStillPresentAndBound": true,
+        "liveInstancePermanentlyPoisoned": true,
+        "freshVerifyComplete": false,
+        "immutableIndexCacheFenceArchiveUnchanged": true
+      }
+    }
+  ],
+  "guardDefinition": {
+    "primary": "A retained operation.lock with the exact original archive-operation/1 nonce/token, still recognized by a fresh verifier.",
+    "alternativeForFirstCaseOnly": "An independently bound operation-failed.json with exact archive-operation-failed/1 nonce/operationToken recognized by fresh verification. Merely returning a guard=true field is insufficient.",
+    "secondCase": "Because diagnostic persistence was made to fail, the original owner-bound operation.lock must remain. An absent or foreign marker/lock is a failure."
+  },
+  "checks": [
+    "Prepared child actually exits73 and original prepared bytes are retained.",
+    "Fresh verification of the prepared state is incomplete.",
+    "Actual final sync placement satisfies both filesystem and OS ownership evidence.",
+    "The exact registered IO fault occurs and the operation does not succeed.",
+    "Same-instance subsequent verify/operation is refused after poisoning; inspect actual state and public behavior separately.",
+    "Fresh instance remains incomplete with an owner-bound durable guard.",
+    "All diagnostic marker IO may fail without removing the prior guard.",
+    "Original index/cache/source fence/archive and candidate source bytes are unchanged."
+  ],
+  "resultPolicy": "Every original input, child output, injected exception, actual FS snapshot, owner proof and candidate hash is retained. No failure is inverted, deleted, treated as expected success or repaired by a retry. A process crash/resource/unsupported placement is not a passing safety case.",
+  "oldProtocolApplicability": "The r3 lock-absent final-sync premise is deliberately not exercised as a success condition under r4. Its old actual3-of9 failures remain unchanged. If r4 has no sync after unlock/unlink, that old target is inapplicable/not-executed, not passed. A new reachable protected-sync error must be tested instead.",
+  "plannedCases": 2,
+  "localExecution": false,
+  "r4SourceRead": false,
+  "authorR4TestsOrExpectationsRead": false,
+  "nodeExecution": false,
+  "compilation": false,
+  "databaseExecution": false,
+  "performanceExecution": false
+}
