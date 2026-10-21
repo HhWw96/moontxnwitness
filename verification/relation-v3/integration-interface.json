@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "frozen": true,
+  "commands": {
+    "oracle": [
+      "python",
+      "-B",
+      "scripts/relation-v3-oracle.py",
+      "--self-test"
+    ],
+    "generator": [
+      "python",
+      "-B",
+      "scripts/relation-v3-oracle.py",
+      "--verify-generator"
+    ],
+    "acceptance": [
+      "node",
+      "scripts/relation-v3-acceptance.mjs"
+    ]
+  },
+  "oracleAliases": [
+    "--self-test",
+    "--self-check"
+  ],
+  "pythonSelection": "MTW_PYTHON || PYTHON || platform default; interpreter itself imports only Python standard library",
+  "buildRequirement": "Acceptance strictly requires current MoonBit source fingerprint plus actual core/capture and wrapper digests; it never builds or opens a database.",
+  "stdout": "Oracle emits one JSON object. Acceptance emits compact progress JSON lines followed by the final JSON object. Parse final object or use appended receipt path.",
+  "acceptanceExpected": {
+    "inputCases": 1170,
+    "differences": 0,
+    "checks": 57,
+    "tamperCases": 35,
+    "normalizationCases": 1138,
+    "sourceEvidenceCases": 924,
+    "budgetCases": 10,
+    "witnesses": 704,
+    "cliCases": 8
+  },
+  "outputPolicy": "Each execution writes only a fresh verification/relation-v3 run. Failed runs remain immutable.",
+  "currentAcceptance": {
+    "file": "verification/relation-v3/acceptance-2026-10-21T05-51-44-410Z/receipt.json",
+    "sha256": "d93636d8b4a661da7a57402109eb9f9dab980c7db532c4069607438aee23f26b"
+  },
+  "implementationBindings": {
+    "scripts/relation-v3-oracle.py": {
+      "bytes": 33453,
+      "sha256": "474bfabb431a8a0a267cf6c421908ddedf78b4be36d5b5caeb54d140ea803c73"
+    },
+    "scripts/relation-v3-acceptance.mjs": {
+      "bytes": 18360,
+      "sha256": "39333a06466ccc9ffaa6e4e167546833350ad5beee261bf02d64aab8a7fa821e"
+    },
+    "fixtures/relation-v3/manifest.json": {
+      "bytes": 2659,
+      "sha256": "cc64278825f3d9918acfe2f28516af46d3a05cf049b7f03ae4378418e6779f48"
+    }
+  },
+  "frozenGeneratorReproduction": {
+    "passed": true,
+    "completeInputAndNormalizationFilesReproducedByteForByte": true,
+    "productionImports": false,
+    "files": {
+      "boundary.json": {
+        "sha256": "cee1c3f5fbf574f5a3395bcaf4b36e11d11d1e6d811d41c57d01e4b8f14ac110",
+        "bytes": 341823
+      },
+      "generated-1000.json": {
+        "sha256": "c5478da1c6ed5fb5ce7a994d476820fce540b6972f4d16e77b97ef851ab26c96",
+        "bytes": 1846732
+      },
+      "normalization-oracle.json": {
+        "sha256": "8a4af3f1a516301f4f5cb0a47c850e6e91e3da4cb7b5127278833e6df576b133",
+        "bytes": 2126788
+      },
+      "budget-expectations.json": {
+        "sha256": "dc650bf3bfa87719f05a7a758b24c46c34ab28847bff00bc7ef04b46e979b2c9",
+        "bytes": 2959
+      },
+      "provenance/frozen-manifest.json": {
+        "sha256": "c7de865d914c917fcc18f43d7acdef8baf5326dca4763f65d650c98b51f1ab26",
+        "bytes": 2548
+      },
+      "provenance/frozen-oracle.py": {
+        "sha256": "df9b9d5271988a1fb55cc8aaba4b8b596c466a2febbecbafde273d48caa20e30",
+        "bytes": 25523
+      },
+      "provenance/frozen-generator.py": {
+        "sha256": "0afcae5cecadb13c8c6b2b9b2b516d1e06c1a37290c637ad8aa4a292873dc3a3",
+        "bytes": 22695
+      }
+    }
+  },
+  "requiredTestedSourcePaths": [
+    "scripts/relation-v3-oracle.py",
+    "scripts/relation-v3-acceptance.mjs",
+    "fixtures/relation-v3/**",
+    "verification/relation-v3/frozen-corpus-promotion.json",
+    "verification/relation-v3/history/*.zip"
+  ],
+  "binaryArtifactPolicy": "Preserve exact bytes under fixtures/relation-v3/** and verification/relation-v3/**; do not Git-normalize frozen JSON/generator/archive bytes."
+}

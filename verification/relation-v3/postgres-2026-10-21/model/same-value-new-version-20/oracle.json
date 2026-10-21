@@ -1,0 +1,347 @@
+{
+  "status": "consistent",
+  "complete": true,
+  "gaps": [],
+  "effects": [
+    {
+      "seq": 4,
+      "tx": "A",
+      "relation": "accounts",
+      "key": "1",
+      "action": "update",
+      "version": "be1d7705-d4c0-44fd-bcf8-53a03836659c",
+      "predecessor": "213bf57d-745a-4ea3-9d53-88f1dbcfaaa5",
+      "values": {
+        "balance": "10",
+        "active": true,
+        "region": "east"
+      },
+      "revertedBy": null
+    },
+    {
+      "seq": 6,
+      "tx": "A",
+      "relation": "accounts",
+      "key": "1",
+      "action": "update",
+      "version": "ad0d682c-a485-4673-8ddd-c50816b3c7fb",
+      "predecessor": "be1d7705-d4c0-44fd-bcf8-53a03836659c",
+      "values": {
+        "balance": "10",
+        "active": true,
+        "region": "east"
+      },
+      "revertedBy": null
+    }
+  ],
+  "transactions": [
+    {
+      "id": "A",
+      "connection": "C-A",
+      "status": "committed",
+      "beginSeq": 2,
+      "endSeq": 9,
+      "events": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "finalWrites": [
+        6
+      ]
+    },
+    {
+      "id": "B",
+      "connection": "C-B",
+      "status": "committed",
+      "beginSeq": 10,
+      "endSeq": 13,
+      "events": [
+        10,
+        11,
+        12,
+        13
+      ],
+      "finalWrites": []
+    }
+  ],
+  "normalization": {
+    "schema": 3,
+    "dataModel": "relation-set-v1",
+    "algorithm": "v3-relation-lifecycle-1",
+    "status": "ready",
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "relationSchema": {
+      "accounts": {
+        "primaryKey": "id",
+        "columns": {
+          "id": "int64",
+          "balance": "int64",
+          "active": "bool",
+          "region": "text"
+        }
+      }
+    },
+    "observations": [
+      {
+        "seq": 1,
+        "time": 0,
+        "kind": "snapshot",
+        "initial": {
+          "accounts": [
+            {
+              "key": "1",
+              "version": "213bf57d-745a-4ea3-9d53-88f1dbcfaaa5",
+              "values": {
+                "balance": "10",
+                "active": true,
+                "region": "east"
+              }
+            }
+          ]
+        },
+        "consistent": true
+      },
+      {
+        "seq": 2,
+        "time": 94000,
+        "kind": "begin",
+        "tx": "A",
+        "connection": "C-A"
+      },
+      {
+        "seq": 3,
+        "time": 94000,
+        "kind": "row_read",
+        "tx": "A",
+        "relation": "accounts",
+        "predicate": [],
+        "rows": [
+          {
+            "key": "1",
+            "version": "213bf57d-745a-4ea3-9d53-88f1dbcfaaa5",
+            "values": {
+              "balance": "10",
+              "active": true,
+              "region": "east"
+            }
+          }
+        ],
+        "complete": true
+      },
+      {
+        "seq": 4,
+        "time": 125000,
+        "kind": "row_write",
+        "tx": "A",
+        "relation": "accounts",
+        "key": "1",
+        "action": "update",
+        "version": "be1d7705-d4c0-44fd-bcf8-53a03836659c",
+        "predecessor": "213bf57d-745a-4ea3-9d53-88f1dbcfaaa5",
+        "values": {
+          "balance": "10",
+          "active": true,
+          "region": "east"
+        }
+      },
+      {
+        "seq": 5,
+        "time": 125000,
+        "kind": "row_read",
+        "tx": "A",
+        "relation": "accounts",
+        "predicate": [],
+        "rows": [
+          {
+            "key": "1",
+            "version": "be1d7705-d4c0-44fd-bcf8-53a03836659c",
+            "values": {
+              "balance": "10",
+              "active": true,
+              "region": "east"
+            }
+          }
+        ],
+        "complete": true
+      },
+      {
+        "seq": 6,
+        "time": 125000,
+        "kind": "row_write",
+        "tx": "A",
+        "relation": "accounts",
+        "key": "1",
+        "action": "update",
+        "version": "ad0d682c-a485-4673-8ddd-c50816b3c7fb",
+        "predecessor": "be1d7705-d4c0-44fd-bcf8-53a03836659c",
+        "values": {
+          "balance": "10",
+          "active": true,
+          "region": "east"
+        }
+      },
+      {
+        "seq": 7,
+        "time": 125000,
+        "kind": "row_read",
+        "tx": "A",
+        "relation": "accounts",
+        "predicate": [],
+        "rows": [
+          {
+            "key": "1",
+            "version": "ad0d682c-a485-4673-8ddd-c50816b3c7fb",
+            "values": {
+              "balance": "10",
+              "active": true,
+              "region": "east"
+            }
+          }
+        ],
+        "complete": true
+      },
+      {
+        "seq": 8,
+        "time": 125000,
+        "kind": "commit_request",
+        "tx": "A"
+      },
+      {
+        "seq": 9,
+        "time": 125000,
+        "kind": "commit_ok",
+        "tx": "A"
+      },
+      {
+        "seq": 10,
+        "time": 203000,
+        "kind": "begin",
+        "tx": "B",
+        "connection": "C-B"
+      },
+      {
+        "seq": 11,
+        "time": 219000,
+        "kind": "row_read",
+        "tx": "B",
+        "relation": "accounts",
+        "predicate": [],
+        "rows": [
+          {
+            "key": "1",
+            "version": "ad0d682c-a485-4673-8ddd-c50816b3c7fb",
+            "values": {
+              "balance": "10",
+              "active": true,
+              "region": "east"
+            }
+          }
+        ],
+        "complete": true
+      },
+      {
+        "seq": 12,
+        "time": 219000,
+        "kind": "commit_request",
+        "tx": "B"
+      },
+      {
+        "seq": 13,
+        "time": 219000,
+        "kind": "commit_ok",
+        "tx": "B"
+      }
+    ],
+    "effects": [
+      {
+        "seq": 4,
+        "tx": "A",
+        "relation": "accounts",
+        "key": "1",
+        "action": "update",
+        "version": "be1d7705-d4c0-44fd-bcf8-53a03836659c",
+        "predecessor": "213bf57d-745a-4ea3-9d53-88f1dbcfaaa5",
+        "values": {
+          "balance": "10",
+          "active": true,
+          "region": "east"
+        },
+        "revertedBy": null
+      },
+      {
+        "seq": 6,
+        "tx": "A",
+        "relation": "accounts",
+        "key": "1",
+        "action": "update",
+        "version": "ad0d682c-a485-4673-8ddd-c50816b3c7fb",
+        "predecessor": "be1d7705-d4c0-44fd-bcf8-53a03836659c",
+        "values": {
+          "balance": "10",
+          "active": true,
+          "region": "east"
+        },
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "A",
+        "connection": "C-A",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "finalWrites": [
+          6
+        ]
+      },
+      {
+        "id": "B",
+        "connection": "C-B",
+        "status": "committed",
+        "beginSeq": 10,
+        "endSeq": 13,
+        "events": [
+          10,
+          11,
+          12,
+          13
+        ],
+        "finalWrites": []
+      }
+    ],
+    "history": null
+  },
+  "limits": {
+    "maxStates": 100000,
+    "maxOperationChecks": 1000000
+  },
+  "metrics": {
+    "states": 2,
+    "operationChecks": 30
+  },
+  "reason": "found",
+  "serialOrder": [
+    "A",
+    "B"
+  ]
+}

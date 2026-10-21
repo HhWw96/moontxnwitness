@@ -1,0 +1,140 @@
+diff --git a/src/relation_v3.mbt b/src/relation_v3.mbt
+--- a/src/relation_v3.mbt
++++ b/src/relation_v3.mbt
+@@ -112,7 +112,12 @@
+ 
+ ///|
+ fn relation_v3_identifier(value : Json) -> String raise {
+-  let result = identifier(value, "version identity")
++  let result = match value {
++    String(text) if text.length() >= 1 && text.length() <= 256 => text
++    _ => fail("Version identities must have 1..256 UTF-16 code units")
++  }
++  // Model versions are opaque Unicode scalar strings, not SQL/transaction
++  // identifiers: NUL, whitespace and other scalar controls are valid identities.
+   relation_v3_scalar(result)
+   result
+ }
+@@ -183,6 +188,14 @@
+     ("bool", True) => Boolean(true)
+     ("bool", False) => Boolean(false)
+     _ => fail("Relation value does not match its declared column type")
++  }
++}
++
++///|
++fn relation_v3_optional_text(value : String?) -> Json {
++  match value {
++    None => Json::null()
++    Some(text) => text.to_json()
+   }
+ }
+ 
+@@ -817,7 +830,7 @@
+       "key": key.wire,
+       "action": source.action.to_json(),
+       "version": source.row.version.to_json(),
+-      "predecessor": source.predecessor.to_json(),
++      "predecessor": relation_v3_optional_text(source.predecessor),
+       "values": relation_v3_values_json(source, tables, keys),
+       "revertedBy": reverted,
+     })
+@@ -1073,9 +1086,9 @@
+         "version": source.row.version.to_json(),
+         "values": relation_v3_values_json(source, tables, keys),
+         "action": source.action.to_json(),
+-        "predecessor": source.predecessor.to_json(),
++        "predecessor": relation_v3_optional_text(source.predecessor),
+         "sourceSeq": source.seq.to_double().to_json(),
+-        "writer": source.writer.to_json(),
++        "writer": relation_v3_optional_text(source.writer),
+         "revertedBy": match revoked.get(source.seq) {
+           Some(Some(at)) => at.to_double().to_json()
+           _ => Json::null()
+diff --git a/src/relation_v3_wbtest.mbt b/src/relation_v3_wbtest.mbt
+--- a/src/relation_v3_wbtest.mbt
++++ b/src/relation_v3_wbtest.mbt
+@@ -1065,3 +1065,83 @@
+     "definite relation-set serializability violation with complete capture coverage".to_json(),
+   )
+ }
++
++///|
++test "relation independent-fix 01 NUL is a valid nonempty opaque version scalar" {
++  r3_test_case(
++    "{\"traceSchema\":3,\"dataModel\":\"relation-set-v1\",\"relationSchema\":{\"accounts\":{\"primaryKey\":\"id\",\"columns\":{\"id\":\"int64\",\"balance\":\"int64\",\"active\":\"bool\",\"region\":\"text\"}}},\"clockDomain\":\"relation-own-tests\",\"scope\":{\"exclusiveWriters\":true,\"completeSnapshotTables\":[\"accounts\"]},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"accounts\":[{\"key\":\"1\",\"version\":\"\\u0000\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"A\",\"seq\":2,\"time\":1},{\"kind\":\"row_read\",\"tx\":\"A\",\"relation\":\"accounts\",\"predicate\":[],\"rows\":[{\"key\":\"1\",\"version\":\"\\u0000\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}],\"complete\":true,\"seq\":3,\"time\":2},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":4,\"time\":3},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}],\"gaps\":[]}",
++    "consistent", "{\"evidence\":{\"sourceEvidence\":[{\"version\":\"\\u0000\",\"writer\":null,\"predecessor\":null}]}}",
++    "{}",
++  )
++}
++
++///|
++test "relation independent-fix 02 whitespace and controls are valid opaque versions" {
++  r3_test_case(
++    "{\"traceSchema\":3,\"dataModel\":\"relation-set-v1\",\"relationSchema\":{\"accounts\":{\"primaryKey\":\"id\",\"columns\":{\"id\":\"int64\",\"balance\":\"int64\",\"active\":\"bool\",\"region\":\"text\"}}},\"clockDomain\":\"relation-own-tests\",\"scope\":{\"exclusiveWriters\":true,\"completeSnapshotTables\":[\"accounts\"]},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"accounts\":[{\"key\":\"1\",\"version\":\" \\t\\r\\n\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"A\",\"seq\":2,\"time\":1},{\"kind\":\"row_read\",\"tx\":\"A\",\"relation\":\"accounts\",\"predicate\":[],\"rows\":[{\"key\":\"1\",\"version\":\" \\t\\r\\n\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}],\"complete\":true,\"seq\":3,\"time\":2},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":4,\"time\":3},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}],\"gaps\":[]}",
++    "consistent", "{\"evidence\":{\"sourceEvidence\":[{\"version\":\" \\t\\r\\n\",\"writer\":null,\"predecessor\":null}]}}",
++    "{}",
++  )
++}
++
++///|
++test "relation independent-fix 03 supplementary scalar version exactly 256 UTF16 units" {
++  r3_test_case(
++    "{\"traceSchema\":3,\"dataModel\":\"relation-set-v1\",\"relationSchema\":{\"accounts\":{\"primaryKey\":\"id\",\"columns\":{\"id\":\"int64\",\"balance\":\"int64\",\"active\":\"bool\",\"region\":\"text\"}}},\"clockDomain\":\"relation-own-tests\",\"scope\":{\"exclusiveWriters\":true,\"completeSnapshotTables\":[\"accounts\"]},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"accounts\":[{\"key\":\"1\",\"version\":\"\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"A\",\"seq\":2,\"time\":1},{\"kind\":\"row_read\",\"tx\":\"A\",\"relation\":\"accounts\",\"predicate\":[],\"rows\":[{\"key\":\"1\",\"version\":\"\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}],\"complete\":true,\"seq\":3,\"time\":2},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":4,\"time\":3},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}],\"gaps\":[]}",
++    "consistent", "{\"evidence\":{\"sourceEvidence\":[{\"version\":\"\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\",\"writer\":null,\"predecessor\":null}]}}",
++    "{}",
++  )
++}
++
++///|
++test "relation independent-fix 04 supplementary scalar version beyond 256 UTF16 units" {
++  r3_test_case(
++    "{\"traceSchema\":3,\"dataModel\":\"relation-set-v1\",\"relationSchema\":{\"accounts\":{\"primaryKey\":\"id\",\"columns\":{\"id\":\"int64\",\"balance\":\"int64\",\"active\":\"bool\",\"region\":\"text\"}}},\"clockDomain\":\"relation-own-tests\",\"scope\":{\"exclusiveWriters\":true,\"completeSnapshotTables\":[\"accounts\"]},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"accounts\":[{\"key\":\"1\",\"version\":\"\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"A\",\"seq\":2,\"time\":1},{\"kind\":\"row_read\",\"tx\":\"A\",\"relation\":\"accounts\",\"predicate\":[],\"rows\":[{\"key\":\"1\",\"version\":\"\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\\ud83d\\ude42\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}],\"complete\":true,\"seq\":3,\"time\":2},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":4,\"time\":3},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}],\"gaps\":[]}",
++    "invalid", "{}", "{}",
++  )
++}
++
++///|
++test "relation independent-fix 05 unpaired high surrogate is not a scalar version" {
++  let text = "{\"traceSchema\":3,\"dataModel\":\"relation-set-v1\",\"relationSchema\":{\"accounts\":{\"primaryKey\":\"id\",\"columns\":{\"id\":\"int64\",\"balance\":\"int64\",\"active\":\"bool\",\"region\":\"text\"}}},\"clockDomain\":\"relation-own-tests\",\"scope\":{\"exclusiveWriters\":true,\"completeSnapshotTables\":[\"accounts\"]},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"accounts\":[{\"key\":\"1\",\"version\":\"\\ud800\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"A\",\"seq\":2,\"time\":1},{\"kind\":\"row_read\",\"tx\":\"A\",\"relation\":\"accounts\",\"predicate\":[],\"rows\":[{\"key\":\"1\",\"version\":\"\\ud800\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}],\"complete\":true,\"seq\":3,\"time\":2},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":4,\"time\":3},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}],\"gaps\":[]}"
++  let report = relation_v3_analysis(text, "{}")
++  let normalized = @json.parse(normalize_relation_capture_v3_json(text))
++  assert_eq(capture_field(report, "status"), "invalid".to_json())
++  assert_eq(capture_field(normalized, "status"), "invalid".to_json())
++  assert_eq(capture_field(normalized, "history"), Json::null())
++}
++
++///|
++test "relation independent-fix 06 empty version is invalid" {
++  r3_test_case(
++    "{\"traceSchema\":3,\"dataModel\":\"relation-set-v1\",\"relationSchema\":{\"accounts\":{\"primaryKey\":\"id\",\"columns\":{\"id\":\"int64\",\"balance\":\"int64\",\"active\":\"bool\",\"region\":\"text\"}}},\"clockDomain\":\"relation-own-tests\",\"scope\":{\"exclusiveWriters\":true,\"completeSnapshotTables\":[\"accounts\"]},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"accounts\":[{\"key\":\"1\",\"version\":\"\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"A\",\"seq\":2,\"time\":1},{\"kind\":\"row_read\",\"tx\":\"A\",\"relation\":\"accounts\",\"predicate\":[],\"rows\":[{\"key\":\"1\",\"version\":\"\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}],\"complete\":true,\"seq\":3,\"time\":2},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":4,\"time\":3},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}],\"gaps\":[]}",
++    "invalid", "{}", "{}",
++  )
++}
++
++///|
++test "relation independent-fix 07 written NUL version preserves scalar predecessor and writer" {
++  r3_test_case(
++    "{\"traceSchema\":3,\"dataModel\":\"relation-set-v1\",\"relationSchema\":{\"accounts\":{\"primaryKey\":\"id\",\"columns\":{\"id\":\"int64\",\"balance\":\"int64\",\"active\":\"bool\",\"region\":\"text\"}}},\"clockDomain\":\"relation-own-tests\",\"scope\":{\"exclusiveWriters\":true,\"completeSnapshotTables\":[\"accounts\"]},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"accounts\":[{\"key\":\"1\",\"version\":\"v0\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"A\",\"seq\":2,\"time\":1},{\"kind\":\"row_write\",\"tx\":\"A\",\"relation\":\"accounts\",\"key\":\"1\",\"action\":\"update\",\"version\":\"\\u0000\",\"predecessor\":\"v0\",\"values\":{\"balance\":\"20\",\"active\":true,\"region\":\"north\"},\"seq\":3,\"time\":2},{\"kind\":\"row_read\",\"tx\":\"A\",\"relation\":\"accounts\",\"predicate\":[],\"rows\":[{\"key\":\"1\",\"version\":\"\\u0000\",\"values\":{\"balance\":\"20\",\"active\":true,\"region\":\"north\"}}],\"complete\":true,\"seq\":4,\"time\":3},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":5,\"time\":4},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":6,\"time\":5}],\"gaps\":[]}",
++    "consistent", "{\"normalized\":{\"effects\":[{\"predecessor\":\"v0\",\"version\":\"\\u0000\"}]},\"evidence\":{\"sourceEvidence\":[{\"version\":\"v0\",\"writer\":null,\"predecessor\":null},{\"version\":\"\\u0000\",\"writer\":\"A\",\"predecessor\":\"v0\"}]}}",
++    "{}",
++  )
++}
++
++///|
++test "relation independent-fix 08 fresh absence predecessor is JSON null rather than optional array" {
++  r3_test_case(
++    "{\"traceSchema\":3,\"dataModel\":\"relation-set-v1\",\"relationSchema\":{\"accounts\":{\"primaryKey\":\"id\",\"columns\":{\"id\":\"int64\",\"balance\":\"int64\",\"active\":\"bool\",\"region\":\"text\"}}},\"clockDomain\":\"relation-own-tests\",\"scope\":{\"exclusiveWriters\":true,\"completeSnapshotTables\":[\"accounts\"]},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"accounts\":[]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"A\",\"seq\":2,\"time\":1},{\"kind\":\"row_write\",\"tx\":\"A\",\"relation\":\"accounts\",\"key\":\"1\",\"action\":\"insert\",\"version\":\"v1\",\"predecessor\":null,\"values\":{\"balance\":\"20\",\"active\":true,\"region\":\"north\"},\"seq\":3,\"time\":2},{\"kind\":\"row_read\",\"tx\":\"A\",\"relation\":\"accounts\",\"predicate\":[],\"rows\":[{\"key\":\"1\",\"version\":\"v1\",\"values\":{\"balance\":\"20\",\"active\":true,\"region\":\"north\"}}],\"complete\":true,\"seq\":4,\"time\":3},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":5,\"time\":4},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":6,\"time\":5}],\"gaps\":[]}",
++    "consistent", "{\"normalized\":{\"effects\":[{\"predecessor\":null}]},\"evidence\":{\"sourceEvidence\":[{\"writer\":\"A\",\"predecessor\":null}]}}",
++    "{}",
++  )
++}
++
++///|
++test "relation independent-fix 09 NUL tombstone predecessor and newline identity preserve exact facts" {
++  r3_test_case(
++    "{\"traceSchema\":3,\"dataModel\":\"relation-set-v1\",\"relationSchema\":{\"accounts\":{\"primaryKey\":\"id\",\"columns\":{\"id\":\"int64\",\"balance\":\"int64\",\"active\":\"bool\",\"region\":\"text\"}}},\"clockDomain\":\"relation-own-tests\",\"scope\":{\"exclusiveWriters\":true,\"completeSnapshotTables\":[\"accounts\"]},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"accounts\":[{\"key\":\"1\",\"version\":\"v0\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"A\",\"seq\":2,\"time\":1},{\"kind\":\"row_write\",\"tx\":\"A\",\"relation\":\"accounts\",\"key\":\"1\",\"action\":\"delete\",\"version\":\"\\u0000\",\"predecessor\":\"v0\",\"values\":null,\"seq\":3,\"time\":2},{\"kind\":\"row_write\",\"tx\":\"A\",\"relation\":\"accounts\",\"key\":\"1\",\"action\":\"insert\",\"version\":\"\\n\",\"predecessor\":\"\\u0000\",\"values\":{\"balance\":\"20\",\"active\":true,\"region\":\"north\"},\"seq\":4,\"time\":3},{\"kind\":\"row_read\",\"tx\":\"A\",\"relation\":\"accounts\",\"predicate\":[],\"rows\":[{\"key\":\"1\",\"version\":\"\\n\",\"values\":{\"balance\":\"20\",\"active\":true,\"region\":\"north\"}}],\"complete\":true,\"seq\":5,\"time\":4},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":6,\"time\":5},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":7,\"time\":6}],\"gaps\":[]}",
++    "consistent", "{\"normalized\":{\"effects\":[{\"version\":\"\\u0000\",\"predecessor\":\"v0\"},{\"version\":\"\\n\",\"predecessor\":\"\\u0000\"}],\"transactions\":[{\"finalWrites\":[4]}]},\"evidence\":{\"sourceEvidence\":[{\"writer\":null,\"predecessor\":null},{\"writer\":\"A\",\"predecessor\":\"v0\"},{\"writer\":\"A\",\"predecessor\":\"\\u0000\"}]}}",
++    "{}",
++  )
++}

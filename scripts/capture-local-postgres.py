@@ -22,7 +22,7 @@ def main():
     parser.add_argument('--bin', default=str(ROOT / 'artifacts/postgres18-tools/pgsql/bin'))
     parser.add_argument('--work-root', type=Path, default=ROOT / 'artifacts/capture-postgres',
                         help='Parent for new owned cluster files; existing runs are never reused or removed')
-    parser.add_argument('--suite', choices=['capture', 'legacy', 'all', 'provenance', 'provenance-cost', 'provenance-profile', 'capture-with-profile', 'dislock', 'capture-with-dislock', 'presence', 'presence-database', 'capture-with-presence', 'all-with-presence', 'v3-lifecycle', 'v3-list', 'v3-dislock', 'v3-commit', 'v3-business-all'], default='capture')
+    parser.add_argument('--suite', choices=['capture', 'legacy', 'all', 'provenance', 'provenance-cost', 'provenance-profile', 'capture-with-profile', 'dislock', 'capture-with-dislock', 'presence', 'presence-database', 'capture-with-presence', 'all-with-presence', 'v3-lifecycle', 'v3-list', 'v3-relation', 'v3-dislock', 'v3-commit', 'v3-business-all', 'mlflow-fault'], default='capture')
     args = parser.parse_args()
     parent = args.work_root.resolve()
     parent.mkdir(parents=True, exist_ok=True)
@@ -88,6 +88,24 @@ def main():
                   ['capture','provenance-profile','dislock'] if args.suite == 'capture-with-dislock' else
                   ['capture','provenance-profile'] if args.suite == 'capture-with-profile' else [args.suite])
         for suite in suites:
+            if suite == 'v3-relation':
+                output = ROOT / 'verification/relation-v3' / ('postgres-' + uuid.uuid4().hex)
+                result = subprocess.run([sys.executable, '-B', str(ROOT / 'experiments/relation_v3/run_postgres.py'),
+                    '--output', str(output)], cwd=ROOT, env=env, creationflags=flags)
+                if result.returncode:
+                    return result.returncode
+                replay = subprocess.run(['node', str(ROOT / 'experiments/relation_v3/e2e.mjs'), str(output),
+                    str(output.parent / (output.name + '-model'))], cwd=ROOT, env=env, creationflags=flags)
+                if replay.returncode:
+                    return replay.returncode
+                continue
+            if suite == 'mlflow-fault':
+                output = ROOT / 'verification/faults/mlflow' / ('run-' + uuid.uuid4().hex)
+                result = subprocess.run([sys.executable, '-B', str(ROOT / 'experiments/faults/mlflow/run_postgres.py'),
+                    '--output', str(output)], cwd=ROOT, env=env, creationflags=flags)
+                if result.returncode:
+                    return result.returncode
+                continue
             if suite == 'v3-commit':
                 output = ROOT / 'verification/business/dislock' / ('v3-commit-' + uuid.uuid4().hex)
                 result = subprocess.run([sys.executable, '-B', str(ROOT / 'experiments/business/dislock/v3_commit_postgres.py'),

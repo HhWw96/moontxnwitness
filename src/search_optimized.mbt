@@ -22,8 +22,12 @@ priv struct OptimizedSearch {
   orders : Array[Array[Int]]
   state : Array[Int]
   positions : Array[Int]
-  trail : Array[(Int, Int)]
-  position_trail : Array[(Int, Int)]
+  trail_keys : FixedArray[Int]
+  trail_values : FixedArray[Int]
+  position_keys : FixedArray[Int]
+  position_values : FixedArray[Int]
+  mut trail_size : Int
+  mut position_size : Int
   failures : Map[String, Bool]
   prefix : Array[Int]
   blockers : Array[Finding]
@@ -65,13 +69,13 @@ fn optimized_state_key(ctx : OptimizedSearch, selected : Int) -> String {
 
 ///|
 fn undo_search(ctx : OptimizedSearch, mark : Int, position_mark : Int) -> Unit {
-  while ctx.trail.length() > mark {
-    let (key, value) = ctx.trail.pop().unwrap()
-    ctx.state[key] = value
+  while ctx.trail_size > mark {
+    ctx.trail_size -= 1
+    ctx.state[ctx.trail_keys[ctx.trail_size]] = ctx.trail_values[ctx.trail_size]
   }
-  while ctx.position_trail.length() > position_mark {
-    let (key, value) = ctx.position_trail.pop().unwrap()
-    ctx.positions[key] = value
+  while ctx.position_size > position_mark {
+    ctx.position_size -= 1
+    ctx.positions[ctx.position_keys[ctx.position_size]] = ctx.position_values[ctx.position_size]
   }
 }
 
@@ -99,8 +103,8 @@ fn optimized_step(ctx : OptimizedSearch, selected : Int) -> Array[Int]? {
       return None
     }
     ctx.attempts += 1
-    let mark = ctx.trail.length()
-    let position_mark = ctx.position_trail.length()
+    let mark = ctx.trail_size
+    let position_mark = ctx.position_size
     let mut valid = true
     for op in tx.ops {
       if ctx.operations >= ctx.options.max_operation_checks {
@@ -130,7 +134,11 @@ fn optimized_step(ctx : OptimizedSearch, selected : Int) -> Array[Int]? {
           break
         }
       } else {
-        ctx.trail.push((op.key, ctx.state[op.key]))
+        // A selected prefix plus its next distinct transaction contains at most
+        // the admitted 512 operations; therefore the live write trail fits.
+        ctx.trail_keys[ctx.trail_size] = op.key
+        ctx.trail_values[ctx.trail_size] = ctx.state[op.key]
+        ctx.trail_size += 1
         ctx.state[op.key] = op.version
       }
     }
@@ -143,7 +151,10 @@ fn optimized_step(ctx : OptimizedSearch, selected : Int) -> Array[Int]? {
           valid = false
           break
         }
-        ctx.position_trail.push((k, ctx.positions[k]))
+        // Final writes are a subset of those same admitted write operations.
+        ctx.position_keys[ctx.position_size] = k
+        ctx.position_values[ctx.position_size] = ctx.positions[k]
+        ctx.position_size += 1
         ctx.positions[k] = position
       }
     }
@@ -244,8 +255,12 @@ fn search_optimized(
     }),
     state: Array::make(keys.length(), 0),
     positions: Array::make(keys.length(), 0),
-    trail: [],
-    position_trail: [],
+    trail_keys: FixedArray::make(512, 0),
+    trail_values: FixedArray::make(512, 0),
+    position_keys: FixedArray::make(512, 0),
+    position_values: FixedArray::make(512, 0),
+    trail_size: 0,
+    position_size: 0,
     failures: Map([]),
     prefix: [],
     blockers: [],

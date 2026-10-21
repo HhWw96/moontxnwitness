@@ -1,0 +1,219 @@
+diff --git a/src/search_optimized.mbt b/src/search_optimized.mbt
+--- a/src/search_optimized.mbt
++++ b/src/search_optimized.mbt
+@@ -22,8 +22,12 @@
+   orders : Array[Array[Int]]
+   state : Array[Int]
+   positions : Array[Int]
+-  trail : Array[(Int, Int)]
+-  position_trail : Array[(Int, Int)]
++  trail_keys : FixedArray[Int]
++  trail_values : FixedArray[Int]
++  position_keys : FixedArray[Int]
++  position_values : FixedArray[Int]
++  mut trail_size : Int
++  mut position_size : Int
+   failures : Map[String, Bool]
+   prefix : Array[Int]
+   blockers : Array[Finding]
+@@ -65,13 +69,13 @@
+ 
+ ///|
+ fn undo_search(ctx : OptimizedSearch, mark : Int, position_mark : Int) -> Unit {
+-  while ctx.trail.length() > mark {
+-    let (key, value) = ctx.trail.pop().unwrap()
+-    ctx.state[key] = value
+-  }
+-  while ctx.position_trail.length() > position_mark {
+-    let (key, value) = ctx.position_trail.pop().unwrap()
+-    ctx.positions[key] = value
++  while ctx.trail_size > mark {
++    ctx.trail_size -= 1
++    ctx.state[ctx.trail_keys[ctx.trail_size]] = ctx.trail_values[ctx.trail_size]
++  }
++  while ctx.position_size > position_mark {
++    ctx.position_size -= 1
++    ctx.positions[ctx.position_keys[ctx.position_size]] = ctx.position_values[ctx.position_size]
+   }
+ }
+ 
+@@ -99,8 +103,8 @@
+       return None
+     }
+     ctx.attempts += 1
+-    let mark = ctx.trail.length()
+-    let position_mark = ctx.position_trail.length()
++    let mark = ctx.trail_size
++    let position_mark = ctx.position_size
+     let mut valid = true
+     for op in tx.ops {
+       if ctx.operations >= ctx.options.max_operation_checks {
+@@ -130,7 +134,11 @@
+           break
+         }
+       } else {
+-        ctx.trail.push((op.key, ctx.state[op.key]))
++        // A selected prefix plus its next distinct transaction contains at most
++        // the admitted 512 operations; therefore the live write trail fits.
++        ctx.trail_keys[ctx.trail_size] = op.key
++        ctx.trail_values[ctx.trail_size] = ctx.state[op.key]
++        ctx.trail_size += 1
+         ctx.state[op.key] = op.version
+       }
+     }
+@@ -143,7 +151,10 @@
+           valid = false
+           break
+         }
+-        ctx.position_trail.push((k, ctx.positions[k]))
++        // Final writes are a subset of those same admitted write operations.
++        ctx.position_keys[ctx.position_size] = k
++        ctx.position_values[ctx.position_size] = ctx.positions[k]
++        ctx.position_size += 1
+         ctx.positions[k] = position
+       }
+     }
+@@ -244,8 +255,12 @@
+     }),
+     state: Array::make(keys.length(), 0),
+     positions: Array::make(keys.length(), 0),
+-    trail: [],
+-    position_trail: [],
++    trail_keys: FixedArray::make(512, 0),
++    trail_values: FixedArray::make(512, 0),
++    position_keys: FixedArray::make(512, 0),
++    position_values: FixedArray::make(512, 0),
++    trail_size: 0,
++    position_size: 0,
+     failures: Map([]),
+     prefix: [],
+     blockers: [],
+diff --git a/src/perf_search_draft_wbtest.mbt b/src/perf_search_draft_wbtest.mbt
+new file mode 100644
+--- /dev/null
++++ b/src/perf_search_draft_wbtest.mbt
+@@ -0,0 +1,124 @@
++///|
++test "draft search write trail admits all 512 live writes at exact operation budget" {
++  let operations : Array[Operation] = []
++  for i in 1..<513 {
++    operations.push(write_op("x", "x" + i.to_string()))
++  }
++  let h = hist([tx("A", operations)])
++  let (info, path, _, _) = search_optimized(
++    h,
++    Map([]),
++    [],
++    analysis_options(
++      max_attempts=1,
++      max_operation_checks=512,
++      max_cached_states=0,
++    ),
++  )
++  assert_eq(info.status, "found")
++  assert_eq(info.attempts, 1)
++  assert_eq(info.operation_checks, 512)
++  assert_eq(path, Some(["A"]))
++}
++
++///|
++test "draft search position trail retains all 512 per-transaction final writes" {
++  let initial : Map[String, String] = Map([])
++  let transactions : Array[Transaction] = []
++  for i in 0..<128 {
++    initial["k" + i.to_string()] = "v0"
++  }
++  for ti in 0..<4 {
++    let operations : Array[Operation] = []
++    for ki in 0..<128 {
++      operations.push(
++        write_op("k" + ki.to_string(), "v" + (ti + 1).to_string()),
++      )
++    }
++    transactions.push(tx("T" + ti.to_string(), operations))
++  }
++  let h : History = {
++    model: Serializable,
++    initial,
++    version_orders: Map([]),
++    transactions,
++  }
++  let (info, path, _, _) = search_optimized(
++    h,
++    Map([]),
++    [],
++    analysis_options(
++      max_attempts=4,
++      max_operation_checks=512,
++      max_cached_states=0,
++    ),
++  )
++  assert_eq(info.status, "found")
++  assert_eq(info.attempts, 4)
++  assert_eq(info.operation_checks, 512)
++  assert_eq(path, Some(["T0", "T1", "T2", "T3"]))
++}
++
++///|
++fn draft_search_large_undo() -> History {
++  let operations : Array[Operation] = [read_op("y", "y0")]
++  for i in 1..<501 {
++    operations.push(write_op("y", "y" + i.to_string()))
++  }
++  operations.push(read_op("x", "x1"))
++  hist([tx("A", operations), tx("B", [write_op("x", "x1")])])
++}
++
++///|
++test "draft search undo restores a long failed prefix before trying another order" {
++  let (info, path, _, _) = search_optimized(
++    draft_search_large_undo(),
++    Map([]),
++    [],
++    analysis_options(
++      max_attempts=3,
++      max_operation_checks=1005,
++      max_cached_states=0,
++    ),
++  )
++  assert_eq(info.status, "found")
++  assert_eq(info.attempts, 3)
++  assert_eq(info.operation_checks, 1005)
++  assert_eq(path, Some(["B", "A"]))
++}
++
++///|
++test "draft search one missing operation cannot become exhausted" {
++  let (info, path, _, _) = search_optimized(
++    draft_search_large_undo(),
++    Map([]),
++    [],
++    analysis_options(
++      max_attempts=3,
++      max_operation_checks=1004,
++      max_cached_states=0,
++    ),
++  )
++  assert_eq(info.status, "budget")
++  assert_eq(info.attempts, 3)
++  assert_eq(info.operation_checks, 1004)
++  assert_eq(path, None)
++}
++
++///|
++test "draft search does not raise the 512 operation admission limit" {
++  let operations : Array[Operation] = []
++  for i in 1..<514 {
++    operations.push(write_op("x", "x" + i.to_string()))
++  }
++  let (info, path, _, _) = search_optimized(
++    hist([tx("A", operations)]),
++    Map([]),
++    [],
++    analysis_options(),
++  )
++  assert_eq(info.status, "skipped")
++  assert_eq(info.attempts, 0)
++  assert_eq(info.operation_checks, 0)
++  assert_eq(path, None)
++}

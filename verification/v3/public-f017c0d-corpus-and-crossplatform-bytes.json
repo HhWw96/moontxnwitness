@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "passed": true,
+  "sourceCommit": "f017c0dfe6b8f69c58034046cf9e37c9e7614137",
+  "publicSourceZipSha256": "a02ca723f5e1fdf511a5191c62dc9a6c13b9561953c2d93f1422fb01841e4377",
+  "independentAIAudit": true,
+  "humanAcceptance": false,
+  "corpus": [
+    {
+      "file": "fixtures/list-v3/manual.json",
+      "bytes": 83826,
+      "sha256": "9484211441d6e6b1f4a6a603232f0846231e8e73e1309013bf8248f4e8af2ed5",
+      "records": 71,
+      "distinctInputSha256Count": 67
+    },
+    {
+      "file": "fixtures/list-v3/generated-10000.json",
+      "bytes": 11252269,
+      "sha256": "2c3d0892a635572d8d9ae66f46ced3c1d0f71973723d5d8f5799c98b2e5dfe2d",
+      "records": 10000,
+      "distinctInputSha256Count": 60
+    },
+    {
+      "file": "fixtures/list-v3/unique-10000.json",
+      "bytes": 27988961,
+      "sha256": "d675273202b86c8bf8ca9b934a173c3fa8d36e5c0c73d8aa63a257a09dd8e166",
+      "records": 10000,
+      "distinctInputSha256Count": 10000
+    }
+  ],
+  "totalRecords": 20071,
+  "distinctInputSha256Count": 10118,
+  "platformCompiledByteDifference": [
+    {
+      "file": "dist/core.mjs",
+      "linux": {
+        "bytes": 1237369,
+        "sha256": "dde83e218a817ec3b1e13fa26c61f5088894fd72805db6e21000153ebdb3f572"
+      },
+      "windows": {
+        "bytes": 1237391,
+        "sha256": "823969b63e5899dec9a4dcc1f9f673b148074fb9ced2cf63a1872bb06d7c41a4"
+      },
+      "changedConstantTables": 2,
+      "difference": "MoonBit compiler emits equivalent numeric exponent literal spelling: 1e+12..1e+22 on Linux versus 1e+012..1e+022 on Windows. All remaining UTF-8 source bytes are identical.",
+      "equalAfterOnlyDocumentedExponentSpelling": true
+    },
+    {
+      "file": "dist/capture-core.mjs",
+      "linux": {
+        "bytes": 960987,
+        "sha256": "0d91c81565fe9319fc5da29f6bb956eaf8ec8f6bda6afcdc8b4758afd61e347d"
+      },
+      "windows": {
+        "bytes": 961009,
+        "sha256": "f69092f612ed7b79d2d5aa973e56caee71ebbe33d4d6ecfa77028d4be95f6d99"
+      },
+      "changedConstantTables": 2,
+      "difference": "MoonBit compiler emits equivalent numeric exponent literal spelling: 1e+12..1e+22 on Linux versus 1e+012..1e+022 on Windows. All remaining UTF-8 source bytes are identical.",
+      "equalAfterOnlyDocumentedExponentSpelling": true
+    }
+  ],
+  "actualPlatformDigestsRemainDistinct": true,
+  "artifactHashesWereNotNormalizedForIntegrityChecks": true,
+  "runtimeValidation": "Both unmodified downloaded platform runtimes passed 166 independent checks each; see independent-public-checkpoint-f017c0d-2026-10-21T05-19-32.336647Z.json",
+  "limitations": [
+    "Equivalent literal spelling explains byte differences; it is not a claim of bit-reproducible cross-platform builds.",
+    "Corpus count includes repeated inputs retained from the original frozen batch."
+  ]
+}

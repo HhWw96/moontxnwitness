@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "passed": true,
+  "actualDatabaseExecution": true,
+  "serverVersion": "18.6",
+  "serverVersionNumber": 180006,
+  "cases": [
+    {
+      "label": "before",
+      "passed": true,
+      "committed": 1,
+      "executionFault": "deadlock",
+      "errors": [
+        {
+          "worker": "B",
+          "class": "OperationalError",
+          "driverClass": "DeadlockDetected",
+          "sqlstate": "40P01",
+          "primary": "deadlock detected"
+        }
+      ]
+    },
+    {
+      "label": "fixed",
+      "passed": true,
+      "committed": 2,
+      "executionFault": null,
+      "errors": []
+    }
+  ],
+  "notCompletePlanAcceptance": true
+}

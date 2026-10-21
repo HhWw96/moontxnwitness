@@ -5,6 +5,12 @@ pub fn normalize_capture_json(text : String) -> String {
 }
 
 ///|
+#export_name("inspect_execution_failures_v3_json")
+pub fn inspect_execution_failures_v3_json(text : String) -> String {
+  @txn.inspect_execution_failures_v3_json(text)
+}
+
+///|
 #export_name("normalize_capture_v3_json")
 pub fn normalize_capture_v3_json(text : String) -> String {
   @txn.normalize_capture_v3_json(text)

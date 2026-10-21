@@ -1,5 +1,20 @@
 # 0.1.1 — development
 
+- Add an experimental relation-set model with full AND-predicate results,
+  int64/code-point semantics, versioned inserts/updates/tombstones, savepoint
+  replay and source-closed reduction. Check 1,170 frozen independent inputs;
+  retain the original mismatches rather than changing expected conclusions.
+- Execute eight controlled relation scenarios twenty times each on PostgreSQL
+  18.6, separately retaining raw SQL/results, effects and offline replay evidence.
+  Reproduce original MLflow component locking before/after its published repair;
+  expose execution-failure observations separately from model violations.
+- Reduce real-time edge serialization, sparse graph and search rollback
+  allocation while preserving full output, edge sources, budgets and traversal.
+  Formal performance acceptance remains separate from these functional checks.
+- Stream ZIP compression and hashing in bounded chunks after retaining a real
+  package-memory failure. Preserve fixed metadata, complete content and privacy
+  checks even when a private path crosses a chunk boundary.
+
 - Add an independently checked append-list model with bounded exact serial replay,
   savepoint-aware effects, source evidence, reduction and v3 capsules. Keep the
   original repeated fixture batch and disclose distinct coverage explicitly.

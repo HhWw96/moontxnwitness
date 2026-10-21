@@ -192,6 +192,25 @@ fn optional_integer(value : Int?) -> String {
 
 ///|
 fn write_edge(b : JsonText, e : Edge, strings : Map[String, String]) -> Unit {
+  // Standard RT edges carry this complete field shell. Unusual public Edge
+  // values use the unchanged generic writer below.
+  if e.kind == RT &&
+    e.key is None &&
+    e.from_op is None &&
+    e.to_op is None &&
+    e.from_version is None &&
+    e.to_version is None &&
+    e.reason ==
+    "The source completed before the target began on the asserted common observer clock." {
+    b.write_string("{\"from\":")
+    b.write_string(quoted_cached(strings, e.from))
+    b.write_string(",\"to\":")
+    b.write_string(quoted_cached(strings, e.to))
+    b.write_string(
+      ",\"kind\":\"rt\",\"key\":null,\"fromOp\":null,\"toOp\":null,\"fromVersion\":null,\"toVersion\":null,\"reason\":\"The source completed before the target began on the asserted common observer clock.\"}",
+    )
+    return
+  }
   b.write_string("{\"from\":")
   b.write_string(quoted_cached(strings, e.from))
   b.write_string(",\"to\":")

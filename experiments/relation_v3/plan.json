@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "dataModel": "relation-set-v1",
+  "roundsPerScenario": 20,
+  "seed": 2026102108,
+  "expectedSource": "preregistered schedules and relational serial replay; never inferred from production verdicts",
+  "scope": "controlled SQL fixture, PostgreSQL 18, fresh owned schema, all writers controlled, UTF8 C comparison, no arbitrary SQL/ORM claim",
+  "scenarios": [
+    {"name":"empty-result","expected":"consistent","initial":"bounds","schedule":"one RR transaction: contradictory balance bounds, text C boundary and full table queries; commit"},
+    {"name":"insert-phantom","expected":"violation","initial":"empty","schedule":"two RR transactions each completely read active=true as empty; each inserts a different active=true row; both commit"},
+    {"name":"delete-reinsert","expected":"consistent","initial":"one","schedule":"one RR transaction reads, deletes with actual new tombstone, reads empty, reinserts with tombstone predecessor, reads; commit"},
+    {"name":"cross-predicate-update","expected":"violation","initial":"pair","schedule":"RR A reads complete east set, B reads complete west set; A moves id1 east->west, B moves id2 west->east; both commit"},
+    {"name":"rr-write-skew","expected":"violation","initial":"pair","schedule":"RR A/B completely read active=true as two rows; each deactivates its own row; both commit"},
+    {"name":"serializable-abort-retry","expected":"consistent","initial":"pair","schedule":"SSI A/B completely read active=true as two rows; each attempts own deactivation; exactly one server 40001/40P01 abort; retry with fresh TX id reads remaining active set and preserves last active row"},
+    {"name":"same-value-new-version","expected":"consistent","initial":"one","schedule":"RR transaction performs two same-content UPDATEs with distinct server tokens and reads each intermediate version; commit; a second transaction reads final version"},
+    {"name":"savepoint-complete-query","expected":"consistent","initial":"pair","schedule":"RR transaction uses repeated same-name savepoint identities, updates then deletes, reads empty, restores child then parent, full queries retain delivered observations; commit"}
+  ],
+  "initialSets": {
+    "empty": [],
+    "one": [{"id":"1","balance":"10","active":true,"region":"east"}],
+    "pair": [{"id":"1","balance":"10","active":true,"region":"east"},{"id":"2","balance":"20","active":true,"region":"west"}],
+    "bounds": [{"id":"-9223372036854775808","balance":"-9223372036854775808","active":false,"region":"\ue000"},{"id":"9223372036854775807","balance":"9223372036854775807","active":true,"region":"\ud800\udc00"}]
+  }
+}

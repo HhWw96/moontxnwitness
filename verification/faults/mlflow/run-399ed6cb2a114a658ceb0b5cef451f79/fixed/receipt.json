@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "passed": true,
+  "actualDatabaseExecution": true,
+  "scope": "Unchanged affected upstream method/model; minimal runs fixture, not entire MLflow server",
+  "commit": "40c146a23518813e8488e55fc9752e08c3a8bad5",
+  "label": "fixed",
+  "sourceBindings": [
+    {
+      "file": "mlflow/store/tracking/dbmodels/models.py",
+      "sha256": "7df76c173e6431896e224b0bc19bd04403487896130ef3f1f4efbc532065da20",
+      "node": "SqlLatestMetric",
+      "astSha256": "0196a082d4765f4dbd0583188bfc654bc478ad2dccbdb53e595644fc3d2b071b",
+      "firstLine": 503,
+      "lastLine": 556
+    },
+    {
+      "file": "mlflow/store/tracking/sqlalchemy_store.py",
+      "sha256": "66983987d1f61ee08a87aebc8d802a762cca1bd5fef877df7353db331dd4cc37",
+      "node": "_update_latest_metrics_if_necessary",
+      "astSha256": "949e394a0a1bf756b708e16ef914d2ae33df7534050c6a1582e2d2e75f2d0a36",
+      "firstLine": 1444,
+      "lastLine": 1563
+    }
+  ],
+  "executionFault": null,
+  "isolationViolationClaim": false,
+  "G2Claim": false,
+  "committed": 2,
+  "errors": [],
+  "controller": [
+    {
+      "gate": "one-completed-other-observed-waiting",
+      "observedWaits": [
+        [
+          115476,
+          "Lock",
+          "transactionid"
+        ],
+        [
+          115968,
+          "Client",
+          "ClientRead"
+        ]
+      ]
+    }
+  ],
+  "controllerError": null,
+  "threadsStillAlive": [],
+  "workers": {
+    "A": {
+      "pending": 2,
+      "done": 2,
+      "pid": 115476,
+      "committed": true
+    },
+    "B": {
+      "pending": 2,
+      "done": 2,
+      "pid": 115968,
+      "committed": true
+    }
+  },
+  "keysEach": 1000,
+  "originalBatchSize": 500,
+  "finalRowsSha256": "a36b19939d4a7f586b240bc7c38d12c6cfd53ad22986bfd0d910df2519fef68e",
+  "captureSha256": "62c361e9ae6380db9fa05a585fe78c7d21ad284bab32e76d9ac9dd80a6bc44f9",
+  "sqlExecutionsSha256": "6e41839fa14d1bed1b2d1cb8733eeb191fda72fd6e5dea0264c2bfac2ca3fc56",
+  "sqlObservationsComplete": true,
+  "journal": {
+    "schema": 1,
+    "status": "incomplete",
+    "valid": true,
+    "complete": false,
+    "closed": true,
+    "sourceClosed": false,
+    "durableSeq": 23,
+    "eventCount": 23,
+    "segmentCount": 1,
+    "bytesVerified": 320536,
+    "indexSha256": "8a7b51b1066002e792c323824df4316f22afc668122a8acd50f257844b3956b7",
+    "gaps": [
+      {
+        "code": "initialization_unproven",
+        "message": "The initial database snapshot has not been established as consistent."
+      },
+      {
+        "code": "affected_component_only",
+        "message": "This raw SQL rehearsal is an execution-fault case, not a complete relation/isolation proof."
+      },
+      {
+        "code": "cursor_api_unsupported",
+        "message": "An unobserved cursor execution API was used."
+      },
+      {
+        "code": "source_unsealed",
+        "message": "Journal and explicit source window have not both been sealed."
+      }
+    ],
+    "actualDatabaseExecution": false
+  },
+  "versions": {
+    "sqlalchemy": "2.0.55",
+    "psycopg": "3.3.6"
+  },
+  "runtimeSourceBindings": {
+    "experiments/faults/mlflow/run_postgres.py": {
+      "sha256": "8ced2c30953c3e7675a1aaa9f40fd3726754884e5992022d8591fd0939105a56",
+      "bytes": 15100
+    },
+    "integrations/python/moontxnwitness_capture/capture_v3.py": {
+      "sha256": "92691d80b50196131a8df01e61f2c96336c6d0e977a385979e7d7044cbdc025a",
+      "bytes": 35289
+    },
+    "integrations/python/moontxnwitness_capture/journal_v3.py": {
+      "sha256": "c2f367721bc5d82ee4d98e27ee33a02b000a08094ea055432ee2cb3ba8b16391",
+      "bytes": 60881
+    }
+  }
+}

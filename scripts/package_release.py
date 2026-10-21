@@ -8,6 +8,7 @@ import sys
 import tempfile
 import zipfile
 from pathlib import Path
+from package_archive import sha256, write_archive
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -35,25 +36,9 @@ for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'demo.mjs', 'po
     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
 
 
-def sha256(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
 def archive(files, path):
-    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as output:
-        for relative in sorted(files):
-            content = (ROOT / relative).read_bytes()
-            # A local compiler/checkout path must never leak into shared artifacts.
-            if relative.endswith((".mjs", ".json", ".mbt", ".md", ".mbti", ".txt")):
-                for private in (str(ROOT), ROOT.as_posix(), str(Path.home()), Path.home().as_posix()):
-                    assert private.encode("utf-8") not in content, "Local path found in " + relative
-            info = zipfile.ZipInfo(NAME + "/" + relative, date_time=(2026, 10, 10, 0, 0, 0))
-            info.compress_type = zipfile.ZIP_DEFLATED
-            info.external_attr = (0o100644 << 16)
-            output.writestr(info, content)
-    with zipfile.ZipFile(path) as built:
-        assert built.testzip() is None, "ZIP integrity failure"
-    return {"file": path.name, "bytes": path.stat().st_size, "sha256": sha256(path), "files": len(files)}
+    return write_archive(ROOT, files, path, NAME,
+                         (str(ROOT), ROOT.as_posix(), str(Path.home()), Path.home().as_posix()))
 
 
 excluded_dirs = {".git", "_build", ".mooncakes", "node_modules", "artifacts", "dist", "__pycache__", ".venv-pg"}
@@ -215,6 +200,38 @@ console.log(JSON.stringify({passed:true,groups:4}));
             checks.extend(kind + ' v3 ' + entry for entry in (
                 'explicit source proof and capsule', 'source-closed synthetic reduction',
                 'default and invalid-policy compatibility', 'real stored list and dislock replay'))
+        if tuple(map(int, VERSION.split('.'))) >= (0, 1, 1):
+            assert (consumer / 'verification/relation-v3/postgres-2026-10-21/database').is_dir(), 'Relation evidence must be packaged'
+            assert (consumer / 'verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/capture.json').is_file(), 'Execution-fault evidence must be packaged'
+            model_checks = json.loads(run([NODE, '--input-type=module', '-e', """
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {analyzeV3,reduceV3,verifyV3,makeCapsuleV3,replayCapsuleV3,inspectExecutionFailuresV3} from './dist/sdk.mjs';
+const read = path => readFileSync(path,'utf8');
+for (const [name,status] of [['empty-result','consistent'],['insert-phantom','violation']]) {
+  const trace=read('verification/relation-v3/postgres-2026-10-21/database/'+name+'-01/trace.json');
+  const report=analyzeV3(trace); assert.equal(report.status,status);
+  assert(verifyV3(trace,report).valid); assert(replayCapsuleV3(makeCapsuleV3(trace,report)).valid);
+  if(status==='violation') {
+    const mini=reduceV3(trace,{maxChecks:256});assert.equal(mini.oneMinimal,true);
+    assert.equal(mini.report.status,'violation');assert(verifyV3(mini.reducedCapture,mini.report).valid);
+  }
+}
+const fault=read('verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/capture.json');
+const diagnostic=inspectExecutionFailuresV3(fault);assert.equal(diagnostic.valid,true);
+assert.equal(diagnostic.faults.length,1);assert.equal(diagnostic.faults[0].kind,'deadlock');
+assert.equal(diagnostic.modelViolationClaim,false);assert.equal(diagnostic.certifiesFailureAbsence,false);
+const report=analyzeV3(fault);assert.equal(report.status,'inconclusive');assert.equal(report.evidence,null);
+assert(replayCapsuleV3(makeCapsuleV3(fault,report)).valid);
+console.log(JSON.stringify({passed:true,groups:3}));
+"""], consumer))
+            assert model_checks == {'passed': True, 'groups': 3}
+            diagnostic = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'failures-v3',
+                'verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/capture.json'], consumer))
+            assert diagnostic['valid'] and diagnostic['faults'][0]['kind'] == 'deadlock'
+            checks.extend(kind + ' v3 ' + entry for entry in (
+                'real relation consistent and capsule', 'real relation violation reduction and capsule',
+                'real execution fault with explicit coverage gap', 'diagnostic CLI valid-input exit semantics'))
     if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
         old_python = env.get('MTW_PYTHON')
         try:

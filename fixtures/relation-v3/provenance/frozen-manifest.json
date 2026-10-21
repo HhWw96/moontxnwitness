@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "status": "provisional independent draft, not production acceptance",
+  "createdAt": "2026-10-21T04:48:06.578015+00:00",
+  "files": {
+    "boundary.json": {
+      "sha256": "cee1c3f5fbf574f5a3395bcaf4b36e11d11d1e6d811d41c57d01e4b8f14ac110",
+      "bytes": 341823,
+      "cases": 170
+    },
+    "generated-1000.json": {
+      "sha256": "c5478da1c6ed5fb5ce7a994d476820fce540b6972f4d16e77b97ef851ab26c96",
+      "bytes": 1846732,
+      "cases": 1000
+    },
+    "normalization-oracle.json": {
+      "sha256": "8a4af3f1a516301f4f5cb0a47c850e6e91e3da4cb7b5127278833e6df576b133",
+      "bytes": 2126788,
+      "cases": 1170
+    }
+  },
+  "boundaryCount": 170,
+  "generatedCount": 1000,
+  "generatedUniqueInputSha256Count": 1000,
+  "oracleSha256": "df9b9d5271988a1fb55cc8aaba4b8b596c466a2febbecbafde273d48caa20e30",
+  "generatorSha256": "0afcae5cecadb13c8c6b2b9b2b516d1e06c1a37290c637ad8aa4a292873dc3a3",
+  "normalizationComparison": {
+    "fields": [
+      "schema",
+      "dataModel",
+      "algorithm",
+      "status",
+      "relationSchema",
+      "observations",
+      "effects",
+      "transactions",
+      "history"
+    ],
+    "coverageComplete": true,
+    "diagnosticMessages": "Reference gap messages are descriptive independent diagnostics; do not silently ignore unexplained primary coverage differences."
+  },
+  "expectedFrozenBeforeAnyProductionRun": true,
+  "productionImports": false,
+  "actualDatabaseExecution": false,
+  "draftAssumptions": [
+    "Every declared relation explicitly appears in initial snapshot; any incomplete table prevents complete result.",
+    "Unknown read/write predecessor sources remain permanent gaps; source-proven findings follow capacity/coverage checks and consume no search budget.",
+    "Only committed complete scope journals are serialized; all-trace row operations count for exact capacity.",
+    "No initial tombstone representation; preceding-window delete tokens remain missing sources.",
+    "Version IDs use Unicode scalars up to 256 UTF16 units; relation/column names ASCII and text values allow empty/NUL."
+  ],
+  "independentSelfcheck": {
+    "passed": true,
+    "cases": 1170,
+    "statusCounts": {
+      "consistent": 704,
+      "invalid": 32,
+      "violation": 217,
+      "inconclusive": 217
+    },
+    "differences": []
+  },
+  "preservedPriorDraft": {
+    "manifestSha256": "d93e4eacda503dd21e9c00942c384b4233b83768b910c8946069cce43aa9974a",
+    "original151BoundaryBytesAndExpectationsUnchanged": true,
+    "original1000GeneratedBytesAndExpectationsUnchanged": true
+  }
+}

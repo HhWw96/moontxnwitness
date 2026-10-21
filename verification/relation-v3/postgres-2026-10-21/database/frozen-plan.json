@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "plan": {
+    "path": "plan.json",
+    "sha256": "d6af016f641545b0226fdbcc2f22cafce3edb414850f16037a03f0dd8121d72d",
+    "bytes": 2627
+  },
+  "sourceBindings": {
+    "local_postgres.py": {
+      "path": "local_postgres.py",
+      "sha256": "4de6d73b8f53bb2a0cab91669b764e6386b8b77f2d86694360fae2a7df627663",
+      "bytes": 6720
+    },
+    "run_postgres.py": {
+      "path": "run_postgres.py",
+      "sha256": "0163ce48916d108ca8f1200300b5556acfc484eda756b1b7ea96bce63fed7136",
+      "bytes": 29090
+    },
+    "test_fixture.py": {
+      "path": "test_fixture.py",
+      "sha256": "d11b82d75bdd4821230613177e4fa8d35ab05c32d7ecd273c450e82e3c177696",
+      "bytes": 3463
+    }
+  },
+  "expectedFrozenBeforeDatabaseExecution": true,
+  "scenarios": [
+    {
+      "name": "empty-result",
+      "expected": "consistent",
+      "initial": "bounds",
+      "schedule": "one RR transaction: contradictory balance bounds, text C boundary and full table queries; commit"
+    },
+    {
+      "name": "insert-phantom",
+      "expected": "violation",
+      "initial": "empty",
+      "schedule": "two RR transactions each completely read active=true as empty; each inserts a different active=true row; both commit"
+    },
+    {
+      "name": "delete-reinsert",
+      "expected": "consistent",
+      "initial": "one",
+      "schedule": "one RR transaction reads, deletes with actual new tombstone, reads empty, reinserts with tombstone predecessor, reads; commit"
+    },
+    {
+      "name": "cross-predicate-update",
+      "expected": "violation",
+      "initial": "pair",
+      "schedule": "RR A reads complete east set, B reads complete west set; A moves id1 east->west, B moves id2 west->east; both commit"
+    },
+    {
+      "name": "rr-write-skew",
+      "expected": "violation",
+      "initial": "pair",
+      "schedule": "RR A/B completely read active=true as two rows; each deactivates its own row; both commit"
+    },
+    {
+      "name": "serializable-abort-retry",
+      "expected": "consistent",
+      "initial": "pair",
+      "schedule": "SSI A/B completely read active=true as two rows; each attempts own deactivation; exactly one server 40001/40P01 abort; retry with fresh TX id reads remaining active set and preserves last active row"
+    },
+    {
+      "name": "same-value-new-version",
+      "expected": "consistent",
+      "initial": "one",
+      "schedule": "RR transaction performs two same-content UPDATEs with distinct server tokens and reads each intermediate version; commit; a second transaction reads final version"
+    },
+    {
+      "name": "savepoint-complete-query",
+      "expected": "consistent",
+      "initial": "pair",
+      "schedule": "RR transaction uses repeated same-name savepoint identities, updates then deletes, reads empty, restores child then parent, full queries retain delivered observations; commit"
+    }
+  ],
+  "formalPerformanceMeasurement": false
+}

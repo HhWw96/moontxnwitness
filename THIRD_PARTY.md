@@ -35,6 +35,18 @@ Apache license, not transaction-analysis code copied from another project.
   conceptual reference for dependency graph terminology. This release does not
   claim to implement every anomaly/isolation class in that work.
 
+## Experimental MLflow component
+
+The experimental MLflow execution-fault rehearsal bundles gzip-compressed,
+unmodified source files from MLflow commits
+`c2dcdb96c62c75f35af3f28b5d493c0cf139a856` and
+`40c146a23518813e8488e55fc9752e08c3a8bad5` under the Apache-2.0 license.
+Each copy retains the upstream LICENSE.txt and SHA-256 provenance in
+`experiments/faults/mlflow/upstream/`. Only the original affected method and
+SqlLatestMetric class are compiled; the runs table/session scheduler are
+controlled fixtures. This is not a complete MLflow server integration, an
+isolation-level proof or a port of MLflow into MoonBit.
+
 ## AI assistance and evidence
 
 The implementation, documentation and tests were created with AI

@@ -1,0 +1,463 @@
+{
+  "tool": "MoonTxnWitness",
+  "version": "0.1.1",
+  "baselineVersion": "0.1.0",
+  "startedAt": "2026-10-21T06:43:12.383Z",
+  "complete": false,
+  "passed": false,
+  "smokeOnly": false,
+  "correctnessPassed": false,
+  "formalReleaseGatePassed": false,
+  "protocol": {
+    "warmups": 5,
+    "samplesPerBatch": 30,
+    "independentAlternatingBatches": 3,
+    "profile": "balanced",
+    "fullOperation": "MoonBit JSON-in/JSON-out plus client JSON decoding; all evidence retained",
+    "summaryStatistic": "Median of the corresponding three per-process statistics",
+    "semanticComparison": "All full-output values must match frozen v0.1.0; only root version and shrink report.version are normalized",
+    "phaseCaveat": "Prepared-input phase hooks are separate diagnostic operations, not additive end-to-end stages"
+  },
+  "environment": {
+    "node": "v24.13.0",
+    "os": "win32",
+    "release": "10.0.22000",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 7 5800H with Radeon Graphics         ",
+    "toolchain": {
+      "compiler": "v0.10.14+7d59c7ec9",
+      "moon": "moon 0.1.20260920"
+    }
+  },
+  "releaseGate": {
+    "scope": "All 20 frozen common full-output workloads; phases are diagnostic",
+    "allowedP95Regression": "max(0.10 * baseline P95, 2 milliseconds)",
+    "futureOptimizationTargetsApplied": false,
+    "applicable": true
+  },
+  "evidencePersistence": {
+    "scheme": "Immutable numbered snapshots with payload/file SHA-256 and atomic latest pointer",
+    "fileIoAttempts": 3,
+    "fileIoRetryDelayMs": 20,
+    "measuredOperationsRetried": false,
+    "stagingCaveat": "Orphan/partial staging files are never pointer targets; recovery without a valid pointer cannot claim completion",
+    "durabilityCaveat": "Files are fsynced before publication; cross-platform power-loss directory durability is not guaranteed"
+  },
+  "results": [
+    {
+      "scenario": "dense-rt-96",
+      "group": "graph",
+      "phase": "full",
+      "inputSha256": "c566190cd20634fe1998d6c17534af239efbb9e5e4fea70211f78cb330eac479",
+      "inputBytes": 6217,
+      "engineOrders": [
+        [
+          "baseline",
+          "current"
+        ],
+        [
+          "current",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "current"
+        ]
+      ],
+      "observations": {
+        "baseline": [
+          {
+            "version": "0.1.0",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 182.5784,
+            "firstMs": 70.64150000000001,
+            "timesMs": [
+              36.55419999999998,
+              28.60439999999994,
+              24.370599999999968,
+              25.121000000000095,
+              19.11480000000006,
+              24.062200000000075,
+              26.503100000000018,
+              27.904499999999985,
+              22.871099999999956,
+              25.083500000000072,
+              22.42459999999994,
+              23.948499999999967,
+              18.464500000000044,
+              31.87609999999995,
+              32.4547,
+              31.559200000000033,
+              29.6635,
+              23.611200000000053,
+              31.16610000000003,
+              22.349199999999996,
+              23.35459999999989,
+              22.339099999999917,
+              26.767200000000003,
+              38.68060000000014,
+              29.570899999999938,
+              26.709100000000035,
+              25.044900000000098,
+              29.246399999999994,
+              32.92610000000013,
+              27.33330000000001
+            ],
+            "medianMs": 26.709100000000035,
+            "p95Ms": 36.55419999999998,
+            "peakRssKiB": 127496,
+            "fullOutput": {
+              "outputBytes": 939968,
+              "outputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "versionNormalizedSha256": "ff07e5eded8669891ac1f16b3ba7d26a4082f9515c6f2a95ddbcd92d754d70d6",
+              "frozenOutputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          },
+          {
+            "version": "0.1.0",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 32.6015,
+            "firstMs": 86.4109,
+            "timesMs": [
+              39.89119999999997,
+              23.660500000000013,
+              34.04480000000001,
+              31.66250000000008,
+              26.514599999999973,
+              27.269499999999994,
+              25.645200000000045,
+              20.48059999999998,
+              32.913200000000074,
+              26.087099999999964,
+              24.65560000000005,
+              27.195299999999975,
+              25.168000000000006,
+              24.856699999999933,
+              29.41020000000003,
+              38.80520000000001,
+              32.54899999999998,
+              21.560299999999984,
+              29.0295000000001,
+              27.652199999999993,
+              32.22479999999996,
+              27.16420000000005,
+              24.58459999999991,
+              23.457200000000057,
+              15.633699999999862,
+              15.183199999999943,
+              23.84920000000011,
+              22.966100000000097,
+              30.303899999999885,
+              34.4036000000001
+            ],
+            "medianMs": 27.16420000000005,
+            "p95Ms": 38.80520000000001,
+            "peakRssKiB": 127184,
+            "fullOutput": {
+              "outputBytes": 939968,
+              "outputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "versionNormalizedSha256": "ff07e5eded8669891ac1f16b3ba7d26a4082f9515c6f2a95ddbcd92d754d70d6",
+              "frozenOutputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          },
+          {
+            "version": "0.1.0",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 38.515699999999995,
+            "firstMs": 68.1833,
+            "timesMs": [
+              33.23040000000003,
+              23.1216,
+              25.79920000000004,
+              26.67270000000002,
+              19.153899999999965,
+              19.272299999999973,
+              26.775400000000047,
+              25.923099999999977,
+              31.28989999999999,
+              24.20959999999991,
+              24.7432,
+              27.698800000000006,
+              20.68679999999995,
+              20.260200000000054,
+              16.89420000000007,
+              20.02679999999998,
+              35.76049999999998,
+              16.38480000000004,
+              22.119899999999916,
+              18.758500000000026,
+              21.608100000000036,
+              23.08979999999997,
+              22.216199999999958,
+              27.335699999999974,
+              18.426600000000008,
+              17.2885,
+              34.851,
+              25.08019999999999,
+              22.06799999999987,
+              17.809200000000146
+            ],
+            "medianMs": 23.08979999999997,
+            "p95Ms": 34.851,
+            "peakRssKiB": 127288,
+            "fullOutput": {
+              "outputBytes": 939968,
+              "outputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "versionNormalizedSha256": "ff07e5eded8669891ac1f16b3ba7d26a4082f9515c6f2a95ddbcd92d754d70d6",
+              "frozenOutputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          }
+        ],
+        "current": [
+          {
+            "version": "0.1.1",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 58.418800000000005,
+            "firstMs": 51.457300000000004,
+            "timesMs": [
+              14.880299999999977,
+              17.228499999999997,
+              12.565500000000043,
+              18.838300000000004,
+              16.519800000000032,
+              12.97569999999996,
+              14.370900000000006,
+              14.135999999999967,
+              14.823199999999986,
+              10.521200000000022,
+              16.16949999999997,
+              12.44119999999998,
+              9.653300000000002,
+              10.565699999999993,
+              14.526700000000005,
+              8.460500000000025,
+              14.85710000000006,
+              16.830600000000004,
+              15.61749999999995,
+              13.715100000000007,
+              17.35540000000003,
+              15.491399999999999,
+              19.763500000000022,
+              15.676600000000008,
+              19.945100000000025,
+              17.492700000000013,
+              18.66190000000006,
+              12.969699999999989,
+              10.947200000000066,
+              10.399400000000014
+            ],
+            "medianMs": 14.85710000000006,
+            "p95Ms": 19.763500000000022,
+            "peakRssKiB": 90780,
+            "fullOutput": {
+              "outputBytes": 939968,
+              "outputSha256": "9004cb11db421a7d2029b7c047f7d217c87e9b2d949d1435e85eb08522c5f3c1",
+              "versionNormalizedSha256": "ff07e5eded8669891ac1f16b3ba7d26a4082f9515c6f2a95ddbcd92d754d70d6",
+              "frozenOutputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          },
+          {
+            "version": "0.1.1",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 54.096800000000016,
+            "firstMs": 69.132,
+            "timesMs": [
+              12.305799999999977,
+              12.83140000000003,
+              17.21350000000001,
+              16.01410000000004,
+              18.949899999999957,
+              11.306700000000035,
+              15.13009999999997,
+              15.211600000000033,
+              13.447600000000023,
+              12.33929999999998,
+              16.752200000000016,
+              12.551699999999983,
+              15.262699999999995,
+              17.287199999999984,
+              15.263299999999958,
+              11.074400000000082,
+              15.42599999999993,
+              14.126899999999978,
+              16.437900000000013,
+              15.357099999999946,
+              15.02920000000006,
+              13.824799999999982,
+              13.862100000000055,
+              16.509799999999927,
+              13.33800000000008,
+              12.984399999999937,
+              11.764699999999948,
+              13.060799999999972,
+              12.489199999999983,
+              8.470100000000002
+            ],
+            "medianMs": 14.126899999999978,
+            "p95Ms": 17.287199999999984,
+            "peakRssKiB": 91880,
+            "fullOutput": {
+              "outputBytes": 939968,
+              "outputSha256": "9004cb11db421a7d2029b7c047f7d217c87e9b2d949d1435e85eb08522c5f3c1",
+              "versionNormalizedSha256": "ff07e5eded8669891ac1f16b3ba7d26a4082f9515c6f2a95ddbcd92d754d70d6",
+              "frozenOutputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          },
+          {
+            "version": "0.1.1",
+            "profile": "balanced",
+            "phase": "full",
+            "loadMs": 36.63879999999999,
+            "firstMs": 41.492000000000004,
+            "timesMs": [
+              10.495800000000003,
+              12.43610000000001,
+              17.974400000000003,
+              17.834000000000003,
+              17.098299999999995,
+              7.627599999999973,
+              8.958500000000015,
+              7.919600000000003,
+              10.107399999999984,
+              8.169699999999978,
+              9.922900000000027,
+              7.6404,
+              9.491800000000012,
+              9.259399999999971,
+              10.357799999999997,
+              8.406599999999969,
+              17.163900000000012,
+              18.96229999999997,
+              20.40440000000001,
+              13.340599999999995,
+              20.039199999999994,
+              16.3861,
+              14.254999999999995,
+              7.390899999999988,
+              9.181500000000028,
+              7.476499999999987,
+              10.782300000000077,
+              11.387699999999995,
+              10.571700000000078,
+              8.882799999999975
+            ],
+            "medianMs": 10.495800000000003,
+            "p95Ms": 20.039199999999994,
+            "peakRssKiB": 91936,
+            "fullOutput": {
+              "outputBytes": 939968,
+              "outputSha256": "9004cb11db421a7d2029b7c047f7d217c87e9b2d949d1435e85eb08522c5f3c1",
+              "versionNormalizedSha256": "ff07e5eded8669891ac1f16b3ba7d26a4082f9515c6f2a95ddbcd92d754d70d6",
+              "frozenOutputSha256": "b67e64cdd5b0905f6ab51be60765fa6b2366977f6dded9e988625cb06a45c171",
+              "semanticAgreement": true,
+              "ignoredFields": [
+                "version"
+              ]
+            }
+          }
+        ]
+      },
+      "baseline": {
+        "medianMs": 26.709100000000035,
+        "p95Ms": 36.55419999999998,
+        "coldModuleLoadMs": 38.515699999999995,
+        "firstAnalysisMs": 70.64150000000001,
+        "peakRssKiB": 127288,
+        "outputBytes": 939968
+      },
+      "current": {
+        "medianMs": 14.126899999999978,
+        "p95Ms": 19.763500000000022,
+        "coldModuleLoadMs": 54.096800000000016,
+        "firstAnalysisMs": 51.457300000000004,
+        "peakRssKiB": 91880,
+        "outputBytes": 939968
+      },
+      "speedup": 1.8906554162625966,
+      "peakMemoryRatio": 0.7218276663943184,
+      "semanticAgreement": true,
+      "p95RegressionMs": -16.79069999999996,
+      "allowedP95RegressionMs": 3.655419999999998,
+      "p95WithinAllowance": true,
+      "p95ReleaseGateApplicable": true
+    }
+  ],
+  "phases": [],
+  "artifacts": "artifacts/performance-v010-0.1.1-2026-10-21T06-43-12-373Z",
+  "caveat": "Same-machine direct comparison. Smoke cannot satisfy release acceptance. v0.1.8 speedup/RSS targets are not v0.1.1 gates.",
+  "provenance": {
+    "baseline": {
+      "transport": "verified-core-retained-from-frozen-baseline",
+      "publicUrl": "https://github.com/HhWw96/moontxnwitness/releases/download/v0.1.0/MoonTxnWitness-v0.1.0-portable.zip",
+      "archiveSha256": "d7495482b8267f327edf40e95111acbd2502290fc97e5f1e5e1203e7bc59488c",
+      "coreSha256": "6c76b3be6c45ff633232568b3ffed3c1393ade3b4d012ee5c21c49cbb8dcf97b",
+      "sourceSha256": "dcc8653278a9f98dc6056d23c8b7d7d9db3fc6b8406b22987fc9ff03997dd830",
+      "publishedBuildManifest": {
+        "version": "0.1.0",
+        "toolchain": {
+          "compiler": "v0.10.14+7d59c7ec9",
+          "moon": "moon 0.1.20260920"
+        },
+        "sourceSha256": "dcc8653278a9f98dc6056d23c8b7d7d9db3fc6b8406b22987fc9ff03997dd830",
+        "coreSha256": "6c76b3be6c45ff633232568b3ffed3c1393ade3b4d012ee5c21c49cbb8dcf97b"
+      }
+    },
+    "currentBuildManifest": {
+      "version": "0.1.1",
+      "toolchain": {
+        "compiler": "v0.10.14+7d59c7ec9",
+        "moon": "moon 0.1.20260920"
+      },
+      "sourceSha256": "df23e6a01c0d59420c7576eb35271b6346c500044ee24a0ea0d7ac29a951d97b",
+      "coreSha256": "318fecd1f38f8415f7b0c65455facd119efe2c2a0035b7b7ce7535faeec329f8",
+      "captureCoreSha256": "588d1a2479565cfb6575b5f3b1b484091002b184ba69c6f609f4e84d5f546166"
+    },
+    "frozenBaselineReceipt": "verification/baselines/0.1.0/measurement-formal-2026-10-20T09-31-01-333Z.json",
+    "originalBaselineProtocol": {
+      "warmups": 5,
+      "samplesPerBatch": 30,
+      "independentProcessBatches": 3,
+      "profile": "balanced",
+      "fullOperation": "MoonBit JSON-in/JSON-out plus client JSON decoding; full evidence retained",
+      "phaseCaveat": "Phase hooks prepare input outside timed section; phases do not sum to full analysis."
+    },
+    "currentSnapshot": "Copied dist/core.mjs after checking manifest source/core/version identity"
+  },
+  "fixtureManifestSha256": "208a86d4f19224b7bdea753e6380b677b52155bab557f734b2021f525f9056a6",
+  "evidenceCheckpoint": {
+    "format": "moontxnwitness-performance-checkpoint-v1",
+    "runId": "performance-v010-formal-2026-10-21T06-43-12-373Z",
+    "sequence": 3,
+    "previous": {
+      "receipt": "verification/releases/0.1.1/performance-v010-formal-2026-10-21T06-43-12-373Z.checkpoints/000002-716046af-27ee-4c11-87d6-bf1ff47d5bea.json",
+      "sha256": "91d6f560c56fd0d0a3b92a2c9157fd08e9ffccc9ef953d0f6db4329179f70d52"
+    },
+    "payloadBytes": 16497,
+    "payloadSha256": "0257a7888b0d3670f6059bd005677372ce959674e6b1cb1c43fa68d57957c66b"
+  }
+}

@@ -1,5 +1,8 @@
 ///|
 fn v3_analysis(text : String, options_text : String) -> Json raise {
+  if v3_is_relation_capture(text) {
+    return relation_v3_analysis(text, options_text)
+  }
   if v3_is_list_capture(text) {
     return list_v3_analysis(text, options_text)
   }
@@ -280,7 +283,8 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
     let analysis_options = options
       .get_or_default("analysisOptions", Json::object(Map([])))
       .stringify()
-    let prune_sql_ledger = if v3_is_list_capture(text) {
+    let prune_sql_ledger = if v3_is_list_capture(text) ||
+      v3_is_relation_capture(text) {
       false
     } else {
       let (_, requested) = v3_register_options(analysis_options)
@@ -360,7 +364,9 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
     let result : Json = {
       "schemaVersion": 3,
       "algorithm": "v3-source-checked-single-delete-1",
-      "predicate": (if v3_is_list_capture(text) {
+      "predicate": (if v3_is_relation_capture(text) {
+        "definite relation-set serializability violation with complete capture coverage"
+      } else if v3_is_list_capture(text) {
         "definite append-list serializability violation with complete capture coverage"
       } else {
         "definite register serializability violation with complete capture coverage"

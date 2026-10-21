@@ -1,4 +1,14 @@
 ///|
+fn v3_is_relation_capture(text : String) -> Bool {
+  try {
+    let root = object_fields(guarded_json(text, limit=8388608), "capture")
+    root.get("dataModel") == Some("relation-set-v1".to_json())
+  } catch {
+    _ => false
+  }
+}
+
+///|
 fn v3_is_list_capture(text : String) -> Bool {
   try {
     let root = object_fields(guarded_json(text, limit=8388608), "capture")
@@ -10,7 +20,9 @@ fn v3_is_list_capture(text : String) -> Bool {
 
 ///|
 pub fn normalize_capture_v3_json(text : String) -> String {
-  if v3_is_list_capture(text) {
+  if v3_is_relation_capture(text) {
+    normalize_relation_capture_v3_json(text)
+  } else if v3_is_list_capture(text) {
     normalize_list_capture_v3_json(text)
   } else {
     normalize_register_capture_v3_json(text)

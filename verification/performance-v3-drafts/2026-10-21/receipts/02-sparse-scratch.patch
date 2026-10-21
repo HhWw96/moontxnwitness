@@ -1,0 +1,303 @@
+diff --git a/src/analyze.mbt b/src/analyze.mbt
+--- a/src/analyze.mbt
++++ b/src/analyze.mbt
+@@ -2,22 +2,48 @@
+ fn collect_writes(h : History) -> Map[String, Map[String, WriteRef]] {
+   let writes : Map[String, Map[String, WriteRef]] = Map([])
+   for ti, tx in h.transactions {
+-    if !tx.ops.any(op => op.kind == Write) {
+-      continue
+-    }
+-    let last : Map[String, Int] = Map([])
++    let mut single_key = ""
++    let mut single_last = -1
++    let mut multiple_keys = false
+     for oi, op in tx.ops {
+       if op.kind == Write {
+-        last[op.key] = oi
++        if single_last < 0 {
++          single_key = op.key
++        } else if single_key != op.key {
++          multiple_keys = true
++        }
++        single_last = oi
++      }
++    }
++    if single_last < 0 {
++      continue
++    }
++    let last : Map[String, Int]? = if multiple_keys {
++      Some(Map([]))
++    } else {
++      None
++    }
++    if multiple_keys {
++      for oi, op in tx.ops {
++        if op.kind == Write {
++          last.unwrap()[op.key] = oi
++        }
+       }
+     }
+     for oi, op in tx.ops {
+       if op.kind == Write {
+-        let versions = writes.get_or_default(op.key, Map([]))
++        let versions = match writes.get(op.key) {
++          Some(versions) => versions
++          None => Map([])
++        }
+         versions[op.version] = {
+           tx: ti,
+           op: oi,
+-          is_final: last.get(op.key) == Some(oi),
++          is_final: if multiple_keys {
++            last.unwrap().get(op.key) == Some(oi)
++          } else {
++            oi == single_last
++          },
+         }
+         writes[op.key] = versions
+       }
+@@ -54,7 +80,11 @@
+       continue
+     }
+     let committed : Array[String] = []
+-    for v, w in writes.get_or_default(key, Map([])) {
++    for
++      v, w in (match writes.get(key) {
++        Some(versions) => versions
++        None => Map([])
++      }) {
+       if w.is_final && h.transactions[w.tx].status == Committed {
+         committed.push(v)
+       }
+@@ -227,7 +257,7 @@
+   keys.sort()
+   let ranks : Map[String, Map[String, Int]] = Map([])
+   for key in keys {
+-    if orders.at(key).length() < 2 {
++    if orders.at(key).length() < 3 {
+       continue
+     }
+     let by_rank : Map[String, Int] = Map([])
+@@ -261,6 +291,15 @@
+       })
+     }
+   }
++  // Allocate scratch only for keys touched by a non-skipped committed
++  // transaction. A reduced counterexample may retain many unused initial keys.
++  let scratch_keys : Map[String, Int] = Map([])
++  let own_epoch : Array[Int] = []
++  let own_versions : Array[String] = []
++  let own_ops : Array[Int] = []
++  let read_epoch : Array[Int] = []
++  let read_versions : Array[String] = []
++  let read_ops : Array[Int] = []
+   for ti, tx in h.transactions {
+     if tx.status == Unknown {
+       findings.push(
+@@ -284,47 +323,59 @@
+       }) {
+       continue
+     }
+-    let own : Map[String, (String, Int)] = Map([])
+-    let reads : Map[String, (String, Int)] = Map([])
++    let epoch = ti + 1
+     for oi, op in tx.ops {
++      let ki = match scratch_keys.get(op.key) {
++        Some(index) => index
++        None => {
++          let index = scratch_keys.length()
++          scratch_keys[op.key] = index
++          own_epoch.push(0)
++          own_versions.push("")
++          own_ops.push(-1)
++          read_epoch.push(0)
++          read_versions.push("")
++          read_ops.push(-1)
++          index
++        }
++      }
+       if op.kind == Write {
+-        own[op.key] = (op.version, oi)
++        own_epoch[ki] = epoch
++        own_versions[ki] = op.version
++        own_ops[ki] = oi
+         continue
+       }
+-      match own.get(op.key) {
+-        Some((v, wi)) => {
+-          if op.version != v {
+-            findings.push(
+-              issue(
+-                "read_your_writes",
+-                "violation",
+-                "Read does not observe the most recent write in its own transaction",
+-                txs=[tx.id],
+-                key=Some(op.key),
+-                ops=[wi, oi],
+-              ),
+-            )
+-          }
+-          continue
+-        }
+-        None => ()
+-      }
+-      match reads.get(op.key) {
+-        Some((v, ri)) if v != op.version =>
++      if own_epoch[ki] == epoch {
++        if op.version != own_versions[ki] {
+           findings.push(
+             issue(
+-              "non_repeatable_read",
++              "read_your_writes",
+               "violation",
+-              "The same transaction observes different versions without an intervening own write",
++              "Read does not observe the most recent write in its own transaction",
+               txs=[tx.id],
+               key=Some(op.key),
+-              ops=[ri, oi],
++              ops=[own_ops[ki], oi],
+             ),
+           )
+-        _ => ()
+-      }
+-      if !reads.contains(op.key) {
+-        reads[op.key] = (op.version, oi)
++        }
++        continue
++      }
++      if read_epoch[ki] == epoch && read_versions[ki] != op.version {
++        findings.push(
++          issue(
++            "non_repeatable_read",
++            "violation",
++            "The same transaction observes different versions without an intervening own write",
++            txs=[tx.id],
++            key=Some(op.key),
++            ops=[read_ops[ki], oi],
++          ),
++        )
++      }
++      if read_epoch[ki] != epoch {
++        read_epoch[ki] = epoch
++        read_versions[ki] = op.version
++        read_ops[ki] = oi
+       }
+       let is_initial = h.initial.get(op.key) == Some(op.version)
+       if is_initial && !writes.contains(op.key) {
+@@ -416,7 +467,15 @@
+           if order.length() < 2 {
+             continue
+           }
+-          let read_rank = ranks.at(op.key).get_or_default(op.version, -1)
++          let read_rank = if order.length() == 2 {
++            if is_initial {
++              0
++            } else {
++              1
++            }
++          } else {
++            ranks.at(op.key).get_or_default(op.version, -1)
++          }
+           if read_rank >= 0 {
+             for rank in (read_rank + 1)..<order.length() {
+               let w = by_version.at(order[rank])
+diff --git a/src/perf_sparse_draft_wbtest.mbt b/src/perf_sparse_draft_wbtest.mbt
+new file mode 100644
+--- /dev/null
++++ b/src/perf_sparse_draft_wbtest.mbt
+@@ -0,0 +1,94 @@
++///|
++test "draft analysis scratch epochs do not leak own writes across transactions" {
++  let result = analyze(
++    hist([
++      tx("A", [write_op("x", "x1"), read_op("x", "x1")]),
++      tx("B", [read_op("x", "x0")]),
++    ]),
++  )
++  assert_true(result.outcome == Consistent)
++  assert_eq(result.serial_order, ["B", "A"])
++  assert_true(!has_code(result, "read_your_writes"))
++}
++
++///|
++test "draft analysis keeps the first read operation for repeatability diagnostics" {
++  let result = analyze(
++    hist([
++      tx("A", [read_op("x", "x0"), read_op("x", "x1"), read_op("x", "x0")]),
++      tx("B", [write_op("x", "x1")]),
++      tx("C", [read_op("x", "x0")]),
++    ]),
++  )
++  let findings = result.findings.filter(f => f.code == "non_repeatable_read")
++  assert_eq(findings.length(), 1)
++  assert_eq(findings[0].ops, [0, 1])
++}
++
++///|
++test "draft write indexing preserves interleaved multi-key final operations" {
++  let h = hist([
++    tx("A", [write_op("x", "x1"), write_op("y", "y1"), write_op("x", "x2")]),
++  ])
++  let writes = collect_writes(h)
++  assert_true(!writes.at("x").at("x1").is_final)
++  assert_true(writes.at("x").at("x2").is_final)
++  assert_eq(writes.at("x").at("x2").op, 2)
++  assert_true(writes.at("y").at("y1").is_final)
++  assert_eq(writes.at("y").at("y1").op, 1)
++}
++
++///|
++test "draft write indexing keeps only the latest own write for read diagnostics" {
++  let result = analyze(
++    hist([
++      tx("A", [
++        write_op("x", "x1"),
++        read_op("x", "x1"),
++        write_op("x", "x2"),
++        read_op("x", "x1"),
++      ]),
++    ]),
++  )
++  let findings = result.findings.filter(f => f.code == "read_your_writes")
++  assert_eq(findings.length(), 1)
++  assert_eq(findings[0].ops, [2, 3])
++}
++
++///|
++test "draft two-version rank shortcut retains both anti and write-read dependencies" {
++  let result = analyze(
++    hist([
++      tx("A", [read_op("x", "x0")]),
++      tx("B", [write_op("x", "x1")]),
++      tx("C", [read_op("x", "x1")]),
++    ]),
++  )
++  assert_true(result.outcome == Consistent)
++  assert_eq(result.edges.length(), 2)
++  assert_true(result.edges[0].kind == RW)
++  assert_true(result.edges[1].kind == WR)
++  assert_eq(result.serial_order, ["A", "B", "C"])
++}
++
++///|
++test "draft lazy scratch ignores unused initial keys while preserving skipped transactions" {
++  let h = hist([
++    tx("Skipped", [read_op("unused0", "initial")]),
++    tx("A", [write_op("x", "x1"), read_op("x", "x1")]),
++    tx("B", [read_op("x", "x0")]),
++    tx("SkippedAfter", [read_op("unused1023", "initial")]),
++  ])
++  for i in 0..<1024 {
++    h.initial["unused" + i.to_string()] = "initial"
++  }
++  let result = analyze(h)
++  assert_true(result.outcome == Consistent)
++  assert_eq(result.edges.length(), 1)
++  assert_eq(result.edges[0].from, "B")
++  assert_eq(result.edges[0].to, "A")
++  assert_eq(result.serial_order.length(), 4)
++  assert_true(result.serial_order.contains("Skipped"))
++  assert_true(result.serial_order.contains("SkippedAfter"))
++  assert_true(!has_code(result, "read_your_writes"))
++}

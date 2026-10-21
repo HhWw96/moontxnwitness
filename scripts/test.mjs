@@ -45,6 +45,19 @@ if (listChild.status !== 0) throw new Error('Independent append-list acceptance 
 const listAcceptance = JSON.parse(listChild.stdout);
 assert.equal(listAcceptance.passed,true);
 assert.equal(listAcceptance.complete,true);
+const relationOracle = JSON.parse(pythonJSON(['-B','scripts/relation-v3-oracle.py','--self-test'],'Independent relation-set reference'));
+const relationChild = spawnSync(process.execPath,['scripts/relation-v3-acceptance.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:16*1024*1024});
+if (relationChild.error) throw relationChild.error;
+if (relationChild.status !== 0) throw new Error('Independent relation-set acceptance failed: ' + relationChild.stdout + relationChild.stderr);
+// This independent runner emits progress JSON lines before its final object.
+const relationAcceptance = JSON.parse(relationChild.stdout.slice(relationChild.stdout.lastIndexOf('\n{') + 1));
+assert.equal(relationAcceptance.passed,true);
+assert.equal(relationAcceptance.complete,true);
+pythonJSON(['-B','experiments/relation_v3/test_fixture.py'],'Controlled relation PostgreSQL fixture units');
+const executionFailureAudit = JSON.parse(pythonJSON(['-B','verification/v3/tools/mlflow_execution_audit.py'],'Independent execution-failure evidence audit'));
+assert.equal(executionFailureAudit.passed,true);
+assert.equal(executionFailureAudit.complete,true);
+pythonJSON(['-B','scripts/test_package_archive.py'],'Bounded archive and cross-chunk privacy checks');
 const collectorOutput = pythonJSON(['-B','integrations/python/moontxnwitness_capture/test_capture_v3.py'],'Bounded v3 protocol collector');
 const collectorFolder = collectorOutput.match(/^Collector test artifacts: (.+)$/m)?.[1]?.trim();
 if (!collectorFolder) throw new Error('Protocol collector suite did not identify its retained evidence');
@@ -81,6 +94,8 @@ receipt.captureCliChecks = capture.checks;
 receipt.experimentalPresenceCliChecks = presence.checks;
 receipt.experimentalV3 = {foundationOnly:false,experimentalOnly:true,v011v012JointReleaseReady:false,independentReference:v3Oracle,acceptance:v3Acceptance,journal:{receipt:journalEvidence,...journalReceipt},independentStorageAudit:journalAudit,fullBusinessLifecycle:false,formalPerformanceMeasured:false};
 receipt.experimentalV3.appendList = {independentReference:listOracle,acceptance:listAcceptance,actualDatabaseExecuted:false,formalPerformanceMeasured:false};
+receipt.experimentalV3.relationSet = {independentReference:relationOracle,acceptance:relationAcceptance,actualDatabaseExecuted:false,formalPerformanceMeasured:false};
+receipt.experimentalV3.executionFailures = {independentAudit:executionFailureAudit,actualDatabaseExecuted:false,certifiesFailureAbsence:false};
 receipt.experimentalV3.boundedProtocolCollector = {receipt:collectorEvidence,...collectorReceipt};
 receipt.experimentalV3.postCloseIndependentAudit={passed:closureAudit.passed,cases:closureAudit.cases,checks:closureAudit.checks,receipt:closureEvidence};
 receipt.experimentalV3.fixedSqlDiagnostic=sqlDiagnostic;

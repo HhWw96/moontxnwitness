@@ -1,0 +1,301 @@
+{
+  "schema": 3,
+  "dataModel": "relation-set-v1",
+  "algorithm": "v3-relation-lifecycle-1",
+  "status": "ready",
+  "relationSchema": {
+    "accounts": {
+      "primaryKey": "id",
+      "columns": {
+        "id": "int64",
+        "balance": "int64",
+        "active": "bool",
+        "region": "text"
+      }
+    }
+  },
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "observations": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "accounts": [
+          {
+            "key": "1",
+            "version": "9d5299ab-e7c1-4d5a-b284-fd39796654ef",
+            "values": {
+              "balance": "10",
+              "active": true,
+              "region": "east"
+            }
+          },
+          {
+            "key": "2",
+            "version": "65b0ef69-8c80-4567-969c-c33bed00a798",
+            "values": {
+              "balance": "20",
+              "active": true,
+              "region": "west"
+            }
+          }
+        ]
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 203000,
+      "kind": "begin",
+      "tx": "A",
+      "connection": "C-A"
+    },
+    {
+      "seq": 3,
+      "time": 203000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [],
+      "rows": [
+        {
+          "key": "1",
+          "version": "9d5299ab-e7c1-4d5a-b284-fd39796654ef",
+          "values": {
+            "balance": "10",
+            "active": true,
+            "region": "east"
+          }
+        },
+        {
+          "key": "2",
+          "version": "65b0ef69-8c80-4567-969c-c33bed00a798",
+          "values": {
+            "balance": "20",
+            "active": true,
+            "region": "west"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 4,
+      "time": 203000,
+      "kind": "savepoint",
+      "tx": "A",
+      "name": "same",
+      "instance": "S1"
+    },
+    {
+      "seq": 5,
+      "time": 250000,
+      "kind": "row_write",
+      "tx": "A",
+      "relation": "accounts",
+      "key": "1",
+      "action": "update",
+      "version": "0d743e2f-4d72-4f54-8995-625c07a6513f",
+      "predecessor": "9d5299ab-e7c1-4d5a-b284-fd39796654ef",
+      "values": {
+        "balance": "11",
+        "active": true,
+        "region": "east"
+      }
+    },
+    {
+      "seq": 6,
+      "time": 250000,
+      "kind": "savepoint",
+      "tx": "A",
+      "name": "same",
+      "instance": "S2"
+    },
+    {
+      "seq": 7,
+      "time": 250000,
+      "kind": "row_write",
+      "tx": "A",
+      "relation": "accounts",
+      "key": "1",
+      "action": "delete",
+      "version": "8ec9f8c1-18dd-4a41-a65a-11437bd3a7ba",
+      "predecessor": "0d743e2f-4d72-4f54-8995-625c07a6513f",
+      "values": null
+    },
+    {
+      "seq": 8,
+      "time": 250000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [
+        {
+          "column": "id",
+          "op": "eq",
+          "value": "1"
+        }
+      ],
+      "rows": [],
+      "complete": true
+    },
+    {
+      "seq": 9,
+      "time": 250000,
+      "kind": "rollback_to",
+      "tx": "A",
+      "instance": "S2"
+    },
+    {
+      "seq": 10,
+      "time": 250000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [],
+      "rows": [
+        {
+          "key": "2",
+          "version": "65b0ef69-8c80-4567-969c-c33bed00a798",
+          "values": {
+            "balance": "20",
+            "active": true,
+            "region": "west"
+          }
+        },
+        {
+          "key": "1",
+          "version": "0d743e2f-4d72-4f54-8995-625c07a6513f",
+          "values": {
+            "balance": "11",
+            "active": true,
+            "region": "east"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 11,
+      "time": 250000,
+      "kind": "release",
+      "tx": "A",
+      "instance": "S2"
+    },
+    {
+      "seq": 12,
+      "time": 250000,
+      "kind": "rollback_to",
+      "tx": "A",
+      "instance": "S1"
+    },
+    {
+      "seq": 13,
+      "time": 250000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [],
+      "rows": [
+        {
+          "key": "1",
+          "version": "9d5299ab-e7c1-4d5a-b284-fd39796654ef",
+          "values": {
+            "balance": "10",
+            "active": true,
+            "region": "east"
+          }
+        },
+        {
+          "key": "2",
+          "version": "65b0ef69-8c80-4567-969c-c33bed00a798",
+          "values": {
+            "balance": "20",
+            "active": true,
+            "region": "west"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 14,
+      "time": 250000,
+      "kind": "release",
+      "tx": "A",
+      "instance": "S1"
+    },
+    {
+      "seq": 15,
+      "time": 250000,
+      "kind": "commit_request",
+      "tx": "A"
+    },
+    {
+      "seq": 16,
+      "time": 265000,
+      "kind": "commit_ok",
+      "tx": "A"
+    }
+  ],
+  "effects": [
+    {
+      "seq": 5,
+      "tx": "A",
+      "relation": "accounts",
+      "key": "1",
+      "action": "update",
+      "version": "0d743e2f-4d72-4f54-8995-625c07a6513f",
+      "predecessor": "9d5299ab-e7c1-4d5a-b284-fd39796654ef",
+      "values": {
+        "balance": "11",
+        "active": true,
+        "region": "east"
+      },
+      "revertedBy": 12
+    },
+    {
+      "seq": 7,
+      "tx": "A",
+      "relation": "accounts",
+      "key": "1",
+      "action": "delete",
+      "version": "8ec9f8c1-18dd-4a41-a65a-11437bd3a7ba",
+      "predecessor": "0d743e2f-4d72-4f54-8995-625c07a6513f",
+      "values": null,
+      "revertedBy": 9
+    }
+  ],
+  "transactions": [
+    {
+      "id": "A",
+      "connection": "C-A",
+      "status": "committed",
+      "beginSeq": 2,
+      "endSeq": 16,
+      "events": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "finalWrites": []
+    }
+  ],
+  "history": null
+}

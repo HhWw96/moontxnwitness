@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "passed": true,
+  "actualDatabaseExecution": true,
+  "scope": "Unchanged affected upstream method/model; minimal runs fixture, not entire MLflow server",
+  "commit": "c2dcdb96c62c75f35af3f28b5d493c0cf139a856",
+  "label": "before",
+  "sourceBindings": [
+    {
+      "file": "mlflow/store/tracking/dbmodels/models.py",
+      "sha256": "7df76c173e6431896e224b0bc19bd04403487896130ef3f1f4efbc532065da20",
+      "node": "SqlLatestMetric",
+      "astSha256": "0196a082d4765f4dbd0583188bfc654bc478ad2dccbdb53e595644fc3d2b071b",
+      "firstLine": 503,
+      "lastLine": 556
+    },
+    {
+      "file": "mlflow/store/tracking/sqlalchemy_store.py",
+      "sha256": "a550a3c45496b936c2c6726b8f50989d7fa0ef4b5780fccca4c2253acf7d3981",
+      "node": "_update_latest_metrics_if_necessary",
+      "astSha256": "4120b3ef99f4562449e03c1b735a0ee3c66ab750daf20f5ab01eb45c1ee620b5",
+      "firstLine": 1440,
+      "lastLine": 1557
+    }
+  ],
+  "executionFault": "deadlock",
+  "isolationViolationClaim": false,
+  "G2Claim": false,
+  "committed": 1,
+  "errors": [
+    {
+      "worker": "A",
+      "class": "OperationalError",
+      "driverClass": "DeadlockDetected",
+      "sqlstate": "40P01",
+      "primary": "deadlock detected"
+    }
+  ],
+  "controller": [
+    {
+      "gate": "both-first-batches-completed"
+    }
+  ],
+  "controllerError": null,
+  "threadsStillAlive": [],
+  "workers": {
+    "A": {
+      "pending": 2,
+      "done": 1,
+      "pid": 116424,
+      "committed": false
+    },
+    "B": {
+      "pending": 2,
+      "done": 2,
+      "pid": 117280,
+      "committed": true
+    }
+  },
+  "keysEach": 1000,
+  "originalBatchSize": 500,
+  "finalRowsSha256": "a36b19939d4a7f586b240bc7c38d12c6cfd53ad22986bfd0d910df2519fef68e",
+  "captureSha256": "77d760f4a54543260cad0b0d1ba16e9b14574af3e46879861049a858de068ac4",
+  "sqlExecutionsSha256": "0e50d2c3abf8f9a6dafad8d8027f185287946a7ed35ee39cd3d4b5e1268047bb",
+  "sqlObservationsComplete": true,
+  "journal": {
+    "schema": 1,
+    "status": "incomplete",
+    "valid": true,
+    "complete": false,
+    "closed": true,
+    "sourceClosed": false,
+    "durableSeq": 22,
+    "eventCount": 22,
+    "segmentCount": 1,
+    "bytesVerified": 291080,
+    "indexSha256": "1ef5393a2359ceff23a082aff34d980d594198000f9a6c62738a8cfffaa1d30b",
+    "gaps": [
+      {
+        "code": "initialization_unproven",
+        "message": "The initial database snapshot has not been established as consistent."
+      },
+      {
+        "code": "affected_component_only",
+        "message": "This raw SQL rehearsal is an execution-fault case, not a complete relation/isolation proof."
+      },
+      {
+        "code": "statement_failed",
+        "message": "A business statement raised its original driver exception."
+      },
+      {
+        "code": "cursor_api_unsupported",
+        "message": "An unobserved cursor execution API was used."
+      },
+      {
+        "code": "source_unsealed",
+        "message": "Journal and explicit source window have not both been sealed."
+      }
+    ],
+    "actualDatabaseExecution": false
+  },
+  "versions": {
+    "sqlalchemy": "2.0.55",
+    "psycopg": "3.3.6"
+  },
+  "runtimeSourceBindings": {
+    "experiments/faults/mlflow/run_postgres.py": {
+      "sha256": "8ced2c30953c3e7675a1aaa9f40fd3726754884e5992022d8591fd0939105a56",
+      "bytes": 15100
+    },
+    "integrations/python/moontxnwitness_capture/capture_v3.py": {
+      "sha256": "92691d80b50196131a8df01e61f2c96336c6d0e977a385979e7d7044cbdc025a",
+      "bytes": 35289
+    },
+    "integrations/python/moontxnwitness_capture/journal_v3.py": {
+      "sha256": "c2f367721bc5d82ee4d98e27ee33a02b000a08094ea055432ee2cb3ba8b16391",
+      "bytes": 60881
+    }
+  }
+}

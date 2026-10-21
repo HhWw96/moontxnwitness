@@ -2,22 +2,48 @@
 fn collect_writes(h : History) -> Map[String, Map[String, WriteRef]] {
   let writes : Map[String, Map[String, WriteRef]] = Map([])
   for ti, tx in h.transactions {
-    if !tx.ops.any(op => op.kind == Write) {
-      continue
-    }
-    let last : Map[String, Int] = Map([])
+    let mut single_key = ""
+    let mut single_last = -1
+    let mut multiple_keys = false
     for oi, op in tx.ops {
       if op.kind == Write {
-        last[op.key] = oi
+        if single_last < 0 {
+          single_key = op.key
+        } else if single_key != op.key {
+          multiple_keys = true
+        }
+        single_last = oi
+      }
+    }
+    if single_last < 0 {
+      continue
+    }
+    let last : Map[String, Int]? = if multiple_keys {
+      Some(Map([]))
+    } else {
+      None
+    }
+    if multiple_keys {
+      for oi, op in tx.ops {
+        if op.kind == Write {
+          last.unwrap()[op.key] = oi
+        }
       }
     }
     for oi, op in tx.ops {
       if op.kind == Write {
-        let versions = writes.get_or_default(op.key, Map([]))
+        let versions = match writes.get(op.key) {
+          Some(versions) => versions
+          None => Map([])
+        }
         versions[op.version] = {
           tx: ti,
           op: oi,
-          is_final: last.get(op.key) == Some(oi),
+          is_final: if multiple_keys {
+            last.unwrap().get(op.key) == Some(oi)
+          } else {
+            oi == single_last
+          },
         }
         writes[op.key] = versions
       }
@@ -54,7 +80,11 @@ fn resolve_orders(
       continue
     }
     let committed : Array[String] = []
-    for v, w in writes.get_or_default(key, Map([])) {
+    for
+      v, w in (match writes.get(key) {
+        Some(versions) => versions
+        None => Map([])
+      }) {
       if w.is_final && h.transactions[w.tx].status == Committed {
         committed.push(v)
       }
@@ -227,7 +257,7 @@ fn analyze_internal(
   keys.sort()
   let ranks : Map[String, Map[String, Int]] = Map([])
   for key in keys {
-    if orders.at(key).length() < 2 {
+    if orders.at(key).length() < 3 {
       continue
     }
     let by_rank : Map[String, Int] = Map([])
@@ -261,6 +291,15 @@ fn analyze_internal(
       })
     }
   }
+  // Allocate scratch only for keys touched by a non-skipped committed
+  // transaction. A reduced counterexample may retain many unused initial keys.
+  let scratch_keys : Map[String, Int] = Map([])
+  let own_epoch : Array[Int] = []
+  let own_versions : Array[String] = []
+  let own_ops : Array[Int] = []
+  let read_epoch : Array[Int] = []
+  let read_versions : Array[String] = []
+  let read_ops : Array[Int] = []
   for ti, tx in h.transactions {
     if tx.status == Unknown {
       findings.push(
@@ -284,47 +323,59 @@ fn analyze_internal(
       }) {
       continue
     }
-    let own : Map[String, (String, Int)] = Map([])
-    let reads : Map[String, (String, Int)] = Map([])
+    let epoch = ti + 1
     for oi, op in tx.ops {
+      let ki = match scratch_keys.get(op.key) {
+        Some(index) => index
+        None => {
+          let index = scratch_keys.length()
+          scratch_keys[op.key] = index
+          own_epoch.push(0)
+          own_versions.push("")
+          own_ops.push(-1)
+          read_epoch.push(0)
+          read_versions.push("")
+          read_ops.push(-1)
+          index
+        }
+      }
       if op.kind == Write {
-        own[op.key] = (op.version, oi)
+        own_epoch[ki] = epoch
+        own_versions[ki] = op.version
+        own_ops[ki] = oi
         continue
       }
-      match own.get(op.key) {
-        Some((v, wi)) => {
-          if op.version != v {
-            findings.push(
-              issue(
-                "read_your_writes",
-                "violation",
-                "Read does not observe the most recent write in its own transaction",
-                txs=[tx.id],
-                key=Some(op.key),
-                ops=[wi, oi],
-              ),
-            )
-          }
-          continue
-        }
-        None => ()
-      }
-      match reads.get(op.key) {
-        Some((v, ri)) if v != op.version =>
+      if own_epoch[ki] == epoch {
+        if op.version != own_versions[ki] {
           findings.push(
             issue(
-              "non_repeatable_read",
+              "read_your_writes",
               "violation",
-              "The same transaction observes different versions without an intervening own write",
+              "Read does not observe the most recent write in its own transaction",
               txs=[tx.id],
               key=Some(op.key),
-              ops=[ri, oi],
+              ops=[own_ops[ki], oi],
             ),
           )
-        _ => ()
+        }
+        continue
       }
-      if !reads.contains(op.key) {
-        reads[op.key] = (op.version, oi)
+      if read_epoch[ki] == epoch && read_versions[ki] != op.version {
+        findings.push(
+          issue(
+            "non_repeatable_read",
+            "violation",
+            "The same transaction observes different versions without an intervening own write",
+            txs=[tx.id],
+            key=Some(op.key),
+            ops=[read_ops[ki], oi],
+          ),
+        )
+      }
+      if read_epoch[ki] != epoch {
+        read_epoch[ki] = epoch
+        read_versions[ki] = op.version
+        read_ops[ki] = oi
       }
       let is_initial = h.initial.get(op.key) == Some(op.version)
       if is_initial && !writes.contains(op.key) {
@@ -416,7 +467,15 @@ fn analyze_internal(
           if order.length() < 2 {
             continue
           }
-          let read_rank = ranks.at(op.key).get_or_default(op.version, -1)
+          let read_rank = if order.length() == 2 {
+            if is_initial {
+              0
+            } else {
+              1
+            }
+          } else {
+            ranks.at(op.key).get_or_default(op.version, -1)
+          }
           if read_rank >= 0 {
             for rank in (read_rank + 1)..<order.length() {
               let w = by_version.at(order[rank])

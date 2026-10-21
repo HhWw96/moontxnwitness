@@ -86,7 +86,7 @@ node dist/postgres-demo.mjs
 - `versionOrders` 是可选的采集事实。缺少多写者顺序时，只在其余观察充分且规模允许时搜索补全。
 - `searched` 只证明某个可能执行成立，不能变成已观察到的数据库顺序。缩减只裁剪原始声明。
 
-详见 [输入格式](docs/input-format.md)、[JSON Schema](docs/history.schema.json)、[算法设计](docs/design.md) 和 [独特性范围](docs/UNIQUENESS.md)。范围/谓词查询、自动 SQL 插桩、append/list 模型及完整隔离级别分类尚未实现。
+详见 [输入格式](docs/input-format.md)、[JSON Schema](docs/history.schema.json)、[算法设计](docs/design.md) 和 [独特性范围](docs/UNIQUENESS.md)。以上为稳定寄存器入口；开发分支另有下述列表及关系集合实验。任意 SQL 自动插桩和完整隔离级别分类仍未完成。
 
 ## API 与预算约定
 
@@ -150,7 +150,11 @@ node dist/moontxnwitness.mjs replay-v3 new-v3-case.json
 node dist/moontxnwitness.mjs reduce-v3 examples/v3-write-skew.json
 ```
 
-写偏斜案例退出码为 1，表示发现反证。SDK 对应 `normalizeCaptureV3`、`analyzeV3`、`reduceV3`、`verifyV3`。开发分支另有[追加列表模型](docs/list-v3.md)和[原 dislock 生命周期采集](docs/dislock-v3.md)；六种冻结 SQL 的来源证明须显式选择 [sqlProof 策略](docs/dislock-sql-v3.md)，其他 SQL、零行条件来源不足与未知提交保持缺口。来源闭包窗口、安全保留、完整采集成本、ORM、关系模型及六模型分类继续按[剩余执行计划](docs/remaining-execution-plan.md)开发。当前完成项与未执行项见[开发状态](docs/development-status.md)，v3 实验不表示已完成 v0.1.1/v0.1.2 联合验收。
+写偏斜案例退出码为 1，表示发现反证。SDK 对应 `normalizeCaptureV3`、`analyzeV3`、`reduceV3`、`verifyV3`。开发分支另有[追加列表模型](docs/list-v3.md)、[关系集合模型](docs/relation-v3.md)和[原 dislock 生命周期采集](docs/dislock-v3.md)；六种冻结 SQL 的来源证明须显式选择 [sqlProof 策略](docs/dislock-sql-v3.md)，其他 SQL、零行条件来源不足与未知提交保持缺口。
+
+[MLflow 原组件死锁与修复对照](experiments/faults/mlflow/README.md)保存真实 SQLSTATE、锁等待、原始日志和最终数据。独立 `inspectExecutionFailuresV3` / `failures-v3` 描述执行故障；诊断退出码 0 只表示输入有效，不表示无故障或符合隔离模型。关系实验已执行八场景各 20 轮；这些受控案例不代表任意业务接入。
+
+来源闭包窗口、安全保留、完整采集成本、ORM 来源证明、六模型/Elle 及真实故障缩减继续按[剩余执行计划](docs/remaining-execution-plan.md)开发。当前完成项与未执行项见[开发状态](docs/development-status.md)，v3 实验不表示已完成 v0.1.1/v0.1.2 联合验收。
 
 Apache-2.0；依赖、概念来源、AI 使用与复核方式见 [THIRD_PARTY.md](THIRD_PARTY.md)。分析算法全部使用 MoonBit；JS 处理文件与传输，Python 可选采集数据库，JS 后端有一个字符串片段拼接原语。
 

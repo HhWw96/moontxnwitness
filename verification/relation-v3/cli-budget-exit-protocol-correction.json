@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "kind": "independent-test-protocol-correction",
+  "productChangeRequired": false,
+  "frozenModelExpectationsChanged": false,
+  "originalInputCases": 1170,
+  "originalDifferences": 0,
+  "firstFailure": {
+    "file": "verification/relation-v3/acceptance-2026-10-21T05-49-31-558Z/receipt.json",
+    "sha256": "54cb4137da36509d12ca833bd51cfd2a22bea16c0e90ac65eed7f683d6c69c8a"
+  },
+  "incorrectNewTestExpectation": {
+    "name": "cli-relation-reduce-zero",
+    "exitCode": 0
+  },
+  "correctPublicProtocol": {
+    "status": "budget",
+    "exitCode": 3,
+    "checks": 0,
+    "oneMinimal": false
+  },
+  "evidence": {
+    "publicCommit": "f017c0dfe6b8f69c58034046cf9e37c9e7614137",
+    "publicCliSourceSha256": "0ca2a5381b3dff5e4a2f1ec50ae2390684583d38917ede47b5df086caad78146",
+    "sameExitMappingInCurrentCli": true,
+    "exactExistingMapping": "process.exitCode = 'valid' in result ? (result.valid ? 0 : 2) : ['ready','consistent','reduced','unchanged'].includes(result.status) ? 0 : result.status === 'violation' ? 1 : result.status === 'invalid' ? 2 : 3;"
+  },
+  "reason": "The newly added independent CLI test assumed successful process exit for a completed zero-check invocation. The pre-existing public CLI contract returns exit 3 when the result cannot prove one-minimality because the candidate budget is exhausted. Raw JSON is retained and was correct.",
+  "priorReceiptRewritten": false
+}

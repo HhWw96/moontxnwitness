@@ -115,6 +115,13 @@ jobs:
         run: |
           python -B experiments/list_v3/postgres.py --schema mtw_list_v3_ci --output verification/list-v3/postgres-ci
           node experiments/list_v3/e2e.mjs verification/list-v3/postgres-ci
+      - name: Verify relational observations across 20 rounds per scenario
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          python -B experiments/relation_v3/test_fixture.py
+          python -B experiments/relation_v3/run_postgres.py --schema mtw_relation_v3_000000000001 --output verification/relation-v3/postgres-ci
+          node experiments/relation_v3/e2e.mjs verification/relation-v3/postgres-ci verification/relation-v3/postgres-ci-model
       - name: Exercise original dislock lifecycle with bounded v3 observations
         env:
           MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
@@ -127,6 +134,13 @@ jobs:
         run: |
           python -B experiments/business/dislock/v3_commit_postgres.py --schema mtw_provenance_dislock_commit_ci --output verification/business/dislock/v3-commit-ci
           node experiments/business/dislock/v3_commit_e2e.mjs verification/business/dislock/v3-commit-ci
+      - name: Reproduce original MLflow component deadlock and repaired locking order
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          python -m pip install --require-hashes -r experiments/faults/mlflow/requirements.txt
+          python -B experiments/faults/mlflow/run_postgres.py --output verification/faults/mlflow/ci
+          node experiments/faults/mlflow/e2e.mjs verification/faults/mlflow/ci --output verification/faults/mlflow/ci-model
       - name: Preserve complete database server logs
         if: always()
         env:
@@ -153,4 +167,8 @@ jobs:
             verification/provenance-presence/ci/
             verification/v3/postgres-ci/
             verification/list-v3/postgres-ci/
+            verification/relation-v3/postgres-ci/
+            verification/relation-v3/postgres-ci-model/
+            verification/faults/mlflow/ci/
+            verification/faults/mlflow/ci-model/
             dist/

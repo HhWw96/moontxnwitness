@@ -1,0 +1,78 @@
+diff --git a/src/capture_v3_dispatch.mbt b/src/capture_v3_dispatch.mbt
+--- a/src/capture_v3_dispatch.mbt
++++ b/src/capture_v3_dispatch.mbt
+@@ -1,3 +1,13 @@
++///|
++fn v3_is_relation_capture(text : String) -> Bool {
++  try {
++    let root = object_fields(guarded_json(text, limit=8388608), "capture")
++    root.get("dataModel") == Some("relation-set-v1".to_json())
++  } catch {
++    _ => false
++  }
++}
++
+ ///|
+ fn v3_is_list_capture(text : String) -> Bool {
+   try {
+@@ -10,7 +20,9 @@
+ 
+ ///|
+ pub fn normalize_capture_v3_json(text : String) -> String {
+-  if v3_is_list_capture(text) {
++  if v3_is_relation_capture(text) {
++    normalize_relation_capture_v3_json(text)
++  } else if v3_is_list_capture(text) {
+     normalize_list_capture_v3_json(text)
+   } else {
+     normalize_register_capture_v3_json(text)
+diff --git a/src/api_v3.mbt b/src/api_v3.mbt
+--- a/src/api_v3.mbt
++++ b/src/api_v3.mbt
+@@ -1,5 +1,8 @@
+ ///|
+ fn v3_analysis(text : String, options_text : String) -> Json raise {
++  if v3_is_relation_capture(text) {
++    return relation_v3_analysis(text, options_text)
++  }
+   if v3_is_list_capture(text) {
+     return list_v3_analysis(text, options_text)
+   }
+@@ -280,7 +283,8 @@
+     let analysis_options = options
+       .get_or_default("analysisOptions", Json::object(Map([])))
+       .stringify()
+-    let prune_sql_ledger = if v3_is_list_capture(text) {
++    let prune_sql_ledger = if v3_is_list_capture(text) ||
++      v3_is_relation_capture(text) {
+       false
+     } else {
+       let (_, requested) = v3_register_options(analysis_options)
+@@ -360,7 +364,9 @@
+     let result : Json = {
+       "schemaVersion": 3,
+       "algorithm": "v3-source-checked-single-delete-1",
+-      "predicate": (if v3_is_list_capture(text) {
++      "predicate": (if v3_is_relation_capture(text) {
++        "definite relation-set serializability violation with complete capture coverage"
++      } else if v3_is_list_capture(text) {
+         "definite append-list serializability violation with complete capture coverage"
+       } else {
+         "definite register serializability violation with complete capture coverage"
+diff --git a/src/sql_proof_options_v3.mbt b/src/sql_proof_options_v3.mbt
+--- a/src/sql_proof_options_v3.mbt
++++ b/src/sql_proof_options_v3.mbt
+@@ -64,7 +64,12 @@
+     )
+     known_fields(options, ["sqlProof"], "normalization options")
+     let requested = v3_sql_proof_requested(options)
+-    if v3_is_list_capture(text) {
++    if v3_is_relation_capture(text) {
++      if requested {
++        fail("The dislock SQL proof cannot be mixed with relation-set-v1")
++      }
++      normalize_relation_capture_v3_json(text)
++    } else if v3_is_list_capture(text) {
+       if requested {
+         fail("The dislock SQL proof cannot be mixed with append-list-v1")
+       }

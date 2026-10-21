@@ -64,7 +64,12 @@ pub fn normalize_capture_v3_options_json(
     )
     known_fields(options, ["sqlProof"], "normalization options")
     let requested = v3_sql_proof_requested(options)
-    if v3_is_list_capture(text) {
+    if v3_is_relation_capture(text) {
+      if requested {
+        fail("The dislock SQL proof cannot be mixed with relation-set-v1")
+      }
+      normalize_relation_capture_v3_json(text)
+    } else if v3_is_list_capture(text) {
       if requested {
         fail("The dislock SQL proof cannot be mixed with append-list-v1")
       }

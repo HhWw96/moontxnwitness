@@ -4,6 +4,16 @@
 
 ## v3 共同底座的首批实现
 
+### 第三批：关系集合、执行故障及分配优化
+
+本地已集成关系模型、执行故障诊断和三处分配优化，MoonBit 源码指纹为 `df23e6a01c0d59420c7576eb35271b6346c500044ee24a0ea0d7ac29a951d97b`。JS、Wasm GC、Wasm **各 554 项**、全目标静态检查、旧 oracle/CLI 及新独立模型/故障核对通过。首轮打包在便携归档压缩时发生内存分配失败，未进入消费者；[失败摘要](../verification/v3/package-memory-first-failure-2026-10-21.json)绑定原产物。压缩改为 64 KiB 分块，保留跨块隐私检查、固定元数据与完整 ZIP 校验，三个实际边界测试通过；变更后完整回归再次通过，**76 项全新消费者**包含源码重建、关系模型/缩减/复现及执行故障诊断。不借第二批 CI 作为本批验收。
+
+[关系模型](relation-v3.md)新增 127 项核心边界。独立解释器事先冻结 170 个边界和 1,000 个不同生成输入，1,170 份输入零差异；704 个串行见证、1,138 份规范化、924 份来源和十项预算计数核对通过，57 项外部检查包含 35 类篡改及八项 CLI。早期 439 处差异与修复前字节完整保留。受控 PostgreSQL 18.6 的八场景各 20 轮已实际执行；SQL/参数/完整查询、写影响及最终来源账本逐项核对，100 consistent / 60 violation 符合预登记，160 份复现包通过。另有[独立原始数据链审计](../verification/relation-v3/raw-chain-independent-2026-10-21T06-22-23-676071Z.json)，重新核对完整谓词、结果、事务 ACK、保存点撤销、墓碑及实际 SSI 重试，不只信 fixture 作者的断言。原 SQL fixture 与模型收据分开，不声明任意 SQL 或完整 ORM 支持。
+
+[MLflow 组件实验](../experiments/faults/mlflow/README.md)实际执行修复前后固定提交的原方法和原模型类：修复前一笔真实 `40P01`、一笔提交；修复后两笔提交，1,000 行最终值和版本字段正确。新 MoonBit 诊断有 14 项边界；[独立 AI 审计](../verification/faults/mlflow/independent-2026-10-21T06-03-09-641678Z/receipt.json)核对原始来源、AST、SQL、日志与最终数据，24 项 SDK/CLI/篡改检查通过。每案九条实际 SQL 在独立 fixture 日志中，通用 v3 只有八条 statement；原 ORM `executemany` 保持显式缺口，模型仍 inconclusive，没有将死锁改名为 G2。
+
+性能改动减少实时边报告的中间对象、稀疏索引分配和搜索回滚元组，新增 15 项测试并保留完整边依据及旧搜索顺序。暂停并行编译、数据库、打包和下载后，已完成本轮 **5 次预热 / 30 样本 / 3 批独立进程**的 20 完整负载、15 阶段测量，全部原 P95 回退门槛和完整输出核对通过。[最终目标核对](../verification/performance-v3-drafts/2026-10-21/formal-target-assessment.json)中，图组提速 **1.566 倍**达到 1.3 倍；图组 RSS 比 **0.933**、9–12 事务搜索 **1.274 倍**、512 事务缩减 **1.122 倍**均未达到计划目标。原轮完整保留，继续诊断并修改代码，不重复同一实现直到测过。完整采集 C/A 仍未测量。
+
 ### 第二批：列表、业务采集与显式 SQL 来源证明
 
 第二批已验 MoonBit 源码指纹为 `f33c8675a69a0681bb7865e32f2ace5aed21b03fb2d03dc16265dee2dbe6d57b`。本地 [完整回归](../verification/summary.json)已通过 JS、Wasm GC、Wasm **各 398 项**核心测试，保留原 10,320 份独立串行历史、6,373 份环证据、2,542 份解析差分及原 CLI 验证。Linux Native 和公开下载核验须以这一批新的 CI 与独立收据为准，不能借用旧 187 项成绩。
@@ -16,9 +26,11 @@
 
 同步 v3 采集器使用磁盘分段日志，不持续保留 `_events`。35 项协议测试通过；64 项日志测试本地 62 项通过、2 项因符号链接权限跳过，独立存储 10 项及关闭后继续使用连接的 42 项检查通过。独立审计发现的关闭后漏记和 `snapshot.consistent=false` 覆盖错误均先保留失败，再修复重测。
 
-这些结果仍是开发切片。来源闭包窗口、安全保留/清理、完整采集 C/A 成本、ORM 来源证明、关系模型、六模型与 Elle、真实 MLflow 故障闭环及最终性能尚未验收。v0.1.1 / v0.1.2 联合发布门槛保持未完成；独立 AI 技术验收与真人使用、生产采用及赛事审核分开记录。
+这些结果仍是开发切片。来源闭包窗口、安全保留/清理、完整采集 C/A 成本、ORM 来源证明、六模型与 Elle、真实 MLflow 故障缩减及最终性能尚未验收。关系模型和组件复现的新进展见第三批。v0.1.1 / v0.1.2 联合发布门槛保持未完成；独立 AI 技术验收与真人使用、生产采用及赛事审核分开记录。
 
 第二批公开源码 `bb87f93` 的 PostgreSQL CI 首次成功；核心 CI 两平台首次均因缺少可选 psycopg 而在两项固定 SQL 组合测试失败。此前各 398 项三目标和旧 oracle/CLI 已执行通过，Native、打包与独立公开消费者尚未执行，不能借本地成绩补勾。见[独立首失败诊断](../verification/v3/independent-public-checkpoint-bb87f93-first-failure-2026-10-21.json)。修复是在核心 CI 安装原有 SHA 冻结驱动，保留原断言和失败运行，使用新提交重新验收。
+
+修复提交 [f017c0d](https://github.com/HhWw96/moontxnwitness/commit/f017c0dfe6b8f69c58034046cf9e37c9e7614137) 的 [Windows/Linux 核心 CI](https://github.com/HhWw96/moontxnwitness/actions/runs/39547768317)和 [PostgreSQL CI](https://github.com/HhWw96/moontxnwitness/actions/runs/39547768346)均成功。独立 AI 从公开 artifact 新目录下载，核对两平台各 266 项非 dist 源码绑定、实际 core/capture 字节、Linux Native 398 项和各 68 项消费者；再执行两平台合计 332 项新消费者检查，见[公开验收收据](../verification/v3/independent-public-checkpoint-f017c0d-2026-10-21T05-19-32.336647Z.json)。列表 20,071 记录 / 10,118 不同输入另独立重算。两平台编译输出存在数值常量文本编码差异，分别记录原摘要，不归一化后声称字节相同。
 
 以下首批 187 项和 CI 收据仅属于 `16ba355` 的历史公开底座。
 

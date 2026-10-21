@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "frozen": true,
+  "command": [
+    "python",
+    "-B",
+    "verification/v3/tools/mlflow_execution_audit.py"
+  ],
+  "arguments": {
+    "--database": "Optional existing receipt directory; default verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c",
+    "--output": "Optional never-used audit output directory beneath repository; default new timestamp directory"
+  },
+  "stdoutFields": [
+    "passed",
+    "complete",
+    "checks",
+    "receipt",
+    "sha256",
+    "error"
+  ],
+  "expectedChecks": 24,
+  "localDatabaseExecution": false,
+  "localBuild": false,
+  "requiresOptionalDatabaseDrivers": false,
+  "implementationSha256": "7026a5edf1adf622bc8dbd1bccf2c0039d85744d140f72e5effbeec627840d81",
+  "inputDirectory": "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c",
+  "currentReceipt": {
+    "file": "verification/faults/mlflow/independent-2026-10-21T06-03-09-641678Z/receipt.json",
+    "sha256": "16ecaa60edc2637b6f0481e5c7860f42a85cae3049bb868dfff08c1ac0e24c93"
+  },
+  "verifiedSourceAndEvidencePaths": [
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/receipt.json",
+    "dist/core.mjs",
+    "dist/capture-core.mjs",
+    "dist/sdk.mjs",
+    "cmd/sdk.mjs",
+    "dist/evidence.mjs",
+    "cmd/evidence.mjs",
+    "dist/moontxnwitness.mjs",
+    "cmd/moontxnwitness.mjs",
+    "experiments/faults/mlflow/upstream/fetch-receipt.json",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/receipt.json",
+    "experiments/faults/mlflow/run_postgres.py",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/source-snapshots/run_postgres.py.gz",
+    "integrations/python/moontxnwitness_capture/capture_v3.py",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/source-snapshots/capture_v3.py.gz",
+    "integrations/python/moontxnwitness_capture/journal_v3.py",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/source-snapshots/journal_v3.py.gz",
+    "experiments/faults/mlflow/upstream/before/LICENSE.txt",
+    "experiments/faults/mlflow/upstream/before/mlflow/store/tracking/dbmodels/models.py.gz",
+    "experiments/faults/mlflow/upstream/before/mlflow/store/tracking/sqlalchemy_store.py.gz",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/capture.json",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/final-rows.json",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/sql-executions.jsonl",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/journal/journal-index.json",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/before/journal/segment-000001.jsonl",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/fixed/receipt.json",
+    "experiments/faults/mlflow/run_postgres.py",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/fixed/source-snapshots/run_postgres.py.gz",
+    "integrations/python/moontxnwitness_capture/capture_v3.py",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/fixed/source-snapshots/capture_v3.py.gz",
+    "integrations/python/moontxnwitness_capture/journal_v3.py",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/fixed/source-snapshots/journal_v3.py.gz",
+    "experiments/faults/mlflow/upstream/fixed/LICENSE.txt",
+    "experiments/faults/mlflow/upstream/fixed/mlflow/store/tracking/dbmodels/models.py.gz",
+    "experiments/faults/mlflow/upstream/fixed/mlflow/store/tracking/sqlalchemy_store.py.gz",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/fixed/capture.json",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/fixed/final-rows.json",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/fixed/sql-executions.jsonl",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/fixed/journal/journal-index.json",
+    "verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c/fixed/journal/segment-000001.jsonl"
+  ],
+  "review": {
+    "mustFixProductionFindings": [],
+    "executionFailureObservationDistinctFromG2": true,
+    "unknownOutcomeNeverInventedAsAbort": true,
+    "missingEvidenceNeverCertifiesCompleteAnalysis": true,
+    "sourceAstAndRuntimeSnapshotsExact": true,
+    "explicitLimitations": [
+      "Controlled affected MLflow method/model plus a runs/session fixture; no full MLflow server or log_batch HTTP path.",
+      "Per scenario 9 SQL executions exist in the fixture log but only 8 statement observations in generic v3 capture. One unsupported execution API remains an explicit coverage gap.",
+      "Default serializability reports stay inconclusive with no evidence. Diagnostic valid:true/CLI exit0 certifies only valid input for observation reporting.",
+      "Synthetic SQLSTATE/COMMIT protocol boundaries and source tampering are independent test cases, not additional actual database runs.",
+      "This is independent AI-operated validation, not human sign-off, a stable release, organizer approval or completed v0.1.7 acceptance."
+    ]
+  },
+  "firstFailurePreserved": "verification/faults/mlflow/independent-2026-10-21T06-00-18-777263Z/receipt.json",
+  "testProtocolCorrection": "verification/faults/mlflow/diagnostic-cli-protocol-correction.json",
+  "officialSqlstateReference": "https://www.postgresql.org/docs/18/errcodes-appendix.html"
+}
