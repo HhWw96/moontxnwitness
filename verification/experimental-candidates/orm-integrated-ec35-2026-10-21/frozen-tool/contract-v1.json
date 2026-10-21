@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "kind": "independent-orm-r3-downloaded-runtime-acceptance",
+  "frozenBeforeIndependentDriverExecution": true,
+  "frozenAt": "2026-10-21T11:14:39.402176+00:00",
+  "profile": {
+    "schema": 1,
+    "repository": "HhWw96/moontxnwitness",
+    "sourceCommit": "ca4a81d4eddfb4d3c4f92cb0bcac86ef05320a10",
+    "run": 39588309646,
+    "job": 119182636633,
+    "artifactId": 12340977721,
+    "artifactName": "experimental-orm-source2-r3-linux",
+    "artifactBytes": 225908,
+    "artifactSha256": "a6afd8bacf5e1504f8e3fc3b7aabab288550962344c2af912995e3b5ea432a85",
+    "moduleBytes": 1573469,
+    "moduleSha256": "3b536b3ba28d912d04fe1ef6225c187bc4aca8dae2cf557d9e50a134a3c8945d",
+    "baselineSourceSha256": "b6638ee56395a14284d1440a92a0d975c4ea4073f42ccab6d8d39e359d928096",
+    "experimentalSourceSha256": "a036270eaa16966bfceb75ed2983713988554ddf0631434658709b3f8191ce73",
+    "candidateManifestSha256": "da4d4d06b1d46b7c9e12c648d0509812cbe1672c59d9767aaf106f744ce3f58d",
+    "publicCandidatePrefix": "verification/experimental-candidates/orm-source2-r3-2026-10-21/",
+    "inputs": {
+      "fixtures/diagnostic-trace.json": {
+        "bytes": 44633,
+        "sha256": "3ee5a826c5d80cc6b753b35456c0921c62b867312fb56e43aae233f311c9f97a"
+      },
+      "fixtures/source-observations.jsonl": {
+        "bytes": 342967,
+        "sha256": "88cbaaee15e5e0faf403b2a91ce4ace53d4e2ddf656a06b1f15cf979fbf7a3ec"
+      }
+    },
+    "originalCoreTestsPerTarget": 616,
+    "originalFunctionalCases": 74,
+    "independentCases": 24,
+    "expectedPartialCounts": {
+      "controlQueries": 121,
+      "sourceBatches": 21,
+      "effects": 8,
+      "committedLedger": 7,
+      "revertedEffects": 1,
+      "explicitJsonbParameters": 1
+    },
+    "fullModelCoverage": false,
+    "fullApplicationAccepted": false,
+    "stableReleaseAccepted": false
+  },
+  "cases": [
+    {
+      "name": "original-raw-source-closure",
+      "expected": "partial-positive"
+    },
+    {
+      "name": "pretty-trace-preserves-facts",
+      "expected": "partial-positive"
+    },
+    {
+      "name": "exact-trace-byte-boundary",
+      "expected": "partial-positive"
+    },
+    {
+      "name": "exact-source-record-byte-boundary",
+      "expected": "partial-positive"
+    },
+    {
+      "name": "over-trace-byte-budget",
+      "expected": "rejected"
+    },
+    {
+      "name": "over-source-record-byte-budget",
+      "expected": "rejected"
+    },
+    {
+      "name": "envelope-schema1",
+      "expected": "rejected"
+    },
+    {
+      "name": "envelope-schema3",
+      "expected": "rejected"
+    },
+    {
+      "name": "envelope-schema-string",
+      "expected": "rejected"
+    },
+    {
+      "name": "unknown-profile",
+      "expected": "rejected"
+    },
+    {
+      "name": "scope-not-exclusive",
+      "expected": "rejected"
+    },
+    {
+      "name": "scope-declaration-missing",
+      "expected": "rejected"
+    },
+    {
+      "name": "committing-writer-ack-unknown",
+      "expected": "rejected"
+    },
+    {
+      "name": "source-seal-digest-corrupt",
+      "expected": "rejected"
+    },
+    {
+      "name": "resealed-control-sql-whitespace",
+      "expected": "rejected"
+    },
+    {
+      "name": "resealed-native-wire-mismatch",
+      "expected": "rejected"
+    },
+    {
+      "name": "resealed-initial-catalog-reference",
+      "expected": "rejected"
+    },
+    {
+      "name": "resealed-ledger-effect-omitted",
+      "expected": "rejected"
+    },
+    {
+      "name": "resealed-reverted-effect-in-ledger",
+      "expected": "rejected"
+    },
+    {
+      "name": "resealed-effect-image-raw-mismatch",
+      "expected": "rejected"
+    },
+    {
+      "name": "unknown-envelope-field",
+      "expected": "rejected"
+    },
+    {
+      "name": "source-schema1",
+      "expected": "rejected"
+    },
+    {
+      "name": "business-result-not-complete",
+      "expected": "rejected"
+    },
+    {
+      "name": "empty-source-journal",
+      "expected": "rejected"
+    }
+  ],
+  "expectedPositive": "Component-local control source profile true and independently reconstructed121SQL pointers/21facts/8effects/7ledger/1revert/1Jsonb; every global coverage acceptance flag false, history null and complete-trace verified sets empty. No database authentication assertion.",
+  "independence": "Derive source/native-result/fact/scope/ledger expectations from frozen raw inputs, not from author74 output or producer checked flags. Author74 only verifies original pipeline prerequisite. New driver never imports the author check-source2.mjs.",
+  "mutationPolicy": "Recompute JSONL seal when declared, to test semantic/raw binding rather than only a stale outer checksum. Preserve exact failed envelope and all result JSON; no expected edits after first execution.",
+  "budgetCases": "Trace input is valid original JSON prefixed with ASCII spaces to exactly8388608bytes and then one byte over. Header line similarly gets leading ASCII whitespace to exactly131072bytes and one over, with new real seal. These are real valid-JSON boundary probes.",
+  "execution": "Only separate Linux runner; token only fetch step, no token/authorcache during runtime. No compilation, DB or performance. Host Node not executed.",
+  "status": "preregistered-not-executed"
+}

@@ -234,6 +234,14 @@ console.log(JSON.stringify({passed:true,groups:3}));
             checks.extend(kind + ' v3 ' + entry for entry in (
                 'real relation consistent and capsule', 'real relation violation reduction and capsule',
                 'real execution fault with explicit coverage gap', 'diagnostic CLI valid-input exit semantics'))
+        orm_fixture = 'verification/experimental-candidates/orm-source2-r3-2026-10-21/fixtures/'
+        if (consumer / orm_fixture / 'diagnostic-trace.json').is_file():
+            diagnostic = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'inspect-orm-source-v3',
+                orm_fixture + 'diagnostic-trace.json', orm_fixture + 'source-observations.jsonl'], consumer))
+            assert diagnostic['controlProfileComplete'] and len(diagnostic['provenFacts']) == 21
+            assert diagnostic['analysisCoverageAccepted'] is False and diagnostic['history'] is None
+            assert all(diagnostic[field] == [] for field in ('verifiedStatements', 'verifiedFacts', 'verifiedProfiles'))
+            checks.append(kind + ' experimental ORM source CLI with complete global refusal')
     if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
         old_python = env.get('MTW_PYTHON')
         try:

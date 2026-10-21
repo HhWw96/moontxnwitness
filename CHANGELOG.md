@@ -1,5 +1,14 @@
 # 0.1.1 — development
 
+## Experimental ORM source inspection
+
+- Integrate the separately verified sourceSchema2 MoonBit proof component behind
+  explicit SDK/CLI diagnostic entries. Keep complete coverage false, history
+  unavailable and all default analysis policies unchanged.
+- Preserve original raw SQL/results, source profile, byte budgets and failures;
+  add SDK/CLI checks for transport identity, safe output and global refusal.
+- Run compilation and tests with one build task to bound local compiler pressure.
+
 ## Development checkpoint — search allocation follow-up
 
 - Reuse a complete bounded search-key buffer, preserve identifier validation while

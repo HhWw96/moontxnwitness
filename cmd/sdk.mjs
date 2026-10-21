@@ -1,5 +1,5 @@
 import { analyze_json, analyze_options_json, verify_certificate_json, shrink_json, shrink_options_json, replay_report_json, compare_models_json, version, analyze_v3_json, reduce_v3_json, verify_v3_json } from './core.mjs';
-import { normalize_capture_json, normalize_presence_json, normalize_capture_v3_json, normalize_capture_v3_options_json, dislock_sql_v3_proof_json, inspect_execution_failures_v3_json } from './capture-core.mjs';
+import { normalize_capture_json, normalize_presence_json, normalize_capture_v3_json, normalize_capture_v3_options_json, dislock_sql_v3_proof_json, inspect_execution_failures_v3_json, orm_sql_source2_v3_proof_json } from './capture-core.mjs';
 
 export { version };
 export { makeCapsuleV3, replayCapsuleV3 } from './evidence.mjs';
@@ -18,6 +18,11 @@ export function inspectDislockCaptureV3(trace) {
 }
 export function inspectExecutionFailuresV3(trace) {
   return JSON.parse(inspect_execution_failures_v3_json(v3Text(trace, 8 * 1024 * 1024)));
+}
+// Experimental local source proofs; never grants complete capture/model coverage.
+// Keep the caller's exact schema/profile and original trace/JSONL text.
+export function inspectOrmSourceV3(envelope) {
+  return JSON.parse(orm_sql_source2_v3_proof_json(v3Text(envelope, 64 * 1024 * 1024)));
 }
 export function analyzeV3(trace, options = {}) {
   return JSON.parse(analyze_v3_json(v3Text(trace, 8 * 1024 * 1024), v3Text(options, 4096)));

@@ -31,13 +31,27 @@ Apache license, not transaction-analysis code copied from another project.
 
 - [Jepsen Elle](https://github.com/jepsen-io/elle): primary reference for
   transaction-history dependency inference, WR/WW/RW terminology and explanation
-  of the difficulties of inferring version order. This project does not embed,
-  call or port Elle code. It implements a smaller, explicitly versioned register
-  model with supplied final-write orders or bounded exact serial completion for
-  small histories whose only uncertainty is missing order.
+  of the difficulties of inferring version order. The analyzer implements its
+  own MoonBit algorithms. A separate experimental CI comparison calls the fixed
+  upstream checkers; they are not linked into the compiled MoonBit runtime.
+  The comparison is limited to its declared common raw-history range.
 - [Adya, Liskov and O'Neil, Generalized Isolation Level Definitions](https://pmg.csail.mit.edu/papers/icde00.pdf):
   conceptual reference for dependency graph terminology. This release does not
   claim to implement every anomaly/isolation class in that work.
+
+## Fixed upstream comparison references
+
+`verification/experimental-candidates/elle-smoke*/primary-references/` contains
+unmodified selected Elle sources, tests, project metadata and their original
+complete LICENSE at commit `4e359e597c52938b0afebb8bc42273914d68a424`.
+The upstream project declares `EPL-2.0 OR GPL-2.0-or-later WITH
+Classpath-exception-2.0`; these files retain their upstream terms and attribution.
+The frozen Leiningen 2.11.2 launcher retains its separate
+`LEININGEN-COPYING` in the revised candidate. Root Apache licensing does not
+relicense these reference files. Java/Lein/Maven dependencies are resolved in an
+isolated test environment, recorded by actual hashes and not bundled as analyzer
+runtime dependencies. Original setup failures and exact resolved dependency
+records remain separate from successful checker results.
 
 ## Experimental MLflow component
 

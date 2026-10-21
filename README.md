@@ -10,6 +10,8 @@ English: An offline MoonBit transaction-history checker with shortest cycle witn
 
 普通无版本列业务表的 [固定键 CRUD 与空结果采集实验](experiments/provenance/PRESENCE_PROFILE.md)已接通数据库、MoonBit 校验、分析、缩减和重放。实验入口为 `normalizePresenceCapture` / `ingest-presence`；支持范围及安装成本单列，尚未作为 v0.1.2 稳定接口发布。
 
+开发分支另有 [ORM 原始来源诊断](docs/orm-source-v3.md)：`inspectOrmSourceV3` / `inspect-orm-source-v3` 展示固定业务的控制查询、读写来源与回滚效果，完整历史仍保留覆盖缺口。
+
 ## 先运行完整演示
 
 下载 portable ZIP，解压后运行。需要 **Node.js ≥20**，本机验证使用 24.13.0：

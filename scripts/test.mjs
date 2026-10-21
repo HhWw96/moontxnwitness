@@ -14,8 +14,8 @@ if (args.some(a => a !== '--all') || args.length > 1) throw new Error('Usage: no
 const targets = args.includes('--all') ? ['js', 'wasm-gc', 'wasm', 'native'] : ['js', 'wasm-gc', 'wasm'];
 const testedSources=verificationFingerprint(root,{includeDist:false});
 runMoon(['fmt', '--check']);
-runMoon(['check', '--target', 'all', '--deny-warn']);
-for (const target of targets) runMoon(['test', '--target', target, '--deny-warn']);
+runMoon(['check', '--target', 'all', '--deny-warn', '--jobs', '1']);
+for (const target of targets) runMoon(['test', '--target', target, '--deny-warn', '--jobs', '1']);
 await import('./build.mjs');
 assert.deepEqual(verificationFingerprint(root,{includeDist:false}),testedSources,'Executable sources changed during core verification');
 const testedFiles=verificationFingerprint(root);
@@ -24,6 +24,7 @@ const oracle = (await import('./oracle.mjs')).runOracle();
 const cli = (await import('./cli-test.mjs')).runCliTests();
 const capture = (await import('./capture-cli-test.mjs')).runCaptureCliTests();
 const presence = (await import('./presence-cli-test.mjs')).runPresenceCliTests();
+const ormSource = (await import('./orm-source-cli-test.mjs')).runOrmSourceCliTests();
 const adapter = spawnSync(process.env.MTW_PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), ['scripts/capture-unit-test.py'], {cwd:root,stdio:'inherit',windowsHide:true});
 if (adapter.error) throw adapter.error;
 if (adapter.status !== 0) throw new Error('Capture adapter unit tests failed: ' + adapter.status);
@@ -92,6 +93,7 @@ const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resol
 mkdirSync(resolve(root, 'verification'), { recursive: true });
 receipt.captureCliChecks = capture.checks;
 receipt.experimentalPresenceCliChecks = presence.checks;
+receipt.experimentalOrmSourceChecks = ormSource;
 receipt.experimentalV3 = {foundationOnly:false,experimentalOnly:true,v011v012JointReleaseReady:false,independentReference:v3Oracle,acceptance:v3Acceptance,journal:{receipt:journalEvidence,...journalReceipt},independentStorageAudit:journalAudit,fullBusinessLifecycle:false,formalPerformanceMeasured:false};
 receipt.experimentalV3.appendList = {independentReference:listOracle,acceptance:listAcceptance,actualDatabaseExecuted:false,formalPerformanceMeasured:false};
 receipt.experimentalV3.relationSet = {independentReference:relationOracle,acceptance:relationAcceptance,actualDatabaseExecuted:false,formalPerformanceMeasured:false};

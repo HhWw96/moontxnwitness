@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { sourceFingerprint } from './build-fingerprint.mjs';
 import {spawnSync} from 'node:child_process';
 
-runMoon(['build', '--target', 'js', '--release', '--deny-warn']);
+runMoon(['build', '--target', 'js', '--release', '--deny-warn', '--jobs', '1']);
 const output = resolve(root, 'dist');
 mkdirSync(output, { recursive: true });
 copyFileSync(resolve(root, '_build/js/release/build/bridge/bridge.js'), resolve(output, 'core.mjs'));

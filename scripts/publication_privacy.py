@@ -1,11 +1,22 @@
 """Check public working files and, optionally, all reachable historical blobs."""
 import argparse
 import json
+import os
 import re
 import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def private_home_paths(home, *, github_actions=False, runner_environment=""):
+    # Retained public Actions logs contain the hosted service account's root.
+    # This narrowly recognized CI identity is not the publisher's private home.
+    public_runner = (github_actions and runner_environment == "github-hosted" and
+                     home.replace('\\', '/').lower() in ('/home/runner', 'c:/users/runneradmin'))
+    if public_runner:
+        return set()
+    return {home, home.replace('\\', '/'), home.replace('\\', '\\\\')}
 
 
 def git(*args):
@@ -19,7 +30,8 @@ def scan():
     findings = []
     checked = 0
     home = str(Path.home())
-    private_paths = {home, home.replace('\\', '/'), home.replace('\\', '\\\\')}
+    private_paths = private_home_paths(home, github_actions=os.environ.get('GITHUB_ACTIONS') == 'true',
+                                      runner_environment=os.environ.get('RUNNER_ENVIRONMENT', ''))
     patterns = [re.compile(rb'gh[pousr]_[A-Za-z0-9]{20,}'), re.compile(rb'-----BEGIN [A-Z ]*PRIVATE' + rb' KEY-----')]
 
     def check(label, content):
@@ -57,7 +69,9 @@ def scan():
             proc.stdin.close()
             proc.stdout.close()
             proc.wait()
-    receipt = {'tool': 'MoonTxnWitness', 'passed': not findings, 'checkedFilesAndBlobs': checked, 'historyBlobs': history_blobs, 'findings': findings, 'scope': 'Private home paths, GitHub token syntax, private keys and selected local configuration; not an exhaustive secret detector'}
+    receipt = {'tool': 'MoonTxnWitness', 'passed': not findings, 'checkedFilesAndBlobs': checked, 'historyBlobs': history_blobs, 'findings': findings,
+               'publicHostedRunnerHomeExcluded': not private_paths,
+               'scope': 'Private publisher home paths, GitHub token syntax, private keys and selected local configuration; recognized GitHub-hosted service-account roots are public CI metadata; not an exhaustive secret detector'}
     (ROOT / 'verification').mkdir(exist_ok=True)
     (ROOT / 'verification/publication-privacy.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(receipt))

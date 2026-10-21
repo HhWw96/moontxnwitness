@@ -3,7 +3,7 @@ import { openSync, readSync, closeSync, writeFileSync, existsSync, unlinkSync } 
 import { resolve } from 'node:path';
 import { run_json, run_options_json, verify_certificate_json, shrink_json, shrink_options_json, compare_models_json, version } from './core.mjs';
 import { makeCapsule, replayCapsule, makeCapsuleV3, replayCapsuleV3 } from './evidence.mjs';
-import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFailuresV3 } from './sdk.mjs';
+import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFailuresV3, inspectOrmSourceV3 } from './sdk.mjs';
 
 const help = `MoonTxnWitness v${version()}
 用法：
@@ -20,6 +20,7 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs verify-v3 TRACE3.json REPORT.json
   node dist/moontxnwitness.mjs replay-v3 CAPSULE.json
   node dist/moontxnwitness.mjs failures-v3 TRACE3.json [--output FAILURES.json]
+  node dist/moontxnwitness.mjs inspect-orm-source-v3 TRACE3.json SOURCE2.jsonl [--output SOURCES.json]
   ingest-v3/check-v3/reduce-v3 可选 --sql-proof dislock-f9946f0-sql-proof-1 核验固定 SQL 来源；默认保留原 v3 规则。
   check 也支持 --capsule FILE 导出含日志、报告和 SHA-256 的自包含复现包。
   check 支持 --profile balanced 使用 12 事务搜索和 v2 证据；默认 compat 保留旧接口行为。
@@ -31,6 +32,7 @@ ingest-presence 为实验入口，校验固定键普通表的存在性与版本�
 输出文件必须尚不存在；不会覆盖输入或现有报告。--witness 导出精简环证据。
 退出码：0 符合所选模型；1 确定异常；2 输入/执行/证据无效；3 无法判定。
 failures-v3 的退出码 0 仅表示诊断输入有效；即使记录了故障也为 0，不表示无故障、采集完整或模型符合。
+inspect-orm-source-v3 为固定 FastAPI Users SQLAlchemy 7.0.0/PG18 来源诊断；0 仅表示局部来源证明成功，完整历史仍无法判定；2 表示局部证明失败。
 结果只针对提供的唯一版本读写历史及版本顺序约束。不会连接数据库或上传数据。
 `;
 
@@ -112,6 +114,16 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (args[0] === 'inspect-orm-source-v3') {
+    const {paths,options} = localArgs(args.slice(1),['--output'],2);
+    if (paths[0] === '-' && paths[1] === '-') throw new Error('两个输入不能同时使用标准输入');
+    const result = inspectOrmSourceV3({
+      schema:2,profile:'fastapi-users-sqlalchemy-7.0.0-pg18/1',
+      traceText:readBounded(paths[0],8*1024*1024),
+      sourceJournalText:readBounded(paths[1],16*1024*1024),
+    });
+    emitJSON(result,options['--output'],paths);
+    process.exitCode = result.controlProfileComplete === true ? 0 : 2;
   } else if (['ingest-v3', 'check-v3', 'reduce-v3', 'verify-v3', 'replay-v3', 'failures-v3'].includes(args[0])) {
     const command = args[0];
     const allowed = command === 'check-v3' ? ['--output','--capsule','--sql-proof'] : command === 'reduce-v3' ? ['--output','--capture','--max-checks','--sql-proof'] : command === 'ingest-v3' ? ['--output','--sql-proof'] : command === 'failures-v3' ? ['--output'] : [];
