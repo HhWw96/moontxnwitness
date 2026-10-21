@@ -73,6 +73,8 @@ The directory contains:
   transaction-index commit precedes acknowledgement of the corresponding index.
 - `writer.lock` while the owned writer is live, and best-effort
   `journal-failure.json` after a storage failure.
+- `journal-invalidated.json` if the closed observer later sees unrecorded activity.
+  It is separate from the sealed data/index/cache and does not rewrite them.
 
 Each sync flushes and `fsync`s raw data, commits the SQLite cache and flushes and
 `fsync`s a new index before atomically replacing its name. Final sealing occurs
@@ -112,7 +114,8 @@ during iteration. A consumer must exhaust the iterator successfully before
 claiming that it processed a complete history. Atomic export below enforces that
 rule before publishing its final filename. Iteration also rechecks newly
 appearing writer/failure markers at the end, including the reopen-before-index
-replacement window.
+replacement window. Marker inspection uses `lstat`, so a dangling symbolic link
+is still a marker and inspection errors cannot silently restore completeness.
 
 ## Closed sources, checkpoints and retention
 
@@ -128,6 +131,23 @@ An active transaction or unread result refuses source sealing. A lost COMMIT
 acknowledgement followed by an idle `rollback_ok` remains unknown. A disconnect
 leaves a permanent coverage gap; a later message cannot erase it. No outcome is
 inferred from timestamps, tokens, connection idleness or a subsequent write.
+A `rollback_ok.commitResponse` can instead identify the actual matching COMMIT
+response: either its server `ROLLBACK` command tag, or a real `40001`/`40P01`
+response with matching diagnostic SQLSTATE and IDLE status. Only that strict
+request-bound evidence resolves a known aborted COMMIT; ordinary later rollback
+does not.
+
+Appending after close rejects the event, permanently invalidates the live
+writer and attempts to create the separate invalidation marker. The v3 observer
+also invalidates on later business execute/fetch/commit/rollback or facade
+connection activity, while preserving its business behavior. Fresh verification
+can still report integrity-valid stored data, but it reports incomplete when the
+marker is present; strict export, reopening and archiving refuse it. Diagnostic
+iteration/export of a post-close-invalidated observer is conservatively refused.
+No original sealed bytes are changed. If the disk refuses every marker write,
+the live instance still refuses completeness/export, but a new process cannot
+learn about unrecorded later activity from unchanged bytes. An already exported
+old window does not cover that later activity.
 
 `checkpoint(source_closed=True)` synchronizes the recorded tail and records a
 source assertion if references allow it, but leaves the writer open: it does
@@ -167,6 +187,9 @@ to **8 MiB including envelope bytes**; `--max-bytes` changes that bound. An
 oversized capture is refused; it is never silently truncated. Exporting selected
 closed subwindows is future work. A false exclusive-writer assertion cannot be
 detected by hashing and must not be substituted for deployment verification.
+The Python export API additionally accepts an optional bounded `sql_profiles`
+declaration (at most 16 entries and 8 MiB of bounded JSON); the default export
+behavior is unchanged. Declaring a profile does not prove its SQL semantics.
 
 Export writes and synchronizes a uniquely named temporary file outside the
 journal, then publishes its final name with an atomic no-overwrite hard link.
@@ -180,14 +203,19 @@ The first suite passed 43 tests. An expanded 50-test run preceded independent
 audit, which found two real gaps: a final sync plus failure-marker failure could
 lose the writer lock, and a foreign WAL cache could produce an incomplete
 archive. Original failed receipts and raw files were preserved. After fixes,
-the current suite ran **55 tests: 54 passed and one Windows symlink test was
-skipped** because this account could not create a symbolic link.
+the current suite ran **64 tests: 62 passed and two Windows symlink tests were
+skipped** because this account could not create symbolic links.
 These tests exercised real segment-creation/index-replacement
 failures, injected device-sync/final-close failures, short writes, timed/size
 sync, queue backpressure, truncation, same-size tampering, SQLite cache tampering,
 reopening and interrupted-process rejection, bounded export, archive
 reconstruction, actual foreign WAL/SHM state, combined sync/marker failure and
-the lock appearing during streaming iteration.
+the lock appearing during streaming iteration. Later tests also cover strict
+COMMIT-response evidence, bounded profile export, post-close append invalidation,
+unchanged sealed bytes, marker-write failure with permanent live refusal and
+marker-inspection failure. Separate collector tests cover post-close wrapper and
+facade activity while preserving business return/exception behavior and allowing
+ordinary cleanup.
 The historical-identity case recorded and verified **4,100 completed
 transactions**, beyond the former in-memory identity cap. All IO artifacts and
 receipts were retained in the dedicated D-drive scratch directory; no PostgreSQL

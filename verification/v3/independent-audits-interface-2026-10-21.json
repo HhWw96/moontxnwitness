@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "kind": "frozen independent audit command interfaces",
+  "scope": "Default regression/CI integration; no database, build, performance measurement or regeneration of frozen expectations. Each invocation writes new evidence only.",
+  "tools": [
+    {
+      "path": "verification/v3/tools/post_close_audit.py",
+      "sha256": "84e4692b09e1ddecb907a56e0a992b6293922c996e75134f960076376aec814e",
+      "bytes": 10111,
+      "command": [
+        "PYTHON",
+        "-B",
+        "verification/v3/tools/post_close_audit.py",
+        "--output",
+        "NEW_DIRECTORY"
+      ],
+      "expected": {
+        "passed": true,
+        "cases": 4,
+        "checks": 42
+      },
+      "output": "One JSON stdout summary with passed/cases/checks/receipt/sha256/bytes. Exit 0 pass, 1 failed checks. Use a fresh bounded scratch directory, then retain receipt and four case-receipt files; physical journal/exports may remain ignored. No DB used.",
+      "scratch": "Caller supplies a new relative artifact path, runner temp path or D-drive path. Do not reuse or delete prior evidence. MTW_JOURNAL_SCRATCH can choose reader SQLite scratch."
+    },
+    {
+      "path": "verification/v3/tools/dislock_sql_proof_audit.mjs",
+      "sha256": "f8cfa4b323bd506fa19228bc4797273c872e28c8055589c96511e44c45e2881d",
+      "bytes": 14219,
+      "command": [
+        "NODE",
+        "verification/v3/tools/dislock_sql_proof_audit.mjs"
+      ],
+      "expected": {
+        "passed": true,
+        "originals": 7,
+        "mutations": 64,
+        "checks": 86
+      },
+      "output": "One JSON stdout summary with passed/originals/mutations/checks/failures/receipt binding. Exit 0 pass, 1 failure. Timestamped append-only verification/v3/dislock-sql-independent-* output. Strict current source/core/capture/wrapper binding. Main default reports remain conservative."
+    },
+    {
+      "path": "verification/v3/tools/dislock_explicit_policy_audit.mjs",
+      "sha256": "ef205c0b549a580a8129546ee34ec43c4693d58a0fa2a2ceb6c0294a8a5f1077",
+      "bytes": 17944,
+      "command": [
+        "NODE",
+        "verification/v3/tools/dislock_explicit_policy_audit.mjs"
+      ],
+      "expected": {
+        "passed": true,
+        "cases": 7,
+        "tamper": 36,
+        "checks": 199
+      },
+      "output": "One JSON stdout summary with passed/cases/tamper/checks/failures/receipt binding. Exit 0 pass, 1 failure. Timestamped append-only verification/v3/dislock-policy-independent-* output. Seven actual captured inputs, separate synthetic source-closure reduction, old default replay, unknown-policy rejection and real CLI invocation. Strict current source/dist binding."
+    }
+  ],
+  "prerequisites": [
+    "Build dist externally after all MoonBit/SDK changes, then freeze source/dist during these audits.",
+    "Use MTW_PYTHON/PYTHON choice already configured by caller for the Python command. NODE is the same process.execPath runtime as the main suite.",
+    "Do not call freeze_synthetic_dislock_closure.py in CI: its committed files are frozen inputs, and regeneration intentionally refuses an existing output.",
+    "Do not run formal timing/overhead sampling concurrently; these are functional filesystem/SDK/CLI checks.",
+    "Keep both original failed audits and every later receipt. These passing component checks do not mean full application, physical database authentication, performance targets or stable release acceptance."
+  ]
+}

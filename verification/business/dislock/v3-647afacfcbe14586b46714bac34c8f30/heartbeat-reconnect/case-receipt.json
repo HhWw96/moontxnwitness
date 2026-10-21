@@ -1,0 +1,812 @@
+{
+  "name": "heartbeat-reconnect",
+  "actualDatabaseExecution": true,
+  "upstreamOriginalMethods": true,
+  "schema": "mtw_provenance_dislock_v3_67dcf57e90_4",
+  "ttlSeconds": 5.0,
+  "passed": true,
+  "realBackendTerminated": true,
+  "realReconnectObserved": true,
+  "originalHeartbeatStopped": true,
+  "connectionCount": 4,
+  "journal": {
+    "schema": 1,
+    "status": "incomplete",
+    "valid": true,
+    "complete": false,
+    "closed": true,
+    "sourceClosed": false,
+    "durableSeq": 25,
+    "eventCount": 25,
+    "segmentCount": 1,
+    "bytesVerified": 9437,
+    "indexSha256": "96daa59a3f1c20ec48df4cc3d16cee78f835b4600ff05c7ffe646133115872b1",
+    "gaps": [
+      {
+        "code": "statement_failed",
+        "message": "A business statement raised its original driver exception."
+      },
+      {
+        "code": "rollback_unknown",
+        "message": "A transaction outcome is unresolved; a later idle rollback cannot prove it aborted."
+      },
+      {
+        "code": "transaction_outcome_unknown",
+        "message": "A connection disappeared while its transaction outcome was unresolved."
+      },
+      {
+        "code": "source_references_active",
+        "message": "Source closure refused while transactions or unread results still refer to retained records."
+      },
+      {
+        "code": "source_references_active",
+        "message": "Active transactions or unread results still refer to retained evidence."
+      },
+      {
+        "code": "source_unsealed",
+        "message": "Journal and explicit source window have not both been sealed."
+      }
+    ],
+    "actualDatabaseExecution": false
+  },
+  "export": {
+    "complete": false,
+    "diagnostic": true,
+    "bytes": 22486,
+    "sha256": "d5e342982416e81824cd2c94182fca0e1cf6572eee14335e0081dd168a4d8bfc",
+    "actualDatabaseExecution": false,
+    "gapCount": 7
+  },
+  "trace": "capture.json",
+  "candidateCount": 3,
+  "actualEffectCount": 3,
+  "state": [
+    [
+      "cronjob-lock:lease:fixture-heartbeat-reconnect",
+      "9f2bf3ed-1ffe-4adc-9984-426f2ac79f3b",
+      true
+    ],
+    [
+      "cronjob-lock:schedule:fixture-heartbeat-reconnect",
+      "3f3934a4-089e-4b6a-a5ff-c18e74b502be",
+      false
+    ]
+  ],
+  "finalBusinessRows": [
+    [
+      "cronjob-lock:lease:fixture-heartbeat-reconnect",
+      "owner-original",
+      {
+        "captureType": "datetime",
+        "value": "2026-10-21 11:41:23.011608+08:00"
+      }
+    ]
+  ],
+  "profiles": [
+    {
+      "profile": "dislock-f9946f0-v3/1",
+      "schema": "mtw_provenance_dislock_v3_67dcf57e90_4",
+      "table": "key_value",
+      "knownKeys": [
+        "cronjob-lock:lease:fixture-heartbeat-reconnect",
+        "cronjob-lock:schedule:fixture-heartbeat-reconnect"
+      ],
+      "metadata": {
+        "versionColumn": "_mtw_v3_version",
+        "installationNonce": "161148b9-51e7-40ae-90a0-c31a472de05d",
+        "serverVersion": 180006,
+        "tableOid": 16641,
+        "marker": {
+          "nonce": "161148b9-51e7-40ae-90a0-c31a472de05d",
+          "tableOid": 16641
+        },
+        "before": {
+          "triggerOid": 16702,
+          "functionOid": 16699,
+          "sourceSha256": "b84a82c6e91a30b533a778a312af54c2f06fdddc3373a4f79acd54eeeaeec946",
+          "triggerDefinition": "CREATE TRIGGER _mtw_v3_before BEFORE INSERT OR DELETE OR UPDATE ON mtw_provenance_dislock_v3_67dcf57e90_4.key_value FOR EACH ROW EXECUTE FUNCTION mtw_provenance_dislock_v3_67dcf57e90_4._mtw_v3_before()",
+          "triggerType": 31,
+          "enabled": "O",
+          "argumentsHex": "",
+          "source": "\n\nDECLARE previous uuid; was_present boolean;\nBEGIN\n  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'dislock v3 profile does not support DELETE'; END IF;\n  IF NEW.key IS NULL OR NEW.value IS NULL OR NEW.expire_at IS NULL THEN RETURN NEW; END IF;\n  IF TG_OP='UPDATE' AND NEW.key IS DISTINCT FROM OLD.key THEN RAISE EXCEPTION 'dislock v3 key mutation unsupported'; END IF;\n  SELECT token,present INTO previous,was_present FROM \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_state\" WHERE key=NEW.key FOR UPDATE;\n  IF NOT FOUND THEN RAISE EXCEPTION 'dislock v3 key outside declared domain'; END IF;\n  IF TG_OP='UPDATE' AND (NOT was_present OR previous IS DISTINCT FROM OLD.\"_mtw_v3_version\") THEN\n    RAISE EXCEPTION 'dislock v3 predecessor state mismatch';\n  END IF;\n  NEW.\"_mtw_v3_version\":=pg_catalog.gen_random_uuid();\n  INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_candidates\"(token,key,predecessor,action,owner,expire_at)\n    VALUES(NEW.\"_mtw_v3_version\",NEW.key,previous,TG_OP,NEW.value,NEW.expire_at);\n  RETURN NEW;\nEND\n\n",
+          "functionCatalog": [
+            "mtw_provenance_dislock_v3_67dcf57e90_4",
+            "_mtw_v3_before",
+            "\n\nDECLARE previous uuid; was_present boolean;\nBEGIN\n  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'dislock v3 profile does not support DELETE'; END IF;\n  IF NEW.key IS NULL OR NEW.value IS NULL OR NEW.expire_at IS NULL THEN RETURN NEW; END IF;\n  IF TG_OP='UPDATE' AND NEW.key IS DISTINCT FROM OLD.key THEN RAISE EXCEPTION 'dislock v3 key mutation unsupported'; END IF;\n  SELECT token,present INTO previous,was_present FROM \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_state\" WHERE key=NEW.key FOR UPDATE;\n  IF NOT FOUND THEN RAISE EXCEPTION 'dislock v3 key outside declared domain'; END IF;\n  IF TG_OP='UPDATE' AND (NOT was_present OR previous IS DISTINCT FROM OLD.\"_mtw_v3_version\") THEN\n    RAISE EXCEPTION 'dislock v3 predecessor state mismatch';\n  END IF;\n  NEW.\"_mtw_v3_version\":=pg_catalog.gen_random_uuid();\n  INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_candidates\"(token,key,predecessor,action,owner,expire_at)\n    VALUES(NEW.\"_mtw_v3_version\",NEW.key,previous,TG_OP,NEW.value,NEW.expire_at);\n  RETURN NEW;\nEND\n\n",
+            false,
+            "v",
+            [
+              "search_path=pg_catalog"
+            ],
+            0,
+            "trigger",
+            "plpgsql"
+          ]
+        },
+        "after": {
+          "triggerOid": 16703,
+          "functionOid": 16700,
+          "sourceSha256": "13d61125636d3fc083b61aae0bae476d9b29b5db73853655e01d360b0fcbb270",
+          "triggerDefinition": "CREATE TRIGGER _mtw_v3_after AFTER INSERT OR UPDATE ON mtw_provenance_dislock_v3_67dcf57e90_4.key_value FOR EACH ROW EXECUTE FUNCTION mtw_provenance_dislock_v3_67dcf57e90_4._mtw_v3_after()",
+          "triggerType": 21,
+          "enabled": "O",
+          "argumentsHex": "",
+          "source": "\n\nDECLARE previous uuid; candidate_key text; candidate_action text; changed integer;\nBEGIN\n  SELECT predecessor,key,action INTO STRICT previous,candidate_key,candidate_action\n    FROM \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_candidates\" WHERE token=NEW.\"_mtw_v3_version\";\n  IF candidate_key IS DISTINCT FROM NEW.key OR candidate_action<>TG_OP THEN\n    RAISE EXCEPTION 'dislock v3 candidate does not match actual effect';\n  END IF;\n  UPDATE \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_state\" SET token=NEW.\"_mtw_v3_version\",present=true WHERE key=NEW.key AND token=previous;\n  GET DIAGNOSTICS changed=ROW_COUNT;\n  IF changed<>1 THEN RAISE EXCEPTION 'dislock v3 actual effect source mismatch'; END IF;\n  INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_effects\"(token,key,predecessor,action,owner,expire_at)\n    VALUES(NEW.\"_mtw_v3_version\",NEW.key,previous,TG_OP,NEW.value,NEW.expire_at);\n  RETURN NEW;\nEND\n\n",
+          "functionCatalog": [
+            "mtw_provenance_dislock_v3_67dcf57e90_4",
+            "_mtw_v3_after",
+            "\n\nDECLARE previous uuid; candidate_key text; candidate_action text; changed integer;\nBEGIN\n  SELECT predecessor,key,action INTO STRICT previous,candidate_key,candidate_action\n    FROM \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_candidates\" WHERE token=NEW.\"_mtw_v3_version\";\n  IF candidate_key IS DISTINCT FROM NEW.key OR candidate_action<>TG_OP THEN\n    RAISE EXCEPTION 'dislock v3 candidate does not match actual effect';\n  END IF;\n  UPDATE \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_state\" SET token=NEW.\"_mtw_v3_version\",present=true WHERE key=NEW.key AND token=previous;\n  GET DIAGNOSTICS changed=ROW_COUNT;\n  IF changed<>1 THEN RAISE EXCEPTION 'dislock v3 actual effect source mismatch'; END IF;\n  INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_effects\"(token,key,predecessor,action,owner,expire_at)\n    VALUES(NEW.\"_mtw_v3_version\",NEW.key,previous,TG_OP,NEW.value,NEW.expire_at);\n  RETURN NEW;\nEND\n\n",
+            false,
+            "v",
+            [
+              "search_path=pg_catalog"
+            ],
+            0,
+            "trigger",
+            "plpgsql"
+          ]
+        },
+        "predecessor": {
+          "functionOid": 16701,
+          "sourceSha256": "fe026eeddc195a38f2d29bc5262a418699e2ad480fd04a4a6e467e34fd500561",
+          "source": "\n\nDECLARE previous text; matches integer;\nBEGIN\n  SELECT pg_catalog.count(*)::integer,pg_catalog.min(predecessor::text)\n    INTO matches,previous FROM \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_candidates\" WHERE token=p_token::uuid;\n  IF matches<>1 THEN RAISE EXCEPTION 'dislock v3 unique immutable candidate missing'; END IF;\n  RETURN previous;\nEND\n\n",
+          "functionCatalog": [
+            "mtw_provenance_dislock_v3_67dcf57e90_4",
+            "_mtw_v3_predecessor",
+            "\n\nDECLARE previous text; matches integer;\nBEGIN\n  SELECT pg_catalog.count(*)::integer,pg_catalog.min(predecessor::text)\n    INTO matches,previous FROM \"mtw_provenance_dislock_v3_67dcf57e90_4\".\"_mtw_v3_candidates\" WHERE token=p_token::uuid;\n  IF matches<>1 THEN RAISE EXCEPTION 'dislock v3 unique immutable candidate missing'; END IF;\n  RETURN previous;\nEND\n\n",
+            false,
+            "v",
+            [
+              "search_path=pg_catalog"
+            ],
+            1,
+            "text",
+            "plpgsql"
+          ]
+        },
+        "installationDdlSha256": "02a4edacf74e5592f49b069da9730e8d4d336f2d002c78a566ced2382f4339dc",
+        "catalog": {
+          "business": {
+            "relation": [
+              16641,
+              "r",
+              false,
+              false,
+              "p"
+            ],
+            "columns": [
+              [
+                "key",
+                "text",
+                true,
+                "",
+                ""
+              ],
+              [
+                "value",
+                "text",
+                true,
+                "",
+                ""
+              ],
+              [
+                "expire_at",
+                "timestamp with time zone",
+                true,
+                "",
+                ""
+              ],
+              [
+                "_mtw_v3_version",
+                "uuid",
+                true,
+                "",
+                ""
+              ]
+            ],
+            "constraints": [
+              [
+                "n",
+                [
+                  1
+                ],
+                true,
+                true,
+                false,
+                false
+              ],
+              [
+                "n",
+                [
+                  2
+                ],
+                true,
+                true,
+                false,
+                false
+              ],
+              [
+                "n",
+                [
+                  3
+                ],
+                true,
+                true,
+                false,
+                false
+              ],
+              [
+                "n",
+                [
+                  4
+                ],
+                true,
+                true,
+                false,
+                false
+              ],
+              [
+                "p",
+                [
+                  1
+                ],
+                true,
+                true,
+                false,
+                false
+              ]
+            ],
+            "userTriggerOids": [
+              16702,
+              16703
+            ],
+            "unsafeEffects": {
+              "foreignKeys": 0,
+              "rewriteRules": 0,
+              "checkConstraints": 0,
+              "exclusionConstraints": 0,
+              "generatedColumns": 0,
+              "expressionIndexes": 0,
+              "partialIndexes": 0,
+              "customTypes": 0,
+              "inheritance": 0,
+              "nondeterministicCollations": 0,
+              "customIndexOperators": 0,
+              "nonBtreeIndexes": 0,
+              "nondeterministicIndexCollations": 0
+            },
+            "indexCount": 1
+          },
+          "owned": {
+            "installation": {
+              "relation": [
+                16651,
+                "r",
+                false,
+                false,
+                "p"
+              ],
+              "columns": [
+                [
+                  "nonce",
+                  "uuid",
+                  true
+                ],
+                [
+                  "table_oid",
+                  "oid",
+                  true
+                ]
+              ],
+              "constraints": [
+                [
+                  "n",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    2
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "p",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ]
+              ],
+              "userTriggerOids": [],
+              "unsafeEffects": {
+                "foreignKeys": 0,
+                "rewriteRules": 0,
+                "checkConstraints": 0,
+                "exclusionConstraints": 0,
+                "generatedColumns": 0,
+                "expressionIndexes": 0,
+                "partialIndexes": 0,
+                "customTypes": 0,
+                "inheritance": 0,
+                "nondeterministicCollations": 0,
+                "customIndexOperators": 0,
+                "nonBtreeIndexes": 0,
+                "nondeterministicIndexCollations": 0
+              },
+              "indexCount": 1
+            },
+            "state": {
+              "relation": [
+                16658,
+                "r",
+                false,
+                false,
+                "p"
+              ],
+              "columns": [
+                [
+                  "key",
+                  "text",
+                  true
+                ],
+                [
+                  "token",
+                  "uuid",
+                  true
+                ],
+                [
+                  "present",
+                  "boolean",
+                  true
+                ]
+              ],
+              "constraints": [
+                [
+                  "n",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    2
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    3
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "p",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "u",
+                  [
+                    2
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ]
+              ],
+              "userTriggerOids": [],
+              "unsafeEffects": {
+                "foreignKeys": 0,
+                "rewriteRules": 0,
+                "checkConstraints": 0,
+                "exclusionConstraints": 0,
+                "generatedColumns": 0,
+                "expressionIndexes": 0,
+                "partialIndexes": 0,
+                "customTypes": 0,
+                "inheritance": 0,
+                "nondeterministicCollations": 0,
+                "customIndexOperators": 0,
+                "nonBtreeIndexes": 0,
+                "nondeterministicIndexCollations": 0
+              },
+              "indexCount": 2
+            },
+            "candidates": {
+              "relation": [
+                16670,
+                "r",
+                false,
+                false,
+                "p"
+              ],
+              "columns": [
+                [
+                  "token",
+                  "uuid",
+                  true
+                ],
+                [
+                  "key",
+                  "text",
+                  true
+                ],
+                [
+                  "predecessor",
+                  "uuid",
+                  true
+                ],
+                [
+                  "action",
+                  "text",
+                  true
+                ],
+                [
+                  "owner",
+                  "text",
+                  true
+                ],
+                [
+                  "expire_at",
+                  "timestamp with time zone",
+                  true
+                ]
+              ],
+              "constraints": [
+                [
+                  "n",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    2
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    3
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    4
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    5
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    6
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "p",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ]
+              ],
+              "userTriggerOids": [],
+              "unsafeEffects": {
+                "foreignKeys": 0,
+                "rewriteRules": 0,
+                "checkConstraints": 0,
+                "exclusionConstraints": 0,
+                "generatedColumns": 0,
+                "expressionIndexes": 0,
+                "partialIndexes": 0,
+                "customTypes": 0,
+                "inheritance": 0,
+                "nondeterministicCollations": 0,
+                "customIndexOperators": 0,
+                "nonBtreeIndexes": 0,
+                "nondeterministicIndexCollations": 0
+              },
+              "indexCount": 1
+            },
+            "effects": {
+              "relation": [
+                16683,
+                "r",
+                false,
+                false,
+                "p"
+              ],
+              "columns": [
+                [
+                  "token",
+                  "uuid",
+                  true
+                ],
+                [
+                  "key",
+                  "text",
+                  true
+                ],
+                [
+                  "predecessor",
+                  "uuid",
+                  true
+                ],
+                [
+                  "action",
+                  "text",
+                  true
+                ],
+                [
+                  "owner",
+                  "text",
+                  true
+                ],
+                [
+                  "expire_at",
+                  "timestamp with time zone",
+                  true
+                ]
+              ],
+              "constraints": [
+                [
+                  "n",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    2
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    3
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    4
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    5
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    6
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "p",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "u",
+                  [
+                    3
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ]
+              ],
+              "userTriggerOids": [],
+              "unsafeEffects": {
+                "foreignKeys": 0,
+                "rewriteRules": 0,
+                "checkConstraints": 0,
+                "exclusionConstraints": 0,
+                "generatedColumns": 0,
+                "expressionIndexes": 0,
+                "partialIndexes": 0,
+                "customTypes": 0,
+                "inheritance": 0,
+                "nondeterministicCollations": 0,
+                "customIndexOperators": 0,
+                "nonBtreeIndexes": 0,
+                "nondeterministicIndexCollations": 0
+              },
+              "indexCount": 2
+            }
+          }
+        },
+        "initializationWindow": [
+          {
+            "kind": "begin",
+            "commandTag": "BEGIN"
+          },
+          {
+            "kind": "lock",
+            "tableOid": 16641,
+            "mode": "ACCESS EXCLUSIVE",
+            "commandTag": "LOCK TABLE"
+          },
+          {
+            "kind": "catalog",
+            "tableOid": 16641
+          },
+          {
+            "kind": "snapshot",
+            "rows": [
+              {
+                "key": "cronjob-lock:lease:fixture-heartbeat-reconnect",
+                "version": "241c3c2a-9c75-4cb8-95be-acade93c011f",
+                "present": false,
+                "owner": null,
+                "expireAt": null
+              },
+              {
+                "key": "cronjob-lock:schedule:fixture-heartbeat-reconnect",
+                "version": "3f3934a4-089e-4b6a-a5ff-c18e74b502be",
+                "present": false,
+                "owner": null,
+                "expireAt": null
+              }
+            ]
+          },
+          {
+            "kind": "commit",
+            "commandTag": "COMMIT"
+          }
+        ]
+      },
+      "initialState": [
+        {
+          "key": "cronjob-lock:lease:fixture-heartbeat-reconnect",
+          "version": "241c3c2a-9c75-4cb8-95be-acade93c011f",
+          "present": false,
+          "owner": null,
+          "expireAt": null
+        },
+        {
+          "key": "cronjob-lock:schedule:fixture-heartbeat-reconnect",
+          "version": "3f3934a4-089e-4b6a-a5ff-c18e74b502be",
+          "present": false,
+          "owner": null,
+          "expireAt": null
+        }
+      ],
+      "effectLedger": [
+        {
+          "key": "cronjob-lock:lease:fixture-heartbeat-reconnect",
+          "version": "8ad3a04e-4cf8-4629-a09a-8be364db2527",
+          "predecessor": "241c3c2a-9c75-4cb8-95be-acade93c011f",
+          "action": "INSERT",
+          "owner": "owner-original",
+          "expireAt": {
+            "captureType": "datetime",
+            "value": "2026-10-21 11:41:27.186654+08:00"
+          }
+        },
+        {
+          "key": "cronjob-lock:lease:fixture-heartbeat-reconnect",
+          "version": "9f2bf3ed-1ffe-4adc-9984-426f2ac79f3b",
+          "predecessor": "d8b8a6ab-873a-428b-8fb8-a418dabff389",
+          "action": "UPDATE",
+          "owner": "owner-original",
+          "expireAt": {
+            "captureType": "datetime",
+            "value": "2026-10-21 11:41:23.011608+08:00"
+          }
+        },
+        {
+          "key": "cronjob-lock:lease:fixture-heartbeat-reconnect",
+          "version": "d8b8a6ab-873a-428b-8fb8-a418dabff389",
+          "predecessor": "8ad3a04e-4cf8-4629-a09a-8be364db2527",
+          "action": "UPDATE",
+          "owner": "owner-original",
+          "expireAt": {
+            "captureType": "datetime",
+            "value": "2026-10-21 11:41:27.861741+08:00"
+          }
+        }
+      ]
+    }
+  ],
+  "expectedAnalysis": "inconclusive until fixed SQL/source proof is implemented"
+}

@@ -22,7 +22,7 @@ def main():
     parser.add_argument('--bin', default=str(ROOT / 'artifacts/postgres18-tools/pgsql/bin'))
     parser.add_argument('--work-root', type=Path, default=ROOT / 'artifacts/capture-postgres',
                         help='Parent for new owned cluster files; existing runs are never reused or removed')
-    parser.add_argument('--suite', choices=['capture', 'legacy', 'all', 'provenance', 'provenance-cost', 'provenance-profile', 'capture-with-profile', 'dislock', 'capture-with-dislock', 'presence', 'presence-database', 'capture-with-presence', 'all-with-presence', 'v3-lifecycle'], default='capture')
+    parser.add_argument('--suite', choices=['capture', 'legacy', 'all', 'provenance', 'provenance-cost', 'provenance-profile', 'capture-with-profile', 'dislock', 'capture-with-dislock', 'presence', 'presence-database', 'capture-with-presence', 'all-with-presence', 'v3-lifecycle', 'v3-list', 'v3-dislock', 'v3-commit', 'v3-business-all'], default='capture')
     args = parser.parse_args()
     parent = args.work_root.resolve()
     parent.mkdir(parents=True, exist_ok=True)
@@ -81,12 +81,46 @@ def main():
         connection_file.write_text(json.dumps({'host':'127.0.0.1', 'port':port,
             'dbname':'postgres', 'user':'mtw', 'password':password}), encoding='utf8')
         env['MTW_PG_CONNECTION_FILE'] = str(connection_file)
-        suites = (['legacy','capture','provenance-profile','dislock','presence'] if args.suite == 'all-with-presence' else
+        suites = (['v3-dislock','v3-commit'] if args.suite == 'v3-business-all' else
+                  ['legacy','capture','provenance-profile','dislock','presence'] if args.suite == 'all-with-presence' else
                   ['legacy','capture'] if args.suite == 'all' else
                   ['capture','provenance-profile','dislock','presence'] if args.suite == 'capture-with-presence' else
                   ['capture','provenance-profile','dislock'] if args.suite == 'capture-with-dislock' else
                   ['capture','provenance-profile'] if args.suite == 'capture-with-profile' else [args.suite])
         for suite in suites:
+            if suite == 'v3-commit':
+                output = ROOT / 'verification/business/dislock' / ('v3-commit-' + uuid.uuid4().hex)
+                result = subprocess.run([sys.executable, '-B', str(ROOT / 'experiments/business/dislock/v3_commit_postgres.py'),
+                    '--output', str(output)], cwd=ROOT, env=env, creationflags=flags)
+                if result.returncode:
+                    return result.returncode
+                replay = subprocess.run(['node', str(ROOT / 'experiments/business/dislock/v3_commit_e2e.mjs'), str(output)],
+                    cwd=ROOT, env=env, creationflags=flags)
+                if replay.returncode:
+                    return replay.returncode
+                continue
+            if suite == 'v3-dislock':
+                output = ROOT / 'verification/business/dislock' / ('v3-' + uuid.uuid4().hex)
+                result = subprocess.run([sys.executable, '-B', str(ROOT / 'experiments/business/dislock/v3_postgres.py'),
+                    '--output', str(output)], cwd=ROOT, env=env, creationflags=flags)
+                if result.returncode:
+                    return result.returncode
+                replay = subprocess.run(['node', str(ROOT / 'experiments/business/dislock/v3_e2e.mjs'), str(output)],
+                    cwd=ROOT, env=env, creationflags=flags)
+                if replay.returncode:
+                    return replay.returncode
+                continue
+            if suite == 'v3-list':
+                output = ROOT / 'verification/list-v3' / ('postgres-' + uuid.uuid4().hex)
+                result = subprocess.run([sys.executable, '-B', str(ROOT / 'experiments/list_v3/postgres.py'),
+                    '--output', str(output)], cwd=ROOT, env=env, creationflags=flags)
+                if result.returncode:
+                    return result.returncode
+                replay = subprocess.run(['node', str(ROOT / 'experiments/list_v3/e2e.mjs'), str(output)],
+                    cwd=ROOT, env=env, creationflags=flags)
+                if replay.returncode:
+                    return replay.returncode
+                continue
             if suite == 'v3-lifecycle':
                 output = ROOT / 'verification/v3' / ('postgres-' + uuid.uuid4().hex)
                 result = subprocess.run([sys.executable, '-B', str(ROOT / 'experiments/lifecycle_v3/postgres.py'),

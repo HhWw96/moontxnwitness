@@ -31,6 +31,8 @@ priv struct V3CaptureTx {
   mut status : TxStatus
   mut active : Bool
   mut commit_requested : Bool
+  mut commit_request_seq : Int64?
+  mut confirmed_rollback_response : Bool
   events : Array[Int64]
   steps : Array[V3CaptureStep]
   effects : Array[Int]
@@ -145,6 +147,7 @@ fn v3_capture_result(
   transactions : Array[V3CaptureTx],
   history : Json,
   error : String?,
+  sql_proof : Json,
 ) -> String {
   let raw_effects = effects.map(effect => {
     let reverted = match effect.reverted_by {
@@ -181,7 +184,13 @@ fn v3_capture_result(
   })
   let result : Json = {
     "schema": 3,
-    "algorithm": "v3-lifecycle-1",
+    "algorithm": (if sql_proof != Json::null() {
+      "v3-lifecycle-sql-1"
+    } else if transactions.any(tx => tx.confirmed_rollback_response) {
+      "v3-lifecycle-2"
+    } else {
+      "v3-lifecycle-1"
+    }).to_json(),
     "status": status.to_json(),
     "coverage": {
       "complete": (status == "ready").to_json(),
@@ -191,6 +200,9 @@ fn v3_capture_result(
     "effects": raw_effects.to_json(),
     "transactions": raw_transactions.to_json(),
     "history": history,
+  }
+  if sql_proof != Json::null() {
+    object_fields_unchecked_v3(result)["sqlProof"] = sql_proof
   }
   match error {
     Some(message) =>
@@ -231,8 +243,12 @@ fn v3_capture_external_final(
 /// Validate lifecycle facts without flattening revoked writes into committed
 /// state. Only a complete, independently source-checked register projection is
 /// exported. Conditions and raw SQL remain observations with explicit gaps.
-pub fn normalize_capture_v3_json(text : String) -> String {
+fn normalize_register_capture_v3_json(
+  text : String,
+  use_sql_proof? : Bool = false,
+) -> String {
   let mut observations : Json = Json::null()
+  let mut proof_evidence : Json = Json::null()
   let effects : Array[V3CaptureEffect] = []
   let transactions : Array[V3CaptureTx] = []
   let gaps : Array[Json] = []
@@ -240,9 +256,15 @@ pub fn normalize_capture_v3_json(text : String) -> String {
     let root = object_fields(guarded_json(text, limit=8388608), "capture v3")
     known_fields(
       root,
-      ["traceSchema", "clockDomain", "scope", "events", "gaps"],
+      [
+        "traceSchema", "clockDomain", "scope", "events", "gaps", "dataModel", "sqlProfiles",
+      ],
       "capture v3",
     )
+    match root.get("dataModel") {
+      None | Some(String("point-register-v1")) => ()
+      _ => fail("Unsupported register dataModel")
+    }
     if required(root, "traceSchema", "capture v3") != (3).to_json() {
       fail("traceSchema must be 3")
     }
@@ -282,6 +304,23 @@ pub fn normalize_capture_v3_json(text : String) -> String {
     if events.length() > 65536 {
       fail("At most 65,536 v3 events are supported")
     }
+    let sql_proof : V3DislockSQLProof = if use_sql_proof {
+      v3_dislock_sql_proof(root)
+    } else {
+      {
+        verified_statements: Map([]),
+        verified_facts: Map([]),
+        verified_profiles: Map([]),
+        gaps: [],
+      }
+    }
+    if use_sql_proof {
+      proof_evidence = v3_sql_proof_evidence(sql_proof, root)
+      for gap in sql_proof.gaps {
+        gaps.push(gap)
+      }
+    }
+    v3_sql_profiles(root, gaps, sql_proof.verified_profiles)
     let initial : Map[String, String] = Map([])
     let sources : Map[String, V3CaptureSource] = Map([])
     let ids : Map[String, Int] = Map([])
@@ -385,6 +424,8 @@ pub fn normalize_capture_v3_json(text : String) -> String {
           status: Unknown,
           active: true,
           commit_requested: false,
+          commit_request_seq: None,
+          confirmed_rollback_response: false,
           events: [seq],
           steps: [],
           effects: [],
@@ -405,16 +446,30 @@ pub fn normalize_capture_v3_json(text : String) -> String {
           if kind == "read" {
             known_fields(
               event,
-              ["seq", "time", "kind", "tx", "key", "version"],
+              [
+                "seq", "time", "kind", "tx", "key", "version", "statement", "mappingId",
+                "evidence",
+              ],
               "read",
             )
           } else {
             known_fields(
               event,
-              ["seq", "time", "kind", "tx", "key", "version", "predecessor"],
+              [
+                "seq", "time", "kind", "tx", "key", "version", "predecessor", "statement",
+                "mappingId", "evidence",
+              ],
               "write",
             )
           }
+          v3_sql_fact_metadata(
+            event,
+            seq,
+            tx.id,
+            statements,
+            gaps,
+            sql_proof.verified_facts.contains(seq),
+          )
           let key = identifier(required(event, "key", "event"), "event.key")
           let version = identifier(
             required(event, "version", "event"),
@@ -516,8 +571,17 @@ pub fn normalize_capture_v3_json(text : String) -> String {
             event,
             [
               "seq", "time", "kind", "tx", "predicate", "matched", "sourceVersion",
+              "statement", "mappingId", "evidence",
             ],
             "condition",
+          )
+          v3_sql_fact_metadata(
+            event,
+            seq,
+            tx.id,
+            statements,
+            gaps,
+            sql_proof.verified_facts.contains(seq),
           )
           let _ = required(event, "predicate", "condition")
           let _ = presence_capture_bool(
@@ -537,33 +601,43 @@ pub fn normalize_capture_v3_json(text : String) -> String {
               }
             }
           }
-          gaps.push(
-            capture_gap(
-              "unsupported_condition", "Condition semantics are retained but not proved by the lifecycle projection",
-            ),
-          )
+          if !sql_proof.verified_facts.contains(seq) {
+            gaps.push(
+              capture_gap(
+                "unsupported_condition", "Condition semantics are retained but not proved by the lifecycle projection",
+              ),
+            )
+          }
         }
         "statement" => {
           known_fields(
             event,
-            ["seq", "time", "kind", "tx", "sql", "parameters"],
+            [
+              "seq", "time", "kind", "tx", "sql", "parameters", "mappingId", "executedSql",
+            ],
             "statement",
           )
           match required(event, "sql", "statement") {
             String(_) => ()
             _ => fail("statement.sql must be a string")
           }
+          v3_sql_statement_metadata(event)
           statements[seq] = tx.id
-          gaps.push(
-            capture_gap(
-              "unmapped_statement", "Raw SQL has no verified versioned statement mapping",
-            ),
-          )
+          if !sql_proof.verified_statements.contains(seq) {
+            gaps.push(
+              capture_gap(
+                "unmapped_statement", "Raw SQL has no verified versioned statement mapping",
+              ),
+            )
+          }
         }
         "rows" => {
           known_fields(
             event,
-            ["seq", "time", "kind", "tx", "statement", "rows", "complete"],
+            [
+              "seq", "time", "kind", "tx", "statement", "rows", "complete", "serverRows",
+              "columns", "error",
+            ],
             "rows",
           )
           let statement = v3_capture_seq(
@@ -586,6 +660,7 @@ pub fn normalize_capture_v3_json(text : String) -> String {
           if row_count > 10000 {
             fail("At most 10,000 raw result rows are supported")
           }
+          v3_sql_rows_metadata(event, rows)
           row_complete[statement] = presence_capture_bool(
             required(event, "complete", "rows"),
             "rows.complete",
@@ -632,17 +707,33 @@ pub fn normalize_capture_v3_json(text : String) -> String {
         "commit_request" => {
           known_fields(event, ["seq", "time", "kind", "tx"], kind)
           tx.commit_requested = true
+          tx.commit_request_seq = Some(seq)
         }
         "commit_ok" | "rollback_ok" | "disconnect" => {
-          known_fields(event, ["seq", "time", "kind", "tx"], kind)
+          if kind == "rollback_ok" {
+            known_fields(
+              event,
+              ["seq", "time", "kind", "tx", "commitResponse"],
+              kind,
+            )
+          } else {
+            known_fields(event, ["seq", "time", "kind", "tx"], kind)
+          }
+          let confirmed_abort = if kind == "rollback_ok" {
+            v3_confirmed_commit_rollback(event, tx)
+          } else {
+            false
+          }
           if kind == "commit_ok" {
             if !tx.commit_requested {
               fail("commit_ok requires a preceding commit_request")
             }
             tx.status = Committed
-          } else if kind == "rollback_ok" && !tx.commit_requested {
+          } else if kind == "rollback_ok" &&
+            (!tx.commit_requested || confirmed_abort) {
             v3_capture_rollback(tx, effects, 0, seq)
             tx.status = Aborted
+            tx.confirmed_rollback_response = confirmed_abort
           } else {
             tx.status = Unknown
             gaps.push(
@@ -810,6 +901,7 @@ pub fn normalize_capture_v3_json(text : String) -> String {
         transactions,
         Json::null(),
         None,
+        proof_evidence,
       )
     }
     let projected_txs : Array[Transaction] = []
@@ -855,6 +947,7 @@ pub fn normalize_capture_v3_json(text : String) -> String {
       transactions,
       history,
       None,
+      proof_evidence,
     )
   } catch {
     error =>
@@ -866,6 +959,7 @@ pub fn normalize_capture_v3_json(text : String) -> String {
         transactions,
         Json::null(),
         Some(error.to_string()),
+        proof_evidence,
       )
   }
 }

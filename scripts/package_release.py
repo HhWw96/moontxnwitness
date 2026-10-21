@@ -58,9 +58,15 @@ def archive(files, path):
 
 excluded_dirs = {".git", "_build", ".mooncakes", "node_modules", "artifacts", "dist", "__pycache__", ".venv-pg"}
 excluded_names = {".local-toolchain.json", ".DS_Store"}
+# Match the public source inventory, including uncommitted public additions.
+# Ignored diagnostics and draft work must not enter a source or portable export.
+public_names = set(filter(None, subprocess.check_output(
+    ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+    cwd=ROOT).decode('utf-8').split('\0')))
 source = []
-for item in ROOT.rglob("*"):
-    relative = item.relative_to(ROOT)
+for name in sorted(public_names):
+    relative = Path(name)
+    item = ROOT / relative
     if not item.is_file() or any(part in excluded_dirs or part.startswith(('moontxnwitness-demo-', 'moontxnwitness-postgres-')) for part in relative.parts) or item.name in excluded_names:
         continue
     if item.suffix in {".log", ".pyc"} or relative.as_posix() == "verification/package.json":
@@ -69,7 +75,8 @@ for item in ROOT.rglob("*"):
 portable = ["README.md", "LICENSE", "CHANGELOG.md", "THIRD_PARTY.md", "run-demo.cmd"]
 for folder in ("dist", "docs", "examples", "verification", "integrations", "experiments"):
     for item in (ROOT / folder).rglob("*"):
-        if item.is_file() and "__pycache__" not in item.parts and item.name != "package.json":
+        relative = item.relative_to(ROOT).as_posix()
+        if item.is_file() and "__pycache__" not in item.parts and item.name != "package.json" and (folder == 'dist' or relative in public_names):
             portable.append(item.relative_to(ROOT).as_posix())
 
 ARTIFACTS.mkdir(exist_ok=True)
@@ -181,6 +188,33 @@ for kind in ("portable", "source"):
             source = run([sys.executable, '-c', "import sys; sys.path.insert(0,'experiments/business/dislock'); from business import verify_sources; print(verify_sources()['commit'])"], consumer)
             assert source.strip() == 'f9946f07159054433d9071c3805e41223cb47856'
             checks.append(kind + ' frozen MIT upstream business source integrity without executing its code')
+        if (consumer / 'verification/v3/synthetic-dislock-source-closure-v1/trace.json').is_file():
+            v3_checks = json.loads(run([NODE, '--input-type=module', '-e', """
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {analyzeV3,normalizeCaptureV3,reduceV3,verifyV3,makeCapsuleV3,replayCapsuleV3} from './dist/sdk.mjs';
+const read = path => readFileSync(path,'utf8');
+const policy = {sqlProof:'dislock-f9946f0-sql-proof-1'};
+const trace = read('verification/v3/synthetic-dislock-source-closure-v1/trace.json');
+const report = analyzeV3(trace,policy);
+assert.equal(report.status,'violation'); assert(verifyV3(trace,report).valid);
+assert(replayCapsuleV3(makeCapsuleV3(trace,report)).valid);
+const reduced = reduceV3(trace,{analysisOptions:policy,maxChecks:256});
+assert.equal(reduced.oneMinimal,true); assert.equal(reduced.report.status,'violation');
+assert.equal(analyzeV3(trace).status,'inconclusive');
+assert.equal(analyzeV3(trace,{sqlProof:null}).status,'invalid');
+const actual = read('verification/business/dislock/v3-db5f87c5620c4f8e955172340023482c/acquire-heartbeat-cleanup/capture.json');
+assert.equal(analyzeV3(actual,policy).status,'consistent');
+const list = read('verification/list-v3/postgres-2de835316d5f40d6b7e4bfeab4e4b8e4/duplicate-business-values-00/trace.json');
+const lr = analyzeV3(list); assert.equal(lr.status,'consistent');
+assert(verifyV3(list,lr).valid); assert(replayCapsuleV3(makeCapsuleV3(list,lr)).valid);
+assert.equal(normalizeCaptureV3(list).coverage.complete,true);
+console.log(JSON.stringify({passed:true,groups:4}));
+"""], consumer))
+            assert v3_checks == {'passed': True, 'groups': 4}
+            checks.extend(kind + ' v3 ' + entry for entry in (
+                'explicit source proof and capsule', 'source-closed synthetic reduction',
+                'default and invalid-policy compatibility', 'real stored list and dislock replay'))
     if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
         old_python = env.get('MTW_PYTHON')
         try:

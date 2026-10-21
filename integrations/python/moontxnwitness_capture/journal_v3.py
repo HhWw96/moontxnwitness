@@ -31,6 +31,7 @@ KINDS = frozenset(("snapshot", "begin", "read", "write", "condition", "savepoint
 SAFE_INTEGER = 9_007_199_254_740_991
 INDEX = "journal-index.json"
 LOCK = "writer.lock"
+INVALIDATED = "journal-invalidated.json"
 TRANSACTIONS = "transactions.sqlite3"
 MAX_INDEX_BYTES = 2 * 1024 * 1024
 MAX_SEGMENTS = 4096
@@ -227,7 +228,18 @@ class _Identities:
         self.connection.close()
 
 
-def _lifecycle(kind, tx, active, requested, identities, gap, seq):
+def _commit_abort_response(response, request):
+    if not isinstance(response, dict) or not _integer(response.get("request"), 1) or response.get("request") != request:
+        return False
+    if set(response) == {"request", "commandTag"}:
+        return response["commandTag"] == "ROLLBACK"
+    return (set(response) == {"request", "sqlstate", "diagnosticSqlstate", "transactionStatus"}
+            and response["sqlstate"] in ("40001", "40P01")
+            and response["diagnosticSqlstate"] == response["sqlstate"]
+            and response["transactionStatus"] == "IDLE")
+
+
+def _lifecycle(kind, tx, active, requested, identities, gap, seq, response=None):
     if kind not in ("begin", "commit_ok", "rollback_ok", "disconnect", "commit_request"):
         return
     if not isinstance(tx, str) or not 1 <= len(tx) <= 256:
@@ -245,18 +257,24 @@ def _lifecycle(kind, tx, active, requested, identities, gap, seq):
     elif kind == "commit_request":
         if tx in requested:
             gap("duplicate_commit_request", "A transaction has multiple COMMIT requests.")
-        requested.add(tx)
+        requested[tx] = seq
     elif kind == "commit_ok":
         if tx not in requested:
             gap("commit_request_missing", "COMMIT acknowledgement had no recorded request.")
         active.discard(tx)
-        requested.discard(tx)
+        requested.pop(tx, None)
     elif kind == "rollback_ok":
         if tx in requested:
             # An idle ROLLBACK after a lost COMMIT acknowledgement cannot tell
             # whether that transaction committed. Keep its source unresolved.
-            gap("transaction_outcome_unknown", "ROLLBACK after COMMIT request does not resolve the original COMMIT outcome.")
+            if _commit_abort_response(response, requested[tx]):
+                active.discard(tx)
+                requested.pop(tx, None)
+            else:
+                gap("transaction_outcome_unknown", "ROLLBACK after COMMIT request does not resolve the original COMMIT outcome.")
         else:
+            if response is not None:
+                gap("commit_response_without_request", "A COMMIT response referenced no preceding request.")
             active.discard(tx)
     elif kind == "disconnect":
         gap("transaction_outcome_unknown", "A connection disappeared while its transaction outcome was unresolved.")
@@ -288,11 +306,12 @@ class SegmentedJournal:
         self._cv, self._append_lock = threading.Condition(threading.RLock()), threading.RLock()
         self._queue, self._queued_bytes, self._reserved_bytes, self._error = collections.deque(), 0, 0, None
         self._closing, self._closed, self._source_closed = False, False, False
+        self._invalidated = False
         self._requested_source_closed = False
         self._last_seq = self._written_seq = self._durable_seq = 0
         self._last_time = self._written_time = self._written_count = self._accepted_bytes = 0
         self._segments, self._gaps, self._active = [], [], set()
-        self._commit_requested = set()
+        self._commit_requested = {}
         self._refs = {"activeTransactions": [], "unreadResults": [], "versionSources": []}
         self._stats = {"acceptedRecords": 0, "durableRecords": 0, "backpressureCount": 0,
                        "backpressureNs": 0, "maxQueueBytes": 0, "fsyncCount": 0, "bytesWritten": 0}
@@ -376,6 +395,8 @@ class SegmentedJournal:
         with self._append_lock:
             with self._cv:
                 if self._closing or self._closed or self._error is not None:
+                    if self._closing or self._closed:
+                        self.invalidate(code="journal_append_after_close", message="A record append was attempted after this journal window closed.")
                     gap = self._gap("journal_not_writable", "A record arrived after close or an IO failure.")
                     return AppendResult(False, self._durable_seq, gap=gap)
                 # Reserve one bounded record before making a mutable-container
@@ -416,7 +437,7 @@ class SegmentedJournal:
                     self._queued_bytes += len(line)
                     self._stats["acceptedRecords"] += 1
                     self._source_closed = False
-                    self._queue.append((line, copied["seq"], copied["time"], copied["kind"], copied.get("tx")))
+                    self._queue.append((line, copied["seq"], copied["time"], copied["kind"], copied.get("tx"), copied.get("commitResponse")))
                     self._revision += 1
                     self._metadata_dirty = True
                     self._cv.notify_all()
@@ -485,7 +506,7 @@ class SegmentedJournal:
                 self._revision += 1
                 self._metadata_dirty = True
             self.flush()
-        return JournalReader(self.path).verify()
+        return self._verified_status()
 
     def close(self, *, source_closed=False):
         with self._append_lock:
@@ -501,7 +522,17 @@ class SegmentedJournal:
                 # marker. Retain the already durable lock on every error path.
                 raise JournalIOError("Journal persistence failed: " + type(self._error).__name__) from self._error
             self._release_lock()
-        return JournalReader(self.path).verify()
+        return self._verified_status()
+
+    def _verified_status(self):
+        status = JournalReader(self.path).verify()
+        if self._invalidated:
+            gaps = list(status.gaps)
+            for gap in self._gaps:
+                if gap not in gaps:
+                    gaps.append(gap)
+            status = dataclasses.replace(status, complete=False, gaps=tuple(gaps))
+        return status
 
     def __enter__(self):
         return self
@@ -528,8 +559,8 @@ class SegmentedJournal:
                 raise OSError("zero-byte journal write")
             view = view[count:]
 
-    def _transaction(self, kind, tx, seq):
-        _lifecycle(kind, tx, self._active, self._commit_requested, self._identities, self._gap, seq)
+    def _transaction(self, kind, tx, seq, response):
+        _lifecycle(kind, tx, self._active, self._commit_requested, self._identities, self._gap, seq, response)
 
     def _persist_index(self, closed):
         # SQLite synchronous=FULL commits its DELETE journal before a tail is
@@ -593,7 +624,7 @@ class SegmentedJournal:
                         self._cv.wait(wait)
                     item = self._queue.popleft() if self._queue else None
                 if item is not None:
-                    line, seq, event_time, kind, tx = item
+                    line, seq, event_time, kind, tx, response = item
                     if self._current is not None and self._current["bytes"] + len(line) > self.segment_bytes:
                         self._sync_tail()
                         self._file.close()
@@ -606,7 +637,7 @@ class SegmentedJournal:
                         firstSeq=seq if self._current["firstSeq"] is None else self._current["firstSeq"],
                         lastSeq=seq, eventCount=self._current["eventCount"] + 1)
                     with self._cv:
-                        self._transaction(kind, tx, seq)
+                        self._transaction(kind, tx, seq, response)
                         self._written_seq, self._written_time, self._written_count = seq, event_time, self._written_count + 1
                         self._queued_bytes -= len(line)
                         self._stats["bytesWritten"] += len(line)
@@ -670,13 +701,41 @@ class SegmentedJournal:
     def prune(self, *, before_seq):
         if not _integer(before_seq):
             raise ValueError("before_seq must be a safe nonnegative integer")
-        status = JournalReader(self.path).verify()
+        status = self._verified_status()
         return {"implemented": False, "deleted": [], "beforeSeq": before_seq,
                 "reason": "active/unclosed source references" if not status.complete else "version-chain closure deletion proof is not implemented; all records retained",
                 "complete": status.complete}
 
     def archive(self, destination):
+        if self._invalidated:
+            raise JournalVerificationError("This journal instance was invalidated after closure")
         return JournalReader(self.path).archive(destination)
+
+    def invalidate(self, *, code="capture_window_invalidated", message="Activity was observed after the capture window was sealed."):
+        """Persist a separate fail-closed signal without rewriting sealed bytes.
+
+        False means the marker could not be synchronized. The caller must also
+        retain its own permanent invalidation state when storage is unwritable.
+        """
+        if not isinstance(code, str) or not 1 <= len(code) <= 128 or not isinstance(message, str) or not 1 <= len(message) <= 1024:
+            raise ValueError("Invalidation descriptions must be bounded text")
+        self._invalidated = True
+        self._gap(code, message)
+        target = self.path / INVALIDATED
+        try:
+            with target.open("xb") as file:
+                # Open first: even a later index/read/write failure leaves a
+                # recognizable fail-closed marker where the filesystem permits.
+                binding = JournalReader(self.path)._index()[1]
+                file.write(_json({"schema": 1, "code": code, "message": message, "indexSha256": binding}))
+                file.flush()
+                os.fsync(file.fileno())
+            _sync_directory(self.path)
+            return True
+        except FileExistsError:
+            return True
+        except Exception:
+            return False
 
 
 class JournalReader:
@@ -684,6 +743,15 @@ class JournalReader:
 
     def __init__(self, path):
         self.path = Path(path).resolve()
+
+    def _marker_exists(self, name):
+        # lstat sees dangling symlinks without following them. Permission and
+        # other inspection errors propagate to fail-closed verification.
+        try:
+            (self.path / name).lstat()
+            return True
+        except FileNotFoundError:
+            return False
 
     def _index(self):
         target = self.path / INDEX
@@ -777,7 +845,7 @@ class JournalReader:
 
     def verify(self):
         gaps, count, consumed, last, last_time, segment_count = [], 0, 0, 0, 0, 0
-        active, requested = set(), set()
+        active, requested = set(), {}
         scratch = identities = None
 
         def gap(code, message):
@@ -814,7 +882,7 @@ class JournalReader:
                         raise JournalVerificationError("Event sequence/time regressed")
                     if not count and event["kind"] != "snapshot":
                         gap("missing_snapshot", "First verified event is not a snapshot.")
-                    _lifecycle(event["kind"], event.get("tx"), active, requested, identities, gap, event["seq"])
+                    _lifecycle(event["kind"], event.get("tx"), active, requested, identities, gap, event["seq"], event.get("commitResponse"))
                     last, last_time, count = event["seq"], event["time"], count + 1
                 consumed += item["bytes"]
                 segment_count += 1
@@ -828,10 +896,12 @@ class JournalReader:
                 raise JournalVerificationError("Unindexed or missing segment")
             if not count:
                 gap("missing_snapshot", "Empty evidence has no capture snapshot.")
-            if (self.path / LOCK).exists():
+            if self._marker_exists(LOCK):
                 gap("writer_lock_present", "Writer is active or an interrupted writer requires explicit recovery.")
-            if (self.path / "journal-failure.json").exists():
+            if self._marker_exists("journal-failure.json"):
                 gap("journal_write_failed", "A persisted writer failure marker is present.")
+            if self._marker_exists(INVALIDATED):
+                gap("capture_window_invalidated", "Post-seal activity or another invalidation signal prevents complete source coverage.")
             if index.get("activeTransactions") or any(index.get("references", {}).get(k) for k in ("activeTransactions", "unreadResults")):
                 gap("source_references_active", "Active transactions or unread results still refer to retained evidence.")
             if not closed or not source_closed:
@@ -893,7 +963,8 @@ class JournalReader:
             yield from self._segment_events(item, index["limits"]["recordBytes"])
         if self._index()[1] != digest:
             raise JournalVerificationError("Index changed during iteration")
-        if (self.path / LOCK).exists() or (self.path / "journal-failure.json").exists():
+        if (self._marker_exists(LOCK) or self._marker_exists("journal-failure.json")
+                or self._marker_exists(INVALIDATED)):
             raise JournalVerificationError("Writer/failure marker appeared during iteration")
 
     def archive(self, destination):
@@ -993,7 +1064,7 @@ class JournalReader:
                 "segments": len(index["segments"]), "indexSha256": digest, "verified": True,
                 "archiveReconstructionVerified": True}
 
-    def export(self, destination, *, clock_domain, exclusive_writers=False, max_bytes=8 * 1024 * 1024):
+    def export(self, destination, *, clock_domain, exclusive_writers=False, max_bytes=8 * 1024 * 1024, sql_profiles=None):
         """Stream a complete disk journal into a new bounded v3 JSON envelope.
 
         The final name is atomically created via a no-overwrite hard link. A
@@ -1004,6 +1075,11 @@ class JournalReader:
             raise ValueError("clock_domain must contain 1..256 characters")
         if type(exclusive_writers) is not bool or not _integer(max_bytes, 128):
             raise ValueError("invalid export scope/byte budget")
+        profiles = None
+        if sql_profiles is not None:
+            if not isinstance(sql_profiles, list) or len(sql_profiles) > 16:
+                raise ValueError("sql_profiles must be an array of at most 16 declared profiles")
+            profiles = _bounded_copy(sql_profiles, min(max_bytes, 8 * 1024 * 1024), node_limit=200_000)
         if not self.verify().complete:
             raise JournalVerificationError("Only a complete verified journal can be exported")
         destination = Path(destination).resolve()
@@ -1024,7 +1100,10 @@ class JournalReader:
                     size += len(block)
 
                 write(b'{"traceSchema":3,"clockDomain":' + _json(clock_domain)
-                      + b',"scope":{"exclusiveWriters":' + (b'true' if exclusive_writers else b'false') + b'},"events":[')
+                      + b',"scope":{"exclusiveWriters":' + (b'true' if exclusive_writers else b'false') + b'}')
+                if profiles is not None:
+                    write(b',"sqlProfiles":' + _json(profiles))
+                write(b',"events":[')
                 separator = b""
                 for event in self.iter_events():
                     write(separator + _json(event))

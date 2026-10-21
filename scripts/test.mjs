@@ -1,10 +1,10 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { root, runMoon, coreTestCount } from './moon.mjs';
 import assert from 'node:assert/strict';
 import {verificationFingerprint} from './verification-fingerprint.mjs';
-import {writeVerifiedJson} from './performance-evidence.mjs';
+import {writeVerifiedJson,writeImmutableEvidence} from './performance-evidence.mjs';
 import {tmpdir} from 'node:os';
 
 // Default tests cover the shipped JS runtime and both bundled Wasm runtimes.
@@ -38,6 +38,20 @@ const v3Child = spawnSync(process.execPath,['scripts/v3-acceptance.mjs'],{cwd:ro
 if (v3Child.error) throw v3Child.error;
 if (v3Child.status !== 0) throw new Error('Independent v3 acceptance failed: ' + v3Child.stdout + v3Child.stderr);
 const v3Acceptance = JSON.parse(v3Child.stdout);
+const listOracle = JSON.parse(pythonJSON(['-B','scripts/list-v3-oracle.py','--self-test'],'Independent append-list reference'));
+const listChild = spawnSync(process.execPath,['scripts/list-v3-acceptance.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:16*1024*1024});
+if (listChild.error) throw listChild.error;
+if (listChild.status !== 0) throw new Error('Independent append-list acceptance failed: ' + listChild.stdout + listChild.stderr);
+const listAcceptance = JSON.parse(listChild.stdout);
+assert.equal(listAcceptance.passed,true);
+assert.equal(listAcceptance.complete,true);
+const collectorOutput = pythonJSON(['-B','integrations/python/moontxnwitness_capture/test_capture_v3.py'],'Bounded v3 protocol collector');
+const collectorFolder = collectorOutput.match(/^Collector test artifacts: (.+)$/m)?.[1]?.trim();
+if (!collectorFolder) throw new Error('Protocol collector suite did not identify its retained evidence');
+const collectorReceipt = JSON.parse(readFileSync(resolve(collectorFolder,'collector-unit-receipt.json'),'utf8'));
+assert.equal(collectorReceipt.passed,true);
+const collectorEvidence = 'verification/v3/collector-' + new Date().toISOString().replace(/[:.]/g,'-') + '.json';
+writeVerifiedJson(resolve(root,collectorEvidence),collectorReceipt);
 const journalOutput = pythonJSON(['-B','integrations/python/moontxnwitness_capture/test_journal_v3.py'],'Segmented v3 journal');
 const journalFolder = journalOutput.match(/^Journal IO artifacts: (.+)$/m)?.[1]?.trim();
 if (!journalFolder) throw new Error('Journal suite did not identify its retained evidence');
@@ -47,12 +61,30 @@ writeVerifiedJson(resolve(root,journalEvidence),journalReceipt);
 const journalScratch = process.env.MTW_JOURNAL_SCRATCH || process.env.MTW_JOURNAL_TEST_ROOT || tmpdir();
 mkdirSync(journalScratch,{recursive:true});
 const journalAudit = JSON.parse(pythonJSON(['-B','scripts/v3-independent-oracle.py','--journal-audit','--scratch',journalScratch],'Independent v3 storage audit'));
+const closureWork=mkdtempSync(resolve(journalScratch,'mtw-post-close-'));
+const closureAudit=JSON.parse(pythonJSON(['-B','verification/v3/tools/post_close_audit.py','--output',resolve(closureWork,'audit')],'Independent post-close storage audit'));
+assert.equal(closureAudit.passed,true);
+const closureEvidence='verification/v3/post-close-regression-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
+writeImmutableEvidence(resolve(root,closureEvidence),readFileSync(closureAudit.receipt,'utf8'));
+function independentNodeAudit(script,label){
+  const child=spawnSync(process.execPath,[script],{cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:16*1024*1024});
+  if(child.error)throw child.error;
+  if(child.status!==0)throw new Error(label+' failed: '+child.stdout+child.stderr);
+  const result=JSON.parse(child.stdout);assert.equal(result.passed,true);return result;
+}
+const sqlDiagnostic=independentNodeAudit('verification/v3/tools/dislock_sql_proof_audit.mjs','Independent fixed SQL diagnostic');
+const sqlPolicy=independentNodeAudit('verification/v3/tools/dislock_explicit_policy_audit.mjs','Independent explicit SQL policy');
 console.log(`Independent v3 reference ${v3Oracle.cases} traces; ${v3Acceptance.checks} SDK/CLI/evidence checks; journal ${journalReceipt.testsRun-journalReceipt.skipped.length} executed, ${journalReceipt.skipped.length} skipped.`);
 const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version, passed: true, checkedTargets: ['js', 'wasm-gc', 'wasm', 'native'], executedTargets: targets, coreTestsPerTarget: coreTestCount(), parserDifferentialInputs: parser.checked, oracleHistories: oracle.counts.exhaustive + oracle.counts.generated + oracle.counts.completion, verifiedCycleCertificates: oracle.counts.certificates, cliChecks: cli.checks, node: process.version, generatedAt: new Date().toISOString(), boundaries: ['Database observations do not certify every database execution', 'Public release and organizer states are recorded separately'] };
 mkdirSync(resolve(root, 'verification'), { recursive: true });
 receipt.captureCliChecks = capture.checks;
 receipt.experimentalPresenceCliChecks = presence.checks;
-receipt.experimentalV3 = {foundationOnly:true,independentReference:v3Oracle,acceptance:v3Acceptance,journal:{receipt:journalEvidence,...journalReceipt},independentStorageAudit:journalAudit,fullBusinessLifecycle:false,formalPerformanceMeasured:false};
+receipt.experimentalV3 = {foundationOnly:false,experimentalOnly:true,v011v012JointReleaseReady:false,independentReference:v3Oracle,acceptance:v3Acceptance,journal:{receipt:journalEvidence,...journalReceipt},independentStorageAudit:journalAudit,fullBusinessLifecycle:false,formalPerformanceMeasured:false};
+receipt.experimentalV3.appendList = {independentReference:listOracle,acceptance:listAcceptance,actualDatabaseExecuted:false,formalPerformanceMeasured:false};
+receipt.experimentalV3.boundedProtocolCollector = {receipt:collectorEvidence,...collectorReceipt};
+receipt.experimentalV3.postCloseIndependentAudit={passed:closureAudit.passed,cases:closureAudit.cases,checks:closureAudit.checks,receipt:closureEvidence};
+receipt.experimentalV3.fixedSqlDiagnostic=sqlDiagnostic;
+receipt.experimentalV3.explicitSqlPolicy=sqlPolicy;
 receipt.buildManifest = JSON.parse(readFileSync(resolve(root, 'dist/build-manifest.json'), 'utf8'));
 assert.deepEqual(verificationFingerprint(root),testedFiles,'Executable sources or runtime changed during verification');
 receipt.testedFileSha256 = testedFiles;

@@ -19,6 +19,7 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs reduce-v3 TRACE3.json [--output REDUCTION.json] [--capture MINI.json] [--max-checks N]
   node dist/moontxnwitness.mjs verify-v3 TRACE3.json REPORT.json
   node dist/moontxnwitness.mjs replay-v3 CAPSULE.json
+  ingest-v3/check-v3/reduce-v3 可选 --sql-proof dislock-f9946f0-sql-proof-1 核验固定 SQL 来源；默认保留原 v3 规则。
   check 也支持 --capsule FILE 导出含日志、报告和 SHA-256 的自包含复现包。
   check 支持 --profile balanced 使用 12 事务搜索和 v2 证据；默认 compat 保留旧接口行为。
   node dist/moontxnwitness.mjs --help | --version
@@ -111,20 +112,21 @@ try {
     process.stdout.write(help);
   } else if (['ingest-v3', 'check-v3', 'reduce-v3', 'verify-v3', 'replay-v3'].includes(args[0])) {
     const command = args[0];
-    const allowed = command === 'check-v3' ? ['--output','--capsule'] : command === 'reduce-v3' ? ['--output','--capture','--max-checks'] : command === 'ingest-v3' ? ['--output'] : [];
+    const allowed = command === 'check-v3' ? ['--output','--capsule','--sql-proof'] : command === 'reduce-v3' ? ['--output','--capture','--max-checks','--sql-proof'] : command === 'ingest-v3' ? ['--output','--sql-proof'] : [];
     const {paths,options} = localArgs(args.slice(1),allowed,command === 'verify-v3' ? 2 : 1);
     const text = readBounded(paths[0],command === 'replay-v3' ? 32*1024*1024 : 8*1024*1024);
     let result;
     const companions = [];
-    if (command === 'ingest-v3') result = normalizeCaptureV3(text);
+    const proofOptions = options['--sql-proof'] === undefined ? {} : {sqlProof:options['--sql-proof']};
+    if (command === 'ingest-v3') result = normalizeCaptureV3(text,proofOptions);
     if (command === 'check-v3') {
-      result = analyzeV3(text);
+      result = analyzeV3(text,proofOptions);
       if (options['--capsule']) companions.push([options['--capsule'],makeCapsuleV3(text,result)]);
     }
     if (command === 'reduce-v3') {
       const count = options['--max-checks'];
       if (count !== undefined && !/^(0|[1-9][0-9]*)$/.test(count)) throw new Error('max-checks 必须为 0..256 整数');
-      result = reduceV3(text,count === undefined ? {} : {maxChecks:Number(count)});
+      result = reduceV3(text,{...(count === undefined ? {} : {maxChecks:Number(count)}),...(options['--sql-proof'] === undefined ? {} : {analysisOptions:proofOptions})});
       if (options['--capture']) {
         if (!result.reducedCapture) throw new Error('无有效 v3 缩减记录可导出');
         companions.push([options['--capture'],JSON.stringify(result.reducedCapture,null,2)+'\n']);

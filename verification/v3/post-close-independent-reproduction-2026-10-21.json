@@ -1,0 +1,134 @@
+{
+  "audit": "independent-post-close-observed-activity-reproduction",
+  "createdAt": "2026-10-21T03:49:17.364186+00:00",
+  "actualDatabaseExecution": false,
+  "productionModified": false,
+  "sourceBindings": {
+    "integrations/python/moontxnwitness_capture/capture_v3.py": {
+      "sha256": "c0a34e04de99f0695d66313dca4a04d0edca988ccfcadf03a2a17b7eec2ddc6b",
+      "bytes": 32179
+    },
+    "integrations/python/moontxnwitness_capture/journal_v3.py": {
+      "sha256": "04597eea6caf6a0622e7e11f3eb7c87cface254f2518798104251a83379748d3",
+      "bytes": 58255
+    },
+    "integrations/python/moontxnwitness_capture/capture.py": {
+      "sha256": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e",
+      "bytes": 56812
+    }
+  },
+  "originalClosedStatus": {
+    "schema": 1,
+    "status": "complete",
+    "valid": true,
+    "complete": true,
+    "closed": true,
+    "sourceClosed": true,
+    "durableSeq": 6,
+    "eventCount": 6,
+    "segmentCount": 1,
+    "bytesVerified": 701,
+    "indexSha256": "dc1ec08851f0ee46ff1749dad04ccc775206234ac5b32a958907ec358b573e89",
+    "gaps": [],
+    "actualDatabaseExecution": false
+  },
+  "originalDiskBindings": {
+    "journal-index.json": {
+      "sha256": "dc1ec08851f0ee46ff1749dad04ccc775206234ac5b32a958907ec358b573e89",
+      "bytes": 1093
+    },
+    "segment-000001.jsonl": {
+      "sha256": "e77e904624618379b980f022e430e948459e4f81493b214b14a1b94077bb2808",
+      "bytes": 701
+    },
+    "transactions.sqlite3": {
+      "sha256": "0ab455430ba5192c1cc966f0e1620a610629cf294187288637073597991b350a",
+      "bytes": 8192
+    }
+  },
+  "afterObservedActivityDiskBindings": {
+    "journal-index.json": {
+      "sha256": "dc1ec08851f0ee46ff1749dad04ccc775206234ac5b32a958907ec358b573e89",
+      "bytes": 1093
+    },
+    "segment-000001.jsonl": {
+      "sha256": "e77e904624618379b980f022e430e948459e4f81493b214b14a1b94077bb2808",
+      "bytes": 701
+    },
+    "transactions.sqlite3": {
+      "sha256": "0ab455430ba5192c1cc966f0e1620a610629cf294187288637073597991b350a",
+      "bytes": 8192
+    }
+  },
+  "diskBindingsUnchanged": true,
+  "business": {
+    "executions": [
+      [
+        "SELECT 1",
+        null,
+        {}
+      ],
+      [
+        "SELECT 2",
+        null,
+        {}
+      ]
+    ],
+    "firstRows": [
+      [
+        1
+      ]
+    ],
+    "secondRows": [
+      [
+        1
+      ]
+    ],
+    "firstCommitReturnIdentityPreserved": true,
+    "secondCommitReturnIdentityPreserved": true
+  },
+  "sessionGapsAfterClose": [
+    {
+      "code": "capture_event_not_retained",
+      "message": "An observed event could not be retained by the bounded journal."
+    }
+  ],
+  "freshReaderStatus": {
+    "schema": 1,
+    "status": "complete",
+    "valid": true,
+    "complete": true,
+    "closed": true,
+    "sourceClosed": true,
+    "durableSeq": 6,
+    "eventCount": 6,
+    "segmentCount": 1,
+    "bytesVerified": 701,
+    "indexSha256": "dc1ec08851f0ee46ff1749dad04ccc775206234ac5b32a958907ec358b573e89",
+    "gaps": [],
+    "actualDatabaseExecution": false
+  },
+  "instanceExport": {
+    "bytes": 830,
+    "sha256": "a6699400456375a8fed056d0dd5a1d727c909a4bff84f01b49f2a96f5fa76a0f",
+    "complete": true,
+    "exclusiveWritersDeclared": true,
+    "actualDatabaseExecution": false
+  },
+  "readerExport": {
+    "bytes": 830,
+    "sha256": "a6699400456375a8fed056d0dd5a1d727c909a4bff84f01b49f2a96f5fa76a0f",
+    "complete": true,
+    "exclusiveWritersDeclared": true,
+    "actualDatabaseExecution": false
+  },
+  "instanceExportGaps": [],
+  "readerExportGaps": [],
+  "instanceExportStatements": [
+    "SELECT 1"
+  ],
+  "actualObservedStatementCount": 2,
+  "retainedStatementCount": 1,
+  "reproduced": true,
+  "scope": "Storage/session closure inconsistency only: the independent fake driver represents supported synchronous surfaces, and this is not a database or semantic-consistency verdict."
+}

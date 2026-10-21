@@ -150,7 +150,7 @@ node dist/moontxnwitness.mjs replay-v3 new-v3-case.json
 node dist/moontxnwitness.mjs reduce-v3 examples/v3-write-skew.json
 ```
 
-写偏斜案例退出码为 1，表示发现反证。SDK 对应 `normalizeCaptureV3`、`analyzeV3`、`reduceV3`、`verifyV3`；完整 SQL 映射、来源闭包窗口、完整 dislock/ORM 及后续多模型仍按[剩余执行计划](docs/remaining-execution-plan.md)开发。当前完成项与未执行项见[开发状态](docs/development-status.md)，v3 实验不表示已完成 v0.1.1/v0.1.2 联合验收。
+写偏斜案例退出码为 1，表示发现反证。SDK 对应 `normalizeCaptureV3`、`analyzeV3`、`reduceV3`、`verifyV3`。开发分支另有[追加列表模型](docs/list-v3.md)和[原 dislock 生命周期采集](docs/dislock-v3.md)；六种冻结 SQL 的来源证明须显式选择 [sqlProof 策略](docs/dislock-sql-v3.md)，其他 SQL、零行条件来源不足与未知提交保持缺口。来源闭包窗口、安全保留、完整采集成本、ORM、关系模型及六模型分类继续按[剩余执行计划](docs/remaining-execution-plan.md)开发。当前完成项与未执行项见[开发状态](docs/development-status.md)，v3 实验不表示已完成 v0.1.1/v0.1.2 联合验收。
 
 Apache-2.0；依赖、概念来源、AI 使用与复核方式见 [THIRD_PARTY.md](THIRD_PARTY.md)。分析算法全部使用 MoonBit；JS 处理文件与传输，Python 可选采集数据库，JS 后端有一个字符串片段拼接原语。
 

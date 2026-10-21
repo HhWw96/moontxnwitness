@@ -1,0 +1,15 @@
+{"consistent":true,"initial":{},"kind":"snapshot","seq":1,"time":15000000}
+{"connection":"connection-d1888ca85e984bbfbf510b906ee44594","kind":"begin","seq":2,"time":312000000,"tx":"transaction-ff9da1e889d747dc8719c091fb73c024"}
+{"kind":"statement","parameters":null,"seq":3,"sql":"SELECT n FROM \"mtw_provenance_dislock_commit_54cf33787682\".\"ssi_commit\" WHERE key='x'","time":312000000,"tx":"transaction-ff9da1e889d747dc8719c091fb73c024"}
+{"complete":true,"kind":"rows","rows":[[0]],"seq":4,"statement":3,"time":328000000,"tx":"transaction-ff9da1e889d747dc8719c091fb73c024"}
+{"connection":"connection-7d01ec311bbe489e8f9fda36c37d1641","kind":"begin","seq":5,"time":328000000,"tx":"transaction-7c006e612f6f4fb8a830bcf8e3d33bdc"}
+{"kind":"statement","parameters":null,"seq":6,"sql":"SELECT n FROM \"mtw_provenance_dislock_commit_54cf33787682\".\"ssi_commit\" WHERE key='y'","time":328000000,"tx":"transaction-7c006e612f6f4fb8a830bcf8e3d33bdc"}
+{"complete":true,"kind":"rows","rows":[[0]],"seq":7,"statement":6,"time":328000000,"tx":"transaction-7c006e612f6f4fb8a830bcf8e3d33bdc"}
+{"kind":"statement","parameters":null,"seq":8,"sql":"UPDATE \"mtw_provenance_dislock_commit_54cf33787682\".\"ssi_commit\" SET n=n+1 WHERE key='y'","time":328000000,"tx":"transaction-ff9da1e889d747dc8719c091fb73c024"}
+{"complete":true,"kind":"rows","rows":[],"seq":9,"statement":8,"time":328000000,"tx":"transaction-ff9da1e889d747dc8719c091fb73c024"}
+{"kind":"statement","parameters":null,"seq":10,"sql":"UPDATE \"mtw_provenance_dislock_commit_54cf33787682\".\"ssi_commit\" SET n=n+1 WHERE key='x'","time":344000000,"tx":"transaction-7c006e612f6f4fb8a830bcf8e3d33bdc"}
+{"complete":true,"kind":"rows","rows":[],"seq":11,"statement":10,"time":344000000,"tx":"transaction-7c006e612f6f4fb8a830bcf8e3d33bdc"}
+{"kind":"commit_request","seq":12,"time":344000000,"tx":"transaction-ff9da1e889d747dc8719c091fb73c024"}
+{"kind":"commit_ok","seq":13,"time":344000000,"tx":"transaction-ff9da1e889d747dc8719c091fb73c024"}
+{"kind":"commit_request","seq":14,"time":344000000,"tx":"transaction-7c006e612f6f4fb8a830bcf8e3d33bdc"}
+{"commitResponse":{"diagnosticSqlstate":"40001","request":14,"sqlstate":"40001","transactionStatus":"IDLE"},"kind":"rollback_ok","seq":15,"time":344000000,"tx":"transaction-7c006e612f6f4fb8a830bcf8e3d33bdc"}

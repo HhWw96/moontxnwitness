@@ -1,0 +1,13 @@
+{"seq":1,"time":0,"kind":"snapshot","initial":{"x":[],"y":[]},"consistent":true}
+{"seq":2,"time":1,"kind":"begin","tx":"T","connection":"connection-T"}
+{"seq":3,"time":2,"kind":"savepoint","tx":"T","name":"repeat","instance":"old"}
+{"seq":4,"time":3,"kind":"append","tx":"T","key":"x","id":"a1","value":"same"}
+{"seq":5,"time":4,"kind":"savepoint","tx":"T","name":"repeat","instance":"new"}
+{"seq":6,"time":5,"kind":"append","tx":"T","key":"x","id":"a2","value":"same"}
+{"seq":7,"time":6,"kind":"rollback_to","tx":"T","instance":"new"}
+{"seq":8,"time":7,"kind":"list_read","tx":"T","key":"x","items":[{"id":"a1","value":"same"}]}
+{"seq":9,"time":8,"kind":"release","tx":"T","instance":"new"}
+{"seq":10,"time":9,"kind":"rollback_to","tx":"T","instance":"old"}
+{"seq":11,"time":10,"kind":"list_read","tx":"T","key":"x","items":[]}
+{"seq":12,"time":11,"kind":"commit_request","tx":"T"}
+{"seq":13,"time":12,"kind":"commit_ok","tx":"T"}

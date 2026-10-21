@@ -1,5 +1,18 @@
 # 0.1.1 — development
 
+- Add an independently checked append-list model with bounded exact serial replay,
+  savepoint-aware effects, source evidence, reduction and v3 capsules. Keep the
+  original repeated fixture batch and disclose distinct coverage explicitly.
+- Exercise original dislock acquisition, heartbeat, cleanup and reconnect with
+  bounded v3 persistence. Add opt-in proof of six frozen SQL shapes and their
+  actual predecessor/effect records; unsupported and zero-row paths keep gaps.
+- Bind genuine server COMMIT responses, preserve unknown outcomes after lost
+  acknowledgements, and durably invalidate a sealed window if its connections
+  are used again. Preserve independent failing receipts and subsequent fixes.
+- Add independent proof/policy/fault audits and actual PostgreSQL list scenarios
+  to CI, uploading the compiled analyzers as well as their digests. Export only
+  public source files and exercise the new v3 entries from fresh packages.
+
 - Add experimental, separate v3 normalize/analyze/reduce/verify SDK and CLI
   entries and SHA-bound replay capsules. The MoonBit lifecycle journal preserves
   delivered reads across savepoint rollback and keeps unknown commits visible.

@@ -103,19 +103,37 @@ jobs:
             python experiments/provenance/test_presence_profile.py
             node experiments/provenance/presence_e2e.mjs --schema mtw_provenance_presence_ci --output verification/provenance-presence/ci
           fi
-      - name: Preserve actual database server logs
-        if: always()
-        env:
-          MTW_SERVICE_ID: ${{ job.services.postgres.id }}
-        run: |
-          mkdir -p verification
-          docker logs "$MTW_SERVICE_ID" > verification/postgres-server.log 2>&1
       - name: Verify v3 savepoint and cursor observations on PostgreSQL
         env:
           MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
         run: |
           python -B experiments/lifecycle_v3/postgres.py --schema mtw_provenance_lifecycle_v3_ci --output verification/v3/postgres-ci
           node experiments/lifecycle_v3/e2e.mjs verification/v3/postgres-ci
+      - name: Verify append-list observations and repair across 20 rounds per scenario
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          python -B experiments/list_v3/postgres.py --schema mtw_list_v3_ci --output verification/list-v3/postgres-ci
+          node experiments/list_v3/e2e.mjs verification/list-v3/postgres-ci
+      - name: Exercise original dislock lifecycle with bounded v3 observations
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          python -B experiments/business/dislock/v3_postgres.py --schema mtw_provenance_dislock_v3_ci --output verification/business/dislock/v3-ci
+          node experiments/business/dislock/v3_e2e.mjs verification/business/dislock/v3-ci
+      - name: Verify actual commit-time serialization-abort protocol
+        env:
+          MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          python -B experiments/business/dislock/v3_commit_postgres.py --schema mtw_provenance_dislock_commit_ci --output verification/business/dislock/v3-commit-ci
+          node experiments/business/dislock/v3_commit_e2e.mjs verification/business/dislock/v3-commit-ci
+      - name: Preserve complete database server logs
+        if: always()
+        env:
+          MTW_SERVICE_ID: ${{ job.services.postgres.id }}
+        run: |
+          mkdir -p verification
+          docker logs "$MTW_SERVICE_ID" > verification/postgres-server.log 2>&1
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -130,6 +148,9 @@ jobs:
             verification/provenance-prototypes/ci/
             verification/provenance-profile/ci/
             verification/business/dislock/ci/
+            verification/business/dislock/v3-ci/
+            verification/business/dislock/v3-commit-ci/
             verification/provenance-presence/ci/
             verification/v3/postgres-ci/
+            verification/list-v3/postgres-ci/
             dist/

@@ -1,0 +1,241 @@
+{
+  "schema": 3,
+  "dataModel": "append-list-v1",
+  "algorithm": "v3-list-lifecycle-1",
+  "status": "ready",
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "observations": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "x": [
+          {
+            "id": "x0",
+            "value": "same"
+          }
+        ],
+        "y": [
+          {
+            "id": "y0",
+            "value": "same"
+          }
+        ],
+        "z": [
+          {
+            "id": "z0",
+            "value": "same"
+          }
+        ]
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "T",
+      "connection": "C"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "begin",
+      "tx": "U",
+      "connection": "D"
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "begin",
+      "tx": "V",
+      "connection": "E"
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "list_read",
+      "tx": "T",
+      "key": "x",
+      "items": [
+        {
+          "id": "x0",
+          "value": "same"
+        }
+      ]
+    },
+    {
+      "seq": 6,
+      "time": 5,
+      "kind": "append",
+      "tx": "T",
+      "key": "y",
+      "id": "y1",
+      "value": "same"
+    },
+    {
+      "seq": 7,
+      "time": 6,
+      "kind": "list_read",
+      "tx": "U",
+      "key": "y",
+      "items": [
+        {
+          "id": "y0",
+          "value": "same"
+        }
+      ]
+    },
+    {
+      "seq": 8,
+      "time": 7,
+      "kind": "append",
+      "tx": "U",
+      "key": "z",
+      "id": "z1",
+      "value": "same"
+    },
+    {
+      "seq": 9,
+      "time": 8,
+      "kind": "list_read",
+      "tx": "V",
+      "key": "z",
+      "items": [
+        {
+          "id": "z0",
+          "value": "same"
+        }
+      ]
+    },
+    {
+      "seq": 10,
+      "time": 9,
+      "kind": "append",
+      "tx": "V",
+      "key": "x",
+      "id": "x1",
+      "value": "same"
+    },
+    {
+      "seq": 11,
+      "time": 10,
+      "kind": "commit_request",
+      "tx": "T"
+    },
+    {
+      "seq": 12,
+      "time": 11,
+      "kind": "commit_ok",
+      "tx": "T"
+    },
+    {
+      "seq": 13,
+      "time": 12,
+      "kind": "commit_request",
+      "tx": "U"
+    },
+    {
+      "seq": 14,
+      "time": 13,
+      "kind": "commit_ok",
+      "tx": "U"
+    },
+    {
+      "seq": 15,
+      "time": 14,
+      "kind": "commit_request",
+      "tx": "V"
+    },
+    {
+      "seq": 16,
+      "time": 15,
+      "kind": "commit_ok",
+      "tx": "V"
+    }
+  ],
+  "effects": [
+    {
+      "seq": 6,
+      "tx": "T",
+      "key": "y",
+      "id": "y1",
+      "value": "same",
+      "revertedBy": null
+    },
+    {
+      "seq": 8,
+      "tx": "U",
+      "key": "z",
+      "id": "z1",
+      "value": "same",
+      "revertedBy": null
+    },
+    {
+      "seq": 10,
+      "tx": "V",
+      "key": "x",
+      "id": "x1",
+      "value": "same",
+      "revertedBy": null
+    }
+  ],
+  "transactions": [
+    {
+      "id": "T",
+      "connection": "C",
+      "status": "committed",
+      "beginSeq": 2,
+      "endSeq": 12,
+      "events": [
+        2,
+        5,
+        6,
+        11,
+        12
+      ],
+      "finalWrites": [
+        6
+      ]
+    },
+    {
+      "id": "U",
+      "connection": "D",
+      "status": "committed",
+      "beginSeq": 3,
+      "endSeq": 14,
+      "events": [
+        3,
+        7,
+        8,
+        13,
+        14
+      ],
+      "finalWrites": [
+        8
+      ]
+    },
+    {
+      "id": "V",
+      "connection": "E",
+      "status": "committed",
+      "beginSeq": 4,
+      "endSeq": 16,
+      "events": [
+        4,
+        9,
+        10,
+        15,
+        16
+      ],
+      "finalWrites": [
+        10
+      ]
+    }
+  ],
+  "history": null
+}

@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "assessment": "independent post-close closure review",
+  "createdAt": "2026-10-21T03:51:26.254106+00:00",
+  "passed": false,
+  "actualDatabaseExecution": false,
+  "productionModified": false,
+  "originalRetainedPrivately": true,
+  "publicCopy": {
+    "path": "verification/v3/post-close-independent-reproduction-2026-10-21.json",
+    "sha256": "ade58030b35f37b2bf312a7cf261c68bef789d977786b3021cccf43418b1f6d4",
+    "bytes": 3857,
+    "copyBytesExactlyMatchOriginal": true,
+    "redactionNeeded": false
+  },
+  "finding": {
+    "priority": "P1",
+    "code": "observed_post_close_activity_not_persisted",
+    "locations": [
+      "integrations/python/moontxnwitness_capture/capture_v3.py:129",
+      "integrations/python/moontxnwitness_capture/capture_v3.py:191",
+      "integrations/python/moontxnwitness_capture/capture_v3.py:208",
+      "integrations/python/moontxnwitness_capture/journal_v3.py:377",
+      "integrations/python/moontxnwitness_capture/journal_v3.py:391"
+    ],
+    "observed": "After a complete close, an existing wrapper executed and committed a second business statement. The recorder rejected new events, but only recorded gaps in memory. Original sealed storage was unchanged. Both instance and fresh-reader exports still returned complete:true with an empty gap array and only the earlier statement.",
+    "requiredBehavior": "Preserve original business calls and sealed evidence bytes; reject the affected session instance permanently and persist a separate append-only invalidation marker checked by fresh readers/export/archive/reopen. If invalidation IO fails, the live instance must still refuse successful export.",
+    "limits": "Supported synchronous fake driver with real journal filesystem IO. This reproduces recorder closure integrity, not a PostgreSQL or application consistency result."
+  },
+  "relatedExistingEvidence": {
+    "databaseReceipt": "verification/business/dislock/v3-53e17a2cc13548dbb1babe18d26d6173/database-receipt.json",
+    "modelReceipt": "verification/business/dislock/v3-53e17a2cc13548dbb1babe18d26d6173/model-receipt.json",
+    "scope": "The actual database fixture passed 7/7. Six mapped model inputs were rejected for producer columns.type instead of typeCode; they are retained failures and not repaired by this review."
+  },
+  "independentFollowup": [
+    "Reproduce wrapper.execute after close with preserved returned rows and commit result identity; require instance/fresh-reader strict export, archive and reopen refusal without changes to original index/segments/SQLite.",
+    "Reproduce driver facade connect after close: original raw connection remains returned, but the contradicted source closure must not yield a new complete export.",
+    "Inject failures into all invalidation-file creation paths; require the live session to refuse export even when no durable marker can be written.",
+    "Test normal known-row plus separate/repeated EOF produces exactly one matched condition, while true zero-row EOF keeps source unavailable and inconclusive.",
+    "Compare actual committed AFTER effect ledger to surviving write facts; retain unused UPSERT BEFORE candidates without emitting writes.",
+    "Test successful COMMIT, real ROLLBACK command response, real commit-time server SQLSTATE, and lost acknowledgement followed by idle rollback as separate paths.",
+    "Tamper exact SQL/parameters/prefix/columns/OLD-NEW/predecessor/clock/catalog/source/ledger and require SQL proof refusal; zero-row negative conditions cannot be repaired by later SELECT or final ledger."
+  ]
+}

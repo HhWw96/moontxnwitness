@@ -1,0 +1,722 @@
+{
+  "name": "schedule-and-server-clock",
+  "actualDatabaseExecution": true,
+  "upstreamOriginalMethods": true,
+  "schema": "mtw_provenance_dislock_v3_6c0de7601d_0",
+  "ttlSeconds": 5.0,
+  "passed": true,
+  "connectionCount": 2,
+  "journal": {
+    "schema": 1,
+    "status": "complete",
+    "valid": true,
+    "complete": true,
+    "closed": true,
+    "sourceClosed": true,
+    "durableSeq": 12,
+    "eventCount": 12,
+    "segmentCount": 1,
+    "bytesVerified": 3859,
+    "indexSha256": "496cab78953aa9a0f490c02ca02e57e891524900fcc27eab59531c2d20fea0f0",
+    "gaps": [],
+    "actualDatabaseExecution": false
+  },
+  "export": {
+    "bytes": 12731,
+    "sha256": "239031370291d9a42c22041b3e649cf39aa7f5915dbf2623b1d8836f9ab06f37",
+    "complete": true,
+    "exclusiveWritersDeclared": true,
+    "actualDatabaseExecution": false
+  },
+  "trace": "capture.json",
+  "candidateCount": 1,
+  "actualEffectCount": 1,
+  "state": [
+    [
+      "cronjob-lock:lease:fixture-schedule-and-server-clock",
+      "39179306-f7bb-415c-923e-01d926ff0903",
+      false
+    ],
+    [
+      "cronjob-lock:schedule:fixture-schedule-and-server-clock",
+      "7b7a5211-9b0e-41c8-ad14-f7ecfbc55c5d",
+      true
+    ]
+  ],
+  "finalBusinessRows": [
+    [
+      "cronjob-lock:schedule:fixture-schedule-and-server-clock",
+      "owner-original",
+      {
+        "captureType": "datetime",
+        "value": "2026-10-21 11:36:34.768932+08:00"
+      }
+    ]
+  ],
+  "profiles": [
+    {
+      "profile": "dislock-f9946f0-v3/1",
+      "schema": "mtw_provenance_dislock_v3_6c0de7601d_0",
+      "table": "key_value",
+      "knownKeys": [
+        "cronjob-lock:lease:fixture-schedule-and-server-clock",
+        "cronjob-lock:schedule:fixture-schedule-and-server-clock"
+      ],
+      "metadata": {
+        "versionColumn": "_mtw_v3_version",
+        "installationNonce": "0d376d8d-f63b-4b8a-8be1-431c39b5936b",
+        "serverVersion": 180006,
+        "tableOid": 16385,
+        "marker": {
+          "nonce": "0d376d8d-f63b-4b8a-8be1-431c39b5936b",
+          "tableOid": 16385
+        },
+        "before": {
+          "triggerOid": 16446,
+          "functionOid": 16443,
+          "sourceSha256": "64286432505bce85cb28d9e6a27c5346ee31d2ff63c69d0acc2d3f5a75a428f9",
+          "triggerDefinition": "CREATE TRIGGER _mtw_v3_before BEFORE INSERT OR DELETE OR UPDATE ON mtw_provenance_dislock_v3_6c0de7601d_0.key_value FOR EACH ROW EXECUTE FUNCTION mtw_provenance_dislock_v3_6c0de7601d_0._mtw_v3_before()",
+          "triggerType": 31,
+          "enabled": "O",
+          "argumentsHex": "",
+          "source": "\n\nDECLARE previous uuid; was_present boolean;\nBEGIN\n  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'dislock v3 profile does not support DELETE'; END IF;\n  IF NEW.key IS NULL OR NEW.value IS NULL OR NEW.expire_at IS NULL THEN RETURN NEW; END IF;\n  IF TG_OP='UPDATE' AND NEW.key IS DISTINCT FROM OLD.key THEN RAISE EXCEPTION 'dislock v3 key mutation unsupported'; END IF;\n  SELECT token,present INTO previous,was_present FROM \"mtw_provenance_dislock_v3_6c0de7601d_0\".\"_mtw_v3_state\" WHERE key=NEW.key FOR UPDATE;\n  IF NOT FOUND THEN RAISE EXCEPTION 'dislock v3 key outside declared domain'; END IF;\n  IF TG_OP='UPDATE' AND (NOT was_present OR previous IS DISTINCT FROM OLD.\"_mtw_v3_version\") THEN\n    RAISE EXCEPTION 'dislock v3 predecessor state mismatch';\n  END IF;\n  NEW.\"_mtw_v3_version\":=pg_catalog.gen_random_uuid();\n  INSERT INTO \"mtw_provenance_dislock_v3_6c0de7601d_0\".\"_mtw_v3_candidates\"(token,key,predecessor,action,owner,expire_at)\n    VALUES(NEW.\"_mtw_v3_version\",NEW.key,previous,TG_OP,NEW.value,NEW.expire_at);\n  RETURN NEW;\nEND\n\n"
+        },
+        "after": {
+          "triggerOid": 16447,
+          "functionOid": 16444,
+          "sourceSha256": "221c35b9c6ad879a96c29d1069ebd8c8c668fd33e094f362fcf15f5d0977beb7",
+          "triggerDefinition": "CREATE TRIGGER _mtw_v3_after AFTER INSERT OR UPDATE ON mtw_provenance_dislock_v3_6c0de7601d_0.key_value FOR EACH ROW EXECUTE FUNCTION mtw_provenance_dislock_v3_6c0de7601d_0._mtw_v3_after()",
+          "triggerType": 21,
+          "enabled": "O",
+          "argumentsHex": "",
+          "source": "\n\nDECLARE previous uuid; candidate_key text; candidate_action text; changed integer;\nBEGIN\n  SELECT predecessor,key,action INTO STRICT previous,candidate_key,candidate_action\n    FROM \"mtw_provenance_dislock_v3_6c0de7601d_0\".\"_mtw_v3_candidates\" WHERE token=NEW.\"_mtw_v3_version\";\n  IF candidate_key IS DISTINCT FROM NEW.key OR candidate_action<>TG_OP THEN\n    RAISE EXCEPTION 'dislock v3 candidate does not match actual effect';\n  END IF;\n  UPDATE \"mtw_provenance_dislock_v3_6c0de7601d_0\".\"_mtw_v3_state\" SET token=NEW.\"_mtw_v3_version\",present=true WHERE key=NEW.key AND token=previous;\n  GET DIAGNOSTICS changed=ROW_COUNT;\n  IF changed<>1 THEN RAISE EXCEPTION 'dislock v3 actual effect source mismatch'; END IF;\n  INSERT INTO \"mtw_provenance_dislock_v3_6c0de7601d_0\".\"_mtw_v3_effects\"(token,key,predecessor,action,owner,expire_at)\n    VALUES(NEW.\"_mtw_v3_version\",NEW.key,previous,TG_OP,NEW.value,NEW.expire_at);\n  RETURN NEW;\nEND\n\n"
+        },
+        "predecessor": {
+          "functionOid": 16445,
+          "sourceSha256": "da47c91b8b0f63ca36f37fb5c7364a26623f78299695cd7f163dd7ec32119543",
+          "source": "\n\nDECLARE previous text; matches integer;\nBEGIN\n  SELECT pg_catalog.count(*)::integer,pg_catalog.min(predecessor::text)\n    INTO matches,previous FROM \"mtw_provenance_dislock_v3_6c0de7601d_0\".\"_mtw_v3_candidates\" WHERE token=p_token::uuid;\n  IF matches<>1 THEN RAISE EXCEPTION 'dislock v3 unique immutable candidate missing'; END IF;\n  RETURN previous;\nEND\n\n"
+        },
+        "installationDdlSha256": "94058770bf6a02d704eec2b8320cd262dce5bbbc20e6e14c2b3788229cdccf2a",
+        "catalog": {
+          "business": {
+            "relation": [
+              16385,
+              "r",
+              false,
+              false,
+              "p"
+            ],
+            "columns": [
+              [
+                "key",
+                "text",
+                true,
+                "",
+                ""
+              ],
+              [
+                "value",
+                "text",
+                true,
+                "",
+                ""
+              ],
+              [
+                "expire_at",
+                "timestamp with time zone",
+                true,
+                "",
+                ""
+              ],
+              [
+                "_mtw_v3_version",
+                "uuid",
+                true,
+                "",
+                ""
+              ]
+            ],
+            "constraints": [
+              [
+                "n",
+                [
+                  1
+                ],
+                true,
+                true,
+                false,
+                false
+              ],
+              [
+                "n",
+                [
+                  2
+                ],
+                true,
+                true,
+                false,
+                false
+              ],
+              [
+                "n",
+                [
+                  3
+                ],
+                true,
+                true,
+                false,
+                false
+              ],
+              [
+                "n",
+                [
+                  4
+                ],
+                true,
+                true,
+                false,
+                false
+              ],
+              [
+                "p",
+                [
+                  1
+                ],
+                true,
+                true,
+                false,
+                false
+              ]
+            ],
+            "userTriggerOids": [
+              16446,
+              16447
+            ],
+            "unsafeEffects": {
+              "foreignKeys": 0,
+              "rewriteRules": 0,
+              "checkConstraints": 0,
+              "exclusionConstraints": 0,
+              "generatedColumns": 0,
+              "expressionIndexes": 0,
+              "partialIndexes": 0,
+              "customTypes": 0,
+              "inheritance": 0,
+              "nondeterministicCollations": 0,
+              "customIndexOperators": 0,
+              "nonBtreeIndexes": 0,
+              "nondeterministicIndexCollations": 0
+            },
+            "indexCount": 1
+          },
+          "owned": {
+            "installation": {
+              "relation": [
+                16395,
+                "r",
+                false,
+                false,
+                "p"
+              ],
+              "columns": [
+                [
+                  "nonce",
+                  "uuid",
+                  true
+                ],
+                [
+                  "table_oid",
+                  "oid",
+                  true
+                ]
+              ],
+              "constraints": [
+                [
+                  "n",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    2
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "p",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ]
+              ],
+              "userTriggerOids": [],
+              "unsafeEffects": {
+                "foreignKeys": 0,
+                "rewriteRules": 0,
+                "checkConstraints": 0,
+                "exclusionConstraints": 0,
+                "generatedColumns": 0,
+                "expressionIndexes": 0,
+                "partialIndexes": 0,
+                "customTypes": 0,
+                "inheritance": 0,
+                "nondeterministicCollations": 0,
+                "customIndexOperators": 0,
+                "nonBtreeIndexes": 0,
+                "nondeterministicIndexCollations": 0
+              },
+              "indexCount": 1
+            },
+            "state": {
+              "relation": [
+                16402,
+                "r",
+                false,
+                false,
+                "p"
+              ],
+              "columns": [
+                [
+                  "key",
+                  "text",
+                  true
+                ],
+                [
+                  "token",
+                  "uuid",
+                  true
+                ],
+                [
+                  "present",
+                  "boolean",
+                  true
+                ]
+              ],
+              "constraints": [
+                [
+                  "n",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    2
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    3
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "p",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "u",
+                  [
+                    2
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ]
+              ],
+              "userTriggerOids": [],
+              "unsafeEffects": {
+                "foreignKeys": 0,
+                "rewriteRules": 0,
+                "checkConstraints": 0,
+                "exclusionConstraints": 0,
+                "generatedColumns": 0,
+                "expressionIndexes": 0,
+                "partialIndexes": 0,
+                "customTypes": 0,
+                "inheritance": 0,
+                "nondeterministicCollations": 0,
+                "customIndexOperators": 0,
+                "nonBtreeIndexes": 0,
+                "nondeterministicIndexCollations": 0
+              },
+              "indexCount": 2
+            },
+            "candidates": {
+              "relation": [
+                16414,
+                "r",
+                false,
+                false,
+                "p"
+              ],
+              "columns": [
+                [
+                  "token",
+                  "uuid",
+                  true
+                ],
+                [
+                  "key",
+                  "text",
+                  true
+                ],
+                [
+                  "predecessor",
+                  "uuid",
+                  true
+                ],
+                [
+                  "action",
+                  "text",
+                  true
+                ],
+                [
+                  "owner",
+                  "text",
+                  true
+                ],
+                [
+                  "expire_at",
+                  "timestamp with time zone",
+                  true
+                ]
+              ],
+              "constraints": [
+                [
+                  "n",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    2
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    3
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    4
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    5
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    6
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "p",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ]
+              ],
+              "userTriggerOids": [],
+              "unsafeEffects": {
+                "foreignKeys": 0,
+                "rewriteRules": 0,
+                "checkConstraints": 0,
+                "exclusionConstraints": 0,
+                "generatedColumns": 0,
+                "expressionIndexes": 0,
+                "partialIndexes": 0,
+                "customTypes": 0,
+                "inheritance": 0,
+                "nondeterministicCollations": 0,
+                "customIndexOperators": 0,
+                "nonBtreeIndexes": 0,
+                "nondeterministicIndexCollations": 0
+              },
+              "indexCount": 1
+            },
+            "effects": {
+              "relation": [
+                16427,
+                "r",
+                false,
+                false,
+                "p"
+              ],
+              "columns": [
+                [
+                  "token",
+                  "uuid",
+                  true
+                ],
+                [
+                  "key",
+                  "text",
+                  true
+                ],
+                [
+                  "predecessor",
+                  "uuid",
+                  true
+                ],
+                [
+                  "action",
+                  "text",
+                  true
+                ],
+                [
+                  "owner",
+                  "text",
+                  true
+                ],
+                [
+                  "expire_at",
+                  "timestamp with time zone",
+                  true
+                ]
+              ],
+              "constraints": [
+                [
+                  "n",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    2
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    3
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    4
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    5
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "n",
+                  [
+                    6
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "p",
+                  [
+                    1
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ],
+                [
+                  "u",
+                  [
+                    3
+                  ],
+                  true,
+                  true,
+                  false,
+                  false
+                ]
+              ],
+              "userTriggerOids": [],
+              "unsafeEffects": {
+                "foreignKeys": 0,
+                "rewriteRules": 0,
+                "checkConstraints": 0,
+                "exclusionConstraints": 0,
+                "generatedColumns": 0,
+                "expressionIndexes": 0,
+                "partialIndexes": 0,
+                "customTypes": 0,
+                "inheritance": 0,
+                "nondeterministicCollations": 0,
+                "customIndexOperators": 0,
+                "nonBtreeIndexes": 0,
+                "nondeterministicIndexCollations": 0
+              },
+              "indexCount": 2
+            }
+          }
+        },
+        "initializationWindow": [
+          {
+            "kind": "begin",
+            "commandTag": "BEGIN"
+          },
+          {
+            "kind": "lock",
+            "tableOid": 16385,
+            "mode": "ACCESS EXCLUSIVE",
+            "commandTag": "LOCK TABLE"
+          },
+          {
+            "kind": "catalog",
+            "tableOid": 16385
+          },
+          {
+            "kind": "snapshot",
+            "rows": [
+              {
+                "key": "cronjob-lock:lease:fixture-schedule-and-server-clock",
+                "version": "39179306-f7bb-415c-923e-01d926ff0903",
+                "present": false,
+                "owner": null,
+                "expireAt": null
+              },
+              {
+                "key": "cronjob-lock:schedule:fixture-schedule-and-server-clock",
+                "version": "5eae20be-201e-47f9-939e-ac95736ef799",
+                "present": false,
+                "owner": null,
+                "expireAt": null
+              }
+            ]
+          },
+          {
+            "kind": "commit",
+            "commandTag": "COMMIT"
+          }
+        ]
+      },
+      "initialState": [
+        {
+          "key": "cronjob-lock:lease:fixture-schedule-and-server-clock",
+          "version": "39179306-f7bb-415c-923e-01d926ff0903",
+          "present": false,
+          "owner": null,
+          "expireAt": null
+        },
+        {
+          "key": "cronjob-lock:schedule:fixture-schedule-and-server-clock",
+          "version": "5eae20be-201e-47f9-939e-ac95736ef799",
+          "present": false,
+          "owner": null,
+          "expireAt": null
+        }
+      ],
+      "effectLedger": [
+        {
+          "key": "cronjob-lock:schedule:fixture-schedule-and-server-clock",
+          "version": "7b7a5211-9b0e-41c8-ad14-f7ecfbc55c5d",
+          "predecessor": "5eae20be-201e-47f9-939e-ac95736ef799",
+          "action": "INSERT",
+          "owner": "owner-original",
+          "expireAt": {
+            "captureType": "datetime",
+            "value": "2026-10-21 11:36:34.768932+08:00"
+          }
+        }
+      ]
+    }
+  ],
+  "expectedAnalysis": "inconclusive until fixed SQL/source proof is implemented"
+}

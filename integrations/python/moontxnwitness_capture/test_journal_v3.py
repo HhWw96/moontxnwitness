@@ -198,6 +198,35 @@ class JournalTests(unittest.TestCase):
         self.assertIn("transaction_outcome_unknown", {g["code"] for g in status.gaps})
         self.assertEqual(json.loads((self.path / j.INDEX).read_bytes())["activeTransactions"], ["t"])
 
+    def test_matching_commit_rollback_command_response_can_close(self):
+        w = self.writer()
+        for item in (snapshot(), event(2, "begin", tx="t"), event(3, "commit_request", tx="t"),
+                     event(4, "rollback_ok", tx="t", commitResponse={"request": 3, "commandTag": "ROLLBACK"})):
+            w.append(item)
+        self.assertTrue(w.close(source_closed=True).complete)
+
+    def test_matching_server_rollback_sqlstate_response_can_close(self):
+        w = self.writer()
+        for item in (snapshot(), event(2, "begin", tx="t"), event(3, "commit_request", tx="t"),
+                     event(4, "rollback_ok", tx="t", commitResponse={"request": 3, "sqlstate": "40001",
+                         "diagnosticSqlstate": "40001", "transactionStatus": "IDLE"})):
+            w.append(item)
+        self.assertTrue(w.close(source_closed=True).complete)
+
+    def test_wrong_commit_response_reference_remains_unknown(self):
+        w = self.writer()
+        for item in (snapshot(), event(2, "begin", tx="t"), event(3, "commit_request", tx="t"),
+                     event(4, "rollback_ok", tx="t", commitResponse={"request": 2, "commandTag": "ROLLBACK"})):
+            w.append(item)
+        self.assertFalse(w.close(source_closed=True).complete)
+
+    def test_client_declared_server_confirmation_is_not_commit_proof(self):
+        w = self.writer()
+        for item in (snapshot(), event(2, "begin", tx="t"), event(3, "commit_request", tx="t"),
+                     event(4, "rollback_ok", tx="t", commitResponse={"request": 3, "serverConfirmed": True})):
+            w.append(item)
+        self.assertFalse(w.close(source_closed=True).complete)
+
     def test_disconnect_cannot_be_cleared_by_later_idle_rollback(self):
         w = self.writer()
         for item in (snapshot(), event(2, "begin", tx="t"), event(3, "commit_request", tx="t"), event(4, "disconnect", tx="t"), event(5, "rollback_ok", tx="t")):
@@ -567,6 +596,58 @@ class JournalTests(unittest.TestCase):
         self.assertEqual(result["sha256"], hashlib.sha256(destination.read_bytes()).hexdigest())
         with self.assertRaises(FileExistsError):
             j.JournalReader(self.path).export(destination, clock_domain="test-clock")
+
+    def test_export_optional_sql_profiles_are_bound_and_default_unchanged(self):
+        self.complete()
+        target = self.path.with_suffix(".json")
+        profiles = [{"profile": "fixture", "schema": "controlled"}]
+        result = j.JournalReader(self.path).export(target, clock_domain="c", sql_profiles=profiles)
+        self.assertEqual(json.loads(target.read_bytes())["sqlProfiles"], profiles)
+        self.assertEqual(result["sha256"], hashlib.sha256(target.read_bytes()).hexdigest())
+
+    def test_append_after_close_adds_invalidation_without_rewriting_old_data(self):
+        writer = self.complete()
+        original = {p.name: p.read_bytes() for p in self.path.iterdir() if p.is_file()}
+        self.assertFalse(writer.append(event(2)).accepted)
+        self.assertTrue((self.path / j.INVALIDATED).exists())
+        for name, raw in original.items():
+            self.assertEqual((self.path / name).read_bytes(), raw)
+        self.assertFalse(j.JournalReader(self.path).verify().complete)
+        self.assertFalse(writer.close(source_closed=True).complete)
+
+    def test_invalidation_io_failure_keeps_live_journal_instance_incomplete(self):
+        writer = self.complete()
+        original_open = Path.open
+        def refuse_marker(path, *args, **kwargs):
+            if path.name == j.INVALIDATED:
+                raise PermissionError("injected invalidation failure")
+            return original_open(path, *args, **kwargs)
+        with mock.patch.object(Path, "open", refuse_marker):
+            self.assertFalse(writer.append(event(2)).accepted)
+        self.assertFalse(writer.close(source_closed=True).complete)
+        with self.assertRaises(j.JournalVerificationError):
+            writer.archive(self.path.with_suffix(".zip"))
+
+    def test_invalidation_marker_permission_error_is_fail_closed(self):
+        self.complete()
+        original_lstat = Path.lstat
+        def denied(path, *args, **kwargs):
+            if path.name == j.INVALIDATED:
+                raise PermissionError("injected marker inspection denial")
+            return original_lstat(path, *args, **kwargs)
+        with mock.patch.object(Path, "lstat", denied):
+            status = j.JournalReader(self.path).verify()
+        self.assertFalse(status.valid)
+        self.assertFalse(status.complete)
+
+    def test_dangling_invalidation_marker_link_cannot_be_ignored(self):
+        self.complete()
+        try:
+            (self.path / j.INVALIDATED).symlink_to(self.path / "nonexistent-marker-target")
+        except OSError:
+            self.skipTest("OS does not permit symlink creation for this account")
+        self.assertFalse((self.path / j.INVALIDATED).exists())
+        self.assertFalse(j.JournalReader(self.path).verify().complete)
 
     def test_export_over_budget_has_no_partial_output(self):
         self.complete()

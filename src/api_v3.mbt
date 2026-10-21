@@ -1,7 +1,13 @@
 ///|
 fn v3_analysis(text : String, options_text : String) -> Json raise {
-  let options = parse_analysis_options(options_text)
-  let normalized = guarded_json(normalize_capture_v3_json(text), limit=33554432)
+  if v3_is_list_capture(text) {
+    return list_v3_analysis(text, options_text)
+  }
+  let (options, sql_proof) = v3_register_options(options_text)
+  let normalized = guarded_json(
+    normalize_register_capture_v3_json(text, use_sql_proof=sql_proof),
+    limit=33554432,
+  )
   let n = object_fields(normalized, "normalized")
   let mut evidence : Json = Json::null()
   let mut status = required(n, "status", "normalized")
@@ -18,11 +24,19 @@ fn v3_analysis(text : String, options_text : String) -> Json raise {
       Err(message) => fail("Invalid v3 projection: " + message)
     }
   }
+  let recorded_options : Json = {
+    "maxAttempts": options.max_attempts.to_json(),
+    "maxOperationChecks": options.max_operation_checks.to_json(),
+    "maxCachedStates": options.max_cached_states.to_json(),
+  }
+  if sql_proof {
+    object_fields_unchecked_v3(recorded_options)["sqlProof"] = "dislock-f9946f0-sql-proof-1".to_json()
+  }
   {
     "schemaVersion": 3,
     "tool": "MoonTxnWitness",
     "version": version().to_json(),
-    "algorithm": "v3-register-1",
+    "algorithm": (if sql_proof { "v3-register-sql-1" } else { "v3-register-1" }).to_json(),
     "status": status,
     "modelDefinition": {
       "id": "register-serializable-v1",
@@ -32,11 +46,7 @@ fn v3_analysis(text : String, options_text : String) -> Json raise {
     "normalized": normalized,
     "evidence": evidence,
     "execution": {
-      "analysisOptions": {
-        "maxAttempts": options.max_attempts.to_json(),
-        "maxOperationChecks": options.max_operation_checks.to_json(),
-        "maxCachedStates": options.max_cached_states.to_json(),
-      },
+      "analysisOptions": recorded_options,
       "effectiveLimits": effective_limits(options),
       "metrics": metrics,
     },
@@ -152,6 +162,7 @@ pub fn capsule_v3_content_json(text : String) -> String {
 fn v3_without_transaction(
   trace : Json,
   removed : String,
+  prune_sql_ledger? : Bool = false,
 ) -> (Json, Array[Json]) raise {
   let root = object_fields(trace, "trace")
   let events = match required(root, "events", "trace") {
@@ -161,8 +172,17 @@ fn v3_without_transaction(
   let kept : Array[Json] = []
   let origins : Array[Json] = []
   let sequence : Map[String, Json] = Map([])
+  let removed_versions : Map[String, Bool] = Map([])
   for raw in events {
     let event = object_fields(raw, "event")
+    if prune_sql_ledger &&
+      event.get("tx") == Some(removed.to_json()) &&
+      event.get("kind") == Some("write".to_json()) {
+      removed_versions[identifier(
+        required(event, "version", "write"),
+        "write.version",
+      )] = true
+    }
     if event.get("tx") != Some(removed.to_json()) {
       let copy : Map[String, Json] = Map([])
       for key, value in event {
@@ -172,12 +192,28 @@ fn v3_without_transaction(
       let original = required(event, "seq", "event")
       sequence[original.stringify()] = next
       copy["seq"] = next
-      if event.get("kind") == Some("rows".to_json()) {
-        let statement = required(event, "statement", "rows")
+      if event.contains("statement") {
+        let statement = event.at("statement")
         copy["statement"] = match sequence.get(statement.stringify()) {
           Some(value) => value
           None => fail("Missing retained statement")
         }
+      }
+      if event.contains("commitResponse") {
+        let response = object_fields(
+          event.at("commitResponse"),
+          "commitResponse",
+        )
+        let remapped : Map[String, Json] = Map([])
+        for key, value in response {
+          remapped[key] = value
+        }
+        let request = required(response, "request", "commitResponse")
+        remapped["request"] = match sequence.get(request.stringify()) {
+          Some(value) => value
+          None => fail("Missing retained COMMIT request")
+        }
+        copy["commitResponse"] = Json::object(remapped)
       }
       origins.push(original)
       kept.push(Json::object(copy))
@@ -188,6 +224,40 @@ fn v3_without_transaction(
     copy[key] = value
   }
   copy["events"] = kept.to_json()
+  if prune_sql_ledger {
+    match root.get("sqlProfiles") {
+      Some(Array(profiles)) => {
+        let pruned : Array[Json] = []
+        for raw in profiles {
+          let fields = object_fields(raw, "SQL profile")
+          let profile : Map[String, Json] = Map([])
+          for key, value in fields {
+            profile[key] = value
+          }
+          match fields.get("effectLedger") {
+            Some(Array(rows)) =>
+              profile["effectLedger"] = rows
+                .filter(row => {
+                  let version = identifier(
+                    required(
+                      object_fields(row, "effect ledger"),
+                      "version",
+                      "effect ledger",
+                    ),
+                    "effect ledger.version",
+                  )
+                  !removed_versions.contains(version)
+                })
+                .to_json()
+            _ => ()
+          }
+          pruned.push(Json::object(profile))
+        }
+        copy["sqlProfiles"] = pruned.to_json()
+      }
+      _ => ()
+    }
+  }
   (Json::object(copy), origins)
 }
 
@@ -210,6 +280,12 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
     let analysis_options = options
       .get_or_default("analysisOptions", Json::object(Map([])))
       .stringify()
+    let prune_sql_ledger = if v3_is_list_capture(text) {
+      false
+    } else {
+      let (_, requested) = v3_register_options(analysis_options)
+      requested
+    }
     let mut trace = guarded_json(text, limit=8388608)
     let mut report = v3_analysis(text, analysis_options)
     let removed : Array[String] = []
@@ -247,7 +323,11 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
             object_fields(transaction, "transaction").at("id"),
             "transaction.id",
           )
-          let (candidate, relative_origins) = v3_without_transaction(trace, id)
+          let (candidate, relative_origins) = v3_without_transaction(
+            trace,
+            id,
+            prune_sql_ledger~,
+          )
           checks += 1
           let candidate_report = v3_analysis(
             candidate.stringify(),
@@ -280,7 +360,11 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
     let result : Json = {
       "schemaVersion": 3,
       "algorithm": "v3-source-checked-single-delete-1",
-      "predicate": "definite register serializability violation with complete capture coverage",
+      "predicate": (if v3_is_list_capture(text) {
+        "definite append-list serializability violation with complete capture coverage"
+      } else {
+        "definite register serializability violation with complete capture coverage"
+      }).to_json(),
       "status": (if !eligible {
         "not-violation"
       } else if !minimal {
