@@ -6,7 +6,9 @@
 
 已从 `6f37245` 按[剩余执行计划](remaining-execution-plan.md)开发；当前切片契约见 [v3](v3-contract.md)。新增独立 `normalizeCaptureV3` / `analyzeV3` / `reduceV3` / `verifyV3`、对应 CLI 及 v3 复现包。MoonBit 区分不可变观察和可撤销写效果；同名保存点按实例处理，未知 COMMIT 不当作回滚，条件写和未映射 SQL 保持覆盖缺口。
 
-本轮统一回归的 [summary](../verification/summary.json)记录 JS、Wasm GC、Wasm **各 187 项**核心测试，以及原有 10,320 份历史、6,373 份环证据和 2,542 份解析差分。新增独立解释器 57 条轨迹及 SDK/CLI/证据 167 项检查；其中注册篡改变体 32 种。磁盘日志 55 项测试中 54 通过，Windows 因账户无法创建符号链接跳过 1 项；独立存储故障审计 10 项通过。当前源码的 Linux Native 与独立 CI 状态另行记录，不能借用下文原基线的通过结果。
+本轮统一回归的 [summary](../verification/summary.json)记录本地 JS、Wasm GC、Wasm **各 187 项**核心测试，以及原有 10,320 份历史、6,373 份环证据和 2,542 份解析差分。新增独立解释器 57 条轨迹及 SDK/CLI/证据 167 项检查；其中注册篡改变体 32 种。磁盘日志本地 55 项测试中 54 通过，因账户无法创建符号链接跳过 1 项；独立存储故障审计 10 项通过。
+
+源码 [16ba355](https://github.com/HhWw96/moontxnwitness/commit/16ba3552f08d134f55795e6d95286c1d43a374ad) 的 [Windows/Linux 核心 CI](https://github.com/HhWw96/moontxnwitness/actions/runs/39534758059)与 [PostgreSQL CI](https://github.com/HhWw96/moontxnwitness/actions/runs/39534758057)均在首次运行通过。两平台各三目标 187 项，Linux Native 也为 187 项；CI 磁盘测试两平台均 55 项通过、无跳过。[独立 AI 公开下载验收](../verification/v3/independent-public-checkpoint-16ba355-2026-10-21T02-50-23.105113Z.json)核对 3 份实际 artifact 的 GitHub 摘要、两平台各 191 项源码绑定及真正下载的 core/capture/manifest/wrapper；在独立新目录用两个平台的下载运行文件完成 66 项检查，未借作者 dist/cache，也没有重新执行数据库或正式性能测量。此 CI 已上传实际编译 core，补齐前一实现只能核对运行时摘要的限制。
 
 分段日志使用默认 4 MiB 队列、16 MiB 段、256 KiB 或 100 ms 同步、SQLite 磁盘事务索引及流式验证；4,100 个已完成事务的历史身份不会持续保留在内存集合中。独立审计实际发现并修复双重 IO 失败后误判完整、WAL 归档缺失和读取期间重开竞态。原失败、原 52 例冻结清单与参考解释器时态修正说明均保留在 [v3 证据目录](../verification/v3/)及 [修正记录](../fixtures/v3/protocol-correction-1.json)。
 
