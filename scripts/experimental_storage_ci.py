@@ -19,8 +19,13 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parent.parent
-BUNDLE = ROOT / "verification/experimental-candidates/storage-r2-2026-10-21"
 BASE_COMMIT = "78635505e4c189c402ba70600632aeaef71ef206"
+PROFILES = {
+    "r2": ("1caf45ea6b0361c6d703c9e34d69881e4c0ba94a41e36a07ccf87df43a629db5",
+           "7a0147740c722f6194d98def54e6ad0326934895b84f3c09aa468c3d35918079", 33),
+    "r3": ("f4f7c0e21ff2eeba0c4b3adf8ff81b07572042a69b94417273d1b164e94c1b02",
+           "f312fc6d0b6adc6b146954e6b19d0c94ce09d0b5098f5869690d457f8b933962", 38),
+}
 
 
 def binding(path):
@@ -48,12 +53,15 @@ def public_environment(scratch):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--work", type=Path, required=True)
+    parser.add_argument("--candidate", choices=tuple(PROFILES), default="r3")
     args = parser.parse_args()
+    bundle = ROOT / ("verification/experimental-candidates/storage-" + args.candidate + "-2026-10-21")
+    profile_sha, candidate_sha, new_count = PROFILES[args.candidate]
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=False)
     output = work / "evidence"
     output.mkdir()
-    receipt = {"schema": 1, "kind": "experimental-storage-r2-execution",
+    receipt = {"schema": 1, "kind": "experimental-storage-" + args.candidate + "-execution",
                "passed": False, "candidateBaselineCommit": BASE_COMMIT,
                "workflowCommit": os.environ.get("GITHUB_SHA"),
                "platform": platform.platform(), "python": sys.version,
@@ -63,10 +71,10 @@ def main():
                "actualDatabaseExecution": False, "formalPerformanceMeasurement": False,
                "fullCaptureIntegration": False, "runs": [], "failures": []}
     try:
-        profile_path = BUNDLE / "bundle-index.json"
-        assert binding(profile_path)["sha256"] == "1caf45ea6b0361c6d703c9e34d69881e4c0ba94a41e36a07ccf87df43a629db5"
+        profile_path = bundle / "bundle-index.json"
+        assert binding(profile_path)["sha256"] == profile_sha
         profile = json.loads(profile_path.read_bytes())
-        assert profile["candidateIndexSha256"] == "7a0147740c722f6194d98def54e6ad0326934895b84f3c09aa468c3d35918079"
+        assert profile["candidateIndexSha256"] == candidate_sha
         assert profile["baselineCommit"] == BASE_COMMIT
         receipt["profileBinding"] = binding(profile_path)
         restored = work / "isolated-checkout"
@@ -74,7 +82,7 @@ def main():
         before = {}
         for target_name, item in profile["files"].items():
             target = restored / relative(target_name)
-            original = BUNDLE / relative(item["bundleFile"])
+            original = bundle / relative(item["bundleFile"])
             assert original.is_file() and not original.is_symlink()
             actual = binding(original)
             assert actual == {key: item[key] for key in ("bytes", "sha256")}, target_name
@@ -84,7 +92,7 @@ def main():
             assert binding(target) == actual
             before[target_name] = actual
         receipt["restoredFiles"] = before
-        candidate = restored / "artifacts/source-window-v3-archive-r2-draft"
+        candidate = restored / ("artifacts/source-window-v3-archive-" + args.candidate + "-draft")
         index = json.loads((candidate / "candidate-index.json").read_bytes())
         assert binding(candidate / "candidate-index.json")["sha256"] == profile["candidateIndexSha256"]
         for name, expected in index["fileBindings"].items():
@@ -94,7 +102,7 @@ def main():
         # Each run has a new scratch base; failed inputs and child crash logs
         # remain available instead of being removed in test cleanup.
         for label, script, expected_count in (
-                ("new-gap-cases", "test_gaps.py", 33),
+                ("new-gap-cases", "test_gaps.py", new_count),
                 ("revision-regression", "test_managed.py", 32)):
             scratch = output / (label + "-scratch")
             scratch.mkdir()

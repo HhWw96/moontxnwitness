@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "kind": "archive-recovery-authority-before-mutation-r3",
+  "status": "static-unexecuted",
+  "baseCandidateIndexSha256": "7a0147740c722f6194d98def54e6ad0326934895b84f3c09aa468c3d35918079",
+  "actualFailure": {
+    "workflowCommit": "405588d0b9711b98c805c9c6069dd06048121ba2",
+    "runId": "39582277986",
+    "platforms": ["ubuntu-24.04", "windows-2022"],
+    "newR2Cases": {"executed": 33, "passed": 33, "skipped": 0},
+    "revisionCases": {"executed": 32, "passed": 31, "errors": 1, "skipped": 0},
+    "failure": "test_32: invalid lock-token recovery created a persistent foreign-token failure marker before authority validation; restoring the correct lock then failed."
+  },
+  "rules": [
+    "The original r2 candidate, its expectations and actual failed receipts remain immutable.",
+    "Validate the complete intent, current abandoned-lock token and retained-root digest before dirty becomes true.",
+    "Refused authority requests may not create, replace or remove a failure marker and may not modify any source/store/archive bytes.",
+    "The abandoned operation lock remains present after a refused request, and successful recovery still requires explicit ownership and plan confirmation.",
+    "Repeat all existing checks in _finish immediately before recovery mutation; prevalidation does not waive guards or source closure.",
+    "Once actual recovery mutation starts, any failure retains the lock and genuine owner-bound marker; live instance remains poisoned.",
+    "A corrected request is accepted only after the caller restores the exact original authority bytes; no automatic repair or deletion of foreign facts is added."
+  ],
+  "testPlan": {
+    "retainedR2Cases": 33,
+    "newR3Cases": 5,
+    "gapSuiteExpectedTests": 38,
+    "unchangedRevisionRegressionExpectedTests": 32,
+    "newCases": [
+      "wrong lock token refusal is byte-preserving and does not poison same-instance legitimate recovery",
+      "wrong plan refusal preserves an existing genuine failure marker and later valid recovery",
+      "malformed target set refuses before dirty and preserves all persistent bytes",
+      "mismatched retained-root digest refuses before dirty and preserves all persistent bytes",
+      "failure after actual recovery publication still persists genuine owner guard and requires fresh explicit recovery"
+    ]
+  },
+  "localTestsExecuted": false,
+  "pythonSyntaxValidated": false,
+  "actualDatabaseExecution": false,
+  "formalPerformanceMeasurement": false,
+  "stableApiChanged": false,
+  "independentAcceptance": false
+}

@@ -1,0 +1,71 @@
+name: Independently audit public checkpoint
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  public-7863550:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      AUDIT_TOOL: verification/public-audit-tools/7863550-2026-10-21
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.13.0'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Verify independently reviewed audit source
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, os
+          from pathlib import Path
+          base = Path(os.environ['AUDIT_TOOL'])
+          files = {
+              'audit-public-ci.py': '13c684125340e4dff28a7e29484f7b2c91a6e69a98b7abe86f086f33442b8f0b',
+              'transport.py': 'f65c78c032f93a7b05366e04adbfc30ca49ede664d3bb4544af4b64142f22476',
+              'profile-7863550.json': '6808bb9ef987816cc096f2ab9e245d2ad9bc8cffd9fbcb5bd4f3806888a81000',
+          }
+          for name, expected in files.items():
+              assert hashlib.sha256((base / name).read_bytes()).hexdigest() == expected, name
+          print('Frozen audit source and fixed acceptance profile match.')
+          PY
+      - name: Download fixed public source, compiled artifacts and job logs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: python -B "$AUDIT_TOOL/audit-public-ci.py" --mode github-actions --phase fetch --profile "$AUDIT_TOOL/profile-7863550.json" --work "$RUNNER_TEMP/public-audit-7863550"
+      - name: Audit downloaded bytes and execute fresh consumers without credentials
+        shell: bash
+        run: python -B "$AUDIT_TOOL/audit-public-ci.py" --mode github-actions --phase audit --profile "$AUDIT_TOOL/profile-7863550.json" --work "$RUNNER_TEMP/public-audit-7863550" --output "$RUNNER_TEMP/public-audit-7863550/independent-public-7863550.json"
+      - name: Preserve actual runtime modules, audit results and first failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: independent-public-7863550
+          if-no-files-found: error
+          compression-level: 6
+          path: |
+            ${{ runner.temp }}/public-audit-7863550/*.json
+            ${{ runner.temp }}/public-audit-7863550/*.log
+            ${{ runner.temp }}/public-audit-7863550/*.stdout
+            ${{ runner.temp }}/public-audit-7863550/*.stderr
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/*-process.json
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/*-output.stdout
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/*-output.stderr
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/*-output.failure.json
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/audit-output/**
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/dist/core.mjs
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/dist/capture-core.mjs
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/dist/build-manifest.json
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/dist/sdk.mjs
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/dist/evidence.mjs
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/dist/moontxnwitness.mjs
+            ${{ runner.temp }}/public-audit-7863550/fresh-*/verification/faults/mlflow/independent-*/**
+            ${{ runner.temp }}/public-audit-7863550/source/*/verification/relation-v3/raw-chain-independent-*.json

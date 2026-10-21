@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "immutablePriorEvidence": {
+    "verification/v3/journal-independent-audit-2026-10-21T02-22-26.161508Z.json": {
+      "sha256": "84e5b1c83dbd42896ea62b8ab931ac379dff7f03210362cd4e5757e63db6c247",
+      "bytes": 5799
+    },
+    "verification/v3/journal-independent-audit-2026-10-21T02-24-38.328726Z.json": {
+      "sha256": "2b30f59cd589749ddf6646d25fcd1b426ca43a869edd89d377102d8327ca6dbf",
+      "bytes": 7686
+    },
+    "verification/v3/post-close-independent-reproduction-2026-10-21.json": {
+      "sha256": "ade58030b35f37b2bf312a7cf261c68bef789d977786b3021cccf43418b1f6d4",
+      "bytes": 3857
+    },
+    "verification/v3/post-close-independent-fixed-2026-10-21/receipt.json": {
+      "sha256": "f6d6ec178a5441c151055314ffd578c7ccef41e86bd2212aed8aa720a1b8c890",
+      "bytes": 3823
+    }
+  },
+  "scope": "Prior actual journal/producer closed-index-marker and writer-publication/iteration failures or fixes. No original bytes changed; not direct execution proof for this new archive revision.",
+  "newManifestRootRace": {
+    "test": "test_r2_16",
+    "actualExecution": false,
+    "status": "Written prior to independent execution; no old passing receipt rewritten."
+  },
+  "rootSafetyConditions": [
+    "A pre-existing guard survives secondary marker IO failure.",
+    "Late producer activity cannot export an old prefix as complete.",
+    "Writer/publication/iteration races must prevent a successful complete EOF."
+  ]
+}

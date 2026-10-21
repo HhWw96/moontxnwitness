@@ -1,0 +1,74 @@
+{
+  "schema":2,
+  "status":"new-sourceSchema2-checker-contract-before-implementation",
+  "algorithm":"v3-orm-source-proof-2",
+  "previousDiagnostic":"The old sourceSchema1 input, v3-orm-source-proof-1 implementation, 16 retained raw-field gaps and frozen actual results stay unchanged in artifacts/orm-v3-moonbit-draft and its old external workspace.",
+  "entryPoint":{"moonbit":"orm_sql_source2_v3_proof_json(text:String)->String","privateSdk":"inspectOrmSourcesV3Source2","envelope":{"schema":2,"profile":"fastapi-users-sqlalchemy-7.0.0-pg18/1","traceText":"original complete diagnostic trace JSON text","sourceJournalText":"original complete sourceSchema2 JSONL text"}},
+  "inputBindings":{
+    "producerIndexSha256":"6b903ae960bd44ffd038adf3d129b30115c3c55f6b02e26a8cce9b793da6dc20",
+    "producerContractSha256":"24dfe6e17490e05209f29fe82fe48c2bbff728385727296365ce3007acfbf2d0",
+    "frozenRawSource":{"bytes":342967,"sha256":"88cbaaee15e5e0faf403b2a91ce4ace53d4e2ddf656a06b1f15cf979fbf7a3ec"},
+    "frozenTrace":{"bytes":44633,"sha256":"3ee5a826c5d80cc6b753b35456c0921c62b867312fb56e43aae233f311c9f97a"},
+    "actualRun":"<external-scratch>/orm-v3-owned-provenance-slice3/run-42ev_b94/draft-output",
+    "fixedDependencies":{"upstreamCommit":"6397ace506d829a2ee12786da5d724c3f4c6b634","sqlalchemy":"2.0.55","psycopg":"3.3.6","postgresql":180006},
+    "actualCounts":{"controlQueries":121,"sourceRecords":147,"businessBatches":21,"observedEffects":8,"survivingLedgerEffects":7,"revertedEffects":1,"initialStateParameterGroups":3,"explicitJsonbParameters":1},
+    "initialParameterCorrection":"Three initialization INSERT parameter groups are not three Jsonb objects. In the frozen run sourceSeq22/23 have present=false and image=null; sourceSeq24 has present=true and the sole explicit Jsonb legacy image. Verify these raw facts rather than a mistaken count."
+  },
+  "supportedRange":{
+    "business":"Pinned FastAPI Users SQLAlchemy get/create/update/delete over one controlled existing native six-column user table plus private UUID version metadata.",
+    "columns":["id:uuid","email:varchar(320) unique","hashed_password:varchar(1024)","is_active:boolean","is_superuser:boolean","is_verified:boolean"],
+    "keys":"Explicit fixed canonical UUID domain of 1..128 keys. Missing/absent state is represented by a witnessed tombstone token and false presence, never an invented version.",
+    "sql":"Exact fixed business SQL/parameter/result mappings already checked by the old strict batch verifier; new exact control-query/DDL templates are separately compiled and reviewed.",
+    "unsupported":"Arbitrary SQL, unknown keys, alternate ORM schemas, partial business fetches, zero DML without full source, unsupported values, server errors, unknown commit outcomes and unobserved side effects retain gaps.",
+    "assumptions":["Controlled writers within the fixed domain","No unobserved DDL, trigger disablement or owned metadata mutation during capture","Pinned standard driver adapters with no custom connection/global dumper overrides"],
+    "authenticity":"Checks the semantic/structural consistency and provenance bindings of supplied observations. It does not authenticate the collector or prove that no external actor lied."
+  },
+  "journal":{
+    "header":{"sourceSeq":1,"kind":"header","sourceSchema":"orm-source-draft/2","controlSchema":"orm-control-query/1","coreProofAccepted":false},
+    "sequence":"Positive contiguous sourceSeq, unique initialization, all original control/source-gap/business records, one final ledger, exactly one final original-byte prefix seal.",
+    "position":"Initial metadata remains in the installation record after its initialization COMMIT. Final catalog/functions/marker/snapshot/ledger observations remain only in the terminal final-effect-ledger record after finalization COMMIT. Do not backfill final facts into initial metadata.",
+    "businessBindings":"Original statement and delivered rows event seq remain unchanged; internal presenceRows/effectRows and actual server PGresult are not relabelled as business rows or reads."
+  },
+  "controlProof":{
+    "query":"Every retained control-query uses a recognized exact SQL template and exact parameters. Every referenced querySeq points to a prior actual record with the expected SQL, parameters, result, physical connection/backendPid and transaction.",
+    "nativeRaw":"Check status, commandTag bytes/text, commandTuples, rowcount, ntuples/nfields, column names/typeCode and every native/raw cell. All supported PGresult fields have text format 0. Decode raw cells independently according to the fixed OID, not by trusting a Python checked flag.",
+    "oidRange":[16,18,19,20,21,25,26,1000,1003,1005,1009,3802],
+    "arrays":"Only the actual flat bool/name/smallint/text arrays required by fixed catalog queries. Quoting, escapes and nulls must decode correctly; unsupported nested/ambiguous encodings cannot be silently accepted.",
+    "jsonb":"The typed parameter is accepted only as explicit owned-setup {captureType:'psycopg-jsonb',objectDumps:'stdlib-json-dumps',value:pureJSON}. Compare its actual value against the corresponding raw server state/image, not merely its label.",
+    "ddl":"Validate all 13 fixed installation DDL statements, source bodies and acknowledgements within the business lock transaction. Unknown additional DDL/control SQL is a provenance gap, not a proof exemption.",
+    "preMigration":"Check the actual pre-migration business catalog and side-effect observations before allowing migration statements to justify source facts. Do not rely only on the post-migration catalog."
+  },
+  "windowProof":{
+    "initial":"Actual BEGIN ACK, first business-only ACCESS EXCLUSIVE lock before ALTER/other migration statements, later business+all four owned-table lock, actual catalog/function/marker queries, seven-cell joined snapshot and actual COMMIT ACK. All are ordered within one physical connection/backendPid/client transaction, with matching transaction statuses.",
+    "final":"A separate real transaction locks business+all owned tables, re-observes catalog/functions/marker, reads snapshot and full ledger, then receives actual COMMIT ACK. Every leaf is bound to that transaction's control queries.",
+    "ddlSourceSeqsOfFrozenRun":[13,14,15,17,18,19,20,25,27,29,31,33,35],
+    "failedAck":"A requested COMMIT, Python success flag, incomplete result or source-gap never substitutes for the corresponding server acknowledgement.",
+    "sevenCellSnapshot":"Check [key,token,present,stateImage,businessId,businessToken,businessImage] against actual same-statement joined result, initial/terminal state and trace snapshot. For an absent row stateImage is null while businessImage is the actual six-null-fields jsonb_build_object result; do not change it to SQL null.",
+    "catalog":"Both business and four owned catalogs are checked against fixed supported schema/constraints/indexes/trigger sets and zero forbidden side-effect counts. Function raw source/catalog/OID and trigger source/type/enablement/arguments are checked at both boundaries against fixed templates.",
+    "equality":"Verify the permitted initial/final metadata invariants and final state/ledger chains without treating matching boundaries as proof of no intervening unobserved DDL."
+  },
+  "effectAndSourceProof":{
+    "reuse":"Reuse the old strict original SQL/parameters/executedSQL, typed native/raw business PGresult, business row prefix/EOF and same-statement presence/effect verification.",
+    "ledger":"Every committed unreverted observed effect, including overwritten intermediate writes, is in the actual terminal ledger; aborted/reverted effects are excluded there but retained in original observations. Compare the full images, presence transitions, key, token and predecessor.",
+    "predecessor":"Metadata predecessor is a source-chain fact and never becomes a synthetic business read.",
+    "partialEvidence":"May emit individually proven statements/facts with exact control/source event references even if another part of the trace remains incomplete. Never report the whole trace ready merely because local source proofs passed."
+  },
+  "output":{
+    "schema":2,
+    "algorithm":"v3-orm-source-proof-2",
+    "always":{"analysisCoverageAccepted":false,"history":null,"verifiedProfiles":[]},
+    "localEvidence":["matchedStatements","verifiedSourceBatches","candidateFacts","provenStatements","provenFacts","verifiedControlQueries","initializationEvidence","finalizationEvidence","observedEffects","ledger"],
+    "gaps":"Preserve the original lifecycle/unsupported/zero/error/source gaps and a draft-only no-exemption marker. Add precise raw-control/catalog/window/source issues. Do not clear original gaps by trusting Python audit checked:true.",
+    "failure":"Any invalid original lifecycle, duplicate keys, malformed seal, unsafe raw binding or unsupported control evidence cannot retain a complete source-profile proof. No fabricated history is returned."
+  },
+  "limits":{"envelopeUtf8Bytes":67108864,"traceUtf8Bytes":8388608,"sourceUtf8Bytes":16777216,"sourceRecordUtf8Bytes":131072,"sourceRecordNodes":4096,"sourceRecords":16384,"events":65536,"knownKeys":128,"controlResultRows":512,"controlResultColumns":32,"controlResultCombinedCells":512,"controlAggregateRawBytes":32768,"effectLedgerEntries":512},
+  "acceptancePlan":{
+    "baseline":"Bind original source/trace bytes from the frozen actual run. No new database execution is needed for this checker.",
+    "mutations":["Raw/native scalar and array mismatch","PG OID/format/name/status/command tag mismatch","Changed setup Jsonb payload or unsupported dumps label","Missing first or owned lock","Different connection/backendPid/transaction","Failed or reordered BEGIN/COMMIT ACK","13DDL mutation/extra DDL","Initial/final leaf querySeq tampering","Initial/final function source or catalog mismatch","User trigger/unsafe effect change","Seven-cell absence/null/tombstone/image mismatch","Ledger omission/addition/reverted effect inclusion","Old sourceSchema1 remains distinct","Seal/sequence/duplicate JSON keys/input budgets"],
+    "memory":"Build the isolated workspace with one compiler job and coordinate with the parent full regression. Do not overwrite root src/scripts/dist or old draft binaries.",
+    "independence":"Ask the separate reviewer to check mutations and raw data bindings. Same-agent producer audit flags are not inputs to acceptance."
+  },
+  "implementationStatusAtContract":"not-implemented",
+  "fullCaptureAccepted":false,
+  "productionModelCoverageAccepted":false
+}

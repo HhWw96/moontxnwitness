@@ -15,7 +15,7 @@ preserved in the workflow artifacts.
 Reproduce with Python 3.12 and a fresh destination:
 
 ```
-python -B scripts/experimental_storage_ci.py --work /path/to/new/mtw-storage-r2
+python -B scripts/experimental_storage_ci.py --candidate r2 --work /path/to/new/mtw-storage-r2
 ```
 
 The prototype covers sealed, source-closed unique-version point-register logs.
