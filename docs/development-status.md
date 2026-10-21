@@ -17,7 +17,9 @@ CI 已同时上传实际源码和便携 ZIP；独立公开包下载验收另记�
 普通表 R2 持久化实验的[实际 Linux 流程](https://github.com/HhWw96/moontxnwitness/actions/runs/39604038471)
 执行 **31 项基础检查与 7 个 PostgreSQL 18.6 场景**，作者支持核对确认原始文件绑定。
 四个受支持场景封闭，错误、域外 SQL 与 ledger 预算耗尽保持缺口。
-独立原始来源审计正在执行；SQL 核心证明、两个真实窗口交接、超过 64 个现有键及完整 C/A 成本均未完成。
+[独立原始来源审计](../verification/experimental-candidates/plain-journal-r2-2026-10-21/actual-ci-39604038471/independent/independent-receipt.json)
+**1,305 项通过、零失败**，独立重建来源及提交账本；冻结错误对象身份断言与真实CI日志另有绑定，
+不把JSON字段本身称作对象身份再证明。SQL 核心证明、两个真实窗口交接、超过 64 个现有键及完整 C/A 成本均未完成。
 
 真实 Elle 原 15 输入、8 实际 checker 结果及 69 转换边界现已通过
 [95 项独立 AI 检查](../verification/experimental-candidates/elle-smoke-r2-2026-10-21/actual-ci-39599513353/independent-r2/independent-smoke-receipt-r2.json)。
