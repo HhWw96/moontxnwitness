@@ -4,7 +4,7 @@ on:
 permissions:
   contents: read
 jobs:
-  archive-r3:
+  archive-r4:
     strategy:
       fail-fast: false
       matrix:
@@ -19,12 +19,12 @@ jobs:
         with:
           python-version: '3.12'
       - name: Execute frozen candidate in a new isolated directory
-        run: python -B scripts/experimental_storage_ci.py --candidate r3 --work "${{ runner.temp }}/mtw-storage-r3"
+        run: python -B scripts/experimental_storage_ci.py --candidate r4 --work "${{ runner.temp }}/mtw-storage-r4"
       - name: Preserve actual receipts, inputs and failure logs
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: experimental-storage-r3-${{ matrix.os }}
-          path: ${{ runner.temp }}/mtw-storage-r3/evidence/
+          name: experimental-storage-r4-${{ matrix.os }}
+          path: ${{ runner.temp }}/mtw-storage-r4/evidence/
           if-no-files-found: error
           compression-level: 6

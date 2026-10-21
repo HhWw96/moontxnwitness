@@ -19,7 +19,9 @@ INDEX_SHA = "fddf3651801ad0ba096f616793d0de435764d0888dbcad61dcf45736a3f94cfa"
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--work", type=Path, required=True)
-    parser.add_argument("--candidate", choices=[name for name in PROFILES if name in ("r3", "r4")], default="r3")
+    # This frozen counterexample targets the old post-unlink sync protocol.
+    # Revision 4 has a separate preregistered protected-barrier audit.
+    parser.add_argument("--candidate", choices=("r3",), default="r3")
     args = parser.parse_args()
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=False)

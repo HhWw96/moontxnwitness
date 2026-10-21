@@ -1,0 +1,32 @@
+{
+  "schema":1,
+  "status":"preregistered-not-yet-executed",
+  "root":"Dedicated new D scratch directory only; no databases or formal performance runs.",
+  "cases":[
+    {"id":"original-segment-prune","expect":"At least one original sealed segment actually absent, archived bytes unchanged, reconstructed original events/seq exactly equal."},
+    {"id":"archive-only-reference-source","expect":"Required version/read source parsed from archive rather than SQLite claims; cold removal cannot remove factual dependency."},
+    {"id":"recursive-pinned-closure","expect":"Pin late reader transaction retains initial and transitive writer/predecessor transaction segments hot."},
+    {"id":"unknown-root","expect":"Missing tx/version/seq source refuses pin/prune; no future version backfill."},
+    {"id":"active-unread-unknown","expect":"Actual active TX, unread reference or disconnect/unknown commit rejects adoption/prune."},
+    {"id":"unsupported-models","expect":"Relation/list/SQL-condition sources explicitly reject prune and complete window claim."},
+    {"id":"late-producer","expect":"Actual retained old journal append after close invalidates original source; reconstructed view cannot bypass marker."},
+    {"id":"foreign-missing-fence","expect":"Changed, deleted or dangling-symlink original writer.lock rejects managed reads and stable reopen remains rejected while fence exists."},
+    {"id":"original-failure-marker","expect":"Original failure/invalidation marker, including dangling symlink, defeats otherwise healthy archive."},
+    {"id":"archive-missing-truncated-tampered","expect":"Before and after actual prune, missing/bad archive makes complete unavailable; old evidence preserved."},
+    {"id":"zip-invalid-members","expect":"Duplicate, extra, path traversal, symlink, encrypted or oversized members rejected without unsafe extraction."},
+    {"id":"manifest-tamper","expect":"Location/hash/generation/checkpoint/root changes or unknown segment names cannot yield complete."},
+    {"id":"sqlite-substitution","expect":"Real WAL/SHM, altered cache/schema/identities rejected by reconstructed raw JournalReader; archive bytes do not waive it."},
+    {"id":"active-reader-competition","expect":"Held real OS lease prevents prune and explicit recovery, without deleting any original segment."},
+    {"id":"crash-after-intent","expect":"Separate process exits after synced intent; complete blocked; exact explicit recovery revalidates and resumes."},
+    {"id":"crash-after-location-publish","expect":"Separate process exits before unlink; new process sees pending state and must recover before complete."},
+    {"id":"crash-mid-unlink","expect":"Some exact original segments absent but complete raw events remain in verified archive; recovery handles mixed presence."},
+    {"id":"recover-wrong-plan-live-owner","expect":"Wrong nonce/plan or live OS lock cannot be stolen; no automatic lock removal."},
+    {"id":"archive-vanishes-during-prune","expect":"No complete receipt, operation remains fenced; missing source not repaired from cache/search."},
+    {"id":"io-double-failure","expect":"Manifest/directory sync failure plus marker failure cannot expose complete state; existing lock remains."},
+    {"id":"resource-limits","expect":"Disk/temp/IO/event/root/segment/cooperative wall budget exhaustion is explicit, no unbounded full-log materialization."},
+    {"id":"no-archive-deletion","expect":"All checkpoint/window/source archive references remain; archive delete API always refuses."},
+    {"id":"delivery-race","expect":"Marker/archive/manifest change while iterating prevents successful complete EOF even after a prefix was yielded."},
+    {"id":"published-binding","expect":"Post-publication byte/hash mismatch prevents success, old failed files retained."}
+  ],
+  "receiptRule":"Record actual per-case pass/failure only after execution, exact source pre/post hashes, source/index/archive/manifest bindings, raw original deletion counts and explicit not-executed fields. No DB/performance/independent-acceptance inference."
+}

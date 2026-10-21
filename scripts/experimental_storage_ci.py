@@ -25,6 +25,8 @@ PROFILES = {
            "7a0147740c722f6194d98def54e6ad0326934895b84f3c09aa468c3d35918079", 33),
     "r3": ("f4f7c0e21ff2eeba0c4b3adf8ff81b07572042a69b94417273d1b164e94c1b02",
            "f312fc6d0b6adc6b146954e6b19d0c94ce09d0b5098f5869690d457f8b933962", 38),
+    "r4": ("3cec511410d79704bc98698ea0044c2ad43f1fa269c6b141a711c1bddb0b2ec9",
+           "223e61bcb41b64f2d47f0d96e8c8e99e88a1a9c1fed856467a7b01a45c920124", 51),
 }
 
 
@@ -53,7 +55,7 @@ def public_environment(scratch):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--work", type=Path, required=True)
-    parser.add_argument("--candidate", choices=tuple(PROFILES), default="r3")
+    parser.add_argument("--candidate", choices=tuple(PROFILES), default="r4")
     args = parser.parse_args()
     bundle = ROOT / ("verification/experimental-candidates/storage-" + args.candidate + "-2026-10-21")
     profile_sha, candidate_sha, new_count = PROFILES[args.candidate]
