@@ -1,0 +1,59 @@
+--- a/src/graph.mbt
++++ b/src/graph.mbt
+@@ -1,25 +1,44 @@
+ ///|
+ priv struct GraphIndex {
+-  adj : Array[Array[Int]]
+-  sources : Array[Int]
+-  targets : Array[Int]
+-}
++  adj : FixedArray[FixedArray[Int]]
++  sources : FixedArray[Int]
++  targets : FixedArray[Int]
++}
++
++///|
++// Internal empty neighbors have no writable index and never hold input data.
++let empty_graph_neighbors : FixedArray[Int] = FixedArray::make(0, 0)
+ 
+ ///|
+ fn adjacency(txs : Array[Transaction], edges : Array[Edge]) -> GraphIndex {
+   let index : Map[String, Int] = Map([])
+-  let adj : Array[Array[Int]] = []
+   for i, tx in txs {
+     index[tx.id] = i
+-    adj.push([])
+-  }
+-  let sources : Array[Int] = []
+-  let targets : Array[Int] = []
++  }
++  let sizes = FixedArray::make(txs.length(), 0)
++  let sources = FixedArray::make(edges.length(), 0)
++  let targets = FixedArray::make(edges.length(), 0)
+   for ei, edge in edges {
+     let source = index.at(edge.from)
+-    sources.push(source)
+-    targets.push(index.at(edge.to))
+-    adj[source].push(ei)
++    sources[ei] = source
++    targets[ei] = index.at(edge.to)
++    sizes[source] += 1
++  }
++  let adj = FixedArray::makei(txs.length(), i => {
++    if sizes[i] == 0 {
++      empty_graph_neighbors
++    } else {
++      FixedArray::make(sizes[i], 0)
++    }
++  })
++  let used = FixedArray::make(txs.length(), 0)
++  // Fill in the same original edge order as append-based adjacency. Each edge
++  // occurs once with identical sources/targets, preserving Tarjan/BFS/topology
++  // traversal, ties, counters and complete provenance. Exact capacities avoid
++  // dynamic backing-array growth; no typed-array representation is assumed.
++  for ei, source in sources {
++    adj[source][used[source]] = ei
++    used[source] += 1
+   }
+   { adj, sources, targets, }
+ }

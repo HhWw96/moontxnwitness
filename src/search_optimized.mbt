@@ -22,6 +22,7 @@ priv struct OptimizedSearch {
   orders : Array[Array[Int]]
   state : Array[Int]
   positions : Array[Int]
+  key_units : FixedArray[Int]
   trail_keys : FixedArray[Int]
   trail_values : FixedArray[Int]
   position_keys : FixedArray[Int]
@@ -43,20 +44,47 @@ fn encode_search_state_key(
   selected : Int,
   state : Array[Int],
   positions : Array[Int],
+  units? : FixedArray[Int] = FixedArray::make(
+    1 + state.length() + positions.length(),
+    0,
+  ),
 ) -> String {
-  // The compiled search admits at most 12 transactions and 512 operations:
-  // selected <= 4095, each version ID <= 512, and each position <= 12.
-  // These nonnegative values are all below the Unicode surrogate range.
-  // Both vectors have the same fixed key count K throughout this search, so
-  // one character per component gives a lossless key of exactly 1 + 2*K
-  // characters. It retains selected, every current version and every position;
-  // no delimiters, decimal strings, truncation or probabilistic digest is used.
-  let b = StringBuilder(size_hint=1 + state.length() + positions.length())
-  b.write_char(selected.unsafe_to_char())
-  for value in state {
-    b.write_char(value.unsafe_to_char())
+  fill_search_state_key(selected, state, positions, units)
+}
+
+///|
+fn fill_search_state_key(
+  selected : Int,
+  state : Array[Int],
+  positions : Array[Int],
+  units : FixedArray[Int],
+) -> String {
+  // Exactly the existing 1+2*K UTF-16 units: selected<=4095, versions<=512,
+  // positions<=12 and K<=128. All units are below the surrogate range.
+  // Reusing the numeric scratch cannot mutate a previously returned String.
+  // No component, delimiter, ordering, cache membership or budget is changed.
+  units[0] = selected
+  for i, value in state {
+    units[i + 1] = value
   }
-  for value in positions {
+  for i, value in positions {
+    units[i + 1 + state.length()] = value
+  }
+  string_from_search_units(units)
+}
+
+///|
+// At most257 arguments, each an exact nonnegative UTF-16 code unit. This FFI
+// only materializes the already encoded key; it performs no search decisions.
+#cfg(target="js")
+extern "js" fn string_from_search_units(units : FixedArray[Int]) -> String =
+  #| (units) => String.fromCharCode(...units)
+
+///|
+#cfg(not(target="js"))
+fn string_from_search_units(units : FixedArray[Int]) -> String {
+  let b = StringBuilder(size_hint=units.length())
+  for value in units {
     b.write_char(value.unsafe_to_char())
   }
   b.to_string()
@@ -64,7 +92,12 @@ fn encode_search_state_key(
 
 ///|
 fn optimized_state_key(ctx : OptimizedSearch, selected : Int) -> String {
-  encode_search_state_key(selected, ctx.state, ctx.positions)
+  encode_search_state_key(
+    selected,
+    ctx.state,
+    ctx.positions,
+    units=ctx.key_units,
+  )
 }
 
 ///|
@@ -255,6 +288,7 @@ fn search_optimized(
     }),
     state: Array::make(keys.length(), 0),
     positions: Array::make(keys.length(), 0),
+    key_units: FixedArray::make(1 + 2 * keys.length(), 0),
     trail_keys: FixedArray::make(512, 0),
     trail_values: FixedArray::make(512, 0),
     position_keys: FixedArray::make(512, 0),

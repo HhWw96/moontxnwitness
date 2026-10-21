@@ -156,6 +156,6 @@ node dist/moontxnwitness.mjs reduce-v3 examples/v3-write-skew.json
 
 来源闭包窗口、安全保留、完整采集成本、ORM 来源证明、六模型/Elle 及真实故障缩减继续按[剩余执行计划](docs/remaining-execution-plan.md)开发。当前完成项与未执行项见[开发状态](docs/development-status.md)，v3 实验不表示已完成 v0.1.1/v0.1.2 联合验收。
 
-Apache-2.0；依赖、概念来源、AI 使用与复核方式见 [THIRD_PARTY.md](THIRD_PARTY.md)。分析算法全部使用 MoonBit；JS 处理文件与传输，Python 可选采集数据库，JS 后端有一个字符串片段拼接原语。
+Apache-2.0；依赖、概念来源、AI 使用与复核方式见 [THIRD_PARTY.md](THIRD_PARTY.md)。分析算法全部使用 MoonBit；JS 处理文件与传输，Python 可选采集数据库。JS 后端另有字符串片段拼接与有界搜索键编码原语，搜索决策仍由 MoonBit 实现。
 
 v0.0.7–v0.0.11 的实质提交、变更、失败尝试和发布记录保留。参赛者本人仍须完成 [安装与解释验收](docs/human-acceptance.md)，并独立确认报名、入群及组织方回执。公开发布或自动检查通过不表示官方接受或获奖。

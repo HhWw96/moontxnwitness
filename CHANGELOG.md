@@ -1,5 +1,17 @@
 # 0.1.1 — development
 
+## Development checkpoint — search allocation follow-up
+
+- Reuse a complete bounded search-key buffer, preserve identifier validation while
+  avoiding iterator allocation, and size graph adjacency exactly without changing
+  edge order, evidence, cache rules, counters or budgets.
+- Pass 563 tests on each of JS, Wasm GC and Wasm and 117 complete-byte comparisons.
+  A new independent formal audit passes all 20 P95 regression gates: graph 1.497×
+  and search 9–12 2.103× meet the roadmap speed goals; RSS 0.930 and reduction512
+  1.151× remain below the final goals. Complete collection cost is still unmeasured.
+- Retain graph-only classification prototypes, independent review findings and
+  budget fixes separately from the default runtime and full-model acceptance.
+
 - Add an experimental relation-set model with full AND-predicate results,
   int64/code-point semantics, versioned inserts/updates/tombstones, savepoint
   replay and source-closed reduction. Check 1,170 frozen independent inputs;
@@ -133,6 +145,7 @@
 - Preserve schema-v1 search traversal, evidence and all dependency edges.
 
 # Changelog
+
 
 ## 0.0.6 — 2026-10-10
 

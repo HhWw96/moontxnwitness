@@ -576,7 +576,11 @@ fn analyze_internal(
   let graph_index = if search_cycles {
     adjacency(h.transactions, edges)
   } else {
-    { adj: [], sources: [], targets: [], }
+    {
+      adj: FixedArray::make(0, FixedArray::make(0, 0)),
+      sources: FixedArray::make(0, 0),
+      targets: FixedArray::make(0, 0),
+    }
   }
   let (witness, graph) = if search_cycles {
     shortest_cycle(h.transactions, edges, prepared=graph_index)

@@ -1,0 +1,311 @@
+{
+  "schema": 1,
+  "diagnosticOnly": true,
+  "formalReleaseGateApplicable": false,
+  "reason": "Profile-directed code changes: exact key batch encoding, nonallocating ASCII-control scan and fixed graph capacities",
+  "candidate": {
+    "version": "0.1.1",
+    "toolchain": {
+      "compiler": "v0.10.14+7d59c7ec9",
+      "moon": "moon 0.1.20260920"
+    },
+    "sourceSha256": "9250b4f71d681df14980c48a97dc529ec5bc11b33fcf9c5894aa2cabeddd3ad7",
+    "coreSha256": "307ccf5c9b1fa79f007cd270b69ed12eda91ca2afc91ab2d2206ff0210cedcf3",
+    "captureCoreSha256": "d91d5cb547d80ddaa44d35ee622f9eb789aff19444485c29693b6ac57ea15deb"
+  },
+  "workerSha256": "68ae40a32e666e7293bae78d3061f78ca15464c4aa6359f6015443a1dadc264a",
+  "scenarios": [
+    "completion-impossible-12",
+    "reduction-512",
+    "dense-rt-192",
+    "dense-rt-316"
+  ],
+  "warmups": 5,
+  "samples": 30,
+  "workers": 4,
+  "baselineReference": "Original frozen df23/current profiles; no baseline process rerun",
+  "retries": "none",
+  "complete": true,
+  "rows": [
+    {
+      "scenario": "completion-impossible-12",
+      "sampledAllocationBefore": 112809048,
+      "sampledAllocationAfter": 56203896,
+      "allocationRatio": 0.4982215256350714,
+      "cpuTop": [
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness15optimized__step",
+          "selfUs": 176190,
+          "share": 0.3148167008839311
+        },
+        {
+          "name": "post",
+          "selfUs": 68278,
+          "share": 0.12199928885267636
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness34encode__search__state__key_2einner",
+          "selfUs": 36052,
+          "share": 0.06441779726583509
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness27string__from__search__units",
+          "selfUs": 29951,
+          "share": 0.05351651630725138
+        },
+        {
+          "name": "(garbage collector)",
+          "selfUs": 18701,
+          "share": 0.03341499019938927
+        },
+        {
+          "name": "_M0MPC14json4Json17stringify_2einner",
+          "selfUs": 14839,
+          "share": 0.026514359636850296
+        }
+      ],
+      "allocationTop": [
+        {
+          "name": "fromCharCode",
+          "bytes": 27013536,
+          "share": 0.4806345809194437
+        },
+        {
+          "name": "_M0MPB3Map15set__with__hashGsbE",
+          "bytes": 6429672,
+          "share": 0.11439904450751955
+        },
+        {
+          "name": "_M0MPC14json4Json17stringify_2einner",
+          "bytes": 2951680,
+          "share": 0.05251735573633543
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness13finding__json",
+          "bytes": 2164160,
+          "share": 0.03850551570303952
+        },
+        {
+          "name": "$make_array_len_and_init",
+          "bytes": 2005088,
+          "share": 0.035675249274534276
+        },
+        {
+          "name": "_M0MP26HhWw9614moontxnwitness11HistoryScan6string",
+          "bytes": 1409888,
+          "share": 0.02508523608398962
+        }
+      ]
+    },
+    {
+      "scenario": "reduction-512",
+      "sampledAllocationBefore": 125509624,
+      "sampledAllocationAfter": 108714168,
+      "allocationRatio": 0.8661819272122112,
+      "cpuTop": [
+        {
+          "name": "(anonymous)",
+          "selfUs": 68574,
+          "share": 0.10859887590803921
+        },
+        {
+          "name": "post",
+          "selfUs": 45816,
+          "share": 0.07255761802728038
+        },
+        {
+          "name": "(garbage collector)",
+          "selfUs": 37904,
+          "share": 0.060027587604898625
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness18join__json__chunks",
+          "selfUs": 30594,
+          "share": 0.0484509290624807
+        },
+        {
+          "name": "_M0IPC16string6StringPB4Hash4hash",
+          "selfUs": 19048,
+          "share": 0.030165826527493375
+        },
+        {
+          "name": "_M0MPB3Map3getGssE",
+          "selfUs": 17481,
+          "share": 0.027684209025992845
+        }
+      ],
+      "allocationTop": [
+        {
+          "name": "join",
+          "bytes": 18573392,
+          "share": 0.17084610351798857
+        },
+        {
+          "name": "_M0MP26HhWw9614moontxnwitness11HistoryScan6string",
+          "bytes": 16360632,
+          "share": 0.15049217871952073
+        },
+        {
+          "name": "(anonymous)",
+          "bytes": 13490592,
+          "share": 0.12409230782136878
+        },
+        {
+          "name": "_M0MP26HhWw9614moontxnwitness11HistoryScan10identifier",
+          "bytes": 8098344,
+          "share": 0.07449207540272028
+        },
+        {
+          "name": "_M0MPB3Map15set__with__hashGssE",
+          "bytes": 6265656,
+          "share": 0.057634217464645456
+        },
+        {
+          "name": "push",
+          "bytes": 6129752,
+          "share": 0.0563841136143359
+        }
+      ]
+    },
+    {
+      "scenario": "dense-rt-192",
+      "sampledAllocationBefore": 590231112,
+      "sampledAllocationAfter": 563210408,
+      "allocationRatio": 0.954220129283866,
+      "cpuTop": [
+        {
+          "name": "(anonymous)",
+          "selfUs": 872078,
+          "share": 0.43354007500765585
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness18join__json__chunks",
+          "selfUs": 238750,
+          "share": 0.11869086584924496
+        },
+        {
+          "name": "(garbage collector)",
+          "selfUs": 152873,
+          "share": 0.07599844496323194
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness25analyze__internal_2einner",
+          "selfUs": 117686,
+          "share": 0.058505772726007294
+        },
+        {
+          "name": "_M0MP26HhWw9614moontxnwitness8JsonText10to__string",
+          "selfUs": 82162,
+          "share": 0.04084556615667294
+        },
+        {
+          "name": "_M0MPB3Map3getGssE",
+          "selfUs": 72832,
+          "share": 0.03620730111636527
+        }
+      ],
+      "allocationTop": [
+        {
+          "name": "join",
+          "bytes": 300279160,
+          "share": 0.533156269370647
+        },
+        {
+          "name": "(anonymous)",
+          "bytes": 135704640,
+          "share": 0.2409483881554973
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness25analyze__internal_2einner",
+          "bytes": 66100808,
+          "share": 0.11736432257125476
+        },
+        {
+          "name": "push",
+          "bytes": 16853464,
+          "share": 0.02992392143434963
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness9adjacency",
+          "bytes": 14772232,
+          "share": 0.02622862040575074
+        },
+        {
+          "name": "_M0MP26HhWw9614moontxnwitness11HistoryScan6string",
+          "bytes": 4262136,
+          "share": 0.007567573218568787
+        }
+      ]
+    },
+    {
+      "scenario": "dense-rt-316",
+      "sampledAllocationBefore": 1545287464,
+      "sampledAllocationAfter": 1463708432,
+      "allocationRatio": 0.9472078600904252,
+      "cpuTop": [
+        {
+          "name": "(anonymous)",
+          "selfUs": 2268785,
+          "share": 0.4731570049931241
+        },
+        {
+          "name": "(garbage collector)",
+          "selfUs": 558279,
+          "share": 0.1164295513195637
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness18join__json__chunks",
+          "selfUs": 513899,
+          "share": 0.10717406528558743
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness25analyze__internal_2einner",
+          "selfUs": 224764,
+          "share": 0.04687471975981618
+        },
+        {
+          "name": "_M0MP26HhWw9614moontxnwitness8JsonText10to__string",
+          "selfUs": 199557,
+          "share": 0.041617778875218614
+        },
+        {
+          "name": "_M0MPB3Map3getGssE",
+          "selfUs": 197326,
+          "share": 0.04115250196350611
+        }
+      ],
+      "allocationTop": [
+        {
+          "name": "join",
+          "bytes": 812463024,
+          "share": 0.5550716291835914
+        },
+        {
+          "name": "(anonymous)",
+          "bytes": 357643608,
+          "share": 0.24434074449603224
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness25analyze__internal_2einner",
+          "bytes": 165939480,
+          "share": 0.1133692177842151
+        },
+        {
+          "name": "push",
+          "bytes": 42509160,
+          "share": 0.0290420954547046
+        },
+        {
+          "name": "_M0FP26HhWw9614moontxnwitness9adjacency",
+          "bytes": 38493248,
+          "share": 0.026298439742813477
+        },
+        {
+          "name": "_M0MP26HhWw9614moontxnwitness11HistoryScan6string",
+          "bytes": 6524656,
+          "share": 0.004457620013218589
+        }
+      ]
+    }
+  ]
+}

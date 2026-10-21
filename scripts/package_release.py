@@ -104,7 +104,9 @@ for kind in ("portable", "source"):
         assert not (consumer / "dist").exists()
         run([NODE, "scripts/build.mjs"], consumer)
         checks.append("source rebuilt using external MoonBit installation, no local config")
-        core_tests = run([NODE, "scripts/moon.mjs", "test", "--target", "js", "--deny-warn"], consumer)
+        # A clean source consumer links multiple test packages. Bound concurrent
+        # compiler processes without changing test cases or compiler optimization.
+        core_tests = run([NODE, "scripts/moon.mjs", "test", "--target", "js", "--deny-warn", "--jobs", "1"], consumer)
         test_count = SUMMARY["coreTestsPerTarget"]
         assert f"Total tests: {test_count}, passed: {test_count}, failed: 0." in core_tests
         checks.append(f"source fresh JS core tests: {test_count} passed")

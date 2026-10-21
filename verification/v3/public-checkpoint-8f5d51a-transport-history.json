@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "sourceCommit": "8f5d51a878ef7872f76e02fa745888523df6436a",
+  "scope": "Independent public-checkpoint download transport history only",
+  "complete": true,
+  "productOrCiFailureClaimed": false,
+  "workflowRerun": false,
+  "authenticationAccount": "HhWw96",
+  "tokenPersisted": false,
+  "tlsVerificationDisabled": false,
+  "failuresPreserved": true,
+  "attempts": [
+    {
+      "attempt": "attempt-2-direct",
+      "completed": false,
+      "retained": true,
+      "note": "Bounded operator termination after buffered transfer made no completed large file; successful small files retained.",
+      "retainedPartCount": 0,
+      "retainedPartBytes": 0
+    },
+    {
+      "attempt": "attempt-3-streamed-proxy",
+      "completed": false,
+      "retained": true,
+      "receiptBytes": 1194,
+      "receiptSha256": "0400d3bb363337a66366b195a21036c2a70da63409f7e8fbbb1227a80d8c384f",
+      "errorClass": "RuntimeError",
+      "failureMessages": [],
+      "retainedPartCount": 6,
+      "retainedPartBytes": 74134170
+    },
+    {
+      "attempt": "attempt-4-range-aware",
+      "completed": false,
+      "retained": true,
+      "receiptBytes": 1194,
+      "receiptSha256": "d6a0ff2e6f23bc33fe557720f69c5e5e7d9e551b5c16b68e989135d31e753576",
+      "errorClass": "RuntimeError",
+      "failureMessages": [],
+      "retainedPartCount": 7,
+      "retainedPartBytes": 54247377
+    },
+    {
+      "attempt": "attempt-5-curl",
+      "completed": false,
+      "retained": true,
+      "receiptBytes": 42143,
+      "receiptSha256": "a4b5d622aade98d21de7bbf59c833427ba2badec136f45625af01947166f043d",
+      "errorClass": null,
+      "failureMessages": [
+        "Bounded range failure evidence-ubuntu-24.04.zip 20971520",
+        "Bounded range failure evidence-ubuntu-24.04.zip 27262976",
+        "Bounded range failure evidence-ubuntu-24.04.zip 18874368",
+        "Bounded range failure evidence-ubuntu-24.04.zip 25165824",
+        "Bounded range failure evidence-ubuntu-24.04.zip 31457280",
+        "Bounded range failure evidence-ubuntu-24.04.zip 10485760",
+        "Bounded range failure evidence-ubuntu-24.04.zip 35651584",
+        "Bounded range failure evidence-ubuntu-24.04.zip 23068672",
+        "Bounded range failure evidence-ubuntu-24.04.zip 37748736",
+        "Bounded range failure evidence-ubuntu-24.04.zip 39845888",
+        "Bounded range failure evidence-ubuntu-24.04.zip 44040192",
+        "Bounded range failure evidence-ubuntu-24.04.zip 29360128",
+        "Bounded range failure evidence-ubuntu-24.04.zip 41943040",
+        "Bounded range failure evidence-ubuntu-24.04.zip 33554432",
+        "Bounded range failure evidence-ubuntu-24.04.zip 46137344",
+        "Bounded range failure evidence-ubuntu-24.04.zip 48234496",
+        "Bounded range failure evidence-ubuntu-24.04.zip 54525952",
+        "Bounded range failure evidence-ubuntu-24.04.zip 50331648",
+        "Bounded range failure evidence-ubuntu-24.04.zip 52428800",
+        "Bounded range failure evidence-ubuntu-24.04.zip 12582912",
+        "Bounded range failure evidence-ubuntu-24.04.zip 56623104",
+        "Source bounded transfer failed"
+      ],
+      "retainedPartCount": 43,
+      "retainedPartBytes": 110588833
+    },
+    {
+      "attempt": "attempt-6-refreshed",
+      "completed": true,
+      "retained": true,
+      "receiptBytes": 41477,
+      "receiptSha256": "61e80886e7fa04ce1780ee5fc2446b255cb4d602a44579ebd152a52d27f10ac3",
+      "errorClass": null,
+      "failureMessages": [],
+      "retainedPartCount": 29,
+      "retainedPartBytes": 117250233
+    }
+  ],
+  "notes": [
+    "Initial proxy Python request failure was also retained in the base scratch directory.",
+    "The unauthenticated shared-proxy 60-request rate limit did not imply authenticated account exhaustion; the authenticated check had 4992 requests remaining.",
+    "The first streamed helper accidentally repeated a selected part entry in failure metadata; no assembled archive was accepted from it.",
+    "Incomplete HTTP response prefixes were never accepted as complete artifacts.",
+    "Expired signed URLs produced a recorded XML authentication error during a later diagnostic probe; the refreshed signed URLs completed successfully.",
+    "Final whole-artifact GitHub SHA-256, ZIP CRC and fixed source bytes are checked independently; prior failures do not change acceptance thresholds."
+  ],
+  "recordedAt": "2026-10-21T08:15:11.508653+00:00"
+}

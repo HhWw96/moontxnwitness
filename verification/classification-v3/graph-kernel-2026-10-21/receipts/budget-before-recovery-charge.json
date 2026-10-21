@@ -1,0 +1,100 @@
+{
+  "input": {
+    "nodes": [
+      "A",
+      "B"
+    ],
+    "edges": [
+      {
+        "id": "ab",
+        "from": "A",
+        "to": "B",
+        "kind": "ww"
+      },
+      {
+        "id": "ba",
+        "from": "B",
+        "to": "A",
+        "kind": "ww"
+      }
+    ],
+    "complete": true,
+    "budgets": {
+      "maxEdgeScans": 10
+    }
+  },
+  "report": {
+    "schemaVersion": 3,
+    "algorithm": "typed-dependency-product-draft-1",
+    "valid": true,
+    "graphOnly": true,
+    "modelCoverageAccepted": false,
+    "databaseAuthenticityVerified": false,
+    "suppliedGraphComplete": true,
+    "sourceDerivationVerified": false,
+    "directSourceAndIntChecked": false,
+    "definitionsFrozen": false,
+    "categories": {
+      "ww": {
+        "status": "cycle",
+        "edges": [
+          {
+            "id": "ab",
+            "from": "A",
+            "to": "B",
+            "kind": "ww"
+          },
+          {
+            "id": "ba",
+            "from": "B",
+            "to": "A",
+            "kind": "ww"
+          }
+        ],
+        "states": [
+          0,
+          1,
+          0
+        ],
+        "productGraph": false,
+        "shortest": false,
+        "expandedClosedWalk": false,
+        "macroSteps": []
+      },
+      "wr-ww": {
+        "status": "inconclusive",
+        "reason": "edge_scan_budget"
+      },
+      "item-rw": {
+        "status": "inconclusive",
+        "reason": "edge_scan_budget"
+      },
+      "any-rw": {
+        "status": "inconclusive",
+        "reason": "edge_scan_budget"
+      },
+      "nonadjacent-rw": {
+        "status": "inconclusive",
+        "reason": "edge_scan_budget"
+      },
+      "strict-graph": {
+        "status": "inconclusive",
+        "reason": "edge_scan_budget"
+      }
+    },
+    "graphConstraints": {
+      "adya-pl-1-v1": "cycle",
+      "adya-pl-2-v1": "inconclusive",
+      "adya-pl-2.99-v1": "inconclusive",
+      "elle-generalized-si-v1": "inconclusive",
+      "adya-pl-3-v1": "inconclusive",
+      "strict-pl-ss-v1": "inconclusive"
+    },
+    "execution": {
+      "maxEdgeScans": 10,
+      "edgeScans": 10,
+      "budgetExhausted": true,
+      "scope": "filter visits, product/ordinary arc traversals and witness recovery; not input parsing"
+    }
+  }
+}

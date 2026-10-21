@@ -166,7 +166,18 @@ fn guarded_json(text : String, limit? : Int = 1048576) -> Json raise {
 
 ///|
 fn valid_identifier(s : String) -> Bool {
-  s.length() > 0 &&
-  s.length() <= 256 &&
-  !s.iter().any(c => c.to_int() < 32 || c.to_int() == 127)
+  if s.length() == 0 || s.length() > 256 {
+    return false
+  }
+  // The forbidden scalars are ASCII controls only. Every surrogate unit is
+  // >=0xD800, so scanning UTF-16 units has exactly the same predicate as scalar
+  // iteration, including supplementary characters and existing length limits.
+  // Avoid an iterator/closure pair for every repeated validation of an ID.
+  for i in 0..<s.length() {
+    let c = s.unsafe_get(i).to_int()
+    if c < 32 || c == 127 {
+      return false
+    }
+  }
+  true
 }

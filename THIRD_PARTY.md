@@ -11,6 +11,10 @@ Apache license, not transaction-analysis code copied from another project.
   includes attribution and license text.
 - Node.js provides local command-line I/O; it is a user-installed prerequisite,
   not redistributed in the portable ZIP.
+- The JS backend uses small host primitives to join string fragments and to
+  materialize an already encoded search key from at most 257 exact UTF-16 units.
+  Search state, cache membership, traversal and budget decisions remain in MoonBit;
+  other targets use the equivalent MoonBit string builder.
 - Python standard-library `sqlite3` supplies the actual SQLite baseline and
   `zipfile` creates archives. Python/SQLite binaries are not redistributed.
 - No external npm packages or Mooncakes packages are required by the analyzer.
