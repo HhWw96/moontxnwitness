@@ -17,6 +17,8 @@ BUNDLE = ROOT / "verification/experimental-candidates/elle-smoke-r2-2026-10-21"
 INDEX_FILE = "candidate-index-static-v2.json"
 INDEX_SHA = "79181c62e4499b14a420810758d68c31df70d93bd3f950692f71c9b1ca0acf80"
 ELLE_SHA = "4e359e597c52938b0afebb8bc42273914d68a424"
+SDK_COMMIT = "78635505e4c189c402ba70600632aeaef71ef206"
+PROFILE_AMENDMENT = "947c79d7e875b376aa3099f64b8b8afeb68b988d21c11e5cfbd52bf6047f5d81"
 
 
 def binding(path):
@@ -55,6 +57,8 @@ def main():
     # Retain the installed pinned MoonBit location after isolating the Java HOME.
     env["MOON_HOME"] = str(Path(os.environ["HOME"]) / ".moon")
     before = {}
+    workflow_source_before = fingerprint(ROOT)
+    sdk_source = work / "sdk-source"
 
     def stage(name, command, cwd, timeout=300, tolerate_failure=False):
         row = {"name": name, "status": "running", "timeoutSeconds": timeout}
@@ -78,7 +82,10 @@ def main():
     try:
         java = Path(env["JAVA_HOME_21_X64"])
         env.update(JAVA_HOME=str(java), PATH=str(java / "bin") + os.pathsep + env["PATH"])
-        assert fingerprint(ROOT) == SOURCE_BASELINE
+        amendment = BUNDLE / "execution-profile-amendment.json"
+        assert binding(amendment)["sha256"] == PROFILE_AMENDMENT
+        result.update(actualLeinProfile="+dev", executionAmendment=binding(amendment),
+                      workflowSourceSha256=workflow_source_before, comparedSdkCommit=SDK_COMMIT)
         assert binding(BUNDLE / INDEX_FILE)["sha256"] == INDEX_SHA
         index = json.loads((BUNDLE / INDEX_FILE).read_bytes())
         assert index["fileCount"] == 39 and len(index["files"]) == 39
@@ -117,25 +124,35 @@ def main():
         shutil.copyfile(BUNDLE / "primary-references/LEININGEN-COPYING", evidence / "LEININGEN-UPSTREAM-COPYING")
         launcher = BUNDLE / "primary-references/lein"
         stage("actual-java-version", ["java", "-version"], upstream)
-        stage("actual-lein-version", ["bash", str(launcher), "version"], upstream)
+        stage("actual-lein-version", ["bash", str(launcher), "with-profile", "+dev", "version"], upstream)
         standalone = Path(env["LEIN_HOME"]) / "self-installs/leiningen-2.11.2-standalone.jar"
         assert binding(standalone)["sha256"] == "7d31ae23ae769e927438b0cd55d15a93e7dabab09fd4fc15877979161e108774"
         result["actualLeinStandaloneBinding"] = binding(standalone)
-        stage("actual-dependency-tree", ["bash", str(launcher), "with-profile", "-dev", "deps", ":tree"], upstream, 600)
+        stage("actual-dependency-tree", ["bash", str(launcher), "with-profile", "+dev", "deps", ":tree"], upstream, 600)
         xvfb = shutil.which("xvfb-run", path=env["PATH"])
         if not xvfb:
             raise RuntimeError("Missing Xvfb required by the fixed upstream's AWT initialization")
         result["actualXvfbLauncher"] = binding(Path(xvfb))
         # A failed checker still leaves its full result available for the comparison.
         stage("actual-elle-checkers", [xvfb, "-a", "-e", str(evidence / "xvfb.log"),
-              "bash", str(launcher), "with-profile", "-dev", "run", "-m", "clojure.main",
+              "bash", str(launcher), "with-profile", "+dev", "run", "-m", "clojure.main",
               str(BUNDLE / "elle_smoke.clj"), str(evidence / "prepared/requests.edn"),
               str(evidence / "elle-result.json"), str(evidence / "elle-raw-results")], upstream, 300, True)
-        stage("build-current-sdk", ["node", "scripts/build.mjs"], ROOT, 600)
+        # Keep this preregistered comparison bound to the original b663 core,
+        # even after later unrelated features enter the workflow checkout.
+        stage("clone-fixed-sdk", ["git", "clone", "--depth", "1", "--filter=blob:none", "--no-checkout",
+              "https://github.com/HhWw96/moontxnwitness", str(sdk_source)], work)
+        stage("select-sdk-source-paths", ["git", "sparse-checkout", "set", "src", "scripts", "cmd"], sdk_source)
+        stage("fetch-fixed-sdk", ["git", "fetch", "--depth", "1", "origin", SDK_COMMIT], sdk_source)
+        stage("checkout-fixed-sdk", ["git", "checkout", "--detach", SDK_COMMIT], sdk_source)
+        stage("identify-fixed-sdk", ["git", "rev-parse", "HEAD"], sdk_source)
+        assert (evidence / "identify-fixed-sdk.log").read_text().strip() == SDK_COMMIT
+        assert fingerprint(sdk_source) == SOURCE_BASELINE
+        stage("build-fixed-sdk", ["node", "scripts/build.mjs"], sdk_source, 600)
         runtime = evidence / "actual-sdk"
         runtime.mkdir()
         for name in ("sdk.mjs", "evidence.mjs", "core.mjs", "capture-core.mjs", "build-manifest.json", "THIRD_PARTY_NOTICES.txt"):
-            shutil.copyfile(ROOT / "dist" / name, runtime / name)
+            shutil.copyfile(sdk_source / "dist" / name, runtime / name)
         result["actualSdkBindings"] = {path.name: binding(path) for path in runtime.iterdir() if path.is_file()}
         stage("compare-actual-tools", ["node", str(BUNDLE / "compare-tool.mjs"), str(runtime / "sdk.mjs"),
               str(BUNDLE / "smoke-inputs-v1.json"), str(evidence / "prepared/adapter-receipt.json"),
@@ -163,7 +180,10 @@ def main():
             result["passed"] = False
             result["failures"].append({"class": "MissingDependencyBinding", "message": "Actual pinned Clojure JAR was not found in the new isolated runtime home"})
         result["sourceBindingsUnchanged"] = bool(before) and before == {
-            name: binding(BUNDLE / relative(name)) for name in before} and fingerprint(ROOT) == SOURCE_BASELINE
+            name: binding(BUNDLE / relative(name)) for name in before} and fingerprint(ROOT) == workflow_source_before
+        if (sdk_source / "moon.mod").is_file():
+            result["comparedSdkSourceUnchanged"] = fingerprint(sdk_source) == SOURCE_BASELINE
+            result["sourceBindingsUnchanged"] = result["sourceBindingsUnchanged"] and result["comparedSdkSourceUnchanged"]
         result["passed"] = result["passed"] and result["sourceBindingsUnchanged"]
         result["finished"] = datetime.now(timezone.utc).isoformat()
         with (evidence / "execution-receipt.json").open("x", encoding="utf-8", newline="\n") as stream:

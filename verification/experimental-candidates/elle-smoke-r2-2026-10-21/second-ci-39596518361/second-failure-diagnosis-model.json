@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "kind": "download-bound-second-actual-Elle-classpath-failure-diagnosis",
+  "runId": 39596518361,
+  "runUrl": "https://github.com/HhWw96/moontxnwitness/actions/runs/39596518361",
+  "workflowCommit": "3a395bb9f788c536b774fe3dec4847aeb87e27c5",
+  "candidateIndexSha256": "79181c62e4499b14a420810758d68c31df70d93bd3f950692f71c9b1ca0acf80",
+  "artifact": {"file": "downloads/artifact.zip", "bytes": 380802, "sha256": "b1dc7e413b189c631feec1330bee9c2daf29c4355ca78329400f5c64f3bbdb24", "githubDigestMatches": true},
+  "jobLog": {"file": "downloads/job-119210069660.log", "bytes": 23808, "sha256": "d87b63aecd6df5c7010f75ac2df7624a172510cc3df4198468076d299b4d0215"},
+  "executionReceipt": {"file": "extracted/execution-receipt.json", "bytes": 25258, "sha256": "ab85534f750dbfc9857ff034d51923f1d7e389b8f41a621fb40e3abd2214bda2"},
+  "checkerLog": {"file": "extracted/actual-elle-checkers.log", "bytes": 595, "sha256": "4e77c465a4c11a7b34549d1336b68f424201700d0978d2c4579a91541ddd7047"},
+  "fullJvmReport": {"file": "extracted/jvm-temp/clojure-830575053980772772.edn", "bytes": 7565, "sha256": "869eb76198e45482ff5548048666edc45de3979793dd10d1da1453ec6a036983"},
+  "actualStages": {"domain": "69 passed", "adapter": "15 passed:8 eligible/5 outside/2 invalid", "fixedUpstreamAndPins": "passed", "javaLeinAndDependencyTree": "passed", "xvfb": "launcher bound and used; progressed beyond the first HeadlessException", "checkerReturnedCases": 0, "sdkBuild": "passed", "sdkUploadedFilesIndependentlyHashed": 6, "sdkComparison": "not reached; upstream result absent"},
+  "actualBuildSourceFingerprint": "b6638ee56395a14284d1440a92a0d975c4ea4073f42ccab6d8d39e359d928096",
+  "remoteSourceBindingsUnchanged": true,
+  "classification": "Missing runtime classpath dependency during fixed namespace loading, not a model disagreement or checker unknown",
+  "rootCause": {
+    "exception": "java.io.FileNotFoundException: could not locate unilog/config on classpath",
+    "actualStack": "user loads elle_smoke.clj:1 -> elle.rw-register namespace -> elle.txn namespace -> require unilog.config; the main case loop has not started",
+    "fixedSource": "src/elle/txn.clj requires unilog.config and calls start-logging! at namespace load. The exact project.clj declares spootnik/unilog0.7.32 only in :profiles :dev. with-profile -dev removes that dependency.",
+    "authorReviewOmission": "The earlier static review did not catch the runtime namespace's dependency on the dev profile. The original environment plan was not executable as frozen; model inputs and theoretical expectations are unaffected."
+  },
+  "fixedPrimaryReferences": [
+    "https://github.com/jepsen-io/elle/blob/4e359e597c52938b0afebb8bc42273914d68a424/src/elle/txn.clj",
+    "https://github.com/jepsen-io/elle/blob/4e359e597c52938b0afebb8bc42273914d68a424/project.clj"
+  ],
+  "newExecutionRevision": "Use an additive, separately bound profile amendment to enable the unchanged fixed upstream :dev profile with with-profile +dev. Preserve exact upstream checkout/options and all original15 inputs/8 expectations; record the actually resolved additional dependencies and runtime bytes. No production source patch or fake unilog namespace is allowed.",
+  "retainedFailure": true,
+  "passedSmoke": false,
+  "actualExpansionGenerationExecuted": false,
+  "localJavaClojureNodeCompilerExecuted": false,
+  "limitations": "The reviewer authored the harness; this diagnosis is not independent actual checker acceptance. The actual uploaded SDK bytes were rehashed, while upstream source/dependency hashes remain remote execution metadata rather than uploaded dependency-byte recomputation."
+}
