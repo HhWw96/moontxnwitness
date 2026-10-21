@@ -4,6 +4,16 @@
 
 ## v3 共同底座的首批实现
 
+### 第五批：独立公开下载验收与来源实验
+
+[独立公共下载流水线](https://github.com/HhWw96/moontxnwitness/actions/runs/39584863870)已对固定公开提交 `7863550` 实际执行。[独立 AI 再核验](../verification/public-audit-results/39584863870-verified.json) **56/56 项通过**：重新下载三份原 CI 产物及固定源码，复算实际 core/capture、两平台各339项源码绑定、原563项三目标及 Linux Native 日志；两套下载运行文件在新 Linux 目录各通过 **332项消费者＋24项 MLflow 审计**。本次没有借用作者 dist，也没有重新运行数据库或性能测量。旧公开 summary 中三项滞后绑定未被拿来替换新 CI 输入；首次观察器差异与纠正说明分别保留。源码/便携发行 ZIP 未由原打包 CI 上传，不能把实际运行文件下载验收称为发行 ZIP 下载验收。
+
+归档原日志回收新增了[冻结实验源码及双平台隔离流程](../verification/experimental-candidates/storage-r3-2026-10-21/README.md)，未接入默认日志 API。修复错误恢复请求毒化后，[本修订各70项检查](https://github.com/HhWw96/moontxnwitness/actions/runs/39584875590)两平台通过且无跳过；独立审阅随后发现收尾目录同步故障会丢失失败保护，[独立真实反例](https://github.com/HhWw96/moontxnwitness/actions/runs/39585753335)在两平台均实际失败，原输入、崩溃 intent、错误和断言完整保存。因此70项通过不代表存储验收完成，继续修复该缺口。
+
+ORM sourceSchema2 原始控制查询证明已形成[独立 MoonBit 候选](../verification/experimental-candidates/orm-source2-2026-10-21/README.md)，固定原始记录342,967字节、trace44,633字节及旧source1。首轮模板AST检查通过，编译检查失败；类型/语法修复另存新候选，后续实际阶段按各次收据记录。全部候选仍保持 `history:null`、`analysisCoverageAccepted:false`，不声明任意 SQL/ORM 或整个认证系统已覆盖，也未发布稳定版本。
+
+[抽象 SI 独立证据包](../verification/classification-v3/abstract-si-2026-10-21/README.md)已公开冻结参考解释器、1,000份不同历史与完整结果、683份共同范围图及1,014个独立重放见证，并附实际实验运行文件及匹配源码关系。52个边界的手工期待与1,000份完整结果分开记录；原生成计划计数错误、空执行契约补充和未执行的便携脚本也明确保留。该批未重新运行测试，既有结果不代表实际 Elle 对照、原始历史自动分类或完整六模型验收。
+
 ### 第四批：搜索分配优化与正式性能复核
 
 主线新增整数搜索键缓冲、等价 UTF-16 标识符校验和精确容量邻接表，保留完整边来源、搜索顺序、额度及计数。源码指纹 `b6638ee56395a14284d1440a92a0d975c4ea4073f42ccab6d8d39e359d928096`，完整回归通过三目标各 **563 项**、原 10,320 份历史 / 6,373 份环证据和 2,542 份解析差分；117 份完整输出与前一实现逐字节一致。JS 字符串原语只物化已编码的有界键，判断逻辑仍由 MoonBit 实现。
@@ -18,7 +28,7 @@
 
 第四批后续打包的源码消费者在测试链接阶段发生[编译内存不足](../verification/v3/package-compiler-memory-failure-b663-2026-10-21.json)，首次包与消费者目录完整保留。打包工具改为一次只运行一个编译任务，测试和优化等级不变。此工具变更后的完整回归又在 [list CLI 检查](../verification/list-v3/acceptance-2026-10-21T09-06-16-462Z/receipt.json)遇到 Node 内存分配失败；20,071 份输入仍零差异，但本轮整体失败。宿主可用提交内存不足1 GB，自动审批服务也出现 Allocation error。并行任务已暂停，不重跑同一实现寻求通过；最新工具完整回归及全新安装尚待资源恢复或新隔离 CI 核验。本节最初的563项完整通过属于打包工具变更前的已绑定收据，不能补勾后续失败。
 
-随后已推送 [7863550](https://github.com/HhWw96/moontxnwitness/commit/78635505e4c189c402ba70600632aeaef71ef206)。新的 [Windows/Linux 核心 CI](https://github.com/HhWw96/moontxnwitness/actions/runs/39577549262)与 [真实 PostgreSQL CI](https://github.com/HhWw96/moontxnwitness/actions/runs/39577549263)均成功。独立读取实际任务日志确认：两平台各三目标563项、Linux Native563项，以及两平台各76项全新源码/便携消费者通过，见[日志与产物元数据核验](../verification/v3/public-checkpoint-7863550-ci-log-audit-2026-10-21.json)。本机失败记录保留；本项仅下载了实际日志和产物元数据，尚未重新下载本批大产物、复算运行文件摘要或执行独立公共消费者，不能称公开下载终验完成。
+随后已推送 [7863550](https://github.com/HhWw96/moontxnwitness/commit/78635505e4c189c402ba70600632aeaef71ef206)。新的 [Windows/Linux 核心 CI](https://github.com/HhWw96/moontxnwitness/actions/runs/39577549262)与 [真实 PostgreSQL CI](https://github.com/HhWw96/moontxnwitness/actions/runs/39577549263)均成功。独立读取实际任务日志确认：两平台各三目标563项、Linux Native563项，以及两平台各76项全新源码/便携消费者通过，见[日志与产物元数据核验](../verification/v3/public-checkpoint-7863550-ci-log-audit-2026-10-21.json)。该原收据只检查日志和元数据；后续独立实际下载及新消费者验收见第五批，本机失败记录保留。
 
 ### 第三批：关系集合、执行故障及分配优化
 

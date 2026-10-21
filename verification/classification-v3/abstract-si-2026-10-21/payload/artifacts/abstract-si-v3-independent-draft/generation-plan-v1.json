@@ -1,0 +1,26 @@
+{
+  "schema":1,
+  "status":"registered-before-generator-implementation-and-before-generated-oracle-output",
+  "seed":1397313861,
+  "targetUniqueHistories":1100,
+  "identity":"SHA256 of canonical complete history JSON; input quotas cannot be silently reduced on a failure or unknown decision.",
+  "quotas":[
+    {"family":"constructed-si","count":300,"expectedSi":"satisfiable","expectedSerial":null,"construction":"Choose CO and legal NoConflict visibility cuts, then generate real per-TX operations against those snapshots/own overlays."},
+    {"family":"constructed-serial","count":200,"expectedSi":"satisfiable","expectedSerial":"satisfiable","construction":"Same construction with full CO prefix."},
+    {"family":"known-source-read-mutation","count":150,"expectedSi":null,"expectedSerial":null,"construction":"Change a read to another observed source identity on its key. For the first 50, choose a source write later in that same transaction's program order; remaining 100 choose any different known source. Keep every complete factual final-write order; do not select histories by any oracle result."},
+    {"family":"INT-refutation","count":100,"expectedSi":"unsatisfiable","expectedSerial":"unsatisfiable","construction":"Append two consecutive reads of distinct known versions on one key."},
+    {"family":"lost-update","count":50,"expectedSi":"unsatisfiable","expectedSerial":"unsatisfiable","construction":"Two writers of a fresh shared key both read its initializer before writing; noise does not touch that key."},
+    {"family":"write-skew-ring","count":50,"expectedSi":"satisfiable","expectedSerial":"unsatisfiable","construction":"Disjoint writer keys, all concurrent ring reads from initialization, with independently varying local operations."},
+    {"family":"external-intermediate-source","count":50,"expectedSi":"unsatisfiable","expectedSerial":"unsatisfiable","construction":"A separate transaction reads the first of two writes by another confirmed committed writer; only the latter is its final version."},
+    {"family":"unknown-source","count":50,"expectedSi":"inconclusive","expectedSerial":"inconclusive","construction":"Unknown read identity while final-write orders remain complete; no invented initial/source version."},
+    {"family":"zero-semantic-or-state-budget","count":50,"expectedSi":"inconclusive","expectedSerial":"inconclusive","construction":"A constructed valid nonempty input, alternating maxStates=0 and maxSemanticChecks=0."}
+  ],
+  "range":{"transactions":[2,6],"keys":[1,8],"operationsMaximum":128,"finalWriteOrders":"Explicit and complete in every generated input, including expected-inconclusive source/budget cases."},
+  "programShapes":"Require a distinct separate SHA after normalizing literal TX/key/version names to first-appearance TX/key and exact producer positions. This removes plain identity renaming but is not graph-isomorphism canonicalization. Do not present different transaction-array permutations as a proof of nonisomorphism. Retry only input-byte or shape duplicates before evaluation, at most 100000 generation attempts, and report all attempt/duplicate counts.",
+  "repeatedBusinessValues":"Every third fixture additionally records a non-input businessValueFacts sidecar assigning one repeated payload to distinct version identities. The oracle checks tagged version/source states, not payload equality or an arbitrary-value SQL model; no identity may be merged because these payloads repeat.",
+  "frozenBeforeEvaluation":["Generator source SHA256","Generation plan SHA256","All original input JSON bytes and input SHA256","Per-input expected status or explicit exploratory null","Fixed options and family quotas","Input/program-shape uniqueness counts"],
+  "evaluation":"Run both SI and TOTALVIS controls without consulting graph-kernel outputs. Check every satisfiable certificate with the separate literal CO/VIS relation interpreter. Keep all unsatisfiable, unknown, invalid and mismatching outputs and classification counts; never regenerate to select a pass.",
+  "failurePolicy":"Retain the first frozen dataset and original outputs/receipt before any correction. Fix implementation or record a separately justified expectation/generator issue; do not rewrite the original data.",
+  "productionComparisonPerformed":false,
+  "databaseOrElleExecutionPerformed":false
+}

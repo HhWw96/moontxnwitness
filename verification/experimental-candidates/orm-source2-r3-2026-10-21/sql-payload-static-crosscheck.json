@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "kind": "static-fixed-installer-SQL-vs-original-control-facts",
+  "moonBitExecuted": false,
+  "nodeExecuted": false,
+  "pythonExecuted": false,
+  "comparison": "Exact string comparison; no whitespace/case/cast normalization",
+  "sourceFixtureSha256": "88cbaaee15e5e0faf403b2a91ce4ace53d4e2ddf656a06b1f15cf979fbf7a3ec",
+  "pinnedInstallerSha256": "f7d666f58a8ae1cf7b9061b0eb866bc40a08ff0b19796db76135ebcada7fa649",
+  "rootCause": "The business helper emits unquoted columns, id::uuid::text and ::text::varchar(12288); installer control SQL emits individually quoted columns, id::text and a native JSONB expression",
+  "oldBusinessHelperChanged": false,
+  "actualQueries": [
+    {
+      "sourceSeq": 21,
+      "actualSqlSha256": "07996f7fc8af7b3e64dacaf6b73688940c905c2e2a79b5a0a7e347a7f3e9f188",
+      "reconstructedFixedInstallerSqlSha256": "07996f7fc8af7b3e64dacaf6b73688940c905c2e2a79b5a0a7e347a7f3e9f188",
+      "exactEqual": true
+    },
+    {
+      "sourceSeq": 77,
+      "actualSqlSha256": "2e37666439acc8b148fa58a9c7a60e697dab74b401a3143fe039cd765ed80ec3",
+      "reconstructedFixedInstallerSqlSha256": "2e37666439acc8b148fa58a9c7a60e697dab74b401a3143fe039cd765ed80ec3",
+      "exactEqual": true
+    },
+    {
+      "sourceSeq": 144,
+      "actualSqlSha256": "2e37666439acc8b148fa58a9c7a60e697dab74b401a3143fe039cd765ed80ec3",
+      "reconstructedFixedInstallerSqlSha256": "2e37666439acc8b148fa58a9c7a60e697dab74b401a3143fe039cd765ed80ec3",
+      "exactEqual": true
+    }
+  ],
+  "newRevisionFunctionalExecution": "not-executed"
+}

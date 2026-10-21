@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "kind": "independent-observer-method-correction",
+  "originalObserverScriptSha256": "923a062a2de850b2a53377e21eb644cbf827c30321bb2e13950a7af9824d5050",
+  "originalReceipt": "39584863870-first-observer.json",
+  "originalReceiptSha256": "50cee197b51ae451bd23170dab4c203b0d21d0feca60ca21dd8ab5da0f40a85e",
+  "originalReceiptsOrRemoteResultsChanged": false,
+  "productCodeChanged": false,
+  "remoteOrProductTestsRerun": false,
+  "corrections": [
+    {
+      "issue": "The committed historical local summary contains three old file hashes; it is not the newly generated CI summary. Counts match, but treating it as all current CI input hashes incorrectly rejected three actual fixed-commit files.",
+      "proof": "The three newly downloaded fixed-commit GitHub files independently hash to both platforms current CI bindings; API git-blob hashes and byte counts also verified.",
+      "oldSummaryPreserved": true
+    },
+    {
+      "issue": "The raw-chain report is deterministic and contains no time field. The historical and new execution receipts legitimately have identical bytes/SHA. Demanding unique hash occurrence across uploaded history incorrectly rejected the new named receipt.",
+      "proof": "Require the exact new relative filename emitted by this actual process stdout and match its SHA, while preserving the byte-identical historical file."
+    }
+  ],
+  "newObserverScriptSha256": "a923481d6f2a66082adfde91e9fab1602daeffcb67aad3854aba3440159e0d5f"
+}

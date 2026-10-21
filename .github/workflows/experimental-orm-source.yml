@@ -26,12 +26,12 @@ jobs:
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$MOONBIT_INSTALL_VERSION"
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
       - name: Build and test isolated candidate
-        run: python -B scripts/experimental_orm_ci.py --candidate r2 --work "${{ runner.temp }}/mtw-orm-source2-r2"
+        run: python -B scripts/experimental_orm_ci.py --candidate r3 --work "${{ runner.temp }}/mtw-orm-source2-r3"
       - name: Preserve actual compiler, tests, raw-source results and runtime
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: experimental-orm-source2-r2-linux
-          path: ${{ runner.temp }}/mtw-orm-source2-r2/evidence/
+          name: experimental-orm-source2-r3-linux
+          path: ${{ runner.temp }}/mtw-orm-source2-r3/evidence/
           if-no-files-found: error
           compression-level: 6

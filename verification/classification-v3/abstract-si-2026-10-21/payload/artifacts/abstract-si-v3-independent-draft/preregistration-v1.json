@@ -1,0 +1,37 @@
+{
+  "schema":1,
+  "status":"input-classes-and-expectations-registered-before-oracle-implementation",
+  "oracle":"abstract-si-independent-1",
+  "independence":"No graph-kernel output or independent graph corpus expectation is consulted to derive these semantic expectations.",
+  "classes":[
+    {"id":"empty-and-read-only","cases":["empty-history-zero-budget","initial-point-read","repeated-initial-read","read-only-array-order-not-CO"],"si":"satisfiable","serial":"satisfiable"},
+    {"id":"own-write-int","cases":["write-then-own-read","own-intermediate-read-then-overwrite","multi-key-own-overlay","read-write-read"],"si":"satisfiable","serial":"satisfiable"},
+    {"id":"int-refutations","cases":["nonrepeatable-read","read-old-after-own-write","wrong-own-intermediate","read-own-future-write"],"si":"unsatisfiable","serial":"unsatisfiable"},
+    {"id":"external-source-refutations","cases":["other-TX-intermediate-read","fractured-two-key-writer-visibility"],"si":"unsatisfiable","serial":"unsatisfiable"},
+    {"id":"si-vs-serial","cases":["two-key-write-skew","three-key-write-skew-ring"],"si":"satisfiable","serial":"unsatisfiable"},
+    {"id":"conflicts-prefix-orders","cases":["same-key-lost-update","four-TX-long-fork","cross-key-factual-write-order-cycle"],"si":"unsatisfiable","serial":"unsatisfiable"},
+    {"id":"blind-and-ordered-writes","cases":["two-blind-same-key-writes","independent-key-blind-writes","reader-of-later-array-writer","source-token-reused-on-different-keys"],"si":"satisfiable","serial":"satisfiable"},
+    {"id":"coverage","cases":["complete-false","missing-written-key-order","missing-read-only-key-order","partial-final-order","unknown-read-source","unknown-order-source","uninitialized-key","unknown-outcome","aborted-outcome","savepoint-journal","list-model","relation-model"],"si":"inconclusive","serial":"inconclusive"},
+    {"id":"identity-and-json","cases":["valid-NUL-version","supplementary-scalar-256-UTF16","duplicate-TX-ID","duplicate-producer","initial-write-version-collision","duplicate-order-member","nonfinal-write-in-final-order","order-initial-not-first","unknown-field","duplicate-JSON-key","unpaired-surrogate","identity-257-UTF16","too-deep-JSON","over-byte-budget"],"expectation":"Valid scalar boundary cases satisfiable; malformed structural cases invalid, never semantic refutations."},
+    {"id":"capacity","cases":["six-TX-supported","seven-TX-decline","128-ops-supported","129-ops-decline","128-keys-supported","129-keys-decline"],"expectation":"At capacity remains eligible; exceeding supported finite model returns inconclusive."},
+    {"id":"budgets","cases":["initial-read-states-exact-2","initial-read-states-1","initial-read-checks-exact-5","initial-read-checks-4","zero-state-nonempty","zero-semantic-nonempty","negative-budget","bool-budget","over-maximum-budget"],"expectation":"Single initial read requires 2 states and 5 semantic checks by the contract. One fewer returns inconclusive with no witness/no false unsatisfiable. Invalid budget types/ranges are invalid."},
+    {"id":"witness-tamper","cases":["duplicate-CO-TX","missing-CO-TX","invalid-cut-at-own-position","initialization-not-visible","wrong-final-order","wrong-TX-ID"],"expectation":"A separately structured relation/operation checker must reject malformed or semantically invalid witnesses, without asking the searcher for the expected answer."}
+  ],
+  "metamorphicObligations":[
+    "Permuting transaction array order preserves the semantic result; it does not become real-time order.",
+    "Renaming transaction/key/version identities injectively preserves decisions, including NUL and supplementary Unicode scalar cases.",
+    "Increasing budgets cannot invalidate an already returned valid witness.",
+    "All returned SI witnesses independently satisfy INT/EXT/PREFIX/NoConflict under literal CO/VIS relation interpretation.",
+    "All serial-control witnesses are SI witnesses; write-skew witnesses demonstrate the converse fails.",
+    "Input objects and factual versionOrders are byte/deep-value unchanged after the oracle call."
+  ],
+  "exitConditions":[
+    "Implement only after recording SHA256 of this preregistration and contract.",
+    "Run every concrete registered boundary example and preserve any failure before a fix.",
+    "A second reviewer must audit the abstract-execution logic before it can validate production classification.",
+    "A later finite generated-history corpus and production graph comparison need their own pre-output freeze and receipts; no such corpus is claimed here."
+  ],
+  "testsExecutedAtFreeze":false,
+  "oracleImplementedAtFreeze":false,
+  "productionModelCoverageAccepted":false
+}

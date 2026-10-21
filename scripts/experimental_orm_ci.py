@@ -16,8 +16,9 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE_BASELINE = "b6638ee56395a14284d1440a92a0d975c4ea4073f42ccab6d8d39e359d928096"
 PROFILES = {
-    "r1": ("orm-source2-2026-10-21", "3cc3bab0339703acb4f1237ae833d98def66d1aa5c7772c99d5690d864164390", 22),
-    "r2": ("orm-source2-r2-2026-10-21", "2ba6e9ad40c99999d3b5c214846b114ed7a646275e3fa8344924bb97d02d144f", 27),
+    "r1": ("orm-source2-2026-10-21", "3cc3bab0339703acb4f1237ae833d98def66d1aa5c7772c99d5690d864164390", 22, 24),
+    "r2": ("orm-source2-r2-2026-10-21", "2ba6e9ad40c99999d3b5c214846b114ed7a646275e3fa8344924bb97d02d144f", 27, 24),
+    "r3": ("orm-source2-r3-2026-10-21", "da4d4d06b1d46b7c9e12c648d0509812cbe1672c59d9767aaf106f744ce3f58d", 40, 25),
 }
 
 
@@ -48,9 +49,9 @@ def relative(name):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--work", required=True, type=Path)
-    parser.add_argument("--candidate", choices=tuple(PROFILES), default="r2")
+    parser.add_argument("--candidate", choices=tuple(PROFILES), default="r3")
     args = parser.parse_args()
-    bundle_name, candidate_sha, candidate_files = PROFILES[args.candidate]
+    bundle_name, candidate_sha, candidate_files, new_units = PROFILES[args.candidate]
     bundle = ROOT / "verification/experimental-candidates" / bundle_name
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=False)
@@ -100,10 +101,10 @@ def main():
         overlays["src/moon.pkg"] = binding(clone / "src/moon.pkg")
         receipt["overlays"] = overlays
         receipt["experimentalSourceSha256"] = fingerprint(clone)
-        expected_count = 563 + 28 + 24
+        expected_count = 563 + 28 + new_units
         actual_count = sum(len(re.findall(r'^test\s+"', path.read_text(encoding="utf-8"), re.M))
                            for path in (clone / "src").rglob("*.mbt"))
-        assert actual_count == expected_count == 615
+        assert actual_count == expected_count
         receipt["declaredCoreTests"] = actual_count
         commands = [("fixed-template-AST", [sys.executable, "-B", str(bundle / "generate_control_templates.py"), "--check"]),
                     ("check-all", ["node", "scripts/moon.mjs", "check", "--target", "all", "--deny-warn", "--jobs", "1"])]
@@ -137,8 +138,8 @@ def main():
                 raise RuntimeError("Experimental stage failed: " + row["name"])
             if row["name"].startswith("test-"):
                 text = log.read_text(encoding="utf-8", errors="replace")
-                assert "Total tests: 615, passed: 615, failed: 0." in text
-                row["actualCoreTestsPassed"] = 615
+                assert f"Total tests: {expected_count}, passed: {expected_count}, failed: 0." in text
+                row["actualCoreTestsPassed"] = expected_count
         actual = json.loads((output / "source2-functional-first.json").read_bytes())
         assert actual["passed"] and len(actual["checks"]) == 74
         receipt["rawSourceFunctionalChecks"] = len(actual["checks"])
