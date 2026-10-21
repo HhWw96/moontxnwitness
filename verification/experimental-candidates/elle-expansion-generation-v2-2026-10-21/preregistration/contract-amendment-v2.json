@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "kind": "expansion-pre-generation-bounded-input-and-source-gate-revision",
+  "previousIndexSha256": "7cd15c7a0f8159e2bb7b2ac8625605aefa99727481942da9fc820bd5a322c54a",
+  "previousGeneratorSha256": "56bd11ba20e9c5fd6d21ea5d447f6d088614a8d3f72adaf3defeccdd3b072d24",
+  "reason": "Static self-review found read_bytes allocated the supplied smoke receipt before checking its8MiB limit, and successful smoke flags alone did not enforce the required actual SDK source. No input generation/evaluation had occurred, so no generated input or expectation is changed by this repair.",
+  "boundedInput": "stat before read, read at most maximum+1, verify length after read to detect growth. Hash the bounded32MiB generated dataset as a64KiB stream instead of a full read_bytes allocation.",
+  "fixedActualPrerequisite": {
+    "runId": 39599513353,
+    "workflowCommit": "eb6727eafd330c5b4dad8381e15a3576d97d3f6d",
+    "comparisonSha256": "f6e6c5d60ca46a832ac91a77b417eddf587d28e601c0c88621f3f8d9d0db292c",
+    "comparisonBytes": 60730,
+    "sdkCommit": "78635505e4c189c402ba70600632aeaef71ef206",
+    "sdkSourceFingerprint": "b6638ee56395a14284d1440a92a0d975c4ea4073f42ccab6d8d39e359d928096",
+    "meaning": "Exactly8 actual checker cases:6 determinate agreements and2 expected edgeless coverage differences. This does not validate the newer integration mainline. The generator checks the exact original comparison bytes and its actualBuildManifest.sourceSha256.",
+    "independentAcceptance": "Pending D; a matching file/hash is not an authenticated human or independent-review statement. Do not run generation until root confirms that gate."
+  },
+  "unchanged": ["fixed seed and SHA counter stream", "ten200-input family quotas", "raw fact generation rules", "candidate ordinal selection", "raw and first-occurrence alpha-program dedup", "absence of generated truth labels", "no checker or SDK import during generation"],
+  "extraAuditPolicy": "D may additionally canonicalize payload equality classes in final per-program traversal order to report stricter representation duplicates. Such extra counts are reported separately; they do not authorize replacing inputs after a dataset has been frozen.",
+  "actualGeneratorExecutedAtFreeze": false,
+  "actualDatasetFrozen": false,
+  "actualExpansionEvaluatorExecuted": false
+}

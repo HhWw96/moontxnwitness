@@ -1,0 +1,2247 @@
+{
+  "schema": 1,
+  "kind": "actual-Elle-MoonBit-raw-smoke",
+  "passed": true,
+  "actualElleResultConsumed": true,
+  "actualMoonBitExecuted": true,
+  "actualDatabaseExecution": false,
+  "formalPerformanceMeasurement": false,
+  "sixModelParityClaimed": false,
+  "arbitrarySqlCoverageClaimed": false,
+  "actualDualCheckerCases": 8,
+  "adapterOnlyOutsideCases": 5,
+  "adapterOnlyInvalidCases": 2,
+  "originalInputSha256": "e9430dbf5faca86c337fca8a090464004a362370c6e134f710a344f5b8ef8d90",
+  "sdkFileSha256": "622bbd24c0b739da1a8d2c10cac6bc55e07018a06d56919718f0f5fdb4481e43",
+  "actualBuildManifest": {
+    "version": "0.1.1",
+    "toolchain": {
+      "compiler": "v0.10.14+7d59c7ec9",
+      "moon": "moon 0.1.20260920"
+    },
+    "sourceSha256": "b6638ee56395a14284d1440a92a0d975c4ea4073f42ccab6d8d39e359d928096",
+    "coreSha256": "91ab0675e06e7f468692df0cb40bca250b2971c3f19c9d8fd8968448bc70d447",
+    "captureCoreSha256": "8807017be4619f6e7d062d9d503815494ab8e83cd15474573d91d53b77de1b10"
+  },
+  "actualCoreSha256": "91ab0675e06e7f468692df0cb40bca250b2971c3f19c9d8fd8968448bc70d447",
+  "actualCaptureCoreSha256": "8807017be4619f6e7d062d9d503815494ab8e83cd15474573d91d53b77de1b10",
+  "elleResultSha256": "15f2d4f1055e097c68455c5439ccdb7f378cf85eeeea57be34959ac2005bdf4d",
+  "cases": [
+    {
+      "id": "register-wr-chain",
+      "disposition": "eligible",
+      "actualElleResult": true,
+      "actualMoonBitStatus": "consistent",
+      "knownCoverageDifference": false,
+      "passed": true,
+      "report": {
+        "schemaVersion": 3,
+        "tool": "MoonTxnWitness",
+        "version": "0.1.1",
+        "algorithm": "v3-register-1",
+        "status": "consistent",
+        "modelDefinition": {
+          "id": "register-serializable-v1",
+          "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+        },
+        "coverage": {
+          "complete": true,
+          "gaps": []
+        },
+        "normalized": {
+          "schema": 3,
+          "algorithm": "v3-lifecycle-1",
+          "status": "ready",
+          "coverage": {
+            "complete": true,
+            "gaps": []
+          },
+          "observations": [
+            {
+              "seq": 1,
+              "time": 0,
+              "kind": "snapshot",
+              "initial": {
+                "x": "x0",
+                "y": "y0"
+              },
+              "consistent": true
+            },
+            {
+              "seq": 2,
+              "time": 1,
+              "kind": "begin",
+              "tx": "A",
+              "connection": "A"
+            },
+            {
+              "seq": 3,
+              "time": 2,
+              "kind": "write",
+              "tx": "A",
+              "key": "x",
+              "version": "x1",
+              "predecessor": "x0"
+            },
+            {
+              "seq": 4,
+              "time": 3,
+              "kind": "commit_request",
+              "tx": "A"
+            },
+            {
+              "seq": 5,
+              "time": 4,
+              "kind": "commit_ok",
+              "tx": "A"
+            },
+            {
+              "seq": 6,
+              "time": 5,
+              "kind": "begin",
+              "tx": "B",
+              "connection": "B"
+            },
+            {
+              "seq": 7,
+              "time": 6,
+              "kind": "read",
+              "tx": "B",
+              "key": "x",
+              "version": "x1"
+            },
+            {
+              "seq": 8,
+              "time": 7,
+              "kind": "commit_request",
+              "tx": "B"
+            },
+            {
+              "seq": 9,
+              "time": 8,
+              "kind": "commit_ok",
+              "tx": "B"
+            }
+          ],
+          "effects": [
+            {
+              "seq": 3,
+              "tx": "A",
+              "key": "x",
+              "version": "x1",
+              "predecessor": "x0",
+              "revertedBy": null
+            }
+          ],
+          "transactions": [
+            {
+              "id": "A",
+              "connection": "A",
+              "status": "committed",
+              "beginSeq": 2,
+              "endSeq": 5,
+              "events": [
+                2,
+                3,
+                4,
+                5
+              ],
+              "finalWrites": [
+                3
+              ]
+            },
+            {
+              "id": "B",
+              "connection": "B",
+              "status": "committed",
+              "beginSeq": 6,
+              "endSeq": 9,
+              "events": [
+                6,
+                7,
+                8,
+                9
+              ],
+              "finalWrites": []
+            }
+          ],
+          "history": {
+            "schemaVersion": 1,
+            "model": "serializable",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "versionOrders": {
+              "x": [
+                "x0",
+                "x1"
+              ],
+              "y": [
+                "y0"
+              ]
+            },
+            "transactions": [
+              {
+                "id": "A",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x1"
+                  }
+                ],
+                "start": null,
+                "end": null
+              },
+              {
+                "id": "B",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "read",
+                    "key": "x",
+                    "version": "x1"
+                  }
+                ],
+                "start": null,
+                "end": null
+              }
+            ]
+          }
+        },
+        "evidence": {
+          "schemaVersion": 2,
+          "tool": "MoonTxnWitness",
+          "version": "0.1.1",
+          "status": "consistent",
+          "model": "serializable",
+          "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+          "complete": true,
+          "stats": {
+            "transactions": 2,
+            "committed": 2,
+            "operations": 2,
+            "dependencies": 1
+          },
+          "findings": [],
+          "edges": [
+            {
+              "from": "A",
+              "to": "B",
+              "kind": "wr",
+              "key": "x",
+              "fromOp": 0,
+              "toOp": 0,
+              "fromVersion": "x1",
+              "toVersion": "x1",
+              "reason": "The reader observes the unique final version written by the source transaction."
+            }
+          ],
+          "witness": null,
+          "serialOrder": [
+            "A",
+            "B"
+          ],
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "versionOrderSources": {
+            "x": "asserted",
+            "y": "asserted"
+          },
+          "graph": {
+            "analyzed": true,
+            "components": 2,
+            "cyclicComponents": 0,
+            "cyclicTransactions": 0,
+            "bfsRoots": 0,
+            "edgeBudgetExceeded": false
+          },
+          "coverage": [
+            {
+              "key": "x",
+              "committedReads": 1,
+              "committedFinalWrites": 1,
+              "unresolvedReads": 0,
+              "versionOrderSource": "asserted",
+              "sourceLabel": "采集声明的版本链"
+            },
+            {
+              "key": "y",
+              "committedReads": 0,
+              "committedFinalWrites": 0,
+              "unresolvedReads": 0,
+              "versionOrderSource": "asserted",
+              "sourceLabel": "采集声明的版本链"
+            }
+          ],
+          "nextSteps": [],
+          "search": {
+            "status": "not-needed",
+            "reason": "No bounded completion search was required."
+          },
+          "algorithm": "bounded-register-v2.1",
+          "effectiveLimits": {
+            "transactions": 12,
+            "operations": 512,
+            "keys": 128,
+            "attempts": 100000,
+            "operationChecks": 1000000,
+            "cachedStates": 50000
+          },
+          "analysisOptions": {
+            "maxAttempts": 100000,
+            "maxOperationChecks": 1000000,
+            "maxCachedStates": 50000
+          },
+          "metrics": {
+            "attempts": 0,
+            "operationChecks": 0,
+            "cacheHits": 0,
+            "cachedStates": 0,
+            "blockers": []
+          }
+        },
+        "execution": {
+          "analysisOptions": {
+            "maxAttempts": 100000,
+            "maxOperationChecks": 1000000,
+            "maxCachedStates": 50000
+          },
+          "effectiveLimits": {
+            "transactions": 12,
+            "operations": 512,
+            "keys": 128,
+            "attempts": 100000,
+            "operationChecks": 1000000,
+            "cachedStates": 50000
+          },
+          "metrics": {
+            "attempts": 0,
+            "operationChecks": 0,
+            "cacheHits": 0,
+            "cachedStates": 0,
+            "blockers": []
+          }
+        }
+      },
+      "verification": {
+        "valid": true,
+        "schemaVersion": 3,
+        "reason": "Every v3 field was independently recomputed, including observations, effects, coverage, budgets and evidence.",
+        "scope": "semantic reproduction; hashes do not authenticate source observations"
+      }
+    },
+    {
+      "id": "register-initial-write-skew",
+      "disposition": "eligible",
+      "actualElleResult": false,
+      "actualMoonBitStatus": "violation",
+      "knownCoverageDifference": false,
+      "passed": true,
+      "report": {
+        "schemaVersion": 3,
+        "tool": "MoonTxnWitness",
+        "version": "0.1.1",
+        "algorithm": "v3-register-1",
+        "status": "violation",
+        "modelDefinition": {
+          "id": "register-serializable-v1",
+          "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+        },
+        "coverage": {
+          "complete": true,
+          "gaps": []
+        },
+        "normalized": {
+          "schema": 3,
+          "algorithm": "v3-lifecycle-1",
+          "status": "ready",
+          "coverage": {
+            "complete": true,
+            "gaps": []
+          },
+          "observations": [
+            {
+              "seq": 1,
+              "time": 0,
+              "kind": "snapshot",
+              "initial": {
+                "x": "x0",
+                "y": "y0"
+              },
+              "consistent": true
+            },
+            {
+              "seq": 2,
+              "time": 1,
+              "kind": "begin",
+              "tx": "A",
+              "connection": "A"
+            },
+            {
+              "seq": 3,
+              "time": 2,
+              "kind": "begin",
+              "tx": "B",
+              "connection": "B"
+            },
+            {
+              "seq": 4,
+              "time": 3,
+              "kind": "read",
+              "tx": "A",
+              "key": "y",
+              "version": "y0"
+            },
+            {
+              "seq": 5,
+              "time": 4,
+              "kind": "read",
+              "tx": "B",
+              "key": "x",
+              "version": "x0"
+            },
+            {
+              "seq": 6,
+              "time": 5,
+              "kind": "write",
+              "tx": "A",
+              "key": "x",
+              "version": "x1",
+              "predecessor": "x0"
+            },
+            {
+              "seq": 7,
+              "time": 6,
+              "kind": "write",
+              "tx": "B",
+              "key": "y",
+              "version": "y1",
+              "predecessor": "y0"
+            },
+            {
+              "seq": 8,
+              "time": 7,
+              "kind": "commit_request",
+              "tx": "A"
+            },
+            {
+              "seq": 9,
+              "time": 8,
+              "kind": "commit_ok",
+              "tx": "A"
+            },
+            {
+              "seq": 10,
+              "time": 9,
+              "kind": "commit_request",
+              "tx": "B"
+            },
+            {
+              "seq": 11,
+              "time": 10,
+              "kind": "commit_ok",
+              "tx": "B"
+            }
+          ],
+          "effects": [
+            {
+              "seq": 6,
+              "tx": "A",
+              "key": "x",
+              "version": "x1",
+              "predecessor": "x0",
+              "revertedBy": null
+            },
+            {
+              "seq": 7,
+              "tx": "B",
+              "key": "y",
+              "version": "y1",
+              "predecessor": "y0",
+              "revertedBy": null
+            }
+          ],
+          "transactions": [
+            {
+              "id": "A",
+              "connection": "A",
+              "status": "committed",
+              "beginSeq": 2,
+              "endSeq": 9,
+              "events": [
+                2,
+                4,
+                6,
+                8,
+                9
+              ],
+              "finalWrites": [
+                6
+              ]
+            },
+            {
+              "id": "B",
+              "connection": "B",
+              "status": "committed",
+              "beginSeq": 3,
+              "endSeq": 11,
+              "events": [
+                3,
+                5,
+                7,
+                10,
+                11
+              ],
+              "finalWrites": [
+                7
+              ]
+            }
+          ],
+          "history": {
+            "schemaVersion": 1,
+            "model": "serializable",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "versionOrders": {
+              "x": [
+                "x0",
+                "x1"
+              ],
+              "y": [
+                "y0",
+                "y1"
+              ]
+            },
+            "transactions": [
+              {
+                "id": "A",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "read",
+                    "key": "y",
+                    "version": "y0"
+                  },
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x1"
+                  }
+                ],
+                "start": null,
+                "end": null
+              },
+              {
+                "id": "B",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "read",
+                    "key": "x",
+                    "version": "x0"
+                  },
+                  {
+                    "type": "write",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ],
+                "start": null,
+                "end": null
+              }
+            ]
+          }
+        },
+        "evidence": {
+          "schemaVersion": 2,
+          "tool": "MoonTxnWitness",
+          "version": "0.1.1",
+          "status": "violation",
+          "model": "serializable",
+          "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+          "complete": true,
+          "stats": {
+            "transactions": 2,
+            "committed": 2,
+            "operations": 4,
+            "dependencies": 2
+          },
+          "findings": [
+            {
+              "code": "dependency_cycle",
+              "severity": "violation",
+              "message": "The dependency cycle prevents any serial order satisfying these observations and constraints",
+              "transactions": [
+                "A",
+                "B"
+              ],
+              "key": null,
+              "ops": []
+            }
+          ],
+          "edges": [
+            {
+              "from": "A",
+              "to": "B",
+              "kind": "rw",
+              "key": "y",
+              "fromOp": 0,
+              "toOp": 1,
+              "fromVersion": "y0",
+              "toVersion": "y1",
+              "reason": "The reader observes an earlier version and must precede this later committed write."
+            },
+            {
+              "from": "B",
+              "to": "A",
+              "kind": "rw",
+              "key": "x",
+              "fromOp": 0,
+              "toOp": 1,
+              "fromVersion": "x0",
+              "toVersion": "x1",
+              "reason": "The reader observes an earlier version and must precede this later committed write."
+            }
+          ],
+          "witness": {
+            "kind": "dependency_cycle",
+            "transactions": [
+              "A",
+              "B",
+              "A"
+            ],
+            "edges": [
+              {
+                "from": "A",
+                "to": "B",
+                "kind": "rw",
+                "key": "y",
+                "fromOp": 0,
+                "toOp": 1,
+                "fromVersion": "y0",
+                "toVersion": "y1",
+                "reason": "The reader observes an earlier version and must precede this later committed write."
+              },
+              {
+                "from": "B",
+                "to": "A",
+                "kind": "rw",
+                "key": "x",
+                "fromOp": 0,
+                "toOp": 1,
+                "fromVersion": "x0",
+                "toVersion": "x1",
+                "reason": "The reader observes an earlier version and must precede this later committed write."
+              }
+            ],
+            "minimality": "shortest directed cycle in the constructed graph"
+          },
+          "serialOrder": [],
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1"
+            ],
+            "y": [
+              "y0",
+              "y1"
+            ]
+          },
+          "versionOrderSources": {
+            "x": "asserted",
+            "y": "asserted"
+          },
+          "graph": {
+            "analyzed": true,
+            "components": 1,
+            "cyclicComponents": 1,
+            "cyclicTransactions": 2,
+            "bfsRoots": 1,
+            "edgeBudgetExceeded": false
+          },
+          "coverage": [
+            {
+              "key": "x",
+              "committedReads": 1,
+              "committedFinalWrites": 1,
+              "unresolvedReads": 0,
+              "versionOrderSource": "asserted",
+              "sourceLabel": "采集声明的版本链"
+            },
+            {
+              "key": "y",
+              "committedReads": 1,
+              "committedFinalWrites": 1,
+              "unresolvedReads": 0,
+              "versionOrderSource": "asserted",
+              "sourceLabel": "采集声明的版本链"
+            }
+          ],
+          "nextSteps": [
+            "保留原始日志，使用 shrink 缩减反例，并用 capsule 保存可复现证据。"
+          ],
+          "search": {
+            "status": "not-needed",
+            "reason": "No bounded completion search was required."
+          },
+          "algorithm": "bounded-register-v2.1",
+          "effectiveLimits": {
+            "transactions": 12,
+            "operations": 512,
+            "keys": 128,
+            "attempts": 100000,
+            "operationChecks": 1000000,
+            "cachedStates": 50000
+          },
+          "analysisOptions": {
+            "maxAttempts": 100000,
+            "maxOperationChecks": 1000000,
+            "maxCachedStates": 50000
+          },
+          "metrics": {
+            "attempts": 0,
+            "operationChecks": 0,
+            "cacheHits": 0,
+            "cachedStates": 0,
+            "blockers": []
+          }
+        },
+        "execution": {
+          "analysisOptions": {
+            "maxAttempts": 100000,
+            "maxOperationChecks": 1000000,
+            "maxCachedStates": 50000
+          },
+          "effectiveLimits": {
+            "transactions": 12,
+            "operations": 512,
+            "keys": 128,
+            "attempts": 100000,
+            "operationChecks": 1000000,
+            "cachedStates": 50000
+          },
+          "metrics": {
+            "attempts": 0,
+            "operationChecks": 0,
+            "cacheHits": 0,
+            "cachedStates": 0,
+            "blockers": []
+          }
+        }
+      },
+      "verification": {
+        "valid": true,
+        "schemaVersion": 3,
+        "reason": "Every v3 field was independently recomputed, including observations, effects, coverage, budgets and evidence.",
+        "scope": "semantic reproduction; hashes do not authenticate source observations"
+      }
+    },
+    {
+      "id": "register-wr-cycle",
+      "disposition": "eligible",
+      "actualElleResult": false,
+      "actualMoonBitStatus": "violation",
+      "knownCoverageDifference": false,
+      "passed": true,
+      "report": {
+        "schemaVersion": 3,
+        "tool": "MoonTxnWitness",
+        "version": "0.1.1",
+        "algorithm": "v3-register-1",
+        "status": "violation",
+        "modelDefinition": {
+          "id": "register-serializable-v1",
+          "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+        },
+        "coverage": {
+          "complete": true,
+          "gaps": []
+        },
+        "normalized": {
+          "schema": 3,
+          "algorithm": "v3-lifecycle-1",
+          "status": "ready",
+          "coverage": {
+            "complete": true,
+            "gaps": []
+          },
+          "observations": [
+            {
+              "seq": 1,
+              "time": 0,
+              "kind": "snapshot",
+              "initial": {
+                "x": "x0",
+                "y": "y0"
+              },
+              "consistent": true
+            },
+            {
+              "seq": 2,
+              "time": 1,
+              "kind": "begin",
+              "tx": "A",
+              "connection": "A"
+            },
+            {
+              "seq": 3,
+              "time": 2,
+              "kind": "begin",
+              "tx": "B",
+              "connection": "B"
+            },
+            {
+              "seq": 4,
+              "time": 3,
+              "kind": "write",
+              "tx": "A",
+              "key": "x",
+              "version": "x1",
+              "predecessor": "x0"
+            },
+            {
+              "seq": 5,
+              "time": 4,
+              "kind": "write",
+              "tx": "B",
+              "key": "y",
+              "version": "y1",
+              "predecessor": "y0"
+            },
+            {
+              "seq": 6,
+              "time": 5,
+              "kind": "read",
+              "tx": "A",
+              "key": "y",
+              "version": "y1"
+            },
+            {
+              "seq": 7,
+              "time": 6,
+              "kind": "read",
+              "tx": "B",
+              "key": "x",
+              "version": "x1"
+            },
+            {
+              "seq": 8,
+              "time": 7,
+              "kind": "commit_request",
+              "tx": "A"
+            },
+            {
+              "seq": 9,
+              "time": 8,
+              "kind": "commit_ok",
+              "tx": "A"
+            },
+            {
+              "seq": 10,
+              "time": 9,
+              "kind": "commit_request",
+              "tx": "B"
+            },
+            {
+              "seq": 11,
+              "time": 10,
+              "kind": "commit_ok",
+              "tx": "B"
+            }
+          ],
+          "effects": [
+            {
+              "seq": 4,
+              "tx": "A",
+              "key": "x",
+              "version": "x1",
+              "predecessor": "x0",
+              "revertedBy": null
+            },
+            {
+              "seq": 5,
+              "tx": "B",
+              "key": "y",
+              "version": "y1",
+              "predecessor": "y0",
+              "revertedBy": null
+            }
+          ],
+          "transactions": [
+            {
+              "id": "A",
+              "connection": "A",
+              "status": "committed",
+              "beginSeq": 2,
+              "endSeq": 9,
+              "events": [
+                2,
+                4,
+                6,
+                8,
+                9
+              ],
+              "finalWrites": [
+                4
+              ]
+            },
+            {
+              "id": "B",
+              "connection": "B",
+              "status": "committed",
+              "beginSeq": 3,
+              "endSeq": 11,
+              "events": [
+                3,
+                5,
+                7,
+                10,
+                11
+              ],
+              "finalWrites": [
+                5
+              ]
+            }
+          ],
+          "history": {
+            "schemaVersion": 1,
+            "model": "serializable",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "versionOrders": {
+              "x": [
+                "x0",
+                "x1"
+              ],
+              "y": [
+                "y0",
+                "y1"
+              ]
+            },
+            "transactions": [
+              {
+                "id": "A",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x1"
+                  },
+                  {
+                    "type": "read",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ],
+                "start": null,
+                "end": null
+              },
+              {
+                "id": "B",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "y",
+                    "version": "y1"
+                  },
+                  {
+                    "type": "read",
+                    "key": "x",
+                    "version": "x1"
+                  }
+                ],
+                "start": null,
+                "end": null
+              }
+            ]
+          }
+        },
+        "evidence": {
+          "schemaVersion": 2,
+          "tool": "MoonTxnWitness",
+          "version": "0.1.1",
+          "status": "violation",
+          "model": "serializable",
+          "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+          "complete": true,
+          "stats": {
+            "transactions": 2,
+            "committed": 2,
+            "operations": 4,
+            "dependencies": 2
+          },
+          "findings": [
+            {
+              "code": "dependency_cycle",
+              "severity": "violation",
+              "message": "The dependency cycle prevents any serial order satisfying these observations and constraints",
+              "transactions": [
+                "A",
+                "B"
+              ],
+              "key": null,
+              "ops": []
+            }
+          ],
+          "edges": [
+            {
+              "from": "B",
+              "to": "A",
+              "kind": "wr",
+              "key": "y",
+              "fromOp": 0,
+              "toOp": 1,
+              "fromVersion": "y1",
+              "toVersion": "y1",
+              "reason": "The reader observes the unique final version written by the source transaction."
+            },
+            {
+              "from": "A",
+              "to": "B",
+              "kind": "wr",
+              "key": "x",
+              "fromOp": 0,
+              "toOp": 1,
+              "fromVersion": "x1",
+              "toVersion": "x1",
+              "reason": "The reader observes the unique final version written by the source transaction."
+            }
+          ],
+          "witness": {
+            "kind": "dependency_cycle",
+            "transactions": [
+              "A",
+              "B",
+              "A"
+            ],
+            "edges": [
+              {
+                "from": "A",
+                "to": "B",
+                "kind": "wr",
+                "key": "x",
+                "fromOp": 0,
+                "toOp": 1,
+                "fromVersion": "x1",
+                "toVersion": "x1",
+                "reason": "The reader observes the unique final version written by the source transaction."
+              },
+              {
+                "from": "B",
+                "to": "A",
+                "kind": "wr",
+                "key": "y",
+                "fromOp": 0,
+                "toOp": 1,
+                "fromVersion": "y1",
+                "toVersion": "y1",
+                "reason": "The reader observes the unique final version written by the source transaction."
+              }
+            ],
+            "minimality": "shortest directed cycle in the constructed graph"
+          },
+          "serialOrder": [],
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1"
+            ],
+            "y": [
+              "y0",
+              "y1"
+            ]
+          },
+          "versionOrderSources": {
+            "x": "asserted",
+            "y": "asserted"
+          },
+          "graph": {
+            "analyzed": true,
+            "components": 1,
+            "cyclicComponents": 1,
+            "cyclicTransactions": 2,
+            "bfsRoots": 1,
+            "edgeBudgetExceeded": false
+          },
+          "coverage": [
+            {
+              "key": "x",
+              "committedReads": 1,
+              "committedFinalWrites": 1,
+              "unresolvedReads": 0,
+              "versionOrderSource": "asserted",
+              "sourceLabel": "采集声明的版本链"
+            },
+            {
+              "key": "y",
+              "committedReads": 1,
+              "committedFinalWrites": 1,
+              "unresolvedReads": 0,
+              "versionOrderSource": "asserted",
+              "sourceLabel": "采集声明的版本链"
+            }
+          ],
+          "nextSteps": [
+            "保留原始日志，使用 shrink 缩减反例，并用 capsule 保存可复现证据。"
+          ],
+          "search": {
+            "status": "not-needed",
+            "reason": "No bounded completion search was required."
+          },
+          "algorithm": "bounded-register-v2.1",
+          "effectiveLimits": {
+            "transactions": 12,
+            "operations": 512,
+            "keys": 128,
+            "attempts": 100000,
+            "operationChecks": 1000000,
+            "cachedStates": 50000
+          },
+          "analysisOptions": {
+            "maxAttempts": 100000,
+            "maxOperationChecks": 1000000,
+            "maxCachedStates": 50000
+          },
+          "metrics": {
+            "attempts": 0,
+            "operationChecks": 0,
+            "cacheHits": 0,
+            "cachedStates": 0,
+            "blockers": []
+          }
+        },
+        "execution": {
+          "analysisOptions": {
+            "maxAttempts": 100000,
+            "maxOperationChecks": 1000000,
+            "maxCachedStates": 50000
+          },
+          "effectiveLimits": {
+            "transactions": 12,
+            "operations": 512,
+            "keys": 128,
+            "attempts": 100000,
+            "operationChecks": 1000000,
+            "cachedStates": 50000
+          },
+          "metrics": {
+            "attempts": 0,
+            "operationChecks": 0,
+            "cacheHits": 0,
+            "cachedStates": 0,
+            "blockers": []
+          }
+        }
+      },
+      "verification": {
+        "valid": true,
+        "schemaVersion": 3,
+        "reason": "Every v3 field was independently recomputed, including observations, effects, coverage, budgets and evidence.",
+        "scope": "semantic reproduction; hashes do not authenticate source observations"
+      }
+    },
+    {
+      "id": "register-empty-dependency-graph",
+      "disposition": "eligible",
+      "actualElleResult": "unknown",
+      "actualMoonBitStatus": "consistent",
+      "knownCoverageDifference": true,
+      "passed": true,
+      "report": {
+        "schemaVersion": 3,
+        "tool": "MoonTxnWitness",
+        "version": "0.1.1",
+        "algorithm": "v3-register-1",
+        "status": "consistent",
+        "modelDefinition": {
+          "id": "register-serializable-v1",
+          "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+        },
+        "coverage": {
+          "complete": true,
+          "gaps": []
+        },
+        "normalized": {
+          "schema": 3,
+          "algorithm": "v3-lifecycle-1",
+          "status": "ready",
+          "coverage": {
+            "complete": true,
+            "gaps": []
+          },
+          "observations": [
+            {
+              "seq": 1,
+              "time": 0,
+              "kind": "snapshot",
+              "initial": {
+                "x": "x0",
+                "y": "y0"
+              },
+              "consistent": true
+            },
+            {
+              "seq": 2,
+              "time": 1,
+              "kind": "begin",
+              "tx": "A",
+              "connection": "A"
+            },
+            {
+              "seq": 3,
+              "time": 2,
+              "kind": "write",
+              "tx": "A",
+              "key": "x",
+              "version": "x1",
+              "predecessor": "x0"
+            },
+            {
+              "seq": 4,
+              "time": 3,
+              "kind": "commit_request",
+              "tx": "A"
+            },
+            {
+              "seq": 5,
+              "time": 4,
+              "kind": "commit_ok",
+              "tx": "A"
+            }
+          ],
+          "effects": [
+            {
+              "seq": 3,
+              "tx": "A",
+              "key": "x",
+              "version": "x1",
+              "predecessor": "x0",
+              "revertedBy": null
+            }
+          ],
+          "transactions": [
+            {
+              "id": "A",
+              "connection": "A",
+              "status": "committed",
+              "beginSeq": 2,
+              "endSeq": 5,
+              "events": [
+                2,
+                3,
+                4,
+                5
+              ],
+              "finalWrites": [
+                3
+              ]
+            }
+          ],
+          "history": {
+            "schemaVersion": 1,
+            "model": "serializable",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "versionOrders": {
+              "x": [
+                "x0",
+                "x1"
+              ],
+              "y": [
+                "y0"
+              ]
+            },
+            "transactions": [
+              {
+                "id": "A",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x1"
+                  }
+                ],
+                "start": null,
+                "end": null
+              }
+            ]
+          }
+        },
+        "evidence": {
+          "schemaVersion": 2,
+          "tool": "MoonTxnWitness",
+          "version": "0.1.1",
+          "status": "consistent",
+          "model": "serializable",
+          "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+          "complete": true,
+          "stats": {
+            "transactions": 1,
+            "committed": 1,
+            "operations": 1,
+            "dependencies": 0
+          },
+          "findings": [],
+          "edges": [],
+          "witness": null,
+          "serialOrder": [
+            "A"
+          ],
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1"
+            ],
+            "y": [
+              "y0"
+            ]
+          },
+          "versionOrderSources": {
+            "x": "asserted",
+            "y": "asserted"
+          },
+          "graph": {
+            "analyzed": true,
+            "components": 1,
+            "cyclicComponents": 0,
+            "cyclicTransactions": 0,
+            "bfsRoots": 0,
+            "edgeBudgetExceeded": false
+          },
+          "coverage": [
+            {
+              "key": "x",
+              "committedReads": 0,
+              "committedFinalWrites": 1,
+              "unresolvedReads": 0,
+              "versionOrderSource": "asserted",
+              "sourceLabel": "采集声明的版本链"
+            },
+            {
+              "key": "y",
+              "committedReads": 0,
+              "committedFinalWrites": 0,
+              "unresolvedReads": 0,
+              "versionOrderSource": "asserted",
+              "sourceLabel": "采集声明的版本链"
+            }
+          ],
+          "nextSteps": [],
+          "search": {
+            "status": "not-needed",
+            "reason": "No bounded completion search was required."
+          },
+          "algorithm": "bounded-register-v2.1",
+          "effectiveLimits": {
+            "transactions": 12,
+            "operations": 512,
+            "keys": 128,
+            "attempts": 100000,
+            "operationChecks": 1000000,
+            "cachedStates": 50000
+          },
+          "analysisOptions": {
+            "maxAttempts": 100000,
+            "maxOperationChecks": 1000000,
+            "maxCachedStates": 50000
+          },
+          "metrics": {
+            "attempts": 0,
+            "operationChecks": 0,
+            "cacheHits": 0,
+            "cachedStates": 0,
+            "blockers": []
+          }
+        },
+        "execution": {
+          "analysisOptions": {
+            "maxAttempts": 100000,
+            "maxOperationChecks": 1000000,
+            "maxCachedStates": 50000
+          },
+          "effectiveLimits": {
+            "transactions": 12,
+            "operations": 512,
+            "keys": 128,
+            "attempts": 100000,
+            "operationChecks": 1000000,
+            "cachedStates": 50000
+          },
+          "metrics": {
+            "attempts": 0,
+            "operationChecks": 0,
+            "cacheHits": 0,
+            "cachedStates": 0,
+            "blockers": []
+          }
+        }
+      },
+      "verification": {
+        "valid": true,
+        "schemaVersion": 3,
+        "reason": "Every v3 field was independently recomputed, including observations, effects, coverage, budgets and evidence.",
+        "scope": "semantic reproduction; hashes do not authenticate source observations"
+      }
+    },
+    {
+      "id": "register-multiple-writers-not-total-order",
+      "disposition": "outside",
+      "checkerExecuted": false,
+      "passed": true
+    },
+    {
+      "id": "register-unknown-read-source",
+      "disposition": "outside",
+      "checkerExecuted": false,
+      "passed": true
+    },
+    {
+      "id": "list-wr-chain",
+      "disposition": "eligible",
+      "actualElleResult": true,
+      "actualMoonBitStatus": "consistent",
+      "knownCoverageDifference": false,
+      "passed": true,
+      "report": {
+        "schemaVersion": 3,
+        "tool": "MoonTxnWitness",
+        "version": "0.1.1",
+        "algorithm": "v3-list-1",
+        "status": "consistent",
+        "modelDefinition": {
+          "id": "append-list-serializable-v1",
+          "scope": "committed transactions' full append/read/savepoint journals; aborted observations retained, no opacity or real-time claim"
+        },
+        "coverage": {
+          "complete": true,
+          "gaps": []
+        },
+        "normalized": {
+          "schema": 3,
+          "dataModel": "append-list-v1",
+          "algorithm": "v3-list-lifecycle-1",
+          "status": "ready",
+          "coverage": {
+            "complete": true,
+            "gaps": []
+          },
+          "observations": [
+            {
+              "seq": 1,
+              "time": 0,
+              "kind": "snapshot",
+              "initial": {
+                "x": [],
+                "y": []
+              },
+              "consistent": true
+            },
+            {
+              "seq": 2,
+              "time": 1,
+              "kind": "begin",
+              "tx": "A",
+              "connection": "A"
+            },
+            {
+              "seq": 3,
+              "time": 2,
+              "kind": "append",
+              "tx": "A",
+              "key": "x",
+              "id": "a",
+              "value": "same"
+            },
+            {
+              "seq": 4,
+              "time": 3,
+              "kind": "commit_request",
+              "tx": "A"
+            },
+            {
+              "seq": 5,
+              "time": 4,
+              "kind": "commit_ok",
+              "tx": "A"
+            },
+            {
+              "seq": 6,
+              "time": 5,
+              "kind": "begin",
+              "tx": "B",
+              "connection": "B"
+            },
+            {
+              "seq": 7,
+              "time": 6,
+              "kind": "list_read",
+              "tx": "B",
+              "key": "x",
+              "items": [
+                {
+                  "id": "a",
+                  "value": "same"
+                }
+              ]
+            },
+            {
+              "seq": 8,
+              "time": 7,
+              "kind": "commit_request",
+              "tx": "B"
+            },
+            {
+              "seq": 9,
+              "time": 8,
+              "kind": "commit_ok",
+              "tx": "B"
+            }
+          ],
+          "effects": [
+            {
+              "seq": 3,
+              "tx": "A",
+              "key": "x",
+              "id": "a",
+              "value": "same",
+              "revertedBy": null
+            }
+          ],
+          "transactions": [
+            {
+              "id": "A",
+              "connection": "A",
+              "status": "committed",
+              "beginSeq": 2,
+              "endSeq": 5,
+              "events": [
+                2,
+                3,
+                4,
+                5
+              ],
+              "finalWrites": [
+                3
+              ]
+            },
+            {
+              "id": "B",
+              "connection": "B",
+              "status": "committed",
+              "beginSeq": 6,
+              "endSeq": 9,
+              "events": [
+                6,
+                7,
+                8,
+                9
+              ],
+              "finalWrites": []
+            }
+          ],
+          "history": null
+        },
+        "evidence": {
+          "kind": "serial-list-replay",
+          "serialOrder": [
+            "A",
+            "B"
+          ],
+          "sourceEvidence": [
+            {
+              "id": "a",
+              "value": "same",
+              "key": "x",
+              "sourceSeq": 3,
+              "writer": "A",
+              "revertedBy": null
+            }
+          ]
+        },
+        "execution": {
+          "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
+          "analysisOptions": {
+            "maxStates": 100000,
+            "maxOperationChecks": 1000000
+          },
+          "effectiveLimits": {
+            "committedTransactions": 6,
+            "operations": 128,
+            "states": 100000,
+            "operationChecks": 1000000,
+            "inputUtf16Units": 8388608,
+            "events": 65536,
+            "identities": 10000,
+            "returnedItemReferences": 100000
+          },
+          "metrics": {
+            "states": 2,
+            "operationChecks": 3,
+            "complete": true,
+            "reason": "found"
+          }
+        }
+      },
+      "verification": {
+        "valid": true,
+        "schemaVersion": 3,
+        "reason": "Every v3 field was independently recomputed, including observations, effects, coverage, budgets and evidence.",
+        "scope": "semantic reproduction; hashes do not authenticate source observations"
+      }
+    },
+    {
+      "id": "list-wr-cycle",
+      "disposition": "eligible",
+      "actualElleResult": false,
+      "actualMoonBitStatus": "violation",
+      "knownCoverageDifference": false,
+      "passed": true,
+      "report": {
+        "schemaVersion": 3,
+        "tool": "MoonTxnWitness",
+        "version": "0.1.1",
+        "algorithm": "v3-list-1",
+        "status": "violation",
+        "modelDefinition": {
+          "id": "append-list-serializable-v1",
+          "scope": "committed transactions' full append/read/savepoint journals; aborted observations retained, no opacity or real-time claim"
+        },
+        "coverage": {
+          "complete": true,
+          "gaps": []
+        },
+        "normalized": {
+          "schema": 3,
+          "dataModel": "append-list-v1",
+          "algorithm": "v3-list-lifecycle-1",
+          "status": "ready",
+          "coverage": {
+            "complete": true,
+            "gaps": []
+          },
+          "observations": [
+            {
+              "seq": 1,
+              "time": 0,
+              "kind": "snapshot",
+              "initial": {
+                "x": [],
+                "y": []
+              },
+              "consistent": true
+            },
+            {
+              "seq": 2,
+              "time": 1,
+              "kind": "begin",
+              "tx": "A",
+              "connection": "A"
+            },
+            {
+              "seq": 3,
+              "time": 2,
+              "kind": "begin",
+              "tx": "B",
+              "connection": "B"
+            },
+            {
+              "seq": 4,
+              "time": 3,
+              "kind": "append",
+              "tx": "A",
+              "key": "x",
+              "id": "a",
+              "value": "same"
+            },
+            {
+              "seq": 5,
+              "time": 4,
+              "kind": "append",
+              "tx": "B",
+              "key": "y",
+              "id": "b",
+              "value": "same"
+            },
+            {
+              "seq": 6,
+              "time": 5,
+              "kind": "list_read",
+              "tx": "A",
+              "key": "y",
+              "items": [
+                {
+                  "id": "b",
+                  "value": "same"
+                }
+              ]
+            },
+            {
+              "seq": 7,
+              "time": 6,
+              "kind": "list_read",
+              "tx": "B",
+              "key": "x",
+              "items": [
+                {
+                  "id": "a",
+                  "value": "same"
+                }
+              ]
+            },
+            {
+              "seq": 8,
+              "time": 7,
+              "kind": "commit_request",
+              "tx": "A"
+            },
+            {
+              "seq": 9,
+              "time": 8,
+              "kind": "commit_ok",
+              "tx": "A"
+            },
+            {
+              "seq": 10,
+              "time": 9,
+              "kind": "commit_request",
+              "tx": "B"
+            },
+            {
+              "seq": 11,
+              "time": 10,
+              "kind": "commit_ok",
+              "tx": "B"
+            }
+          ],
+          "effects": [
+            {
+              "seq": 4,
+              "tx": "A",
+              "key": "x",
+              "id": "a",
+              "value": "same",
+              "revertedBy": null
+            },
+            {
+              "seq": 5,
+              "tx": "B",
+              "key": "y",
+              "id": "b",
+              "value": "same",
+              "revertedBy": null
+            }
+          ],
+          "transactions": [
+            {
+              "id": "A",
+              "connection": "A",
+              "status": "committed",
+              "beginSeq": 2,
+              "endSeq": 9,
+              "events": [
+                2,
+                4,
+                6,
+                8,
+                9
+              ],
+              "finalWrites": [
+                4
+              ]
+            },
+            {
+              "id": "B",
+              "connection": "B",
+              "status": "committed",
+              "beginSeq": 3,
+              "endSeq": 11,
+              "events": [
+                3,
+                5,
+                7,
+                10,
+                11
+              ],
+              "finalWrites": [
+                5
+              ]
+            }
+          ],
+          "history": null
+        },
+        "evidence": {
+          "kind": "bounded-serial-exhaustion",
+          "code": "no_serial_list_execution",
+          "sampleBlockers": [
+            {
+              "tx": "A",
+              "readSeq": 6,
+              "key": "y",
+              "code": "list_state_mismatch",
+              "actualIds": [],
+              "observedIds": [
+                "b"
+              ]
+            },
+            {
+              "tx": "B",
+              "readSeq": 7,
+              "key": "x",
+              "code": "list_state_mismatch",
+              "actualIds": [],
+              "observedIds": [
+                "a"
+              ]
+            }
+          ],
+          "sourceEvidence": [
+            {
+              "id": "a",
+              "value": "same",
+              "key": "x",
+              "sourceSeq": 4,
+              "writer": "A",
+              "revertedBy": null
+            },
+            {
+              "id": "b",
+              "value": "same",
+              "key": "y",
+              "sourceSeq": 5,
+              "writer": "B",
+              "revertedBy": null
+            }
+          ]
+        },
+        "execution": {
+          "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
+          "analysisOptions": {
+            "maxStates": 100000,
+            "maxOperationChecks": 1000000
+          },
+          "effectiveLimits": {
+            "committedTransactions": 6,
+            "operations": 128,
+            "states": 100000,
+            "operationChecks": 1000000,
+            "inputUtf16Units": 8388608,
+            "events": 65536,
+            "identities": 10000,
+            "returnedItemReferences": 100000
+          },
+          "metrics": {
+            "states": 2,
+            "operationChecks": 4,
+            "complete": true,
+            "reason": "exhausted"
+          }
+        }
+      },
+      "verification": {
+        "valid": true,
+        "schemaVersion": 3,
+        "reason": "Every v3 field was independently recomputed, including observations, effects, coverage, budgets and evidence.",
+        "scope": "semantic reproduction; hashes do not authenticate source observations"
+      }
+    },
+    {
+      "id": "list-duplicate-observed-identity",
+      "disposition": "eligible",
+      "actualElleResult": false,
+      "actualMoonBitStatus": "violation",
+      "knownCoverageDifference": false,
+      "passed": true,
+      "report": {
+        "schemaVersion": 3,
+        "tool": "MoonTxnWitness",
+        "version": "0.1.1",
+        "algorithm": "v3-list-1",
+        "status": "violation",
+        "modelDefinition": {
+          "id": "append-list-serializable-v1",
+          "scope": "committed transactions' full append/read/savepoint journals; aborted observations retained, no opacity or real-time claim"
+        },
+        "coverage": {
+          "complete": true,
+          "gaps": []
+        },
+        "normalized": {
+          "schema": 3,
+          "dataModel": "append-list-v1",
+          "algorithm": "v3-list-lifecycle-1",
+          "status": "ready",
+          "coverage": {
+            "complete": true,
+            "gaps": []
+          },
+          "observations": [
+            {
+              "seq": 1,
+              "time": 0,
+              "kind": "snapshot",
+              "initial": {
+                "x": [],
+                "y": []
+              },
+              "consistent": true
+            },
+            {
+              "seq": 2,
+              "time": 1,
+              "kind": "begin",
+              "tx": "A",
+              "connection": "A"
+            },
+            {
+              "seq": 3,
+              "time": 2,
+              "kind": "append",
+              "tx": "A",
+              "key": "x",
+              "id": "a",
+              "value": "same"
+            },
+            {
+              "seq": 4,
+              "time": 3,
+              "kind": "commit_request",
+              "tx": "A"
+            },
+            {
+              "seq": 5,
+              "time": 4,
+              "kind": "commit_ok",
+              "tx": "A"
+            },
+            {
+              "seq": 6,
+              "time": 5,
+              "kind": "begin",
+              "tx": "B",
+              "connection": "B"
+            },
+            {
+              "seq": 7,
+              "time": 6,
+              "kind": "list_read",
+              "tx": "B",
+              "key": "x",
+              "items": [
+                {
+                  "id": "a",
+                  "value": "same"
+                },
+                {
+                  "id": "a",
+                  "value": "same"
+                }
+              ]
+            },
+            {
+              "seq": 8,
+              "time": 7,
+              "kind": "commit_request",
+              "tx": "B"
+            },
+            {
+              "seq": 9,
+              "time": 8,
+              "kind": "commit_ok",
+              "tx": "B"
+            }
+          ],
+          "effects": [
+            {
+              "seq": 3,
+              "tx": "A",
+              "key": "x",
+              "id": "a",
+              "value": "same",
+              "revertedBy": null
+            }
+          ],
+          "transactions": [
+            {
+              "id": "A",
+              "connection": "A",
+              "status": "committed",
+              "beginSeq": 2,
+              "endSeq": 5,
+              "events": [
+                2,
+                3,
+                4,
+                5
+              ],
+              "finalWrites": [
+                3
+              ]
+            },
+            {
+              "id": "B",
+              "connection": "B",
+              "status": "committed",
+              "beginSeq": 6,
+              "endSeq": 9,
+              "events": [
+                6,
+                7,
+                8,
+                9
+              ],
+              "finalWrites": []
+            }
+          ],
+          "history": null
+        },
+        "evidence": {
+          "kind": "source-proven-list-anomaly",
+          "findings": [
+            {
+              "code": "duplicate_list_item",
+              "tx": "B",
+              "readSeq": 7,
+              "key": "x",
+              "itemId": "a"
+            }
+          ],
+          "sourceEvidence": [
+            {
+              "id": "a",
+              "value": "same",
+              "key": "x",
+              "sourceSeq": 3,
+              "writer": "A",
+              "revertedBy": null
+            }
+          ]
+        },
+        "execution": {
+          "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
+          "analysisOptions": {
+            "maxStates": 100000,
+            "maxOperationChecks": 1000000
+          },
+          "effectiveLimits": {
+            "committedTransactions": 6,
+            "operations": 128,
+            "states": 100000,
+            "operationChecks": 1000000,
+            "inputUtf16Units": 8388608,
+            "events": 65536,
+            "identities": 10000,
+            "returnedItemReferences": 100000
+          },
+          "metrics": {
+            "states": 0,
+            "operationChecks": 0,
+            "complete": true,
+            "reason": "source_proven_anomaly"
+          }
+        }
+      },
+      "verification": {
+        "valid": true,
+        "schemaVersion": 3,
+        "reason": "Every v3 field was independently recomputed, including observations, effects, coverage, budgets and evidence.",
+        "scope": "semantic reproduction; hashes do not authenticate source observations"
+      }
+    },
+    {
+      "id": "list-empty-dependency-graph",
+      "disposition": "eligible",
+      "actualElleResult": "unknown",
+      "actualMoonBitStatus": "consistent",
+      "knownCoverageDifference": true,
+      "passed": true,
+      "report": {
+        "schemaVersion": 3,
+        "tool": "MoonTxnWitness",
+        "version": "0.1.1",
+        "algorithm": "v3-list-1",
+        "status": "consistent",
+        "modelDefinition": {
+          "id": "append-list-serializable-v1",
+          "scope": "committed transactions' full append/read/savepoint journals; aborted observations retained, no opacity or real-time claim"
+        },
+        "coverage": {
+          "complete": true,
+          "gaps": []
+        },
+        "normalized": {
+          "schema": 3,
+          "dataModel": "append-list-v1",
+          "algorithm": "v3-list-lifecycle-1",
+          "status": "ready",
+          "coverage": {
+            "complete": true,
+            "gaps": []
+          },
+          "observations": [
+            {
+              "seq": 1,
+              "time": 0,
+              "kind": "snapshot",
+              "initial": {
+                "x": [],
+                "y": []
+              },
+              "consistent": true
+            },
+            {
+              "seq": 2,
+              "time": 1,
+              "kind": "begin",
+              "tx": "A",
+              "connection": "A"
+            },
+            {
+              "seq": 3,
+              "time": 2,
+              "kind": "append",
+              "tx": "A",
+              "key": "x",
+              "id": "a",
+              "value": "same"
+            },
+            {
+              "seq": 4,
+              "time": 3,
+              "kind": "commit_request",
+              "tx": "A"
+            },
+            {
+              "seq": 5,
+              "time": 4,
+              "kind": "commit_ok",
+              "tx": "A"
+            }
+          ],
+          "effects": [
+            {
+              "seq": 3,
+              "tx": "A",
+              "key": "x",
+              "id": "a",
+              "value": "same",
+              "revertedBy": null
+            }
+          ],
+          "transactions": [
+            {
+              "id": "A",
+              "connection": "A",
+              "status": "committed",
+              "beginSeq": 2,
+              "endSeq": 5,
+              "events": [
+                2,
+                3,
+                4,
+                5
+              ],
+              "finalWrites": [
+                3
+              ]
+            }
+          ],
+          "history": null
+        },
+        "evidence": {
+          "kind": "serial-list-replay",
+          "serialOrder": [
+            "A"
+          ],
+          "sourceEvidence": [
+            {
+              "id": "a",
+              "value": "same",
+              "key": "x",
+              "sourceSeq": 3,
+              "writer": "A",
+              "revertedBy": null
+            }
+          ]
+        },
+        "execution": {
+          "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
+          "analysisOptions": {
+            "maxStates": 100000,
+            "maxOperationChecks": 1000000
+          },
+          "effectiveLimits": {
+            "committedTransactions": 6,
+            "operations": 128,
+            "states": 100000,
+            "operationChecks": 1000000,
+            "inputUtf16Units": 8388608,
+            "events": 65536,
+            "identities": 10000,
+            "returnedItemReferences": 100000
+          },
+          "metrics": {
+            "states": 1,
+            "operationChecks": 1,
+            "complete": true,
+            "reason": "found"
+          }
+        }
+      },
+      "verification": {
+        "valid": true,
+        "schemaVersion": 3,
+        "reason": "Every v3 field was independently recomputed, including observations, effects, coverage, budgets and evidence.",
+        "scope": "semantic reproduction; hashes do not authenticate source observations"
+      }
+    },
+    {
+      "id": "list-nonempty-initial-not-fabricated-append",
+      "disposition": "outside",
+      "checkerExecuted": false,
+      "passed": true
+    },
+    {
+      "id": "scope-is-not-flattened",
+      "disposition": "outside",
+      "checkerExecuted": false,
+      "passed": true
+    },
+    {
+      "id": "invalid-original-sequence",
+      "disposition": "invalid",
+      "checkerExecuted": false,
+      "passed": true
+    },
+    {
+      "id": "invalid-duplicate-global-write-identity",
+      "disposition": "invalid",
+      "checkerExecuted": false,
+      "passed": true
+    },
+    {
+      "id": "list-known-identity-wrong-payload-not-erased",
+      "disposition": "outside",
+      "checkerExecuted": false,
+      "passed": true
+    }
+  ]
+}

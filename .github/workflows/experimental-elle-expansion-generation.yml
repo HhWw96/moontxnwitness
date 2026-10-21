@@ -1,0 +1,95 @@
+name: Freeze fixed Elle expansion inputs only
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Full40-hex commit containing the frozen generation-only bundle and runner
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  freeze-inputs-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      SOURCE_REF: ${{ inputs.source_ref }}
+    steps:
+      - name: Record dispatch and reject mutable source names before checkout
+        env:
+          GENERATION_WORK: ${{ runner.temp }}/mtw-elle-expansion-generation-${{ github.run_id }}-${{ github.run_attempt }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import json, os, pathlib, re
+          evidence = pathlib.Path(os.environ["GENERATION_WORK"]) / "evidence"
+          evidence.mkdir(parents=True, exist_ok=False)
+          request = {key: os.environ.get(key) for key in (
+              "SOURCE_REF", "GITHUB_SHA", "GITHUB_WORKFLOW_SHA", "GITHUB_WORKFLOW_REF",
+              "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_EVENT_NAME")}
+          valid = re.fullmatch(r"[0-9a-fA-F]{40}", os.environ["SOURCE_REF"]) is not None
+          request.update(sourceRefIsFullImmutableCommit=valid, generationExecuted=False, evaluatorExecuted=False)
+          with (evidence / "workflow-dispatch-first.json").open("x", encoding="utf-8", newline="\n") as stream:
+              json.dump(request, stream, indent=2)
+              stream.write("\n")
+          if not valid:
+              raise SystemExit("source_ref must be a full immutable40-hex commit")
+          PY
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.source_ref }}
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Verify fixed smoke and source bindings, then generate exactly once
+        env:
+          GENERATION_WORK: ${{ runner.temp }}/mtw-elle-expansion-generation-${{ github.run_id }}-${{ github.run_attempt }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -I -B scripts/experimental_elle_expansion_generation_ci.py \
+            --source-ref "$SOURCE_REF" --work "$GENERATION_WORK" \
+            2>&1 | tee "$GENERATION_WORK/evidence/runner-first.log"
+      - name: Bind completed outer logs without generating or evaluating inputs
+        if: always()
+        env:
+          GENERATION_WORK: ${{ runner.temp }}/mtw-elle-expansion-generation-${{ github.run_id }}-${{ github.run_attempt }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import hashlib, json, os, pathlib
+          evidence = pathlib.Path(os.environ["GENERATION_WORK"]) / "evidence"
+          if not evidence.is_dir():
+              raise SystemExit("No original evidence directory; retain workflow setup failure")
+          bindings = {}
+          for name in ("workflow-dispatch-first.json", "runner-first.log", "generation-ci-receipt.json", "generation-freeze-manifest.json"):
+              path = evidence / name
+              if not path.exists():
+                  continue
+              if path.is_symlink() or path.stat().st_size > 8388608:
+                  raise SystemExit("Workflow log/receipt exceeds original binding bound")
+              digest, size = hashlib.sha256(), 0
+              with path.open("rb") as stream:
+                  while block := stream.read(65536):
+                      size += len(block)
+                      if size > 8388608:
+                          raise SystemExit("Workflow log/receipt grew beyond bound")
+                      digest.update(block)
+              bindings[name] = {"bytes": size, "sha256": digest.hexdigest()}
+          with (evidence / "workflow-log-bindings.json").open("x", encoding="utf-8", newline="\n") as stream:
+              json.dump({"schema": 1, "generationExecutedDuringLogBinding": False,
+                         "evaluationExecutedDuringLogBinding": False, "files": bindings}, stream, indent=2)
+              stream.write("\n")
+          PY
+      - name: Preserve original source bindings and all first partial or successful output
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: elle-expansion-generation-only-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/mtw-elle-expansion-generation-${{ github.run_id }}-${{ github.run_attempt }}/evidence/
+          if-no-files-found: error
+          compression-level: 6
+          retention-days: 90

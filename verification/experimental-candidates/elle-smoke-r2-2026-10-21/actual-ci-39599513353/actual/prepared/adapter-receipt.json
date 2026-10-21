@@ -1,0 +1,822 @@
+{
+  "schema": 1,
+  "passed": true,
+  "sourceInputSha256": "e9430dbf5faca86c337fca8a090464004a362370c6e134f710a344f5b8ef8d90",
+  "actualElleExecuted": false,
+  "cases": [
+    {
+      "id": "register-wr-chain",
+      "disposition": "eligible",
+      "reason": null,
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": true,
+        "toolStatus": "consistent"
+      },
+      "passed": true,
+      "converted": {
+        "model": "point-register-v1",
+        "operations": [
+          {
+            "index": 0,
+            "process": 0,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "w",
+                "x",
+                "x1"
+              ]
+            ]
+          },
+          {
+            "index": 1,
+            "process": 0,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "w",
+                "x",
+                "x1"
+              ]
+            ]
+          },
+          {
+            "index": 2,
+            "process": 1,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "r",
+                "x",
+                null
+              ]
+            ]
+          },
+          {
+            "index": 3,
+            "process": 1,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "r",
+                "x",
+                "x1"
+              ]
+            ]
+          }
+        ],
+        "originalSeqMapping": [
+          {
+            "checkerIndex": 0,
+            "rawSeq": 2,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 1,
+            "rawSeq": 5,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 2,
+            "rawSeq": 6,
+            "tx": "B"
+          },
+          {
+            "checkerIndex": 3,
+            "rawSeq": 9,
+            "tx": "B"
+          }
+        ],
+        "initialRegisterVersionRenaming": {
+          "x": "x0",
+          "y": "y0"
+        }
+      }
+    },
+    {
+      "id": "register-initial-write-skew",
+      "disposition": "eligible",
+      "reason": null,
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": false,
+        "toolStatus": "violation"
+      },
+      "passed": true,
+      "converted": {
+        "model": "point-register-v1",
+        "operations": [
+          {
+            "index": 0,
+            "process": 0,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "r",
+                "y",
+                null
+              ],
+              [
+                "w",
+                "x",
+                "x1"
+              ]
+            ]
+          },
+          {
+            "index": 1,
+            "process": 1,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "r",
+                "x",
+                null
+              ],
+              [
+                "w",
+                "y",
+                "y1"
+              ]
+            ]
+          },
+          {
+            "index": 2,
+            "process": 0,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "r",
+                "y",
+                null
+              ],
+              [
+                "w",
+                "x",
+                "x1"
+              ]
+            ]
+          },
+          {
+            "index": 3,
+            "process": 1,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "r",
+                "x",
+                null
+              ],
+              [
+                "w",
+                "y",
+                "y1"
+              ]
+            ]
+          }
+        ],
+        "originalSeqMapping": [
+          {
+            "checkerIndex": 0,
+            "rawSeq": 2,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 1,
+            "rawSeq": 3,
+            "tx": "B"
+          },
+          {
+            "checkerIndex": 2,
+            "rawSeq": 9,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 3,
+            "rawSeq": 11,
+            "tx": "B"
+          }
+        ],
+        "initialRegisterVersionRenaming": {
+          "x": "x0",
+          "y": "y0"
+        }
+      }
+    },
+    {
+      "id": "register-wr-cycle",
+      "disposition": "eligible",
+      "reason": null,
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": false,
+        "toolStatus": "violation"
+      },
+      "passed": true,
+      "converted": {
+        "model": "point-register-v1",
+        "operations": [
+          {
+            "index": 0,
+            "process": 0,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "w",
+                "x",
+                "x1"
+              ],
+              [
+                "r",
+                "y",
+                null
+              ]
+            ]
+          },
+          {
+            "index": 1,
+            "process": 1,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "w",
+                "y",
+                "y1"
+              ],
+              [
+                "r",
+                "x",
+                null
+              ]
+            ]
+          },
+          {
+            "index": 2,
+            "process": 0,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "w",
+                "x",
+                "x1"
+              ],
+              [
+                "r",
+                "y",
+                "y1"
+              ]
+            ]
+          },
+          {
+            "index": 3,
+            "process": 1,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "w",
+                "y",
+                "y1"
+              ],
+              [
+                "r",
+                "x",
+                "x1"
+              ]
+            ]
+          }
+        ],
+        "originalSeqMapping": [
+          {
+            "checkerIndex": 0,
+            "rawSeq": 2,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 1,
+            "rawSeq": 3,
+            "tx": "B"
+          },
+          {
+            "checkerIndex": 2,
+            "rawSeq": 9,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 3,
+            "rawSeq": 11,
+            "tx": "B"
+          }
+        ],
+        "initialRegisterVersionRenaming": {
+          "x": "x0",
+          "y": "y0"
+        }
+      }
+    },
+    {
+      "id": "register-empty-dependency-graph",
+      "disposition": "eligible",
+      "reason": null,
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": "unknown",
+        "toolStatus": "consistent"
+      },
+      "passed": true,
+      "converted": {
+        "model": "point-register-v1",
+        "operations": [
+          {
+            "index": 0,
+            "process": 0,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "w",
+                "x",
+                "x1"
+              ]
+            ]
+          },
+          {
+            "index": 1,
+            "process": 0,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "w",
+                "x",
+                "x1"
+              ]
+            ]
+          }
+        ],
+        "originalSeqMapping": [
+          {
+            "checkerIndex": 0,
+            "rawSeq": 2,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 1,
+            "rawSeq": 5,
+            "tx": "A"
+          }
+        ],
+        "initialRegisterVersionRenaming": {
+          "x": "x0",
+          "y": "y0"
+        }
+      }
+    },
+    {
+      "id": "register-multiple-writers-not-total-order",
+      "disposition": "outside",
+      "reason": "multiple writers require unavailable factual total transaction order",
+      "expected": {
+        "adapter": "outside",
+        "elleValid": null,
+        "toolStatus": null
+      },
+      "passed": true
+    },
+    {
+      "id": "register-unknown-read-source",
+      "disposition": "outside",
+      "reason": "missing, future or wrong-key source",
+      "expected": {
+        "adapter": "outside",
+        "elleValid": null,
+        "toolStatus": null
+      },
+      "passed": true
+    },
+    {
+      "id": "list-wr-chain",
+      "disposition": "eligible",
+      "reason": null,
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": true,
+        "toolStatus": "consistent"
+      },
+      "passed": true,
+      "converted": {
+        "model": "append-list-v1",
+        "operations": [
+          {
+            "index": 0,
+            "process": 0,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "append",
+                "x",
+                "a"
+              ]
+            ]
+          },
+          {
+            "index": 1,
+            "process": 0,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "append",
+                "x",
+                "a"
+              ]
+            ]
+          },
+          {
+            "index": 2,
+            "process": 1,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "r",
+                "x",
+                null
+              ]
+            ]
+          },
+          {
+            "index": 3,
+            "process": 1,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "r",
+                "x",
+                [
+                  "a"
+                ]
+              ]
+            ]
+          }
+        ],
+        "originalSeqMapping": [
+          {
+            "checkerIndex": 0,
+            "rawSeq": 2,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 1,
+            "rawSeq": 5,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 2,
+            "rawSeq": 6,
+            "tx": "B"
+          },
+          {
+            "checkerIndex": 3,
+            "rawSeq": 9,
+            "tx": "B"
+          }
+        ],
+        "initialRegisterVersionRenaming": null
+      }
+    },
+    {
+      "id": "list-wr-cycle",
+      "disposition": "eligible",
+      "reason": null,
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": false,
+        "toolStatus": "violation"
+      },
+      "passed": true,
+      "converted": {
+        "model": "append-list-v1",
+        "operations": [
+          {
+            "index": 0,
+            "process": 0,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "append",
+                "x",
+                "a"
+              ],
+              [
+                "r",
+                "y",
+                null
+              ]
+            ]
+          },
+          {
+            "index": 1,
+            "process": 1,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "append",
+                "y",
+                "b"
+              ],
+              [
+                "r",
+                "x",
+                null
+              ]
+            ]
+          },
+          {
+            "index": 2,
+            "process": 0,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "append",
+                "x",
+                "a"
+              ],
+              [
+                "r",
+                "y",
+                [
+                  "b"
+                ]
+              ]
+            ]
+          },
+          {
+            "index": 3,
+            "process": 1,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "append",
+                "y",
+                "b"
+              ],
+              [
+                "r",
+                "x",
+                [
+                  "a"
+                ]
+              ]
+            ]
+          }
+        ],
+        "originalSeqMapping": [
+          {
+            "checkerIndex": 0,
+            "rawSeq": 2,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 1,
+            "rawSeq": 3,
+            "tx": "B"
+          },
+          {
+            "checkerIndex": 2,
+            "rawSeq": 9,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 3,
+            "rawSeq": 11,
+            "tx": "B"
+          }
+        ],
+        "initialRegisterVersionRenaming": null
+      }
+    },
+    {
+      "id": "list-duplicate-observed-identity",
+      "disposition": "eligible",
+      "reason": null,
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": false,
+        "toolStatus": "violation"
+      },
+      "passed": true,
+      "converted": {
+        "model": "append-list-v1",
+        "operations": [
+          {
+            "index": 0,
+            "process": 0,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "append",
+                "x",
+                "a"
+              ]
+            ]
+          },
+          {
+            "index": 1,
+            "process": 0,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "append",
+                "x",
+                "a"
+              ]
+            ]
+          },
+          {
+            "index": 2,
+            "process": 1,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "r",
+                "x",
+                null
+              ]
+            ]
+          },
+          {
+            "index": 3,
+            "process": 1,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "r",
+                "x",
+                [
+                  "a",
+                  "a"
+                ]
+              ]
+            ]
+          }
+        ],
+        "originalSeqMapping": [
+          {
+            "checkerIndex": 0,
+            "rawSeq": 2,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 1,
+            "rawSeq": 5,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 2,
+            "rawSeq": 6,
+            "tx": "B"
+          },
+          {
+            "checkerIndex": 3,
+            "rawSeq": 9,
+            "tx": "B"
+          }
+        ],
+        "initialRegisterVersionRenaming": null
+      }
+    },
+    {
+      "id": "list-empty-dependency-graph",
+      "disposition": "eligible",
+      "reason": null,
+      "expected": {
+        "adapter": "eligible",
+        "elleValid": "unknown",
+        "toolStatus": "consistent"
+      },
+      "passed": true,
+      "converted": {
+        "model": "append-list-v1",
+        "operations": [
+          {
+            "index": 0,
+            "process": 0,
+            "type": "invoke",
+            "f": "txn",
+            "value": [
+              [
+                "append",
+                "x",
+                "a"
+              ]
+            ]
+          },
+          {
+            "index": 1,
+            "process": 0,
+            "type": "ok",
+            "f": "txn",
+            "value": [
+              [
+                "append",
+                "x",
+                "a"
+              ]
+            ]
+          }
+        ],
+        "originalSeqMapping": [
+          {
+            "checkerIndex": 0,
+            "rawSeq": 2,
+            "tx": "A"
+          },
+          {
+            "checkerIndex": 1,
+            "rawSeq": 5,
+            "tx": "A"
+          }
+        ],
+        "initialRegisterVersionRenaming": null
+      }
+    },
+    {
+      "id": "list-nonempty-initial-not-fabricated-append",
+      "disposition": "outside",
+      "reason": "nonempty initial lists cannot become synthetic transactions",
+      "expected": {
+        "adapter": "outside",
+        "elleValid": null,
+        "toolStatus": null
+      },
+      "passed": true
+    },
+    {
+      "id": "scope-is-not-flattened",
+      "disposition": "outside",
+      "reason": "unsupported lifecycle or statement: savepoint",
+      "expected": {
+        "adapter": "outside",
+        "elleValid": null,
+        "toolStatus": null
+      },
+      "passed": true
+    },
+    {
+      "id": "invalid-original-sequence",
+      "disposition": "invalid",
+      "reason": "original event sequence",
+      "expected": {
+        "adapter": "invalid",
+        "elleValid": null,
+        "toolStatus": null
+      },
+      "passed": true
+    },
+    {
+      "id": "invalid-duplicate-global-write-identity",
+      "disposition": "invalid",
+      "reason": "duplicate global write version",
+      "expected": {
+        "adapter": "invalid",
+        "elleValid": null,
+        "toolStatus": null
+      },
+      "passed": true
+    },
+    {
+      "id": "list-known-identity-wrong-payload-not-erased",
+      "disposition": "outside",
+      "reason": "missing, future, wrong-key or content-mismatched append source",
+      "expected": {
+        "adapter": "outside",
+        "elleValid": null,
+        "toolStatus": null
+      },
+      "passed": true
+    }
+  ]
+}
