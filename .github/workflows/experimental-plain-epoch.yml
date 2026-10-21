@@ -1,0 +1,96 @@
+name: Manual two-epoch actual PostgreSQL experiment
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Reviewed immutable full source commit
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  epoch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c
+        env:
+          POSTGRES_USER: mtw
+          POSTGRES_PASSWORD: fixture-only
+          POSTGRES_DB: mtw_plain_test
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd "pg_isready -U mtw -d mtw_plain_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      MTW_REQUESTED_REF: ${{ inputs.source_ref }}
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PIP_CONFIG_FILE: /dev/null
+      PIP_INDEX_URL: https://pypi.org/simple
+      PIP_EXTRA_INDEX_URL: ''
+      PIP_NO_CACHE_DIR: '1'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    steps:
+      - name: Require reviewed immutable source
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$MTW_REQUESTED_REF" =~ ^[0-9a-f]{40}$ ]]
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.source_ref }}
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12.5'
+      - name: Bind actual source context before execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          context="$RUNNER_TEMP/epoch-context-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir "$context"
+          export MTW_EPOCH_CONTEXT="$context"
+          python -B - <<'PY'
+          import json,os,pathlib,subprocess
+          p=pathlib.Path(os.environ['MTW_EPOCH_CONTEXT'])/'source.json'
+          head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          assert head==os.environ['MTW_REQUESTED_REF']
+          with p.open('x',encoding='utf8') as f:
+              json.dump({'actualSource':head,'requestedSource':os.environ['MTW_REQUESTED_REF'],'workflowSource':os.environ['GITHUB_WORKFLOW_SHA'],'eventCommit':os.environ['GITHUB_SHA'],'databaseExecutedAtContextCreation':False},f,indent=2)
+              f.write('\n')
+          PY
+      - name: Install only frozen optional driver
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --require-hashes --only-binary=:all: -r verification/experimental-candidates/plain-journal-r2-2026-10-21/bundle/repository/examples/postgres-requirements.txt > "$RUNNER_TEMP/epoch-context-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/driver.log" 2>&1
+      - name: Run fresh frozen unit suite then four actual PG scenarios
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B scripts/experimental_plain_epoch_ci.py --work "$RUNNER_TEMP/epoch-work-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --fixture-port '${{ job.services.postgres.ports[5432] }}' > "$RUNNER_TEMP/epoch-context-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/runner-first.log" 2>&1
+      - name: Preserve actual server log and image identity
+        if: always()
+        shell: bash
+        env:
+          MTW_EPOCH_PG_ID: ${{ job.services.postgres.id }}
+        run: |
+          set -euo pipefail
+          context="$RUNNER_TEMP/epoch-context-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir -p "$context"
+          docker logs "$MTW_EPOCH_PG_ID" > "$context/postgres.log" 2>&1
+          docker inspect --format '{{.Image}}' "$MTW_EPOCH_PG_ID" > "$context/postgres-image.txt" 2>&1
+      - name: Retain all original source, first results, faults and partial output
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: two-epoch-first-raw
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            ${{ runner.temp }}/epoch-context-${{ github.run_id }}-${{ github.run_attempt }}/
+            ${{ runner.temp }}/epoch-work-${{ github.run_id }}-${{ github.run_attempt }}/
