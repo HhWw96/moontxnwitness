@@ -18,6 +18,8 @@
 
 第四批后续打包的源码消费者在测试链接阶段发生[编译内存不足](../verification/v3/package-compiler-memory-failure-b663-2026-10-21.json)，首次包与消费者目录完整保留。打包工具改为一次只运行一个编译任务，测试和优化等级不变。此工具变更后的完整回归又在 [list CLI 检查](../verification/list-v3/acceptance-2026-10-21T09-06-16-462Z/receipt.json)遇到 Node 内存分配失败；20,071 份输入仍零差异，但本轮整体失败。宿主可用提交内存不足1 GB，自动审批服务也出现 Allocation error。并行任务已暂停，不重跑同一实现寻求通过；最新工具完整回归及全新安装尚待资源恢复或新隔离 CI 核验。本节最初的563项完整通过属于打包工具变更前的已绑定收据，不能补勾后续失败。
 
+随后已推送 [7863550](https://github.com/HhWw96/moontxnwitness/commit/78635505e4c189c402ba70600632aeaef71ef206)。新的 [Windows/Linux 核心 CI](https://github.com/HhWw96/moontxnwitness/actions/runs/39577549262)与 [真实 PostgreSQL CI](https://github.com/HhWw96/moontxnwitness/actions/runs/39577549263)均成功。独立读取实际任务日志确认：两平台各三目标563项、Linux Native563项，以及两平台各76项全新源码/便携消费者通过，见[日志与产物元数据核验](../verification/v3/public-checkpoint-7863550-ci-log-audit-2026-10-21.json)。本机失败记录保留；本项仅下载了实际日志和产物元数据，尚未重新下载本批大产物、复算运行文件摘要或执行独立公共消费者，不能称公开下载终验完成。
+
 ### 第三批：关系集合、执行故障及分配优化
 
 本地已集成关系模型、执行故障诊断和三处分配优化，MoonBit 源码指纹为 `df23e6a01c0d59420c7576eb35271b6346c500044ee24a0ea0d7ac29a951d97b`。JS、Wasm GC、Wasm **各 554 项**、全目标静态检查、旧 oracle/CLI 及新独立模型/故障核对通过。首轮打包在便携归档压缩时发生内存分配失败，未进入消费者；[失败摘要](../verification/v3/package-memory-first-failure-2026-10-21.json)绑定原产物。压缩改为 64 KiB 分块，保留跨块隐私检查、固定元数据与完整 ZIP 校验，三个实际边界测试通过；变更后完整回归再次通过，**76 项全新消费者**包含源码重建、关系模型/缩减/复现及执行故障诊断。不借第二批 CI 作为本批验收。
