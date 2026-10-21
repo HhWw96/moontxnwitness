@@ -18,8 +18,14 @@ Archived author descriptions retain their original pre-execution status.
 
 A separate manual Linux workflow restores only the exact 18 frozen candidate
 files and 62 original dependency files. It reruns the 73 checks before four
-controlled PostgreSQL 18.6 cases. Its actual database results and independent
-acceptance must be recorded separately. It does not borrow R1's database pass.
+controlled PostgreSQL 18.6 cases. Its
+[first actual run](https://github.com/HhWw96/moontxnwitness/actions/runs/39622521792)
+passed all 73 checks and four database scenarios at immutable source
+`e63df4b815f130674bc0f10939d8513e534679a8`. Original artifacts are retained in
+`actual-ci-39622521792`; its [independent limited review](actual-ci-39622521792/README.md)
+passed 2,760 checks and explicitly leaves the inconsistent overall job metadata
+unaccepted.
+It does not borrow R1's database pass.
 
 ACK records are appended before snapshot publication; the source ledger is
 synchronized at close. This is not a claim of per-record fsync or crash-durable

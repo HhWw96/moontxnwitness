@@ -37,3 +37,10 @@ requiring the same explicit COMMIT/idle checks used by the handoff boundary.
 The unit suite replaces that initial setup with mock data. A separate revision
 must validate first-initialization acknowledgement and test failures before any
 promotion of this experiment to supported source-closure behavior.
+
+The [recorded actual run and independent review](actual-ci-39620317399/README.md)
+now retain 47 passing checks, four real PostgreSQL cases and 2,832 independent
+read-only checks. The initial archive failure remains under
+`first-ci-39619434773`. The two admission/initialization limitations are addressed
+in the [separate R2 candidate](../plain-epoch-r2-2026-10-21/README.md); neither
+frozen R1 source nor its historical receipts were rewritten.

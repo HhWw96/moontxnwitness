@@ -29,3 +29,17 @@ retained prepared directory; restore that layout before re-executing it. This
 archival bundle does not promise that relocating an audit changes its paths.
 
 This experiment is not six-model parity, an accepted new mainline or a release.
+
+Independent read-only review subsequently verified all 50 frozen files against
+this archive and identified an execution blocker: `valid` currently becomes
+`timeout` whenever cycle-search-timeout appears, even when Elle also returned
+`:valid? false`. The fixed upstream tests contain this combination. The original
+raw EDN preserves it, but a new wrapper must keep the original typed judgement
+and timeout flag independently before any expanded execution. A missing result
+must distinguish an actual process timeout, execution failure and an input never
+invoked. The original R1 source remains unchanged; no checker execution or harness
+acceptance is implied by this review.
+
+The separate [result transport revision](../elle-result-transport-r3-2026-10-21/README.md)
+now preserves both fields and retains returned raw EDN before summary generation.
+Its pure/synthetic tests are distinct from actual expanded Elle execution.

@@ -4,6 +4,39 @@
 
 ## v3 共同底座的首批实现
 
+### 第八批：真实双窗口交接与初始化确认
+
+普通表新增[双窗口来源交接实验](../verification/experimental-candidates/plain-epoch-r1-2026-10-21/README.md)，
+在[独立 Linux / PostgreSQL 18.6 流程](https://github.com/HhWw96/moontxnwitness/actions/runs/39620317399)
+实际通过 **47 项基础检查与 4 个数据库场景**。场景覆盖相同值的不同版本及跨窗口衔接、
+事务回滚和保存点撤销、域外 SQL 保留业务结果但拒绝完整交接，以及执行真实 COMMIT 后
+注入应答丢失时保留原异常和保护记录。最后一项不是网络断连实验。
+首次流程因源码归档被忽略规则排除，在执行前失败；原始工件与原因完整保留。
+[独立原始证据审计](../verification/experimental-candidates/plain-epoch-r1-2026-10-21/actual-ci-39620317399/README.md)
+**2,832 项通过、零失败**，重算 740 个原始归档文件及 101 个不可变 Git 对象。
+两次审计工具问题与修订分别保留，未改候选或预期场景结果。
+
+独立静态审查发现键迭代器先全部物化、首次初始化未明确校验提交确认两处边界，
+已在[单独冻结的修订](../verification/experimental-candidates/plain-epoch-r2-2026-10-21/README.md)修复。
+新旧 **73 项**本地隔离检查通过，零跳过，27 项恢复文件绑定保持；
+新测试使用合成数据库响应并执行原初始化器、确认屏障及真实文件操作。
+该修订的[实际 Linux / PostgreSQL 验证](https://github.com/HhWw96/moontxnwitness/actions/runs/39622521792)
+也保留 **73 项及 4 个真实数据库场景**的通过输出；
+[独立限定审计](../verification/experimental-candidates/plain-epoch-r2-2026-10-21/actual-ci-39622521792/README.md)
+**2,760 项通过、零失败**，未借用 R1 记录。官方 run 为 success，独立读取的 job 列表与直接
+接口仍为 in_progress/null；两者同时保留，整体任务完成元数据及发布验收没有签收。
+来源记录在关闭时同步；不声称每条 ACK 已独立 fsync 或初始化具备断电恢复保证。
+SQL 核心证明、分析来源闭包、来源清理及完整 C/A 性能仍未完成，实验标志保持 false。
+
+Elle 批处理的独立静态审查还发现：原包装会把“明确 false 且同时有部分搜索超时”
+合成单一 timeout，摘要错误还可能丢失已返回的原始结果。
+[独立传输修订](../verification/experimental-candidates/elle-result-transport-r3-2026-10-21/README.md)
+已分开保留原判断与超时，并先存原始 EDN，再生成摘要；准备、检查器、结果存储及摘要错误分别记录。
+纯摘要 **5 项 / 16 断言**、合成回调及文件故障 **6 项 / 27 断言**通过。
+使用 Clojure 1.12.6 / Java 25.0.1；完整包装只做真实 reader 的八个 form 读取，未求值。
+这不是固定 Java 21 的实际 Elle 集成或 2,000 输入判定；外层进程与输出预算、完整对照继续保留。
+2,000 份冻结输入不作替换。
+
 ### 第七批：主线安装回归、普通表持久化与真实 Elle 前置验收
 
 源码 `ec35d4a6` 的主线新增 ORM 来源诊断已通过四目标各 **616 项**核心回归。
