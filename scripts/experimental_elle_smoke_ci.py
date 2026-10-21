@@ -46,9 +46,11 @@ def main():
     env.pop("PYTHONPATH", None)
     owned_home = work / "runtime-home"
     owned_home.mkdir()
+    jvm_temp = evidence / "jvm-temp"
+    jvm_temp.mkdir()
     env.update(LEIN_HOME=str(work / "lein-home"), HOME=str(owned_home),
-               LEIN_JVM_OPTS=f"-Xmx1024m -Duser.home={owned_home}",
-               JVM_OPTS=f"-Xmx1024m -Duser.home={owned_home}",
+               LEIN_JVM_OPTS=f"-Xmx1024m -Duser.home={owned_home} -Djava.io.tmpdir={jvm_temp}",
+               JVM_OPTS=f"-Xmx1024m -Duser.home={owned_home} -Djava.io.tmpdir={jvm_temp}",
                PYTHONDONTWRITEBYTECODE="1", PYTHONUTF8="1")
     # Retain the installed pinned MoonBit location after isolating the Java HOME.
     env["MOON_HOME"] = str(Path(os.environ["HOME"]) / ".moon")
@@ -120,8 +122,13 @@ def main():
         assert binding(standalone)["sha256"] == "7d31ae23ae769e927438b0cd55d15a93e7dabab09fd4fc15877979161e108774"
         result["actualLeinStandaloneBinding"] = binding(standalone)
         stage("actual-dependency-tree", ["bash", str(launcher), "with-profile", "-dev", "deps", ":tree"], upstream, 600)
+        xvfb = shutil.which("xvfb-run", path=env["PATH"])
+        if not xvfb:
+            raise RuntimeError("Missing Xvfb required by the fixed upstream's AWT initialization")
+        result["actualXvfbLauncher"] = binding(Path(xvfb))
         # A failed checker still leaves its full result available for the comparison.
-        stage("actual-elle-checkers", ["bash", str(launcher), "with-profile", "-dev", "run", "-m", "clojure.main",
+        stage("actual-elle-checkers", [xvfb, "-a", "-e", str(evidence / "xvfb.log"),
+              "bash", str(launcher), "with-profile", "-dev", "run", "-m", "clojure.main",
               str(BUNDLE / "elle_smoke.clj"), str(evidence / "prepared/requests.edn"),
               str(evidence / "elle-result.json"), str(evidence / "elle-raw-results")], upstream, 300, True)
         stage("build-current-sdk", ["node", "scripts/build.mjs"], ROOT, 600)
