@@ -25,8 +25,12 @@ CI 已同时上传实际源码和便携 ZIP；独立公开包下载验收另记�
 [95 项独立 AI 检查](../verification/experimental-candidates/elle-smoke-r2-2026-10-21/actual-ci-39599513353/independent-r2/independent-smoke-receipt-r2.json)。
 六个明确结果一致，两个空图 unknown 差异保持；固定旧 b663，不覆盖新 ec35 主线。
 两次环境失败与首次独立验收器标签错误保留。后续 **1,000＋1,000 原始历史**
-已启动[单次、仅生成流程](https://github.com/HhWw96/moontxnwitness/actions/runs/39606834359)，
-必须完成独立输入去重和域审查后才可开始批量评估。
+已在[单次、仅生成流程](https://github.com/HhWw96/moontxnwitness/actions/runs/39606834359)完成冻结，
+原数据摘要 `4b7ef85e`、5,940,749 字节。
+[独立原始域与形状审查](../verification/experimental-candidates/elle-expansion-generation-v2-2026-10-21/actual-ci-39606834359/independent-root/receipt.json)
+复算 2,000 份原始输入、首次出现程序形状及额外的最终程序 payload 等价类形状均为 2,000 种，
+十族各 200，来源及支持范围均核验。该审查不证明完整图同构，也没有执行判定器；
+下一关为单独审查的流式批量评估器，不能按后续结果替换输入。
 
 [解析器分配实验](../verification/experimental-candidates/ascii-parser-ec35-2026-10-21/README.md)
 在隔离源上通过三目标各 **625 项**、2,542 份解析差分与 **117 份完整输出逐字节核对**。
