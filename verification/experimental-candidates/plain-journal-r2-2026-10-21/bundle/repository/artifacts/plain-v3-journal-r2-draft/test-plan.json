@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "status": "preregistered-before-implementation",
+  "localTestsExecuted": false,
+  "mockCases": [
+    "bounded source-log close/reopen byte/hash/sequence validation",
+    "source-log tamper, truncation, missing index and record/aggregate budget refusal",
+    "point read remains pending until actual delivery; positive row emits exactly one read",
+    "repeated EOF produces no duplicate fact",
+    "fetchmany0 without driver exhaustion remains pending",
+    "unconsumed result identity survives dropped cursor wrapper and blocks closure eligibility",
+    "command UPDATE hides internal rows and preserves original command surface",
+    "command fetch reconstructs pinned no-result error and closed-cursor class/message",
+    "native RETURNING value preserves original rows and description while hiding two tokens",
+    "repeated value writes retain unique intermediate OLD/NEW tokens",
+    "actual execute/fetch business exception identity is unchanged",
+    "internal source observation failure leaves business result unchanged and adds gap",
+    "invalid point parameters/custom factory run original SQL with explicit gap",
+    "unknown SQL runs original query with explicit gap and no invented point facts",
+    "zero affected rows produce a gap and no guessed version",
+    "observer has no _events and no growing fact-history list",
+    "active transaction/unread/unknown/gap/open connection each refuses handoff eligibility",
+    "quiet closed connections allow only design-level eligibility, not completed handoff",
+    "post-close wrapper activity uses persistent v3 invalidation and prevents strict export"
+  ],
+  "actualPostgresCases": [
+    "fresh controlled integer table installation, one locked initial snapshot and actual ownership verification",
+    "point read and no-RETURNING UPDATE surfaces compared to plain SQL on independent identical table",
+    "same-value repeated writes/self-read/rollback preserve actual tokens and raw ledger semantics",
+    "native UPDATE RETURNING value preserves business result/metadata",
+    "NOT NULL server error SQLSTATE and original exception identity retained",
+    "unsupported statement and missing source create explicit gaps, never ready SQL proof",
+    "server-cursor ledger produces actual bounded batches; overflow remains incomplete"
+  ],
+  "deferredGates": [
+    "actual safe multi-window handoff and aggregate source closure",
+    "public MoonBit SQL profile/source proof",
+    "sidecar equal-scope collector",
+    "CRUD/negative-read coverage",
+    "4096-key/60-second support and full C/A formal cost"
+  ],
+  "acceptanceRules": ["Mock, actual PG, core proof and formal cost are distinct.", "Do not change expected business behavior to silence failures.", "Keep every failed run and source hash.", "No local DB or formal performance run is authorized by this plan."]
+}
