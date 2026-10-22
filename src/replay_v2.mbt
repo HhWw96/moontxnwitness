@@ -3,7 +3,9 @@ fn compatible_v2_version(v : Json?) -> Bool {
   match v {
     Some(String(s)) =>
       s == version() ||
-      ["0.0.9", "0.0.10", "0.0.11", "0.1.0", "0.1.1", "0.1.2"].contains(s)
+      ["0.0.9", "0.0.10", "0.0.11", "0.1.0", "0.1.1", "0.1.2", "0.1.3"].contains(
+        s,
+      )
     _ => false
   }
 }

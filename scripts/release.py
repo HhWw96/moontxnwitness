@@ -37,6 +37,11 @@ def validate_scoped_acceptance(acceptance, manifest):
         assert summary['ormPlanUnitTests']['passed'] and summary['ormPlanUnitTests']['tests'] > 0
         for kind in ('source', 'portable'):
             assert kind + ' standalone ORM package construction without optional dependencies or experiments' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 4):
+        assert summary['appendListSdkTests']['passed'] is True
+        assert summary['appendListSdkTests']['checks'] > 0 and summary['appendListSdkTests']['manualCases'] > 0
+        for kind in ('source', 'portable'):
+            assert kind + ' append-list SDK and source-closed example round trip' in package['checks']
     tested = json.loads(run(['node', '--input-type=module', '-e',
         "import {verificationFingerprint} from './scripts/verification-fingerprint.mjs'; console.log(JSON.stringify(verificationFingerprint(process.cwd())));" ]))
     assert tested == summary['testedFileSha256'], 'Current executable files differ from tested release'
@@ -229,6 +234,18 @@ def publish():
             'Source observers and their installation remain experimental; local source proof does not establish complete ORM transaction coverage.\n\n'
             'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or download the portable ZIP (Node.js >=20). '
             'Existing register analysis/reduction, PostgreSQL capture and ordinary-table fixed-key CRUD remain available. See CHANGELOG.md for compatibility and validation.\n', encoding='utf8')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 4):
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- Explicit append-list SDK entries for normalization, analysis, reduction, verification and replay capsules, with fixed-model guards.\n'
+            '- Runnable synthetic example: identify a two-list serializability violation, remove an unrelated transaction and replay the reduced two-transaction evidence.\n'
+            '- Preserve exact capture text, source gaps, unknown outcomes and bounded-search results; keep generic v3 and released v1/v2 and compatible v3 replay.\n\n'
+            'Import the list-specific functions from `dist/sdk.mjs`; run `node examples/list-roundtrip.mjs` and see docs/list-sdk.md. '
+            'The precise-search scope remains 6 committed transactions and 128 append/read operations, with at most 100,000 states, 1,000,000 semantic checks and 256 reduction candidates. '
+            'Budget exhaustion and insufficient sources remain inconclusive. Replay validity means reproducible diagnostics, including invalid or inconclusive results; inspect the reported status.\n\n'
+            'The example is synthetic and does not connect to a database. This release adds no arbitrary-SQL list capture, mixed-model transactions, full isolation-level classification or new performance claim. '
+            'Existing PostgreSQL fixtures, actual release checks and fresh-consumer evidence are recorded separately in CHANGELOG.md and verification/.\n\n'
+            'Install the MoonBit core: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or download the portable ZIP for the Node.js SDK (Node.js >=20). '
+            'Existing register, presence and optional ORM-plan APIs remain available.\n', encoding='utf8')
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
     if performance_path.exists() and not scoped:
         groups = json.loads(performance_path.read_text(encoding='utf-8'))['groups']

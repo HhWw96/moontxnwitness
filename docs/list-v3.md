@@ -1,6 +1,8 @@
-# append-list-v1 开发模型
+# append-list-v1 有界列表模型
 
-这是 v3 的首个追加列表实现，当前属于开发切片。它分析带唯一元素身份的追加列表，不能据此宣称已经完成通用 SQL、关系谓词、六种隔离级别分类或 Elle 等价实现。旧 v1/v2 接口与复现规则保持原样。
+v0.1.4 在声明的来源和预算范围内支持追加列表分析、缩减及复现。元素使用唯一身份，值为字符串；它提供该模型的有界串行判断，不代表通用 SQL 采集、关系谓词、完整隔离级别分类或 Elle 等价实现。旧 v1/v2 接口与复现规则保持原样。当前版本的实际公开交付状态见[开发与发行记录](development-status.md)。
+
+使用方法及六个显式 SDK 入口见[列表 SDK 与演示](list-sdk.md)。运行 `node examples/list-roundtrip.mjs` 可将三个事务的合成异常缩成两个事务，并保存原输入、分析、缩减、复现包和重放结果。
 
 ## 输入与业务值
 
@@ -16,7 +18,7 @@
 
 `value` 目前只接受 JSON 字符串，允许重复业务值。身份 `id` 在所有初始列表与 append 事件之间全局唯一；不能用业务值代替身份，也不能用客户端序号推断列表位置。返回列表中的重复身份、错误业务值或错误键属于模型反证，保留原观察，不把它们改写为格式错误。未知身份或记录在读取之后才出现的生产事件属于采集来源缺口，后续日志不能追认其先前已被观察。
 
-生命周期继续使用 [v3 契约](v3-contract.md) 的 begin、savepoint、rollback_to、release、commit_request、commit_ok、rollback_ok 和 disconnect。SQL statement、rows 与 condition 原样保留；此切片没有证明 SQL 到列表事实的对应关系，因此它们会留下覆盖缺口。寄存器 read/write 不能混入列表记录。
+生命周期继续使用 [v3 契约](v3-contract.md) 的 begin、savepoint、rollback_to、release、commit_request、commit_ok、rollback_ok 和 disconnect。SQL statement、rows 与 condition 原样保留；列表入口没有证明 SQL 到列表事实的对应关系，因此它们会留下覆盖缺口。寄存器 read/write 不能混入列表记录，关系操作也不能混入。
 
 简例：
 
@@ -51,6 +53,8 @@
 ## 精确判断与证据
 
 MoonBit 入口为 `normalize_list_capture_v3_json(text)`；统一 SDK 通过 `normalizeCaptureV3`、`analyzeV3`、`reduceV3`、`verifyV3` 的 dataModel 分派访问。核心内部分析入口为 `list_v3_analysis(text,options_text)`。
+
+显式列表 SDK 提供 `normalizeListCaptureV3`、`analyzeListV3`、`reduceListV3`、`verifyListV3`、`makeListCapsuleV3` 和 `replayListCapsuleV3`。它们要求明确模型标识，保留原始 JSON 字符串交给核心校验；列表专用重放拒绝其他模型或无法声明列表模型的诊断胶囊。胶囊 `valid:true` 只表示报告能够重算，也可以对应 invalid 或 inconclusive，不能代替 `status` 与覆盖检查。
 
 规范化算法为 `v3-list-lifecycle-1`，报告算法为 `v3-list-1`，模型定义为 `append-list-serializable-v1`。ready 表示事实覆盖足以分析，不表示符合模型。分析结果分别为 consistent、violation、inconclusive 或 invalid。
 
@@ -88,7 +92,13 @@ MoonBit 入口为 `normalize_list_capture_v3_json(text)`；统一 SDK 通过 `no
 
 这些是项目额度，不是竞赛评分线或未经测量的性能承诺。当前没有列表模型的正式性能验收结果。
 
-## 本轮开发验证记录
+## SDK 接入验证
+
+接入候选使用已有 v0.1.3 核心，通过 10 组独立检查及独立目录中的 92 项 SDK 回归；71 份冻结手工历史的结果逐字段匹配通用入口。检查覆盖原文传递、显式模型、UTF-8 入口预算、来源与未知结果、独立搜索/缩减预算和胶囊篡改。首版重放非法 JSON 通用诊断胶囊时的异常与原始快照保持，修复后同四份输入全部拒绝列表模型而不抛异常。
+
+这些候选检查不是新 v0.1.4 的编译、数据库或公开安装结果；后续实际运行按[发行记录](development-status.md)单独保存。下列模型开发及数据库证据按各自原始构建记录保留。
+
+## 模型开发验证记录
 
 本地 `src/list_v3_wbtest.mbt` 含 88 项 MoonBit 边界测试：完整顺序、重复业务值、保存点回滚与同名隐藏、已交付读取、来源反证、来源缺口、未知提交、可靠 COMMIT 回滚响应、连接重用、输入篡改和预算精确边界。每例也核对原始观察完全保留、公开 history 为 null，并比较规范化入口与分析内规范化结果。第 88 项专门防止初始身份来源错误指向事件 0。
 

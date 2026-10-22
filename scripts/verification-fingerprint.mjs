@@ -22,6 +22,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   for(const name of ['verification/v3/dislock-explicit-policy-preregistration-2026-10-21.json','verification/v3/dislock-sql-supplement-preregistration-2026-10-21.json'])if(existsSync(resolve(root,name)))names.push(name);
   names.push('examples/postgres-requirements.txt');
   names.push('examples/orm-requirements.txt');
+  names.push('examples/list-cycle.json', 'examples/list-roundtrip.mjs');
   return Object.fromEntries(names.sort().map(name=>[name,
     createHash('sha256').update(readFileSync(resolve(root,name))).digest('hex')]));
 }

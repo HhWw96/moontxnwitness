@@ -80,8 +80,12 @@ pub fn analyze_v3_json(text : String, options_text : String) -> String {
 fn compatible_v3_engine(v : Json?) -> Bool {
   v == Some(version().to_json()) ||
   (
-    version() == "0.1.3" &&
-    (v == Some("0.1.1".to_json()) || v == Some("0.1.2".to_json()))
+    version() == "0.1.4" &&
+    (
+      v == Some("0.1.1".to_json()) ||
+      v == Some("0.1.2".to_json()) ||
+      v == Some("0.1.3".to_json())
+    )
   )
 }
 
@@ -100,7 +104,7 @@ pub fn verify_v3_json(text : String, report_text : String) -> String {
     )
     let options = required(execution, "analysisOptions", "execution").stringify()
     let expected = v3_analysis(text, options)
-    // v0.1.3 preserves the v0.1.1/v0.1.2 algorithms. Compare every recomputed field;
+    // v0.1.4 preserves the released v0.1.1/v0.1.2/v0.1.3 algorithms. Compare every recomputed field;
     // translate only the two engine headers, never observed version identities.
     let expected_fields = object_fields(expected, "expected report")
     expected_fields["version"] = fields.at("version")

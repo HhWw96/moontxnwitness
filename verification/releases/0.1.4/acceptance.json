@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "policy": "scoped-stable-v2",
+  "version": "0.1.4",
+  "passed": true,
+  "releaseReady": true,
+  "supportedProfiles": [
+    "register-v1",
+    "register-v2",
+    "postgres-point-capture-v1",
+    "postgres-fixed-key-presence-v2"
+  ],
+  "additionalCapabilities": [
+    "Fixed ORM point-CRUD SQL plans and bounded structural cache",
+    "Local ORM source diagnostics",
+    "Bounded append-list-v1 analysis, reduction and model-specific SDK replay"
+  ],
+  "buildManifest": {
+    "version": "0.1.4",
+    "toolchain": {
+      "compiler": "v0.10.14+7d59c7ec9",
+      "moon": "moon 0.1.20260920"
+    },
+    "sourceSha256": "4dd5beb88d618d60a7172aa9254b47d6f51018d664e9f89d655b0a11286fe233",
+    "coreSha256": "08a6e08683acb3d04d3531a4b0ab744aa8adaa7b3d03329367bf85dd945a9c7d",
+    "captureCoreSha256": "60da31aafe9d8fb034289d6deb132c36eb61cb021bf3bc0668401e27987bf5ee"
+  },
+  "databaseEvidence": "database-with-list.json",
+  "tests": {
+    "receipt": "../../summary.json",
+    "executedTargets": [
+      "js",
+      "wasm-gc",
+      "wasm"
+    ],
+    "coreTestsPerTarget": 620,
+    "oracleHistories": 10320,
+    "verifiedCycleCertificates": 6373,
+    "ordinaryTableUnits": 106,
+    "ormOfflineUnits": 21,
+    "listSdkChecks": 92,
+    "listManualCases": 71
+  },
+  "independentReview": {
+    "receipt": "list-independent/run14-5Q6lQq/receipt.json",
+    "sha256": "0f271ca7ddd51029ef42bbc1cc35ddfad2f12f0d6e24f6a32ce79825a61ef861",
+    "bytes": 31226,
+    "passed": true,
+    "scope": "Independent AI technical review; separate from human adoption and organizer review"
+  },
+  "presenceScope": {
+    "database": "PostgreSQL 18",
+    "driver": "psycopg 3.3.6",
+    "synchronous": true,
+    "businessColumns": 2,
+    "keyType": "text",
+    "maxKeys": 64,
+    "generatedPointCrudOnly": true,
+    "installationChanges": "Owned version column, trigger, source tables and helpers in a controlled schema"
+  },
+  "ormScope": {
+    "profile": "fastapi-users-sqlalchemy-7.0.0-pg18/1",
+    "sqlalchemy": "2.0.55",
+    "driverContract": "psycopg 3.3.6",
+    "publicTemplateApiExecutesSql": false,
+    "cacheMaxEntriesDefault": 128,
+    "cacheAccountedEntryBytesDefault": 1048576,
+    "localSourceProofGrantsCompleteCoverage": false,
+    "observerAndInstallationExperimental": true
+  },
+  "appendListScope": {
+    "model": "append-list-v1",
+    "committedTransactions": 6,
+    "originalOperations": 128,
+    "maxStates": 100000,
+    "maxOperationChecks": 1000000,
+    "maxReductionChecks": 256,
+    "uniqueElementIdentities": true,
+    "stringBusinessValues": true,
+    "mixedModelsSupported": false,
+    "inputAuthenticityCertified": false,
+    "automaticSqlInstrumentation": false
+  },
+  "previews": [
+    "Extended persistence and source windows",
+    "Relation model",
+    "ORM observer and complete SQL instrumentation",
+    "Full isolation-level classification"
+  ],
+  "compatibility": "v1/v2 defaults retained; v0.1.1-v0.1.3 v3 replay is explicitly checked with complete semantic comparisons.",
+  "performance": "No new formal throughput, runtime, tail-latency or RSS claim. The existing generic v3 entry remains available.",
+  "knownFailureRecord": "list-independent/README.md",
+  "publicReleaseVerified": false,
+  "humanAcceptanceRecorded": false,
+  "organizerAcceptanceRecorded": false
+}

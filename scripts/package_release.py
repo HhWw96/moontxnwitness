@@ -105,6 +105,19 @@ for kind in ("portable", "source"):
         checks.append(f"source fresh JS core tests: {test_count} passed")
     assert run([NODE, "dist/moontxnwitness.mjs", "--version"], consumer).strip() == VERSION
     checks.append(kind + " version")
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 4):
+        demonstration = json.loads(run([NODE, 'examples/list-roundtrip.mjs', '--out-root', str(work)], consumer))
+        assert demonstration['passed'] and demonstration['version'] == VERSION
+        assert demonstration['originalTransactions'] == 3 and demonstration['reducedTransactions'] == 2
+        assert demonstration['oneMinimal'] and demonstration['replayValid']
+        case = work / demonstration['outputDirectory'] / 'case.capsule.json'
+        assert case.resolve().is_relative_to(work.resolve())
+        for item in demonstration['files']:
+            path = (case.parent / item['file']).resolve()
+            assert path.is_relative_to(case.parent.resolve())
+            assert sha256(path) == item['sha256'] and path.stat().st_size == item['bytes']
+        assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-v3', str(case)], consumer))['valid']
+        checks.append(kind + ' append-list SDK and source-closed example round trip')
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 3):
         isolated = work / (kind + '-orm-only')
         copied = isolated / 'moontxnwitness_capture'

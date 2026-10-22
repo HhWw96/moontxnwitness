@@ -1,0 +1,8 @@
+{"tx":"T1","sql":"BEGIN ISOLATION LEVEL REPEATABLE READ","parameters":null,"rows":[],"rowcount":-1,"commandTag":"BEGIN","sqlstate":null,"ordinal":1}
+{"tx":"T2","sql":"BEGIN ISOLATION LEVEL REPEATABLE READ","parameters":null,"rows":[],"rowcount":-1,"commandTag":"BEGIN","sqlstate":null,"ordinal":2}
+{"tx":"T1","sql":"SELECT items FROM \"mtw_list_v3_7eb8172ce60d\".\"c1_r10\" WHERE key=%s","parameters":["x"],"rows":[[[]]],"rowcount":1,"commandTag":"SELECT 1","sqlstate":null,"ordinal":3}
+{"tx":"T2","sql":"SELECT items FROM \"mtw_list_v3_7eb8172ce60d\".\"c1_r10\" WHERE key=%s","parameters":["y"],"rows":[[[]]],"rowcount":1,"commandTag":"SELECT 1","sqlstate":null,"ordinal":4}
+{"tx":"T1","sql":"UPDATE \"mtw_list_v3_7eb8172ce60d\".\"c1_r10\" SET items=items || %s::jsonb WHERE key=%s RETURNING items","parameters":["[{\"id\": \"T1-append\", \"value\": \"same\"}]","y"],"rows":[[[{"id":"T1-append","value":"same"}]]],"rowcount":1,"commandTag":"UPDATE 1","sqlstate":null,"ordinal":5}
+{"tx":"T2","sql":"UPDATE \"mtw_list_v3_7eb8172ce60d\".\"c1_r10\" SET items=items || %s::jsonb WHERE key=%s RETURNING items","parameters":["[{\"id\": \"T2-append\", \"value\": \"same\"}]","x"],"rows":[[[{"id":"T2-append","value":"same"}]]],"rowcount":1,"commandTag":"UPDATE 1","sqlstate":null,"ordinal":6}
+{"tx":"T2","sql":"COMMIT","parameters":null,"rows":[],"rowcount":-1,"commandTag":"COMMIT","sqlstate":null,"ordinal":7}
+{"tx":"T1","sql":"COMMIT","parameters":null,"rows":[],"rowcount":-1,"commandTag":"COMMIT","sqlstate":null,"ordinal":8}

@@ -1,0 +1,11 @@
+{"tx":"T","sql":"BEGIN ISOLATION LEVEL REPEATABLE READ","parameters":null,"rows":[],"rowcount":-1,"commandTag":"BEGIN","sqlstate":null,"ordinal":1}
+{"tx":"T","sql":"SAVEPOINT \"repeat\"","parameters":null,"rows":[],"rowcount":-1,"commandTag":"SAVEPOINT","sqlstate":null,"ordinal":2}
+{"tx":"T","sql":"UPDATE \"mtw_list_v3_7eb8172ce60d\".\"c4_r7\" SET items=items || %s::jsonb WHERE key=%s RETURNING items","parameters":["[{\"id\": \"a1\", \"value\": \"same\"}]","x"],"rows":[[[{"id":"a1","value":"same"}]]],"rowcount":1,"commandTag":"UPDATE 1","sqlstate":null,"ordinal":3}
+{"tx":"T","sql":"SAVEPOINT \"repeat\"","parameters":null,"rows":[],"rowcount":-1,"commandTag":"SAVEPOINT","sqlstate":null,"ordinal":4}
+{"tx":"T","sql":"UPDATE \"mtw_list_v3_7eb8172ce60d\".\"c4_r7\" SET items=items || %s::jsonb WHERE key=%s RETURNING items","parameters":["[{\"id\": \"a2\", \"value\": \"same\"}]","x"],"rows":[[[{"id":"a1","value":"same"},{"id":"a2","value":"same"}]]],"rowcount":1,"commandTag":"UPDATE 1","sqlstate":null,"ordinal":5}
+{"tx":"T","sql":"ROLLBACK TO SAVEPOINT \"repeat\"","parameters":null,"rows":[],"rowcount":-1,"commandTag":"ROLLBACK","sqlstate":null,"ordinal":6}
+{"tx":"T","sql":"SELECT items FROM \"mtw_list_v3_7eb8172ce60d\".\"c4_r7\" WHERE key=%s","parameters":["x"],"rows":[[[{"id":"a1","value":"same"}]]],"rowcount":1,"commandTag":"SELECT 1","sqlstate":null,"ordinal":7}
+{"tx":"T","sql":"RELEASE SAVEPOINT \"repeat\"","parameters":null,"rows":[],"rowcount":-1,"commandTag":"RELEASE","sqlstate":null,"ordinal":8}
+{"tx":"T","sql":"ROLLBACK TO SAVEPOINT \"repeat\"","parameters":null,"rows":[],"rowcount":-1,"commandTag":"ROLLBACK","sqlstate":null,"ordinal":9}
+{"tx":"T","sql":"SELECT items FROM \"mtw_list_v3_7eb8172ce60d\".\"c4_r7\" WHERE key=%s","parameters":["x"],"rows":[[[]]],"rowcount":1,"commandTag":"SELECT 1","sqlstate":null,"ordinal":10}
+{"tx":"T","sql":"COMMIT","parameters":null,"rows":[],"rowcount":-1,"commandTag":"COMMIT","sqlstate":null,"ordinal":11}

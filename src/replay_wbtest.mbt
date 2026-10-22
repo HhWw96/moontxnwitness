@@ -16,11 +16,17 @@ test "stable v1 and v2 replay accepts released engines only in supported headers
     }
     match report {
       Object(fields) => {
-        for engine in ["0.1.1", "0.1.2", version()] {
+        for engine in ["0.1.1", "0.1.2", "0.1.3", version()] {
           fields["version"] = engine.to_json()
           assert_true(
             result_valid(replay_report_json(history, report.stringify())),
           )
+          let original_status = fields.at("status")
+          fields["status"] = "consistent".to_json()
+          assert_true(
+            !result_valid(replay_report_json(history, report.stringify())),
+          )
+          fields["status"] = original_status
         }
         fields["version"] = "99.0.0".to_json()
         assert_true(

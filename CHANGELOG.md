@@ -1,3 +1,11 @@
+# 0.1.4 — 2026-10-22
+
+- Deliver bounded `append-list-v1` analysis, source diagnostics, transaction reduction and replay through six explicit list SDK entry points; retain the generic v3 interfaces.
+- Require the declared list model, preserve original JSON text for core validation and reject foreign-model capsules without changing reproducible invalid/inconclusive diagnostic semantics.
+- Add a runnable three-to-two-transaction anomaly example with separate outputs, file digests and capsule replay.
+- Preserve unique element identities, string values, source gaps and the six-transaction/128-operation exact-analysis limit; keep search and reduction budgets separate.
+- Reject malformed-JSON generic diagnostic capsules safely at the fixed-model replay boundary; keep the original failed case and regression.
+
 # 0.1.3 — 2026-10-22
 
 - Add the standalone `moontxnwitness_capture.orm` entry for fixed FastAPI Users SQLAlchemy v7.0.0 base-user point-CRUD plans and exact SQL matching.

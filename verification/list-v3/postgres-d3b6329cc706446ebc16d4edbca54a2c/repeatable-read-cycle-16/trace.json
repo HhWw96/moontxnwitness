@@ -1,0 +1,93 @@
+{
+  "traceSchema": 3,
+  "dataModel": "append-list-v1",
+  "clockDomain": "owned-postgres-list-log-order",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "x": [],
+        "y": []
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "T1",
+      "connection": "connection-T1"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "begin",
+      "tx": "T2",
+      "connection": "connection-T2"
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "list_read",
+      "tx": "T1",
+      "key": "x",
+      "items": []
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "list_read",
+      "tx": "T2",
+      "key": "y",
+      "items": []
+    },
+    {
+      "seq": 6,
+      "time": 5,
+      "kind": "append",
+      "tx": "T1",
+      "key": "y",
+      "id": "T1-append",
+      "value": "same"
+    },
+    {
+      "seq": 7,
+      "time": 6,
+      "kind": "append",
+      "tx": "T2",
+      "key": "x",
+      "id": "T2-append",
+      "value": "same"
+    },
+    {
+      "seq": 8,
+      "time": 7,
+      "kind": "commit_request",
+      "tx": "T2"
+    },
+    {
+      "seq": 9,
+      "time": 8,
+      "kind": "commit_request",
+      "tx": "T1"
+    },
+    {
+      "seq": 10,
+      "time": 9,
+      "kind": "commit_ok",
+      "tx": "T2"
+    },
+    {
+      "seq": 11,
+      "time": 10,
+      "kind": "commit_ok",
+      "tx": "T1"
+    }
+  ],
+  "gaps": []
+}
