@@ -168,6 +168,8 @@ def select_distribution_files(root, public_names, tested_files, version):
                     and item.name != 'package.json' and (folder == 'dist' or name in public_names)):
                 portable.add(name)
     portable.update(n for n in required if n.startswith(('verification/', 'dist/')))
+    # The standalone execution example consumes exact frozen traces and licenses.
+    portable.update(n for n in public_names if n.startswith('fixtures/execution-v3/'))
     for name in sorted(source | portable):
         if not (root / name).is_file() or (root / name).is_symlink():
             missing.append({'file': name, 'problem': 'selected item missing or non-regular'})

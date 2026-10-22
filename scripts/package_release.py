@@ -154,6 +154,40 @@ for kind in ("portable", "source"):
         assert derived['valid'] and derived['subtype'] == 'G2-item'
         checks.append(kind + ' verified register-cycle SDK and original-capsule derived-explanation round trip')
 
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 7):
+        execution_demo = json.loads(run([NODE, 'examples/execution-roundtrip.mjs', '--out-root', str(work)], consumer))
+        assert execution_demo['passed'] and execution_demo['runtimeVersion'] == VERSION
+        assert execution_demo['actualDatabaseExecution'] is False
+        directory = (work / execution_demo['outputDirectory']).resolve()
+        assert directory.is_relative_to(work.resolve())
+        comparison = json.loads((directory / 'receipt.json').read_text(encoding='utf8'))
+        assert comparison['passed'] and comparison['runtimeVersion'] == VERSION
+        assert comparison['actualDatabaseExecution'] is False and comparison['databaseAuthenticityVerified'] is False
+        assert comparison['fixesEverySchedule'] is False and comparison['modelViolationClaim'] is False
+        assert comparison['certifiesFailureAbsence'] is False and comparison['fullApplicationIntegration'] is False
+        assert comparison['observedDifference']['beforeFaults'] == 1 and comparison['observedDifference']['afterFaults'] == 0
+        assert len(comparison['cases']) == 2
+        for item in comparison['cases']:
+            assert item['executionDiagnosticRecomputed'] and item['originalModelCapsuleReplayed']
+            assert item['modelStatus'] == 'inconclusive' and not item['modelCoverage']['complete']
+            assert not item['captureCoverage']['complete']
+            for artifact in item['files']:
+                path = (directory / artifact['file']).resolve()
+                assert path.is_relative_to(directory)
+                assert sha256(path) == artifact['sha256'] and path.stat().st_size == artifact['bytes']
+            label = item['label']
+            execution_replay = json.loads(run([NODE, '--input-type=module', '-e',
+                "import{readFileSync}from'node:fs';import{replayExecutionCapsuleV3}from'./dist/sdk.mjs';"
+                "console.log(JSON.stringify(replayExecutionCapsuleV3(readFileSync(process.argv[1],'utf8'))));",
+                str(directory / (label + '.execution-capsule.json'))], consumer))
+            assert execution_replay['valid'] and execution_replay['scope']['modelViolationClaim'] is False
+            assert not execution_replay['diagnostic']['captureCoverage']['complete']
+            model_replay = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-v3', str(directory / (label + '.model-capsule.json'))], consumer))
+            assert model_replay['valid']
+        assert comparison['cases'][0]['observedSqlstates'] == ['40P01']
+        assert comparison['cases'][0]['observedFaultKinds'] == ['deadlock']
+        checks.append(kind + ' execution diagnostic capsule and recorded-MLflow offline comparison round trip')
+
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 3):
         isolated = work / (kind + '-orm-only')
         copied = isolated / 'moontxnwitness_capture'

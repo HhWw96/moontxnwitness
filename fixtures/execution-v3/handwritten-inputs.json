@@ -1,0 +1,82 @@
+[
+  {
+    "id": "statement-40P01",
+    "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"statement\",\"tx\":\"A\",\"sql\":\"UPDATE stock SET qty=qty-1 WHERE id=%s\",\"parameters\":[\"原参数\"],\"seq\":3,\"time\":2},{\"kind\":\"rows\",\"tx\":\"A\",\"statement\":3,\"rows\":[],\"complete\":false,\"error\":{\"class\":\"NativeError\",\"sqlstate\":\"40P01\"},\"seq\":4,\"time\":3},{\"kind\":\"rollback_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}]}",
+    "traceSha256": "9fd55d232e2aac9ecbdf29df6b73cd7a4472a0e97e414dcd24e97b140ffa1269",
+    "expectedFaultKind": "deadlock",
+    "expectedFaultCount": 1,
+    "expectedUnknownTransaction": false
+  },
+  {
+    "id": "statement-40001",
+    "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"statement\",\"tx\":\"A\",\"sql\":\"UPDATE stock SET qty=qty-1 WHERE id=%s\",\"parameters\":[\"原参数\"],\"seq\":3,\"time\":2},{\"kind\":\"rows\",\"tx\":\"A\",\"statement\":3,\"rows\":[],\"complete\":false,\"error\":{\"class\":\"NativeError\",\"sqlstate\":\"40001\"},\"seq\":4,\"time\":3},{\"kind\":\"rollback_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}]}",
+    "traceSha256": "f68bafc9ced09eab77689e4937bacb29a4b87ddef77133ba1d0b78fdd67fa327",
+    "expectedFaultKind": "serialization_abort",
+    "expectedFaultCount": 1,
+    "expectedUnknownTransaction": false
+  },
+  {
+    "id": "statement-55P03",
+    "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"statement\",\"tx\":\"A\",\"sql\":\"UPDATE stock SET qty=qty-1 WHERE id=%s\",\"parameters\":[\"原参数\"],\"seq\":3,\"time\":2},{\"kind\":\"rows\",\"tx\":\"A\",\"statement\":3,\"rows\":[],\"complete\":false,\"error\":{\"class\":\"NativeError\",\"sqlstate\":\"55P03\"},\"seq\":4,\"time\":3},{\"kind\":\"rollback_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}]}",
+    "traceSha256": "cfbc1ffe9a3fa8c8c2f49ec97fa96d2f0d4b889511e4994d1188882c775a4dc5",
+    "expectedFaultKind": "lock_not_available",
+    "expectedFaultCount": 1,
+    "expectedUnknownTransaction": false
+  },
+  {
+    "id": "statement-57014",
+    "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"statement\",\"tx\":\"A\",\"sql\":\"UPDATE stock SET qty=qty-1 WHERE id=%s\",\"parameters\":[\"原参数\"],\"seq\":3,\"time\":2},{\"kind\":\"rows\",\"tx\":\"A\",\"statement\":3,\"rows\":[],\"complete\":false,\"error\":{\"class\":\"NativeError\",\"sqlstate\":\"57014\"},\"seq\":4,\"time\":3},{\"kind\":\"rollback_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}]}",
+    "traceSha256": "a73fb90a11d9852f0deb667a5d3a00597c614ae6f715d0cba1a7934af7283ffa",
+    "expectedFaultKind": "query_canceled",
+    "expectedFaultCount": 1,
+    "expectedUnknownTransaction": false
+  },
+  {
+    "id": "statement-23505",
+    "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"statement\",\"tx\":\"A\",\"sql\":\"UPDATE stock SET qty=qty-1 WHERE id=%s\",\"parameters\":[\"原参数\"],\"seq\":3,\"time\":2},{\"kind\":\"rows\",\"tx\":\"A\",\"statement\":3,\"rows\":[],\"complete\":false,\"error\":{\"class\":\"NativeError\",\"sqlstate\":\"23505\"},\"seq\":4,\"time\":3},{\"kind\":\"rollback_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}]}",
+    "traceSha256": "3173e3fd8f73b7258e1732627754db07a070028a0d61c99c8de622896e1c7517",
+    "expectedFaultKind": "statement_error",
+    "expectedFaultCount": 1,
+    "expectedUnknownTransaction": false
+  },
+  {
+    "id": "statement-no-sqlstate",
+    "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"statement\",\"tx\":\"A\",\"sql\":\"UPDATE stock SET qty=qty-1 WHERE id=%s\",\"parameters\":[\"原参数\"],\"seq\":3,\"time\":2},{\"kind\":\"rows\",\"tx\":\"A\",\"statement\":3,\"rows\":[],\"complete\":false,\"error\":{\"class\":\"NativeError\",\"sqlstate\":null},\"seq\":4,\"time\":3},{\"kind\":\"rollback_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}]}",
+    "traceSha256": "b4202abd370ee1a44a48f7f1d8e788c693f82625648eb27fc8bc7664ad7e5b3f",
+    "expectedFaultKind": "statement_error",
+    "expectedFaultCount": 1,
+    "expectedUnknownTransaction": false
+  },
+  {
+    "id": "unknown-commit",
+    "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":3,\"time\":2},{\"kind\":\"disconnect\",\"tx\":\"A\",\"seq\":4,\"time\":3}]}",
+    "traceSha256": "a2c80fd1d388adedb39752c77b6a2a93a2f8e762b43c75aef7a47ad3ec01c935",
+    "expectedFaultKind": null,
+    "expectedFaultCount": 0,
+    "expectedUnknownTransaction": true
+  },
+  {
+    "id": "no-observed-fault-is-not-absence",
+    "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":3,\"time\":2},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":4,\"time\":3}]}",
+    "traceSha256": "c46589e1fa74c5e17e394a1e8c237bca40a369b2256b0fd6945aa7765aa38489",
+    "expectedFaultKind": null,
+    "expectedFaultCount": 0,
+    "expectedUnknownTransaction": false
+  },
+  {
+    "id": "commit-rollback-tag",
+    "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":3,\"time\":2},{\"kind\":\"rollback_ok\",\"tx\":\"A\",\"commitResponse\":{\"request\":3,\"commandTag\":\"ROLLBACK\"},\"seq\":4,\"time\":3}]}",
+    "traceSha256": "7d6c6d9c2fdb31013cdd87925576db4a252a18954d0c22f999b4a9099ffeb2fb",
+    "expectedFaultKind": "commit_rolled_back",
+    "expectedFaultCount": 1,
+    "expectedUnknownTransaction": false
+  },
+  {
+    "id": "commit-deadlock",
+    "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":3,\"time\":2},{\"kind\":\"rollback_ok\",\"tx\":\"A\",\"commitResponse\":{\"request\":3,\"sqlstate\":\"40P01\",\"diagnosticSqlstate\":\"40P01\",\"transactionStatus\":\"IDLE\"},\"seq\":4,\"time\":3}]}",
+    "traceSha256": "452395e69974a9b160ddfd78c53efd421f89dd913c4e21f163d015b0f34b0a57",
+    "expectedFaultKind": "deadlock",
+    "expectedFaultCount": 1,
+    "expectedUnknownTransaction": false
+  }
+]

@@ -1,0 +1,14 @@
+{"record":"header","traceSchema":1,"clockDomain":"python-monotonic-a11b8fdaa9914914943045613a8ff0cb","scope":{"exclusiveWriters":true}}
+{"record":"event","event":{"seq":1,"kind":"snapshot","time":15000,"initial":{"[\"mtw_capture_39d20fc573cc4289bd74acde7d8fd8e8.registers\",\"text\",\"x\"]":"x0","[\"mtw_capture_39d20fc573cc4289bd74acde7d8fd8e8.registers\",\"text\",\"y\"]":"y0"},"consistent":true}}
+{"record":"event","event":{"seq":2,"kind":"begin","time":125000,"tx":"tx-1"}}
+{"record":"event","event":{"seq":3,"kind":"sql","time":140000,"phase":"execute-request","sql":"SELECT value,version FROM \"mtw_capture_39d20fc573cc4289bd74acde7d8fd8e8\".registers WHERE key=%s","parameters":["x"],"mapped":true,"tx":"tx-1"}}
+{"record":"event","event":{"seq":4,"kind":"sql","time":140000,"phase":"execute-ack","affectedRows":1,"tx":"tx-1"}}
+{"record":"event","event":{"seq":5,"kind":"sql","time":140000,"phase":"fetch","returnedRows":1,"exhausted":true,"rows":[[1,"x0"]],"tx":"tx-1"}}
+{"record":"event","event":{"seq":6,"kind":"op","time":140000,"tx":"tx-1","op":{"type":"read","key":"[\"mtw_capture_39d20fc573cc4289bd74acde7d8fd8e8.registers\",\"text\",\"x\"]","version":"x0"}}}
+{"record":"event","event":{"seq":7,"kind":"sql","time":140000,"phase":"execute-request","sql":"UPDATE \"mtw_capture_39d20fc573cc4289bd74acde7d8fd8e8\".registers SET value=%s,version=%s WHERE key=%s","parameters":[5,"x-aborted","x"],"mapped":true,"tx":"tx-1"}}
+{"record":"event","event":{"seq":8,"kind":"sql","time":140000,"phase":"execute-ack","affectedRows":1,"tx":"tx-1"}}
+{"record":"event","event":{"seq":9,"kind":"op","time":140000,"tx":"tx-1","op":{"type":"write","key":"[\"mtw_capture_39d20fc573cc4289bd74acde7d8fd8e8.registers\",\"text\",\"x\"]","version":"x-aborted"}}}
+{"record":"event","event":{"seq":10,"kind":"sql","time":140000,"phase":"rollback-ack","tx":"tx-1"}}
+{"record":"event","event":{"seq":11,"kind":"end","time":140000,"tx":"tx-1","status":"aborted"}}
+{"record":"event","event":{"seq":12,"kind":"sql","time":140000,"phase":"commit-ack"}}
+{"record":"footer","eventCount":12,"gapCount":0,"sha256":"dac7d9a7ca740cf90357ccb264f88cbc75cd6b513b59feb53a1d743636439069"}

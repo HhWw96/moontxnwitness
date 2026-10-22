@@ -41,6 +41,12 @@ if (cycleSDKChild.status !== 0) throw new Error('Verified register-cycle SDK che
 const cycleSDK = JSON.parse(cycleSDKChild.stdout);
 assert.equal(cycleSDK.passed,true);
 assert.equal(cycleSDK.frozenHistoryCases,132);
+const executionSDKChild = spawnSync(process.execPath, ['scripts/execution-sdk-test.mjs'], {cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:4*1024*1024});
+if (executionSDKChild.error) throw executionSDKChild.error;
+if (executionSDKChild.status !== 0) throw new Error('Execution diagnostic SDK checks failed: ' + executionSDKChild.stdout + executionSDKChild.stderr);
+const executionSDK = JSON.parse(executionSDKChild.stdout);
+assert.equal(executionSDK.passed,true);
+assert.equal(executionSDK.originalCandidateAssertions,54);
 const adapter = spawnSync(process.env.MTW_PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), ['scripts/capture-unit-test.py'], {cwd:root,stdio:'inherit',windowsHide:true});
 if (adapter.error) throw adapter.error;
 if (adapter.status !== 0) throw new Error('Capture adapter unit tests failed: ' + adapter.status);
@@ -134,5 +140,6 @@ receipt.ormPlanUnitTests = {passed:ormUnitReceipt.passed,tests:ormUnitReceipt.te
 receipt.appendListSdkTests = listSDK;
 receipt.relationSdkTests = relationSDK;
 receipt.registerCycleSdkTests = cycleSDK;
+receipt.executionCapsuleSdkTests = executionSDK;
 writeVerifiedJson(resolve(root, 'verification/summary.json'), receipt);
 console.log(`MoonTxnWitness v${receipt.version} verification complete.`);

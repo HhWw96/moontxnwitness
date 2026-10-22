@@ -1,3 +1,9 @@
+# 0.1.7 — 2026-10-22
+
+- Add execution-diagnostic capsule creation and replay, retaining exact capture text, fixed budgets, unknown outcomes and coverage gaps.
+- Ship an offline comparison of two existing recorded MLflow component executions; no new SQL execution or complete application repair is claimed.
+- Preserve cycle/list/relation and generic SDK APIs; extend explicit existing model-capsule compatibility through v0.1.6. The new execution format initially accepts its current engine only. See docs/execution-capsule-v3.md.
+
 # 0.1.6 — 2026-10-22
 
 - Add SDK explanation and verification of the selected, fully verified point-register dependency cycle, including five fixed rule-based labels and original source references.

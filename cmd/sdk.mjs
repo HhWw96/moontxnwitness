@@ -340,3 +340,99 @@ export function verifyRegisterCycleExplanationV3(trace, report, explanation) {
     status: expected.status, subtype: expected.subtype,
     scope: 'Recomputed derived explanation and verified source report; no source authentication or complete model classification.'};
 }
+
+import {createHash as executionHashV3} from 'node:crypto';
+
+const executionDigestV3 = text => executionHashV3('sha256').update(text, 'utf8').digest('hex');
+const executionCanonicalV3 = value => JSON.stringify(value, null, 2) + '\n';
+const executionBudgetsV3 = () => ({
+  traceUtf8Bytes: 8 * 1024 * 1024,
+  diagnosticUtf8Bytes: 32 * 1024 * 1024,
+  capsuleUtf8Bytes: 32 * 1024 * 1024,
+  normalizedJsonCodeUnits: 32 * 1024 * 1024,
+  normalizationPolicy: 'normalize_capture_v3_json/defaults',
+  modelSearch: false,
+});
+// A future release may add only individually reviewed released engine/algorithm
+// pairs here. No wildcard version migration or rewriting of diagnostic fields.
+const executionEngineSupportedV3 = recorded => recorded === version();
+const executionScopeV3 = () => ({
+  diagnosticRecomputationOnly: true,
+  actualDatabaseExecution: false,
+  databaseAuthenticityVerified: false,
+  certifiesFailureAbsence: false,
+  modelViolationClaim: false,
+  completeApplicationIntegration: false,
+});
+function executionFieldsV3(engineVersion, traceText, diagnosticText) {
+  return {
+    format: 'moontxnwitness-execution/v1', schemaVersion: 1, tool: 'MoonTxnWitness',
+    engineVersion, diagnosticAlgorithm: 'v3-observed-failures-1',
+    budgets: executionBudgetsV3(),
+    traceText, traceSha256: executionDigestV3(traceText),
+    diagnosticText, diagnosticSha256: executionDigestV3(diagnosticText),
+  };
+}
+
+/**
+ * Seal exact trace text and its independently recorded execution diagnostic.
+ * Incomplete coverage and unknown COMMIT are retained, never promoted to proof.
+ * This does not connect to a database or change the original v3 model capsule.
+ */
+export function makeExecutionCapsuleV3(trace) {
+  const traceText = v3Text(trace, 8 * 1024 * 1024);
+  if (Buffer.from(traceText, 'utf8').toString('utf8') !== traceText) {
+    throw new TypeError('Execution capture must be well-formed Unicode UTF-8 text');
+  }
+  const diagnostic = inspectExecutionFailuresV3(traceText);
+  if (diagnostic.valid !== true || diagnostic.algorithm !== 'v3-observed-failures-1') {
+    throw new Error('Cannot package an invalid or unsupported execution diagnostic');
+  }
+  const diagnosticText = JSON.stringify(diagnostic);
+  if (Buffer.byteLength(diagnosticText, 'utf8') > 32 * 1024 * 1024) {
+    throw new RangeError('Execution diagnostic exceeds 32 MiB UTF-8');
+  }
+  const capsuleText = executionCanonicalV3(executionFieldsV3(version(), traceText, diagnosticText));
+  if (Buffer.byteLength(capsuleText, 'utf8') > 32 * 1024 * 1024) {
+    throw new RangeError('Execution capsule exceeds 32 MiB UTF-8');
+  }
+  return capsuleText;
+}
+
+/**
+ * Recompute the diagnostic, preserving every original outcome and coverage gap.
+ * v1 accepts the exact canonical envelope emitted above, including its newline;
+ * duplicate keys, extra fields and alternative envelope encodings are rejected.
+ * The contained trace is kept verbatim, including valid original whitespace.
+ */
+export function replayExecutionCapsuleV3(text) {
+  if (typeof text !== 'string') throw new TypeError('Execution capsule must be JSON text');
+  const reject = reason => ({valid: false, reason, scope: executionScopeV3()});
+  if (Buffer.byteLength(text, 'utf8') > 32 * 1024 * 1024) return reject('execution-capsule-byte-budget');
+  let capsule;
+  try {capsule = JSON.parse(text);} catch {return reject('invalid-execution-capsule-json');}
+  if (capsule === null || typeof capsule !== 'object' || Array.isArray(capsule) ||
+      capsule.format !== 'moontxnwitness-execution/v1' || capsule.schemaVersion !== 1 ||
+      capsule.tool !== 'MoonTxnWitness' || !executionEngineSupportedV3(capsule.engineVersion) ||
+      capsule.diagnosticAlgorithm !== 'v3-observed-failures-1' ||
+      typeof capsule.traceText !== 'string' || typeof capsule.diagnosticText !== 'string') {
+    return reject('unsupported-execution-capsule-header');
+  }
+  if (Buffer.byteLength(capsule.traceText, 'utf8') > 8 * 1024 * 1024 ||
+      Buffer.byteLength(capsule.diagnosticText, 'utf8') > 32 * 1024 * 1024) {
+    return reject('execution-content-byte-budget');
+  }
+  if (Buffer.from(capsule.traceText, 'utf8').toString('utf8') !== capsule.traceText) {
+    return reject('execution-trace-not-well-formed-unicode');
+  }
+  const expected = executionFieldsV3(capsule.engineVersion, capsule.traceText, capsule.diagnosticText);
+  if (text !== executionCanonicalV3(expected)) return reject('execution-envelope-or-digest-mismatch');
+  const recomputed = inspectExecutionFailuresV3(capsule.traceText);
+  if (recomputed.valid !== true || recomputed.algorithm !== capsule.diagnosticAlgorithm ||
+      JSON.stringify(recomputed) !== capsule.diagnosticText) {
+    return reject('execution-diagnostic-does-not-reproduce');
+  }
+  return {valid: true, status: 'recomputed-observations', engineVersion: capsule.engineVersion,
+    traceSha256: expected.traceSha256, diagnosticSha256: expected.diagnosticSha256,
+    diagnostic: recomputed, scope: executionScopeV3()};
+}

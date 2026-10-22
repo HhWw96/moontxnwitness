@@ -1,0 +1,67 @@
+{
+  "valid": true,
+  "status": "recomputed-observations",
+  "engineVersion": "0.1.7",
+  "traceSha256": "2ac4ee5ad76cd63bb64f7e6557f3dfa3aeeec3c5dac10ec23a28aa48e5a3648b",
+  "diagnosticSha256": "d94a45076fc5c699f8d3054c3db5cea9f3a295342ea76144e031e616cc45a146",
+  "diagnostic": {
+    "schemaVersion": 3,
+    "algorithm": "v3-observed-failures-1",
+    "valid": true,
+    "status": "observations",
+    "scope": "Recorded execution failures; not an isolation-level conclusion",
+    "modelViolationClaim": false,
+    "databaseAuthenticityVerified": false,
+    "certifiesFailureAbsence": false,
+    "captureStatus": "inconclusive",
+    "captureCoverage": {
+      "complete": false,
+      "gaps": [
+        {
+          "code": "unmapped_statement",
+          "message": "Raw SQL has no verified versioned statement mapping"
+        },
+        {
+          "code": "incomplete_rows",
+          "message": "A statement result was not exhausted"
+        }
+      ]
+    },
+    "transactionOutcomes": [
+      {
+        "id": "review-A",
+        "connection": "review-c",
+        "status": "aborted",
+        "beginSeq": 2,
+        "endSeq": 5,
+        "events": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "finalWrites": []
+      }
+    ],
+    "observedFaultCount": 1,
+    "faults": [
+      {
+        "seq": 4,
+        "tx": "review-A",
+        "statement": 3,
+        "kind": "serialization_abort",
+        "sqlstate": "40001",
+        "driverClass": "ReviewerNativeError",
+        "origin": "rows.error"
+      }
+    ]
+  },
+  "scope": {
+    "diagnosticRecomputationOnly": true,
+    "actualDatabaseExecution": false,
+    "databaseAuthenticityVerified": false,
+    "certifiesFailureAbsence": false,
+    "modelViolationClaim": false,
+    "completeApplicationIntegration": false
+  }
+}

@@ -54,6 +54,13 @@ def validate_scoped_acceptance(acceptance, manifest):
         assert cycle['handwrittenCases'] == 13
         for kind in ('source', 'portable'):
             assert kind + ' verified register-cycle SDK and original-capsule derived-explanation round trip' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 7):
+        execution = summary['executionCapsuleSdkTests']
+        assert execution['passed'] is True and execution['checks'] >= 54
+        assert execution['runtimeVersion'] == VERSION and execution['originalCandidateAssertions'] == 54
+        assert execution['handwrittenCases'] == 10 and execution['recordedMlflowCases'] == 2
+        for kind in ('source', 'portable'):
+            assert kind + ' execution diagnostic capsule and recorded-MLflow offline comparison round trip' in package['checks']
     tested = json.loads(run(['node', '--input-type=module', '-e',
         "import {verificationFingerprint} from './scripts/verification-fingerprint.mjs'; console.log(JSON.stringify(verificationFingerprint(process.cwd())));" ]))
     assert tested == summary['testedFileSha256'], 'Current executable files differ from tested release'
@@ -276,6 +283,16 @@ def publish():
             'for input limits, diagnostic states and witness-only scope. This does not search all anomaly classes or accept an isolation model.\n\n'
             'Install the MoonBit core with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for the Node.js SDK. '
             'Actual verification, installation and download receipts remain in verification/; see CHANGELOG.md for details.\n', encoding='utf8')
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 7):
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- Seal exact capture text and its execution diagnostic, then recompute the complete diagnostic on replay.\n'
+            '- Compare two existing recorded MLflow component executions offline while retaining faults, unknown outcomes and coverage gaps.\n'
+            '- Preserve cycle, list, relation and generic APIs; explicitly retain released model-capsule compatibility through v0.1.6.\n\n'
+            'Run `node examples/execution-roundtrip.mjs`. See [the SDK guide](https://github.com/' + MODULE + '/blob/' + tag + '/docs/execution-capsule-v3.md) '
+            'for the distinct execution format, fixed budgets and the meaning of valid replay. This does not run a database, certify failure absence or prove an application repair.\n\n'
+            'Install the MoonBit core with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for the Node.js SDK. '
+            'Actual verification and public download receipts are recorded separately in verification/.\n', encoding='utf8')
 
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
     if performance_path.exists() and not scoped:

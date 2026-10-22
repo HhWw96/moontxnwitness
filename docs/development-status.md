@@ -2,6 +2,10 @@
 
 2026 年 10 月 22 日：v0.1.5 已发布至 GitHub 与 Mooncakes，并通过[公开 Linux 下载验证](https://github.com/HhWw96/moontxnwitness/actions/runs/39792872938)，实际结果见[发布收据](../verification/releases/0.1.5/publication.json)。该版交付关系集合 SDK 和保留版本来源的 4→3 缩减复现，继续提供寄存器、列表、采集、普通表及 ORM 模板能力。
 
+## v0.1.7
+
+执行诊断包提供两个 SDK 入口与既有 MLflow 记录离线对照，保留 unknown、故障及来源缺口。现有记录缺少当时 capture.py 的执行字节绑定，不能追补为完整来源认证；本版不声称新数据库复现或完整应用修复。候选的 54 项断言迁为源码测试，正式 v0.1.7 构建、安装与公开结果以 `verification/releases/0.1.7/` 实际收据为准，不能用候选或旧运行时检查替代。边界见[执行诊断包](execution-capsule-v3.md)。
+
 ## v0.1.6
 
 本版提供已有点寄存器环的类型与来源解释和两项 SDK 入口，原报告与原 v3 胶囊保持，派生解读单独复核。支持边界见[解读说明](cycle-explanation-v3.md)。正式构建、安装、数据库回归与公开下载以 `verification/releases/0.1.6/` 的实际收据为准。先前候选独立审查覆盖 132 份历史及其保存点、来源、首尾相邻和篡改边界，使用 v0.1.4/v0.1.5 运行时；不得计成正式 v0.1.6 验收。

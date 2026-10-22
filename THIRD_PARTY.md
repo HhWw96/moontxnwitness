@@ -88,3 +88,7 @@ PostgreSQL controlled fixtures also retain real SQL results, server-reported rol
 ## Fixed cycle-rule reference materials
 
 The unmodified Elle `txn.clj`, `project.clj` and `LICENSE` in `fixtures/register-cycle-v3/elle-reference/primary-references/` are pinned to commit `4e359e597c52938b0afebb8bc42273914d68a424`. Their original source, notices and license text are retained byte-for-byte; `reference-attribution.json` binds their source hashes. The upstream project declares `EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0`; the retained LICENSE is the original EPL-2.0 text. These reference materials keep their upstream terms and are not relabeled as this project's Apache-2.0 code. The SDK independently implements the selected ww/wr/item-rw mathematical conditions; it does not copy the Clojure implementation or load an Elle checker runtime.
+
+## Recorded execution diagnostic fixtures
+
+The two capture/receipt pairs in `fixtures/execution-v3/mlflow/` are unmodified recorded component-fixture observations from the existing MLflow rehearsal. `source-origin.json` binds their original paths and exact bytes, the fixed upstream commits and the historical unbound capture.py dependency. The original MLflow Apache-2.0 LICENSE.txt is retained for each fixed revision; no upstream application code is copied into these fixture files. Offline diagnostic replay does not execute MLflow or authenticate the original database.

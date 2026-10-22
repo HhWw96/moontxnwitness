@@ -1,0 +1,58 @@
+{
+  "valid": true,
+  "status": "recomputed-observations",
+  "engineVersion": "0.1.7",
+  "traceSha256": "a0ea1056068a09e1f9f5a968bdd6893c3c2edf9d05b946743f200862850b01cb",
+  "diagnosticSha256": "440b2c53aa9e7987330f099fff12a2c42c0b04baa826f30e6b97f4fb8af19096",
+  "diagnostic": {
+    "schemaVersion": 3,
+    "algorithm": "v3-observed-failures-1",
+    "valid": true,
+    "status": "observations",
+    "scope": "Recorded execution failures; not an isolation-level conclusion",
+    "modelViolationClaim": false,
+    "databaseAuthenticityVerified": false,
+    "certifiesFailureAbsence": false,
+    "captureStatus": "ready",
+    "captureCoverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "transactionOutcomes": [
+      {
+        "id": "review-A",
+        "connection": "review-c",
+        "status": "aborted",
+        "beginSeq": 2,
+        "endSeq": 4,
+        "events": [
+          2,
+          3,
+          4
+        ],
+        "finalWrites": []
+      }
+    ],
+    "observedFaultCount": 1,
+    "faults": [
+      {
+        "seq": 4,
+        "tx": "review-A",
+        "statement": null,
+        "request": 3,
+        "kind": "commit_rolled_back",
+        "sqlstate": null,
+        "driverClass": null,
+        "origin": "rollback_ok.commitResponse"
+      }
+    ]
+  },
+  "scope": {
+    "diagnosticRecomputationOnly": true,
+    "actualDatabaseExecution": false,
+    "databaseAuthenticityVerified": false,
+    "certifiesFailureAbsence": false,
+    "modelViolationClaim": false,
+    "completeApplicationIntegration": false
+  }
+}
