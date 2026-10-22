@@ -1,8 +1,10 @@
 # 独特性与公开检索范围
 
-## 能够支持的结论
+## 历史检索与当前主张
 
-截至 2026-10-10，本轮在 Mooncakes 公开包文档、GitHub 公开索引及 MoonBit 官方生态相关结果中，以 MoonTxnWitness、MoonBit transaction history / serializability checker / Elle 等关键词检索，没有找到与本项目同范围的成熟 MoonBit 事务历史检查器。公开索引可能遗漏仓库、未发布代码和新提交，不能据此保证绝对首创，也不能保证获奖。
+以下公开索引检索记录止于2026-10-10，不是本版重新联网检索。
+
+截至 2026-10-10，当轮在 Mooncakes 公开包文档、GitHub 公开索引及 MoonBit 官方生态相关结果中，以 MoonTxnWitness、MoonBit transaction history / serializability checker / Elle 等关键词检索，没有找到与本项目同范围的成熟 MoonBit 事务历史检查器。公开索引可能遗漏仓库、未发布代码和新提交，不能据此保证绝对首创，也不能保证获奖。
 
 本项目的主张是：在 MoonBit 中提供可运行的“读写历史 → 确定性分析 → 事务缩减 → 核心判断回放”流程，逐条解释依据及信息缺口。图算法、串行搜索、缩减、哈希封装本身都有既有研究与实现，不主张全球算法首创。
 
@@ -10,7 +12,7 @@
 
 | 项目及公开来源 | 公开介绍的范围 | 与本项目的边界 |
 | --- | --- | --- |
-| [Elle](https://github.com/jepsen-io/elle) | Clojure 事务一致性检查器，依赖与反例解释 | 理论和术语参考；本项目没有嵌入或移植 Elle 代码，当前数据模型与隔离分类更小 |
+| [Elle](https://github.com/jepsen-io/elle) | Clojure 事务一致性检查器，依赖与反例解释 | 理论和术语参考；生产核心独立实现，不依赖 Elle 运行时。源码保留固定参考原文与其许可，当前不是完整 Elle 替代品 |
 | [EvoWitness](https://skills.mooncakes.io/docs/CJR-ai-nb/evowitness) | 两版本结构化契约兼容性、最小 JSON 反例 | “witness”目标不同；本项目输入是事务操作历史，判断的是串行执行是否存在 |
 | [moonbit-notary](https://mooncakes.io/docs/hcjbat/moonbit-notary) | 文件证据交接、摘要与审计流程 | 哈希交接理念相邻；本项目的复核重算事务语义，哈希只是传输完整性检查 |
 | [moonbit-community/postgres](https://assets.mooncakes.io/assets/moonbit-community/postgres%400.0.8/client/transactions.mbt.html) | 数据库客户端事务与隔离选项 | 提交/回滚事务不等于分析一份历史的可串行化性 |
@@ -30,4 +32,4 @@
 
 ## 当前仍有限制
 
-只有带唯一版本的点读写寄存器；精确搜索、缩减和图规模有明确预算。尚无范围查询、自动 SQL 插桩、完整隔离级别分类或大型生产负载保证。公开仓库、下载和 Mooncakes 安装核验另见 verification/publication.json；这些不代表比赛提交或组织方接受。
+当前还提供固定键普通表、固定 SQL 模板与局部来源诊断、有界列表和关系事实、已选中环解读及独立执行包，见[稳定支持矩阵](stable-scope.md)。关系支持受限 AND 谓词的完整结果事实，不能泛称任意 SQL 范围查询。图、搜索、缩减、字节与来源均有明确预算；全自动 SQL、完整 ORM、全部隔离分类及大型生产负载保证继续后续研究。公开下载和 Mooncakes 安装核验以对应 `verification/releases/VERSION/` 实际收据为准；技术发布不代表比赛提交、组织方接受或绝对首创。

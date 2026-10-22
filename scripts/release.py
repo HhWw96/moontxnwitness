@@ -8,6 +8,7 @@ import time
 import zipfile
 from pathlib import Path
 from package_archive import sha256
+from publication_ci import ci_details_ready
 
 ROOT = Path(__file__).resolve().parent.parent
 VERSION = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))['version']
@@ -147,23 +148,28 @@ def wait_for_ci(sha):
     for workflow in workflows:
         deadline = time.monotonic() + 1800
         while time.monotonic() < deadline:
-            runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', sha, '--workflow', workflow, '--json', 'databaseId,status,conclusion,headSha,event', '--limit', '10']))
+            runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', sha, '--workflow', workflow, '--json', 'databaseId,status,conclusion,headSha,event', '--limit', '10'], timeout=min(300, deadline - time.monotonic())))
+            if time.monotonic() >= deadline:
+                continue
             # workflow_dispatch may check out a different inputs.source_ref.
             # A normal push always tests this commit under the pinned workflow.
             runs = [r for r in runs if r['headSha'] == sha and r['event'] == 'push']
             successes = [r for r in runs if r['conclusion'] == 'success']
             if successes:
                 if workflow == 'ci.yml':
-                    ci = json.loads(run(['gh', 'run', 'view', str(successes[0]['databaseId']), '--repo', MODULE, '--json', 'headSha,conclusion,jobs']))
-                    assert ci['headSha'] == sha and ci['conclusion'] == 'success'
-                    assert len(ci['jobs']) == 2 and all(job['conclusion'] == 'success' for job in ci['jobs'])
-                    assert any(step['name'] == 'Execute Native core on Linux' and step['conclusion'] == 'success'
-                               for job in ci['jobs'] for step in job['steps']), 'Linux Native must execute'
+                    ci = json.loads(run(['gh', 'run', 'view', str(successes[0]['databaseId']), '--repo', MODULE, '--json', 'headSha,conclusion,jobs'], timeout=min(300, deadline - time.monotonic())))
+                    if time.monotonic() >= deadline:
+                        continue
+                    if not ci_details_ready(ci, sha):
+                        # Workflow metadata can precede the final job response.
+                        # Keep the original deadline; no incomplete state passes.
+                        time.sleep(min(15, max(0, deadline - time.monotonic())))
+                        continue
                 print('Exact-commit CI passed: ' + workflow, flush=True)
                 break
             if runs and all(r['status'] == 'completed' for r in runs):
                 raise RuntimeError('Public CI failed: ' + workflow + '; preserve the failed run and repair')
-            time.sleep(15)
+            time.sleep(min(15, max(0, deadline - time.monotonic())))
         else:
             raise TimeoutError('CI did not finish within the observation window: ' + workflow)
 
@@ -308,6 +314,15 @@ def publish():
             '- Preserve the first rejected optimization comparison; its correctness passed but performance controls did not. No stable18 performance or RSS success is claimed.\n\n'
             'See CHANGELOG.md and [the execution-capsule guide](https://github.com/' + MODULE + '/blob/' + tag + '/docs/execution-capsule-v3.md). '
             'Performance results and actual release verification are recorded separately; this note makes no speedup or memory claim.\n\n'
+            'Install with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for Node.js.\n', encoding='utf8')
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 0):
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- One bounded support matrix for registers, fixed-key presence, SQL templates/cache, append lists, relation facts, selected-cycle explanation and execution capsules.\n'
+            '- Preserve explicit budgets, source gaps and replay rules, including v0.1.8 model and v0.1.7/v0.1.8 execution capsules.\n'
+            '- Keep full automatic SQL/ORM, six-model classification and complete production integrations on the future roadmap.\n\n'
+            'See the [stable scope and examples](https://github.com/' + MODULE + '/blob/' + tag + '/docs/stable-scope.md). '
+            'Actual regression, database, independent review, fresh installation and public download receipts are recorded separately; no unmeasured performance figure is claimed here.\n\n'
             'Install with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for Node.js.\n', encoding='utf8')
 
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'

@@ -1,0 +1,122 @@
+{
+  "schema": 3,
+  "dataModel": "append-list-v1",
+  "algorithm": "v3-list-lifecycle-1",
+  "status": "ready",
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "observations": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "x": [
+          {
+            "id": "x0",
+            "value": "same"
+          }
+        ],
+        "y": [
+          {
+            "id": "y0",
+            "value": "same"
+          }
+        ]
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "T",
+      "connection": "C"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "savepoint",
+      "tx": "T",
+      "instance": "s1",
+      "name": "scope"
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "append",
+      "tx": "T",
+      "key": "x",
+      "id": "x1",
+      "value": "same"
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "rollback_to",
+      "tx": "T",
+      "instance": "s1"
+    },
+    {
+      "seq": 6,
+      "time": 5,
+      "kind": "list_read",
+      "tx": "T",
+      "key": "x",
+      "items": [
+        {
+          "id": "x0",
+          "value": "same"
+        },
+        {
+          "id": "x1",
+          "value": "same"
+        }
+      ]
+    },
+    {
+      "seq": 7,
+      "time": 6,
+      "kind": "commit_request",
+      "tx": "T"
+    },
+    {
+      "seq": 8,
+      "time": 7,
+      "kind": "commit_ok",
+      "tx": "T"
+    }
+  ],
+  "effects": [
+    {
+      "seq": 4,
+      "tx": "T",
+      "key": "x",
+      "id": "x1",
+      "value": "same",
+      "revertedBy": 5
+    }
+  ],
+  "transactions": [
+    {
+      "id": "T",
+      "connection": "C",
+      "status": "committed",
+      "beginSeq": 2,
+      "endSeq": 8,
+      "events": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "finalWrites": []
+    }
+  ],
+  "history": null
+}

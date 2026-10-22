@@ -1,0 +1,394 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.0",
+  "algorithm": "v3-register-1",
+  "status": "violation",
+  "modelDefinition": {
+    "id": "register-serializable-v1",
+    "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+  },
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "normalized": {
+    "schema": 3,
+    "algorithm": "v3-lifecycle-1",
+    "status": "ready",
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "observations": [
+      {
+        "kind": "snapshot",
+        "consistent": true,
+        "initial": {
+          "adjacent-item-rw-k0": "adjacent-item-rw-v0-0",
+          "adjacent-item-rw-k1": "adjacent-item-rw-v1-0"
+        },
+        "seq": 1,
+        "time": 0
+      },
+      {
+        "kind": "begin",
+        "tx": "adjacent-item-rw-T0",
+        "connection": "adjacent-item-rw-T0",
+        "seq": 2,
+        "time": 1
+      },
+      {
+        "kind": "begin",
+        "tx": "adjacent-item-rw-T1",
+        "connection": "adjacent-item-rw-T1",
+        "seq": 3,
+        "time": 2
+      },
+      {
+        "kind": "write",
+        "tx": "adjacent-item-rw-T1",
+        "key": "adjacent-item-rw-k0",
+        "version": "adjacent-item-rw-v0-1",
+        "predecessor": "adjacent-item-rw-v0-0",
+        "seq": 4,
+        "time": 3
+      },
+      {
+        "kind": "write",
+        "tx": "adjacent-item-rw-T0",
+        "key": "adjacent-item-rw-k1",
+        "version": "adjacent-item-rw-v1-1",
+        "predecessor": "adjacent-item-rw-v1-0",
+        "seq": 5,
+        "time": 4
+      },
+      {
+        "kind": "read",
+        "tx": "adjacent-item-rw-T0",
+        "key": "adjacent-item-rw-k0",
+        "version": "adjacent-item-rw-v0-0",
+        "seq": 6,
+        "time": 5
+      },
+      {
+        "kind": "read",
+        "tx": "adjacent-item-rw-T1",
+        "key": "adjacent-item-rw-k1",
+        "version": "adjacent-item-rw-v1-0",
+        "seq": 7,
+        "time": 6
+      },
+      {
+        "kind": "commit_request",
+        "tx": "adjacent-item-rw-T0",
+        "seq": 8,
+        "time": 7
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "adjacent-item-rw-T0",
+        "seq": 9,
+        "time": 8
+      },
+      {
+        "kind": "commit_request",
+        "tx": "adjacent-item-rw-T1",
+        "seq": 10,
+        "time": 9
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "adjacent-item-rw-T1",
+        "seq": 11,
+        "time": 10
+      }
+    ],
+    "effects": [
+      {
+        "seq": 4,
+        "tx": "adjacent-item-rw-T1",
+        "key": "adjacent-item-rw-k0",
+        "version": "adjacent-item-rw-v0-1",
+        "predecessor": "adjacent-item-rw-v0-0",
+        "revertedBy": null
+      },
+      {
+        "seq": 5,
+        "tx": "adjacent-item-rw-T0",
+        "key": "adjacent-item-rw-k1",
+        "version": "adjacent-item-rw-v1-1",
+        "predecessor": "adjacent-item-rw-v1-0",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "adjacent-item-rw-T0",
+        "connection": "adjacent-item-rw-T0",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          5,
+          6,
+          8,
+          9
+        ],
+        "finalWrites": [
+          5
+        ]
+      },
+      {
+        "id": "adjacent-item-rw-T1",
+        "connection": "adjacent-item-rw-T1",
+        "status": "committed",
+        "beginSeq": 3,
+        "endSeq": 11,
+        "events": [
+          3,
+          4,
+          7,
+          10,
+          11
+        ],
+        "finalWrites": [
+          4
+        ]
+      }
+    ],
+    "history": {
+      "schemaVersion": 1,
+      "model": "serializable",
+      "initial": {
+        "adjacent-item-rw-k0": "adjacent-item-rw-v0-0",
+        "adjacent-item-rw-k1": "adjacent-item-rw-v1-0"
+      },
+      "versionOrders": {
+        "adjacent-item-rw-k0": [
+          "adjacent-item-rw-v0-0",
+          "adjacent-item-rw-v0-1"
+        ],
+        "adjacent-item-rw-k1": [
+          "adjacent-item-rw-v1-0",
+          "adjacent-item-rw-v1-1"
+        ]
+      },
+      "transactions": [
+        {
+          "id": "adjacent-item-rw-T0",
+          "status": "committed",
+          "ops": [
+            {
+              "type": "write",
+              "key": "adjacent-item-rw-k1",
+              "version": "adjacent-item-rw-v1-1"
+            },
+            {
+              "type": "read",
+              "key": "adjacent-item-rw-k0",
+              "version": "adjacent-item-rw-v0-0"
+            }
+          ],
+          "start": null,
+          "end": null
+        },
+        {
+          "id": "adjacent-item-rw-T1",
+          "status": "committed",
+          "ops": [
+            {
+              "type": "write",
+              "key": "adjacent-item-rw-k0",
+              "version": "adjacent-item-rw-v0-1"
+            },
+            {
+              "type": "read",
+              "key": "adjacent-item-rw-k1",
+              "version": "adjacent-item-rw-v1-0"
+            }
+          ],
+          "start": null,
+          "end": null
+        }
+      ]
+    }
+  },
+  "evidence": {
+    "schemaVersion": 2,
+    "tool": "MoonTxnWitness",
+    "version": "0.2.0",
+    "status": "violation",
+    "model": "serializable",
+    "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+    "complete": true,
+    "stats": {
+      "transactions": 2,
+      "committed": 2,
+      "operations": 4,
+      "dependencies": 2
+    },
+    "findings": [
+      {
+        "code": "dependency_cycle",
+        "severity": "violation",
+        "message": "The dependency cycle prevents any serial order satisfying these observations and constraints",
+        "transactions": [
+          "adjacent-item-rw-T0",
+          "adjacent-item-rw-T1"
+        ],
+        "key": null,
+        "ops": []
+      }
+    ],
+    "edges": [
+      {
+        "from": "adjacent-item-rw-T0",
+        "to": "adjacent-item-rw-T1",
+        "kind": "rw",
+        "key": "adjacent-item-rw-k0",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "adjacent-item-rw-v0-0",
+        "toVersion": "adjacent-item-rw-v0-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "adjacent-item-rw-T1",
+        "to": "adjacent-item-rw-T0",
+        "kind": "rw",
+        "key": "adjacent-item-rw-k1",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "adjacent-item-rw-v1-0",
+        "toVersion": "adjacent-item-rw-v1-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      }
+    ],
+    "witness": {
+      "kind": "dependency_cycle",
+      "transactions": [
+        "adjacent-item-rw-T0",
+        "adjacent-item-rw-T1",
+        "adjacent-item-rw-T0"
+      ],
+      "edges": [
+        {
+          "from": "adjacent-item-rw-T0",
+          "to": "adjacent-item-rw-T1",
+          "kind": "rw",
+          "key": "adjacent-item-rw-k0",
+          "fromOp": 1,
+          "toOp": 0,
+          "fromVersion": "adjacent-item-rw-v0-0",
+          "toVersion": "adjacent-item-rw-v0-1",
+          "reason": "The reader observes an earlier version and must precede this later committed write."
+        },
+        {
+          "from": "adjacent-item-rw-T1",
+          "to": "adjacent-item-rw-T0",
+          "kind": "rw",
+          "key": "adjacent-item-rw-k1",
+          "fromOp": 1,
+          "toOp": 0,
+          "fromVersion": "adjacent-item-rw-v1-0",
+          "toVersion": "adjacent-item-rw-v1-1",
+          "reason": "The reader observes an earlier version and must precede this later committed write."
+        }
+      ],
+      "minimality": "shortest directed cycle in the constructed graph"
+    },
+    "serialOrder": [],
+    "versionOrders": {
+      "adjacent-item-rw-k0": [
+        "adjacent-item-rw-v0-0",
+        "adjacent-item-rw-v0-1"
+      ],
+      "adjacent-item-rw-k1": [
+        "adjacent-item-rw-v1-0",
+        "adjacent-item-rw-v1-1"
+      ]
+    },
+    "versionOrderSources": {
+      "adjacent-item-rw-k0": "asserted",
+      "adjacent-item-rw-k1": "asserted"
+    },
+    "graph": {
+      "analyzed": true,
+      "components": 1,
+      "cyclicComponents": 1,
+      "cyclicTransactions": 2,
+      "bfsRoots": 1,
+      "edgeBudgetExceeded": false
+    },
+    "coverage": [
+      {
+        "key": "adjacent-item-rw-k0",
+        "committedReads": 1,
+        "committedFinalWrites": 1,
+        "unresolvedReads": 0,
+        "versionOrderSource": "asserted",
+        "sourceLabel": "采集声明的版本链"
+      },
+      {
+        "key": "adjacent-item-rw-k1",
+        "committedReads": 1,
+        "committedFinalWrites": 1,
+        "unresolvedReads": 0,
+        "versionOrderSource": "asserted",
+        "sourceLabel": "采集声明的版本链"
+      }
+    ],
+    "nextSteps": [
+      "保留原始日志，使用 shrink 缩减反例，并用 capsule 保存可复现证据。"
+    ],
+    "search": {
+      "status": "not-needed",
+      "reason": "No bounded completion search was required."
+    },
+    "algorithm": "bounded-register-v2.1",
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "metrics": {
+      "attempts": 0,
+      "operationChecks": 0,
+      "cacheHits": 0,
+      "cachedStates": 0,
+      "blockers": []
+    }
+  },
+  "execution": {
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "metrics": {
+      "attempts": 0,
+      "operationChecks": 0,
+      "cacheHits": 0,
+      "cachedStates": 0,
+      "blockers": []
+    }
+  }
+}

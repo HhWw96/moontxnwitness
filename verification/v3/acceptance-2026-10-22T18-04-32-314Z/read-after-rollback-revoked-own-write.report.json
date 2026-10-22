@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.0",
+  "algorithm": "v3-register-1",
+  "status": "inconclusive",
+  "modelDefinition": {
+    "id": "register-serializable-v1",
+    "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+  },
+  "coverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "own_read_mismatch",
+        "message": "A read refers to its own revoked or noncurrent effect"
+      }
+    ]
+  },
+  "normalized": {
+    "schema": 3,
+    "algorithm": "v3-lifecycle-1",
+    "status": "inconclusive",
+    "coverage": {
+      "complete": false,
+      "gaps": [
+        {
+          "code": "own_read_mismatch",
+          "message": "A read refers to its own revoked or noncurrent effect"
+        }
+      ]
+    },
+    "observations": [
+      {
+        "seq": 1,
+        "time": 0,
+        "kind": "snapshot",
+        "initial": {
+          "x": "x0",
+          "y": "y0"
+        },
+        "consistent": true
+      },
+      {
+        "seq": 2,
+        "time": 1,
+        "kind": "begin",
+        "tx": "T",
+        "connection": "C"
+      },
+      {
+        "seq": 3,
+        "time": 2,
+        "kind": "savepoint",
+        "tx": "T",
+        "instance": "outer",
+        "name": "scope"
+      },
+      {
+        "seq": 4,
+        "time": 3,
+        "kind": "write",
+        "tx": "T",
+        "key": "x",
+        "version": "x1",
+        "predecessor": "x0"
+      },
+      {
+        "seq": 5,
+        "time": 4,
+        "kind": "rollback_to",
+        "tx": "T",
+        "instance": "outer"
+      },
+      {
+        "seq": 6,
+        "time": 5,
+        "kind": "read",
+        "tx": "T",
+        "key": "x",
+        "version": "x1"
+      },
+      {
+        "seq": 7,
+        "time": 6,
+        "kind": "commit_request",
+        "tx": "T"
+      },
+      {
+        "seq": 8,
+        "time": 7,
+        "kind": "commit_ok",
+        "tx": "T"
+      }
+    ],
+    "effects": [
+      {
+        "seq": 4,
+        "tx": "T",
+        "key": "x",
+        "version": "x1",
+        "predecessor": "x0",
+        "revertedBy": 5
+      }
+    ],
+    "transactions": [
+      {
+        "id": "T",
+        "connection": "C",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 8,
+        "events": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "finalWrites": []
+      }
+    ],
+    "history": null
+  },
+  "evidence": null,
+  "execution": {
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "metrics": null
+  }
+}

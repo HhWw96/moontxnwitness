@@ -1,44 +1,37 @@
-# 构建、测试与发布
+# 构建、验证与发布
 
-## 可重复环境
+## 环境与构建
 
-本机：Windows x64、Node 24.13.0、Python 3.12.5、Moon 0.1.20260920、moonc v0.10.14+7d59c7ec9。CI 固定同一 MoonBit 编译器、Node 24 和 Python 3.12，实际环境随每份记录保存。其他工具链需要另行验证。
+验证环境采用 MoonBit `v0.10.14+7d59c7ec9`、Moon `0.1.20260920`、Node 24 和 Python 3.12；具体补丁版本、操作系统和实际执行目标随每份收据保存。其他工具链需另行验证。运行便携 SDK/CLI 需要 Node ≥20；源码重建还需要外部 MoonBit 工具链。
 
-源码不依赖 npm 包或第三方 Mooncakes 包。安装 MoonBit 后，让 moon 可运行或设置 MOON_HOME。本机 .local-toolchain.json、凭据、数据库数据、虚拟环境和临时输出不进入交付包。
+核心不依赖 npm 安装或第三方 Mooncakes 包。可选数据库驱动、ORM 编译依赖及固定摘要见各自 requirements。`.local-toolchain.json`、凭据、数据库目录和环境缓存不进入公开包。
 
 ```powershell
 npm run build
 npm test
 npm run demo
-npm run benchmark
 npm run postgres:verify
 npm run package
 ```
 
-`npm test` 检查格式、四目标类型，在 JS / Wasm GC / Wasm 分别运行全部当前核心测试；准确计数以当前 `verification/summary.json` 为准。随后执行 2,542 份解析差分、10,320 份独立串行重放、6,373 份环证据、旧/新缩减核对及 CLI/SDK/导出/回放检查。独立 oracle 枚举整个事务的串行排列并实际重放，不复用生产依赖推导。更大搜索案例另有 8 份独立可验证样本。
+`npm test` 检查格式与目标类型，运行 JS/Wasm GC/Wasm 核心及解析差分、独立串行重放、环证据、缩减、CLI、采集和模型 SDK 套件。各项数量取当前 `verification/summary.json` 的 `coreTestsPerTarget`、`executedTargets` 及子套件收据，不在文档硬编码旧计数，也不把重叠断言累加为不同业务场景。独立解释器实际重放整个事务，不调用生产依赖推导。
 
-Native 在 Windows 本地只检查类型；本机没有配置 C 编译器。Linux CI 另外实际执行相同源码的完整 Native 核心测试，计数以对应实际收据为准。已安装支持的 C 编译器时可运行 `node scripts/test.mjs --all`。实际远端运行证据以各版 publication.json 和对应 Actions 为准。
+Windows 默认只对 Native 检查类型；支持 C 工具链的环境可运行 `node scripts/test.mjs --all`。Linux CI 实际执行 Native，是否执行及是否通过以该版本精确源码提交的 Actions 和收据为准；checkedTargets 与 executedTargets 分开记录。
 
-## 性能和真实数据库
+## 数据库与性能
 
-稳定 v0.1.8 的生产解析器采用已发布17版完整实现，保留九项原解析边界测试。ASCII 字段复用候选首次正式对照的正确性通过，但性能控制验收未满足，已回退；原实验输入、样本和失败记录保留。回退后稳定版未进行新性能测量，不能继承候选性能结论或宣称提速、尾延迟、RSS 目标通过。
+稳定18默认生产解析器与已发布17版完整文件逐字节一致；实验 helper 仅在白盒测试文件，原九项断言保留完整后缀。ASCII 复用候选首轮正式对照的正确性通过，但性能控制未满足，故保留试验并回退；不能把原5999/5b63试验或数据审查通过作为新81b稳定18或本版性能达标。稳定版本未进行新性能测量时保持未执行。
 
-`npm run benchmark` 会先重建，再自动准备固定摘要的公开 v0.0.6 基线。固定输入在 verification/fixtures/v006-comparison；计时、环境、峰值内存、输出大小和阶段数据在每版目录。完整协议是 5 次预热、30 次测量、3 批交替独立进程。默认推荐 balanced，可显式 `--profile compat`。`--quick` 或 `--group reduction` 用于开发，不能满足全部性能验收。每次测量保存带时间戳的独立记录，标签文件仅为最近结果的便捷入口。
+`npm run postgres:verify` 使用相同便携演示入口并保存版本化证据。按[数据库说明](postgres-capture.md)使用专属 PostgreSQL 18 测试环境和固定可选驱动。版本列采集、固定键存在性及其它受影响入口各有实际数据库检查；原 SQL、返回结果、提交/回滚应答、原始记录和模型输出分别保留。缺少数据库或未执行不记成通过。
 
-`npm run postgres:verify` 使用与便携包相同的 postgres-demo 入口，并额外保存版本化证明。按 [PostgreSQL 说明](postgres-capture.md) 安装 hash 固定的可选驱动、配置专属测试数据库；缺少条件明确未执行。独立 PostgreSQL 工作流实际运行 20+20 轮并保存服务器日志。此前失败的 v0.0.11 工作流记录和修复源码核对单独保留。
+`npm run benchmark` 运行专门的基线/协议入口，涉及重建和独立进程测量。完整报告比较应保持同机、工具链、输入和输出范围；标准协议为5次预热、30样本、3批，并记录环境、P95、峰值内存和原始样本。`--quick` 是开发检查；只测一个子组不能支持完整分析收益。旧版本数字仍属于其对应实现，不能代替当前版本的正式对照。没有实际样本就不填写新提速、RSS或采集开销结论。
 
-## 全新目录交付检查
+## 全新目录与公开下载
 
-`npm run package` 创建 source / portable ZIP 和版本专属 SHA256SUMS，然后在新目录解压两种包：源码包用外部 MoonBit 工具链重建并运行 JS 核心测试；两者验证 CLI、SDK、示例、导出、旧证据、v2 回放、缩减、一键演示、缺失数据库明确未执行，以及随包真实 PostgreSQL 的三个 capsule。当前为 50 项全新消费检查。
+`npm run package` 创建 source/portable ZIP 和版本摘要，在全新目录消费两种包。源码包用外部工具链重建；两者实际运行 CLI/SDK、旧证据、各模型示例、环解读及执行诊断包，核对随包输入与输出摘要。数量和逐项结果取 `verification/package.json`，其中 freshConsumerChecks 必须对应实际 checks。包内包含当前编译核心和依赖许可，不包含 Node、Python、PostgreSQL 或运行机私有配置。
 
-运行包需要 Node ≥20；真实数据库采集另需 Python 和可选驱动。不包含 Node、Python、PostgreSQL 或原生可执行文件。包内有编译 MoonBit 核心与标准库许可证。打包记录不递归记录自己的 ZIP 摘要；既有目录与文件不会被重置。
+发布前检查实际源码/运行时指纹、完整回归、适用数据库、独立技术复核、两个包的新消费者及精确提交 CI。发布脚本保留既有 scoped gate；本版稳定范围见[支持矩阵](stable-scope.md)，旧路线中尚未完成的全部业务/模型/性能目标不再共同绑定稳定发布。
 
-## 发布与外部状态
+GitHub 和 Mooncakes 发布后继续匿名下载、核对发行摘要和实际上传的注册表 ZIP，并从新项目安装运行。`python scripts/verify_publication.py VERSION` 使用对应版本的原验证流程；公开 Linux 手动工作流可在受限本机网络之外执行相同逻辑，源码提交与工作流提交分别绑定。记录失败与重试，不能仅从“上传成功”推定公开验证通过。
 
-发布脚本绑定 HhWw96，先推送已测试的候选提交，等待该提交的 Windows/Linux、Linux Native 和独立 PostgreSQL CI 实际通过，再上传 Mooncakes、推送版本标签并创建 GitHub Release。最后匿名下载公开 ZIP、核对摘要和实际运行，并核对 Mooncakes 上传/下载字节，在无 workspace 覆盖的新项目从注册表安装后运行 JS / Wasm GC 各 8 项接口测试。
-
-`python scripts/verify_publication.py VERSION` 可重复公开验收。只读 CI 和证据下载需要可访问 GitHub 的已登录 GitHub CLI；匿名 ZIP 下载本身不使用认证。所有失败记录保留。仅当历史工作流配置需要修复时，分别记录工作流提交和实际检出的不可变发布源码；源码 SHA 必须从 CI 产物核对。
-
-公开发布、参赛者本人解释验收、报名、入群及官方审核是独立状态。说明与清单见 project-brief.md / human-acceptance.md。自动检查不能代填人工签字或官方回执。
-
-复查公开发布请使用 main 当前的核验脚本。归档 v0.1.0 源码中的初始脚本错误地要求 CI 产物只能包含一版历史；main 已按请求版本选择，并继续核对实际源码 SHA 和全部证据文件摘要。原始包、首轮失败及成功重试记录均保留，见该版 post-publication-repair.json。
+实际测试数量、跳过原因、独立审计原标签、旧包与失败记录均保留。公开发布、用户验收、生产采用及官方审核是不同状态；自动检查不能代填人工或官方回执。原历史计划见[固定原文](remaining-execution-plan-2026-10-21.md)，当前范围与后续安排分别维护。

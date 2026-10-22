@@ -9,6 +9,7 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from publication_download import MAX_MANIFEST_BYTES, download_file, extract_zip, sha256_file
+from publication_ci import wait_for_successful_run_list
 
 ROOT = Path(__file__).resolve().parent.parent
 CURRENT_VERSION = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))['version']
@@ -34,8 +35,8 @@ assert NODE, 'Node.js is required'
 RECEIPT = {'tool': 'MoonTxnWitness', 'version': VERSION, 'account': 'HhWw96', 'passed': False, 'startedAt': datetime.now(timezone.utc).isoformat(), 'github': {'repository': REPOSITORY, 'release': REPOSITORY + '/releases/tag/v' + VERSION}, 'mooncakes': {'module': MODULE, 'version': VERSION, 'page': 'https://mooncakes.io/docs/' + MODULE}}
 
 
-def run(args, cwd=ROOT, expected=0):
-    result = subprocess.run(args, cwd=cwd, env=ENV, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=240)
+def run(args, cwd=ROOT, expected=0, timeout=240):
+    result = subprocess.run(args, cwd=cwd, env=ENV, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=timeout)
     if result.returncode != expected:
         print(result.stdout, result.stderr)
         raise RuntimeError('Verification command failed: ' + Path(args[0]).name)
@@ -227,8 +228,9 @@ test "published incomplete capture refuses a history" {{
     RECEIPT['github']['ci'] = {'url': ci['url'], 'headSha': ci['headSha'], 'conclusion': ci['conclusion'], 'jobs': [{'name': job['name'], 'conclusion': job['conclusion']} for job in ci['jobs']], 'linuxNativeExecuted': any(step['name'] == 'Execute Native core on Linux' and step['conclusion'] == 'success' for job in ci['jobs'] for step in job['steps'])}
     assert RECEIPT['github']['ci']['linuxNativeExecuted'], 'Native execution must actually pass'
     if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
-        runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', tag_sha, '--workflow', 'postgres.yml', '--json', 'databaseId,conclusion,headSha', '--limit', '10']))
-        successful = [item for item in runs if item['headSha'] == tag_sha and item['conclusion'] == 'success']
+        successful = wait_for_successful_run_list(
+            lambda remaining: json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', tag_sha, '--workflow', 'postgres.yml', '--json', 'databaseId,status,conclusion,headSha', '--limit', '10'], timeout=min(240, remaining))),
+            tag_sha)
         repaired = False
         repair_path = ROOT / 'verification/releases' / VERSION / 'postgres-ci-repair.json'
         if not successful and repair_path.exists():

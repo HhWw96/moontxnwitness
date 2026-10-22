@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "kind": "moontxnwitness-register-cycle-explanation/v1",
+  "algorithm": "verified-register-cycle-v1",
+  "traceTextSha256": "394082e561c882f20cc1d979a0f9ce3cf0c7ad428522c218b4218dea47af683b",
+  "reportTextSha256": "97177a88c5f9158739c716d7057550766d2452291ba7ba3101d4001e3a528fd4",
+  "verifiedReport": true,
+  "sourceReportVersion": "0.2.0",
+  "sourceStatus": "violation",
+  "sourceCoverageComplete": true,
+  "status": "explained",
+  "reason": "verified-point-cycle",
+  "subtype": "G1c",
+  "categoriesSearched": false,
+  "scope": {
+    "witnessOnly": true,
+    "searchesOtherCategoryCycles": false,
+    "acceptsIsolationModels": false,
+    "completeIsolationClassification": false,
+    "classifiesExecutionFailures": false,
+    "authenticatesCaptureSources": false
+  },
+  "witness": {
+    "kind": "dependency_cycle",
+    "transactions": [
+      "pure-wr-T0",
+      "pure-wr-T1",
+      "pure-wr-T0"
+    ],
+    "edges": [
+      {
+        "from": "pure-wr-T0",
+        "to": "pure-wr-T1",
+        "kind": "wr",
+        "key": "pure-wr-k0",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "pure-wr-v0-1",
+        "toVersion": "pure-wr-v0-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      },
+      {
+        "from": "pure-wr-T1",
+        "to": "pure-wr-T0",
+        "kind": "wr",
+        "key": "pure-wr-k1",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "pure-wr-v1-1",
+        "toVersion": "pure-wr-v1-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      }
+    ],
+    "minimality": "shortest directed cycle in the constructed graph"
+  },
+  "steps": [
+    {
+      "edgeIndex": 0,
+      "dependency": {
+        "from": "pure-wr-T0",
+        "to": "pure-wr-T1",
+        "kind": "wr",
+        "key": "pure-wr-k0",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "pure-wr-v0-1",
+        "toVersion": "pure-wr-v0-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      },
+      "from": {
+        "transaction": "pure-wr-T0",
+        "projectedOperation": 0,
+        "operation": {
+          "type": "write",
+          "key": "pure-wr-k0",
+          "version": "pure-wr-v0-1"
+        },
+        "matchingOriginalSeqs": [
+          4
+        ]
+      },
+      "to": {
+        "transaction": "pure-wr-T1",
+        "projectedOperation": 1,
+        "operation": {
+          "type": "read",
+          "key": "pure-wr-k0",
+          "version": "pure-wr-v0-1"
+        },
+        "matchingOriginalSeqs": [
+          6
+        ]
+      },
+      "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+      "versionOrderSource": "asserted",
+      "versionOrder": [
+        "pure-wr-v0-0",
+        "pure-wr-v0-1"
+      ]
+    },
+    {
+      "edgeIndex": 1,
+      "dependency": {
+        "from": "pure-wr-T1",
+        "to": "pure-wr-T0",
+        "kind": "wr",
+        "key": "pure-wr-k1",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "pure-wr-v1-1",
+        "toVersion": "pure-wr-v1-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      },
+      "from": {
+        "transaction": "pure-wr-T1",
+        "projectedOperation": 0,
+        "operation": {
+          "type": "write",
+          "key": "pure-wr-k1",
+          "version": "pure-wr-v1-1"
+        },
+        "matchingOriginalSeqs": [
+          5
+        ]
+      },
+      "to": {
+        "transaction": "pure-wr-T0",
+        "projectedOperation": 1,
+        "operation": {
+          "type": "read",
+          "key": "pure-wr-k1",
+          "version": "pure-wr-v1-1"
+        },
+        "matchingOriginalSeqs": [
+          7
+        ]
+      },
+      "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+      "versionOrderSource": "asserted",
+      "versionOrder": [
+        "pure-wr-v1-0",
+        "pure-wr-v1-1"
+      ]
+    }
+  ],
+  "rules": {
+    "repository": "jepsen-io/elle",
+    "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+    "file": "src/elle/txn.clj",
+    "definition": "cycle-explainer; ww/wr/item-rw subset only"
+  },
+  "pattern": {
+    "itemAntiDependencies": 0,
+    "adjacentAntiDependenciesIncludingWraparound": false
+  },
+  "categoryCoverage": "Only this existing witness; another anomaly may exist elsewhere in the history."
+}

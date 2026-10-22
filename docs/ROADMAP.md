@@ -1,13 +1,14 @@
 # Roadmap and delivery history
 
-## Next delivery v0.1.1 through v0.2.0
+## v0.2.0 bounded convergence
 
-The [implementation plan](roadmap-v0.2.0.md) proposes eight small releases for
-driver capture, ordinary-table version provenance, ORM and transaction lifecycle,
-list append, bounded relational predicates, anomaly/model classification, real
-business debugging, and performance/scale. It preserves the v0.1.0 contract and
-uses v0.1.0 as the direct regression baseline. The proposed work is not yet
-implemented or released; v0.2.0 requires its explicit correctness and evidence gates.
+The [stable support matrix](stable-scope.md) defines the declared register, fixed-key presence, SQL-template/cache, list, relation, selected-cycle and execution-capsule interfaces. Each capability retains explicit inputs, budgets, coverage gaps and replay rules. Actual release acceptance comes from its versioned receipts; a source candidate or old database replay is not a new database execution.
+
+The [current iteration arrangement](remaining-execution-plan.md) allows installable stable subsets. Full automatic SQL/ORM, six-model classification, complete production integrations and broader performance/scale remain future work. The [original 30–40 day plan](remaining-execution-plan-2026-10-21.md) is retained verbatim as history, not a joint prerequisite for every stable release. No unmeasured speedup or RSS result is claimed for v0.2.0.
+
+## Historical v0.0.7–v0.1.0 notes
+
+The following text describes its original versions, engineering targets and evidence. It is not the current v0.2.0 support or release policy. Historical organizer references and participant steps are not fresh confirmation of present contest rules or acceptance.
 
 ## v0.0.7 through v0.1.0 delivery history
 
@@ -42,7 +43,7 @@ structured serializer; later versions measure their shipped streaming serializer
 Phase results on a no-cycle report
 measure the specified isolated operation, not a complete user-visible result.
 
-Targets: graph group geometric mean >=2x and RSS ratio <=0.7; search and
+Historical targets for that development series: graph group geometric mean >=2x and RSS ratio <=0.7; search and
 reduction >=2x; control P95 regression <=max(10%,2ms). Summary output must not
 be compared with a full baseline report. A correctness pass does not mean all
 performance targets passed. Raw failed measurements are retained.

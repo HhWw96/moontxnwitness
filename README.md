@@ -6,32 +6,13 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-## v0.1.8 支持范围
+## v0.2.0 支持范围
 
-本版明确支持实际 v0.1.7 执行诊断包的兼容重放，保留完整诊断、原始 trace 和旧引擎标识，并新增九项解析边界回归。默认生产解析器采用已发布 v0.1.7 的完整实现。
+本版整合有界寄存器分析、固定键普通表存在性与 CRUD、固定 ORM SQL 模板/缓存及局部来源诊断、追加列表、关系集合、已选中环解读和独立执行诊断包。前提、推荐入口、预算和限制集中在[稳定支持矩阵](docs/stable-scope.md)。
 
-常见 ASCII 字段复用保留为试验候选。首次正式对照的正确性核对通过，但性能控制验收未满足，因此该候选没有进入本版默认路径；原测量与失败记录保留。稳定版本身尚未进行新性能测量，不声明提速或 RSS 目标通过。
+模型与诊断各自保留未知提交、来源缺口和计算额度；包可重放不表示数据库真实性、无故障或完整应用修复。全部自动 SQL、完整 ORM、六模型分类及完整 MLflow/dislock 生产接入继续后续迭代。
 
-继续提供执行故障诊断包：`makeExecutionCapsuleV3`、`replayExecutionCapsuleV3`，把原始记录与完整诊断封存并重新计算。运行 `node examples/execution-roundtrip.mjs` 可离线比较两份既有 MLflow 记录，见[诊断包说明](docs/execution-capsule-v3.md)；有效重放不表示没有故障、业务修复或数据库真实性证明。
-
-继续提供已验证点寄存器证据环的类型与来源解读：`explainRegisterCycleV3`、`verifyRegisterCycleExplanationV3`。运行 `node examples/register-cycle-roundtrip.mjs`，见[证据环解读说明](docs/cycle-explanation-v3.md)。
-
-关系集合的六个专用 SDK 入口与来源闭包缩减示例继续提供；保留列表、ORM 模板、局部来源诊断、普通表 CRUD 与已有分析接口。v0.1.7 已发布至 GitHub 与 Mooncakes，并通过[公开下载验证](https://github.com/HhWw96/moontxnwitness/actions/runs/39820215994)；本版实际构建、安装和公开发布状态以 `verification/releases/0.1.8/` 收据及[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。
-
-| 能力 | 本版支持 |
-| --- | --- |
-| 离线分析 | 带唯一写入版本的点读写寄存器；serializable / strict-serializable |
-| 追加列表 | `append-list-v1` 的来源检查、有界串行分析、缩减及胶囊重放；显式列表 SDK 入口 |
-| 关系集合 | `relation-set-v1` 的完整谓词查询、行写入、来源闭包缩减及胶囊重放；显式关系 SDK 入口 |
-| 异常解释 | 直接读写异常、完整依赖来源、图中最短有向环和有界串行补全 |
-| 反例与证据 | 事务缩减、中文报告、图导出、v1/v2 证据及复现包回放 |
-| PostgreSQL 采集 | psycopg 同步/异步连接；已有版本列、单列主键及明确映射的点读写 SQL |
-| 普通表 CRUD | 独立 `moontxnwitness_capture.presence` 入口；受控两列表、固定文本键集合、同步点查询及插入/更新/删除、负读与墓碑来源 |
-| ORM 模板与缓存 | 独立 `moontxnwitness_capture.orm` 入口；固定 base-user 点 CRUD SQL 编译、完全匹配及有界结构缓存 |
-| ORM 局部诊断 | `inspectOrmSourceV3` / `inspect-orm-source-v3` 核验固定来源片段；保留 `history:null` 和明确覆盖缺口 |
-| 数据库演示 | PostgreSQL 18 写偏斜与 Serializable 回滚/全新事务重试；SQLite WAL 并发案例 |
-
-采集需要显式声明写者范围和 SQL 映射。未知提交、丢失来源或预算耗尽保留为无法判定。普通表入口会安装版本列、触发器和来源表，适用条件及示例见[普通表采集](docs/presence-capture.md)。关系分析要求显式模型事实；扩展来源持久化和完整 ORM 自动采集继续使用实验入口。
+本版实际构建、回归、安装和公开下载以 `verification/releases/0.2.0/` 收据与[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。默认生产解析器沿用已发布17版完整实现；ASCII 复用候选首次正式对照的性能控制未通过，原试验保留并已回退。稳定18及本版未据该试验声明新性能或 RSS 成功。
 
 ## 运行演示
 
@@ -68,7 +49,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.1.8
+moon add HhWw96/moontxnwitness@0.2.0
 ```
 
 ```javascript
@@ -133,13 +114,15 @@ node examples/relation-roundtrip.mjs
 
 [MoonBit 来源诊断](docs/orm-source-v3.md)核验原始 SQL、同语句来源、回滚与效果账本的对应关系。局部证明成功仍保留 `analysisCoverageAccepted:false`，不能据此推断完整事务历史。`ProvenanceObserver`、安装迁移及完整 ORM 采集仍为实验能力。
 
-## 预览功能
+## 证据解读与执行诊断
 
-- [v3 生命周期](docs/v3-contract.md)、[分段磁盘日志](docs/capture-journal-v3.md)：独立 `check-v3` / `reduce-v3` / `replay-v3` 入口。
-- [普通表扩展来源](experiments/provenance/PRESENCE_PROFILE.md)、[dislock](docs/dislock-v3.md)：按适配器声明的 SQL 与来源范围使用。
-- [执行故障诊断](experiments/faults/mlflow/README.md)：死锁等故障单列，不冒充隔离模型违反。
+`node examples/register-cycle-roundtrip.mjs` 解读已有且完整验证的点寄存器环，保存原模型包和独立派生解释；它不搜索全部类别或接受隔离模型。`node examples/execution-roundtrip.mjs` 离线比较两份旧 MLflow 组件观察，分别重放模型和执行诊断；40P01、未知结果及原 capture.py 来源缺口保留。用法见[环解读](docs/cycle-explanation-v3.md)和[执行诊断包](docs/execution-capsule-v3.md)。
 
-预览格式可能调整。v0.1.8 对 v0.1.1 至 v0.1.7 的既有算法保留显式兼容检查；更早研究期记录仍可能需要对应源码回放。不支持的 SQL、缺失来源与覆盖缺口始终可见；尚不提供任意 SQL 插桩或完整隔离级别分类。
+已声明输入的 v3 寄存器、列表与关系工作流使用 `check-v3`、`reduce-v3`、`verify-v3`、`replay-v3`；旧 v1/v2 默认规则保持。显式引擎兼容名单与预算见[支持矩阵](docs/stable-scope.md)，兼容不改写业务版本。
+
+## 实验与后续
+
+[分段日志与来源窗口](docs/capture-journal-v3.md)、扩展普通表/ORM 来源安装、[dislock 完整生命周期](docs/dislock-v3.md)、六模型与更广 SQL 自动接入仍按各自实验契约推进。受控组件案例不是生产采用证明，不把这些工作作为已经交付的完整应用集成。未支持 SQL 和缺失来源始终可见。
 
 ## 开发与验证
 
@@ -151,7 +134,7 @@ npm test
 npm run package
 ```
 
-测试覆盖跨目标核心、10,320 份独立串行重放、6,373 份环证据、解析差分、缩减与 CLI；发行包另在全新目录构建和运行。见[开发说明](docs/development.md)。
+测试覆盖跨目标核心、独立串行重放、环证据、解析差分、缩减、CLI 及各 SDK；数量与执行目标取当前版本真实收据，发行包另在全新目录构建和运行。见[开发说明](docs/development.md)。
 
 性能优化保持完整报告、依赖来源及预算语义。测量和环境见[性能报告](docs/performance.md)，进一步提速与扩容按[后续路线](docs/remaining-execution-plan.md)推进。
 

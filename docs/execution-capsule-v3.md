@@ -16,7 +16,7 @@ if (replay.valid) {
 
 `valid:true` 仅表示保存的诊断能从同一原始记录重新计算，不表示没有故障、记录完整、数据库真实性认证、隔离模型违反或业务已修复。原记录的 unknown COMMIT、缺失来源、无法判定及已观察故障均保留。40P01 是执行死锁，40001 是序列化中止，55P03 是锁不可用，57014 是取消；其它错误保留原类别和 SQLSTATE，不改称 G2。没有观察故障不构成无故障证明。现有模型分析可同时为 inconclusive。
 
-新包格式为 `moontxnwitness-execution/v1`，`schemaVersion:1`、`diagnosticAlgorithm:"v3-observed-failures-1"`，与原 `moontxnwitness-replay/v3` 模型胶囊分开。SDK 的两个生产器/重放器不能互换，v0.1.8 除当前执行引擎外，显式接受同诊断算法的 v0.1.7 执行包；保留原引擎头、原 trace 和完整诊断，不重写业务字段。未知或未来引擎仍拒绝。旧模型胶囊继续按既有显式兼容规则重放；不能把模型兼容名单推定为执行格式的兼容名单。
+新包格式为 `moontxnwitness-execution/v1`，`schemaVersion:1`、`diagnosticAlgorithm:"v3-observed-failures-1"`，与原 `moontxnwitness-replay/v3` 模型胶囊分开。SDK 的两个生产器/重放器不能互换，v0.2.0 除当前执行引擎外，显式接受同诊断算法的 v0.1.7、v0.1.8 执行包；保留原引擎头、原 trace 和完整诊断，不重写业务字段。未知或未来引擎仍拒绝。旧模型胶囊继续按既有显式兼容规则重放；不能把模型兼容名单推定为执行格式的兼容名单。
 
 包记录实际引擎、完整 `traceText`、`diagnosticText`、各自 SHA-256 及固定预算。外层 JSON 采用生产器固定字段顺序、两空格缩进及末尾换行，传入重排、删空白、重复或额外字段的外层文本会拒绝。trace 文本自身保持原样，包括原有空白、SQL、参数和 Unicode；不会为格式兼容而改写。重封摘要不能使篡改后的故障、来源、事务结果、覆盖缺口或诊断字段通过重算。摘要与重算不是签名：正确改写输入并重新计算诊断形成的是另一份调用者记录。
 

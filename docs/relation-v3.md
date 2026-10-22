@@ -1,6 +1,6 @@
 # relation-set-v1 有界关系模型
 
-v0.1.5 为完整谓词查询与实际行写入的关系集合事实提供明确支持的有界入口，使用 [关系模型契约](relation-v3-contract-draft.md)与[关系 SDK](relation-sdk.md)。它不自动证明任意 SQL 或 ORM 的语义，也不提供六种隔离模型分类。旧 v1/v2 接口和证据重放规则保持原样；完整 v0.2.0 契约仍另行整理。
+v0.1.5 为完整谓词查询与实际行写入的关系集合事实提供明确支持的有界入口，使用 [关系模型契约](relation-v3-contract-draft.md)与[关系 SDK](relation-sdk.md)。它不自动证明任意 SQL 或 ORM 的语义，也不提供六种隔离模型分类。旧 v1/v2 接口和证据重放规则保持原样；各入口、预算与版本兼容统一见[稳定支持矩阵](stable-scope.md)。
 
 ## 支持范围
 

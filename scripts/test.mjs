@@ -91,6 +91,7 @@ pythonJSON(['-B','scripts/test_package_archive.py'],'Bounded archive and cross-c
 pythonJSON(['-B','scripts/test_distribution.py'],'Distribution input closure and CI private-file checks');
 pythonJSON(['-B','scripts/test_hosted_publication.py'],'Hosted public download controller fault checks');
 pythonJSON(['-B','scripts/test_publication_download.py'],'Bounded public downloads and safe fresh ZIP extraction');
+pythonJSON(['-B','scripts/test_publication_ci.py'],'Bounded read-only CI observation and terminal-state checks');
 const presenceUnitReceipt = JSON.parse(pythonJSON(['-B','scripts/presence-unit-test.py','--node',process.execPath],'Ordinary-table initialization, standalone package and metadata failure units'));
 assert.equal(presenceUnitReceipt.passed,true);
 const ormUnitReceipt = JSON.parse(pythonJSON(['-B','scripts/orm-unit-test.py'],'Fixed ORM plan/cache and business-surface regression'));

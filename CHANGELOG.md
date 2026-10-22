@@ -1,3 +1,10 @@
+# 0.2.0 — 2026-10-22
+
+- Converge the declared bounded register, fixed-key presence, SQL-template/cache, list, relation, selected-cycle and execution-capsule interfaces into one support matrix and upgrade guide.
+- Retain existing budgets and checks; explicitly preserve v0.1.8 model capsules and v0.1.7/v0.1.8 execution capsules without rewriting observed data.
+- Update stale scope/development documentation and retain the original large roadmap as history. Full automatic SQL/ORM, six-model classification and complete production integrations remain future work.
+- Actual regression, database, installation, independent review, download and any performance results are recorded separately; this entry does not claim unexecuted acceptance or new measured gains.
+
 # 0.1.8 — 2026-10-22
 
 - Replay two genuine v0.1.7 execution capsules with their original engine, trace and full diagnostic; retain explicit model compatibility and all existing SDK entries, budgets and release checks.
