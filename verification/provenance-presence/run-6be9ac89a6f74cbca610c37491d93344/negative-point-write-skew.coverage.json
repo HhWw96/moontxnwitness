@@ -1,0 +1,131 @@
+{
+  "schema": 1,
+  "status": "ready",
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "history": {
+    "schemaVersion": 1,
+    "model": "serializable",
+    "initial": {
+      "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"a\"]": "46d26b91-f43c-4a50-8592-d83c3f0417b1",
+      "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"b\"]": "c23cccf8-d754-4658-aca6-f387f8e8c7dc",
+      "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"never\"]": "d8086560-2724-40df-84b2-f86d181b458a"
+    },
+    "versionOrders": {
+      "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"a\"]": [
+        "46d26b91-f43c-4a50-8592-d83c3f0417b1",
+        "5bc5f009-8e59-45fa-8945-8682ae01f4bc"
+      ],
+      "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"b\"]": [
+        "c23cccf8-d754-4658-aca6-f387f8e8c7dc",
+        "b2336241-ec6c-43f7-8a3f-52cc37f3bd7e"
+      ],
+      "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"never\"]": [
+        "d8086560-2724-40df-84b2-f86d181b458a"
+      ]
+    },
+    "transactions": [
+      {
+        "id": "tx-1",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "read",
+            "key": "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"b\"]",
+            "version": "c23cccf8-d754-4658-aca6-f387f8e8c7dc"
+          },
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"a\"]",
+            "version": "5bc5f009-8e59-45fa-8945-8682ae01f4bc"
+          }
+        ],
+        "start": 281000,
+        "end": 343000
+      },
+      {
+        "id": "tx-2",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "read",
+            "key": "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"a\"]",
+            "version": "46d26b91-f43c-4a50-8592-d83c3f0417b1"
+          },
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"b\"]",
+            "version": "b2336241-ec6c-43f7-8a3f-52cc37f3bd7e"
+          }
+        ],
+        "start": 281000,
+        "end": 343000
+      }
+    ]
+  },
+  "projection": {
+    "version": "column-presence-register-v0.1.2-experimental",
+    "scope": "unique-version point-register projection"
+  },
+  "sourceFacts": {
+    "schema": 1,
+    "projection": "column-presence-register-v0.1.2-experimental",
+    "initial": [
+      {
+        "key": "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"a\"]",
+        "version": "46d26b91-f43c-4a50-8592-d83c3f0417b1",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"b\"]",
+        "version": "c23cccf8-d754-4658-aca6-f387f8e8c7dc",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"never\"]",
+        "version": "d8086560-2724-40df-84b2-f86d181b458a",
+        "present": false
+      }
+    ],
+    "reads": [
+      {
+        "seq": 6,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"b\"]",
+        "version": "c23cccf8-d754-4658-aca6-f387f8e8c7dc",
+        "present": false
+      },
+      {
+        "seq": 11,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"a\"]",
+        "version": "46d26b91-f43c-4a50-8592-d83c3f0417b1",
+        "present": false
+      }
+    ],
+    "writes": [
+      {
+        "seq": 15,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"a\"]",
+        "version": "5bc5f009-8e59-45fa-8945-8682ae01f4bc",
+        "predecessor": "46d26b91-f43c-4a50-8592-d83c3f0417b1",
+        "oldPresent": false,
+        "newPresent": true,
+        "action": "insert"
+      },
+      {
+        "seq": 19,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_presence_80bbd4b8c8ff.presence_skew\",\"text\",\"b\"]",
+        "version": "b2336241-ec6c-43f7-8a3f-52cc37f3bd7e",
+        "predecessor": "c23cccf8-d754-4658-aca6-f387f8e8c7dc",
+        "oldPresent": false,
+        "newPresent": true,
+        "action": "insert"
+      }
+    ]
+  }
+}

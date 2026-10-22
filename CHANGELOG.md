@@ -1,3 +1,13 @@
+# 0.1.3 — 2026-10-22
+
+- Add the standalone `moontxnwitness_capture.orm` entry for fixed FastAPI Users SQLAlchemy v7.0.0 base-user point-CRUD plans and exact SQL matching.
+- Reuse prepared plans in a bounded structural cache; isolate declared UUID domains, compiler contexts and epochs while retaining no business parameters, results or transaction state.
+- Keep basic imports free of optional dependencies; use SQLAlchemy 2.0.55 only when compiling the pinned templates.
+- Provide `inspectOrmSourceV3` / `inspect-orm-source-v3` as explicit local source diagnostics, preserving `analysisCoverageAccepted:false` and `history:null`.
+- Keep the optional observer, installation/migration and complete ORM capture experimental; preserve existing capture interfaces and unknown-outcome handling.
+- Compare the migrated observer against the original upstream CRUD workload on PostgreSQL 18 with caching enabled/disabled; preserve refresh, nested rollback, connection reuse and original errors, then verify 21 local source facts for each mode in MoonBit.
+- Retain v0.1.1/v0.1.2 replay compatibility with exact semantic and engine-header checks.
+
 # 0.1.2 — 2026-10-22
 
 - Add the standalone `moontxnwitness_capture.presence` Python entry for generated synchronous point CRUD on controlled two-column PostgreSQL 18 tables, including negative reads and deletion tombstones.

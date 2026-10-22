@@ -1,0 +1,113 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-9af6e39a414d402080b18cc7070de52c",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 62000,
+      "initial": {
+        "[\"mtw_provenance_profile_be476966434d.items_unsupported_sql\",\"text\",\"a\"]": "dad8dab7-1f43-426e-bd51-7120eeeb046c",
+        "[\"mtw_provenance_profile_be476966434d.items_unsupported_sql\",\"text\",\"b\"]": "08c33266-e9e5-4519-a9cb-12ea3b652da7"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 156000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 156000,
+      "phase": "execute-request",
+      "sql": "SELECT 1",
+      "parameters": null,
+      "mapped": false,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 156000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 156000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          1
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "sql",
+      "time": 156000,
+      "phase": "execute-request",
+      "sql": "SAVEPOINT outside_profile",
+      "parameters": null,
+      "mapped": false,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 7,
+      "kind": "sql",
+      "time": 156000,
+      "phase": "execute-ack",
+      "affectedRows": -1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 156000,
+      "phase": "execute-request",
+      "sql": "RELEASE SAVEPOINT outside_profile",
+      "parameters": null,
+      "mapped": false,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 9,
+      "kind": "sql",
+      "time": 156000,
+      "phase": "execute-ack",
+      "affectedRows": -1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 10,
+      "kind": "sql",
+      "time": 156000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 11,
+      "kind": "end",
+      "time": 156000,
+      "tx": "tx-1",
+      "status": "committed"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "unsupported_sql",
+      "message": "An SQL statement has no explicit point-read/write mapping."
+    }
+  ]
+}

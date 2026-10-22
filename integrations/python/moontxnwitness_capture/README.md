@@ -8,6 +8,31 @@ self-contained; copying this package does not require an experiments directory.
 
 The existing version-column adapter below retains its v0.1.1 behavior and API.
 
+v0.1.3 adds the explicit
+`moontxnwitness_capture.orm` module for fixed FastAPI Users SQLAlchemy v7.0.0
+base-user point-CRUD plans and an exact-match structural cache. Basic imports
+need neither optional dependency; compiling a plan requires SQLAlchemy 2.0.55.
+The helper does not execute SQL. See [templates, example and cache limits](../../../docs/orm-plans.md).
+
+The cache defaults to 128 entries and 1 MiB accounted retained-entry bytes;
+configuration permits 1–256 entries and 4 KiB–2 MiB. Oversized entries are
+returned without retention. Keys isolate the complete declared UUID domain,
+schema/table, SQL shape and immutable compiler/profile context. Business
+parameters, fetched results and transaction state are never cache entries.
+This accounting is not a process RSS limit. Use a new `registry_epoch` or
+observer after installation, catalog assumptions or connection configuration change.
+
+The standalone MoonBit [ORM source diagnostic](../../../docs/orm-source-v3.md)
+checks supported source fragments and retains `analysisCoverageAccepted:false`
+and `history:null`. The optional `ProvenanceObserver`, `SourceSink`, installation
+and complete ORM capture remain experimental. The helper/cache's 21 mainline
+offline checks and 32 independent candidate checks passed; the latter includes
+the same 21 checks rerun plus 11 additions. Neither run executed a database.
+Separately, a fresh PostgreSQL 18 run compared the original upstream business
+with caching enabled/disabled, preserving CRUD, refresh, rollback, connection
+reuse and original errors. MoonBit validated 21 local source facts per mode;
+complete transaction coverage remains false. See the versioned release evidence.
+
 This optional adapter supports psycopg 3 synchronous and asynchronous connections.
 It records actual driver observations; the MoonBit core validates and normalizes
 the resulting `traceSchema: 1` document. The stable v0.1.1 profile is
@@ -211,15 +236,15 @@ The test command is `python scripts/capture-unit-test.py`. These are driver
 interface unit tests, with `actualDatabaseExecution: false`; real PostgreSQL
 execution is a separate acceptance step.
 
-## Other profiles (preview)
+## Experimental profiles
 
-Unversioned ordinary-table CRUD, `traceSchema: 2` presence capture and v3
-journal/lifecycle/model APIs use separate preview entry points. ORM source
-inspection is also a preview and does not establish complete ORM analysis.
-These capabilities do not widen the stable `CaptureSession` profile above.
-See the [ordinary-table profile](../../../experiments/provenance/PRESENCE_PROFILE.md),
-[v3 journal](../../../docs/capture-journal-v3.md) and
-[ORM source inspection](../../../docs/orm-source-v3.md) for their current scopes.
+Extended ordinary-table provenance and v3 journal/lifecycle/model APIs use
+separate experimental entry points. The optional ORM observer still requires
+a compatible controlled installation; it does not establish complete ORM
+analysis. These capabilities do not widen the stable `CaptureSession`, presence
+or fixed-template profiles above. See the
+[extended provenance profile](../../../experiments/provenance/PRESENCE_PROFILE.md)
+and [v3 journal](../../../docs/capture-journal-v3.md) for their current scopes.
 
 ## API sources
 

@@ -6,7 +6,9 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-## v0.1.2 支持范围
+## v0.1.3 支持范围
+
+本版新增固定 ORM 模板、有界缓存和局部来源诊断，保留 v0.1.2 的普通表 CRUD 与已有分析接口。各版公开下载和安装结果见[发行记录](https://github.com/HhWw96/moontxnwitness/releases)。
 
 | 能力 | 本版支持 |
 | --- | --- |
@@ -15,9 +17,11 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 | 反例与证据 | 事务缩减、中文报告、图导出、v1/v2 证据及复现包回放 |
 | PostgreSQL 采集 | psycopg 同步/异步连接；已有版本列、单列主键及明确映射的点读写 SQL |
 | 普通表 CRUD | 独立 `moontxnwitness_capture.presence` 入口；受控两列表、固定文本键集合、同步点查询及插入/更新/删除、负读与墓碑来源 |
+| ORM 模板与缓存 | 独立 `moontxnwitness_capture.orm` 入口；固定 base-user 点 CRUD SQL 编译、完全匹配及有界结构缓存 |
+| ORM 局部诊断 | `inspectOrmSourceV3` / `inspect-orm-source-v3` 核验固定来源片段；保留 `history:null` 和明确覆盖缺口 |
 | 数据库演示 | PostgreSQL 18 写偏斜与 Serializable 回滚/全新事务重试；SQLite WAL 并发案例 |
 
-采集需要显式声明写者范围和 SQL 映射。未知提交、丢失来源或预算耗尽保留为无法判定。普通表入口会安装版本列、触发器和来源表，适用条件及示例见[普通表采集](docs/presence-capture.md)。v3 模型、扩展普通表持久化和 ORM 适配继续使用预览入口。
+采集需要显式声明写者范围和 SQL 映射。未知提交、丢失来源或预算耗尽保留为无法判定。普通表入口会安装版本列、触发器和来源表，适用条件及示例见[普通表采集](docs/presence-capture.md)。v3 模型、扩展来源持久化和完整 ORM 自动采集继续使用实验入口。
 
 ## 运行演示
 
@@ -54,7 +58,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.1.1
+moon add HhWw96/moontxnwitness@0.1.3
 ```
 
 ```javascript
@@ -91,11 +95,17 @@ node dist/postgres-demo.mjs
 
 真实演示需要 PostgreSQL 18 和可选 Python 驱动，保存实际结果、提交/回滚、40001 重试及复现包；缺少数据库时明确未执行。见[数据库流程](docs/postgres-capture.md)和[SQLite 案例](docs/sqlite-capture.md)。
 
+## ORM 模板与来源诊断
+
+[Python 模板入口](docs/orm-plans.md)提供固定 FastAPI Users SQLAlchemy v7.0.0 base-user 的按 ID 查询、创建、修改及删除 SQL。普通导入无需可选依赖，编译时使用 SQLAlchemy 2.0.55。缓存只保存不可变计划，默认最多 128 项、1 MiB 计费条目字节；参数、结果与事务状态不进入缓存。该入口本身不执行 SQL。
+
+[MoonBit 来源诊断](docs/orm-source-v3.md)核验原始 SQL、同语句来源、回滚与效果账本的对应关系。局部证明成功仍保留 `analysisCoverageAccepted:false`，不能据此推断完整事务历史。`ProvenanceObserver`、安装迁移及完整 ORM 采集仍为实验能力。
+
 ## 预览功能
 
 - [v3 生命周期](docs/v3-contract.md)、[分段磁盘日志](docs/capture-journal-v3.md)：独立 `check-v3` / `reduce-v3` / `replay-v3` 入口。
 - [追加列表](docs/list-v3.md)、[关系集合](docs/relation-v3.md)：固定模型和预算内的分析、缩减及回放。
-- [普通表 CRUD](experiments/provenance/PRESENCE_PROFILE.md)、[dislock](docs/dislock-v3.md)、[ORM 来源诊断](docs/orm-source-v3.md)：按适配器声明的 SQL 与来源范围使用。
+- [普通表扩展来源](experiments/provenance/PRESENCE_PROFILE.md)、[dislock](docs/dislock-v3.md)：按适配器声明的 SQL 与来源范围使用。
 - [执行故障诊断](experiments/faults/mlflow/README.md)：死锁等故障单列，不冒充隔离模型违反。
 
 预览格式可能调整。v0.1.2 额外支持已核验的 v0.1.1 算法与 v3 证据；更早研究期记录仍可能需要对应源码回放。不支持的 SQL、缺失来源与覆盖缺口始终可见；尚不提供任意 SQL 插桩或完整隔离级别分类。

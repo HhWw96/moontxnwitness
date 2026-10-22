@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.1.3",
+  "algorithm": "v3-register-1",
+  "status": "inconclusive",
+  "modelDefinition": {
+    "id": "register-serializable-v1",
+    "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+  },
+  "coverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "unknown_commit",
+        "message": "The original transaction outcome has not been confirmed"
+      }
+    ]
+  },
+  "normalized": {
+    "schema": 3,
+    "algorithm": "v3-lifecycle-1",
+    "status": "inconclusive",
+    "coverage": {
+      "complete": false,
+      "gaps": [
+        {
+          "code": "unknown_commit",
+          "message": "The original transaction outcome has not been confirmed"
+        }
+      ]
+    },
+    "observations": [
+      {
+        "seq": 1,
+        "time": 0,
+        "kind": "snapshot",
+        "initial": {
+          "x": "x0",
+          "y": "y0"
+        },
+        "consistent": true
+      },
+      {
+        "seq": 2,
+        "time": 1,
+        "kind": "begin",
+        "tx": "T",
+        "connection": "C"
+      },
+      {
+        "seq": 3,
+        "time": 2,
+        "kind": "write",
+        "tx": "T",
+        "key": "x",
+        "version": "x1",
+        "predecessor": "x0"
+      },
+      {
+        "seq": 4,
+        "time": 3,
+        "kind": "commit_request",
+        "tx": "T"
+      },
+      {
+        "seq": 5,
+        "time": 4,
+        "kind": "rollback_ok",
+        "tx": "T"
+      }
+    ],
+    "effects": [
+      {
+        "seq": 3,
+        "tx": "T",
+        "key": "x",
+        "version": "x1",
+        "predecessor": "x0",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "T",
+        "connection": "C",
+        "status": "unknown",
+        "beginSeq": 2,
+        "endSeq": 5,
+        "events": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "finalWrites": [
+          3
+        ]
+      }
+    ],
+    "history": null
+  },
+  "evidence": null,
+  "execution": {
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "metrics": null
+  }
+}

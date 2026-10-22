@@ -105,6 +105,23 @@ for kind in ("portable", "source"):
         checks.append(f"source fresh JS core tests: {test_count} passed")
     assert run([NODE, "dist/moontxnwitness.mjs", "--version"], consumer).strip() == VERSION
     checks.append(kind + " version")
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 3):
+        isolated = work / (kind + '-orm-only')
+        copied = isolated / 'moontxnwitness_capture'
+        copied.mkdir(parents=True, exist_ok=False)
+        for name in ('__init__.py', 'capture.py', 'capture_v3.py', 'journal_v3.py',
+                     'orm.py', '_orm_policy.py', '_orm_async.py', '_orm_raw_async.py', '_orm_source_sink.py'):
+            shutil.copyfile(consumer / 'integrations/python/moontxnwitness_capture' / name, copied / name)
+        imported = run([sys.executable, '-I', '-S', '-B', '-c',
+            'import sys;sys.path.insert(0,sys.argv[1]);'
+            'from moontxnwitness_capture.orm import UserScope,SQLContext,StructuredSQLCache;'
+            's=UserScope("mtw_orm_v3_consumer","observed_user",("00000000-0000-4000-8000-000000000001",));'
+            'c=StructuredSQLCache(context=SQLContext(registry_epoch=1));'
+            'assert c.retained=={"entries":0,"bytes":0};'
+            'assert "sqlalchemy" not in sys.modules and "psycopg" not in sys.modules;'
+            'print("orm-standalone-ok")', str(isolated)], isolated)
+        assert imported.strip() == 'orm-standalone-ok'
+        checks.append(kind + ' standalone ORM package construction without optional dependencies or experiments')
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 2):
         # A copied package imports and constructs without site packages, the
         # optional driver or an experiments directory on the Python import path.

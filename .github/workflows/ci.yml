@@ -42,9 +42,9 @@ jobs:
         run: python scripts/publication_privacy.py --history
       - name: Verify committed business and presence capture byte bindings
         run: python scripts/verify_business_evidence.py --git
-      - name: Install frozen optional driver for protocol fixture tests
-        # Fixed upstream SQL composition is part of these tests; no DB is used.
-        run: python -m pip install --require-hashes -r examples/postgres-requirements.txt
+      - name: Install frozen optional compiler and driver for fixture tests
+        # Fixed ORM compilation and protocol fixtures do not use a database.
+        run: python -m pip install --require-hashes -r examples/orm-requirements.txt
       - name: Verify core, independent oracle, CLI and actual SQLite
         run: npm test
       - name: Verify benchmark evidence under filesystem faults

@@ -1,17 +1,22 @@
-# ORM 原始来源诊断（开发版实验）
+# ORM 原始来源诊断
 
 `inspectOrmSourceV3` 与 `inspect-orm-source-v3` 核验固定 FastAPI Users
 SQLAlchemy v7.0.0 / PostgreSQL 18 来源记录。它们展示原始控制查询、同语句
 读写来源、保存点撤销与最终效果账本之间的对应关系。
 
+v0.1.3 将此显式入口作为稳定的**局部诊断接口**交付；本版尚在开发，
+发布与验证状态见[开发记录](development-status.md)。固定 SQL 编译与有界缓存
+另见[Python 模板入口](orm-plans.md)。
+
 该入口只证明受支持来源片段的一致性。报告始终保留
 `analysisCoverageAccepted:false`、`history:null` 和空的完整覆盖集合；默认
 `normalizeCaptureV3` / `analyzeV3` 不自动采用这些局部事实。
-此功能尚未发布到稳定包，也不代表整个认证系统、任意 SQL 或 ORM 已覆盖。
+`ProvenanceObserver`、来源安装/迁移和完整 ORM 自动采集仍为实验功能。
+诊断入口不代表整个认证系统、任意 SQL 或完整 ORM 历史已覆盖。
 
 ## 运行已有原始案例
 
-从源码构建开发分支后：
+使用包含此入口的 portable 包，或从当前源码构建后：
 
 ```text
 node dist/moontxnwitness.mjs inspect-orm-source-v3 verification/experimental-candidates/orm-source2-r3-2026-10-21/fixtures/diagnostic-trace.json verification/experimental-candidates/orm-source2-r3-2026-10-21/fixtures/source-observations.jsonl --output orm-sources.json
@@ -52,3 +57,7 @@ DDL/元数据变更、数据库认证、任意函数、JOIN 与完整 SQL 插桩
 首次独立参考程序的参数选择错误及修正前后收据原样保留。
 这些旧组件结果不外推到新的 SDK/CLI 构建；集成版须以新的测试摘要、
 运行文件和独立重放结果为准，见[开发状态](development-status.md)。
+
+本轮模板/缓存的 21 项主线离线检查及 32 项独立候选检查已通过，
+其中独立检查包含 21 项复验；这些结果不计作当前包的真实数据库执行。
+原始 SQLAlchemy 异步驱动、安装迁移及完整来源覆盖按各自实际验证范围记录。

@@ -5,7 +5,7 @@ fn result_valid(text : String) -> Bool {
 }
 
 ///|
-test "stable v1 and v2 replay accepts v011 and current engines only in supported headers" {
+test "stable v1 and v2 replay accepts released engines only in supported headers" {
   let h = skew()
   let history = history_json(h).stringify()
   for v2 in [false, true] {
@@ -16,7 +16,7 @@ test "stable v1 and v2 replay accepts v011 and current engines only in supported
     }
     match report {
       Object(fields) => {
-        for engine in ["0.1.1", version()] {
+        for engine in ["0.1.1", "0.1.2", version()] {
           fields["version"] = engine.to_json()
           assert_true(
             result_valid(replay_report_json(history, report.stringify())),

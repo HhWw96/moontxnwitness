@@ -1,0 +1,470 @@
+{
+  "status": "passed",
+  "actualDatabaseExecution": true,
+  "server": "PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35229, 64-bit",
+  "driver": "3.3.6",
+  "python": "3.12.5",
+  "projection": "column-presence-register-v0.1.2-experimental",
+  "scope": "controlled generated text-key CRUD fixture; no existing-application or arbitrary-SQL claim",
+  "scenarios": [
+    {
+      "name": "crud-absence-reinsert-rollback",
+      "trace": "crud-absence-reinsert-rollback.trace.json",
+      "expectedStatus": "ready",
+      "expectedVerdict": "consistent",
+      "facts": {
+        "tombstone": "286f0e98-18b0-4031-ac3f-1191b719f6cf",
+        "abortedTokens": [
+          "e521ef2d-236c-4a32-863f-337013ee549a",
+          "16092772-cbea-4b53-bdd1-61db90865e7a"
+        ],
+        "businessSurfaceCompared": true,
+        "originalConstraintErrors": [
+          {
+            "action": "update",
+            "class": "NotNullViolation",
+            "sqlstate": "23502",
+            "column": "value"
+          },
+          {
+            "action": "insert",
+            "class": "UniqueViolation",
+            "sqlstate": "23505",
+            "column": null
+          }
+        ],
+        "ownBeforeTriggerVisibleToVolatileReturningHelpers": true
+      },
+      "audit": "crud-absence-reinsert-rollback.audit.json",
+      "independentAudit": {
+        "versions": 9,
+        "writes": 6,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "committedAuditExactlyMatchesCapturedWrites": true,
+      "initialPresenceMatchedLockedAudit": true,
+      "uninstallPreservedBusinessRows": true,
+      "artifactBindings": {
+        "trace": {
+          "path": "crud-absence-reinsert-rollback.trace.json",
+          "bytes": 38175,
+          "sha256": "bcd4a0544830674bca61e4fd18956e632f5c88216145cd648172025506709931"
+        },
+        "coverage": {
+          "path": "crud-absence-reinsert-rollback.coverage.json",
+          "bytes": 12169,
+          "sha256": "395fa90bbfca25ed6e7c044c8d1c9bc84a1df01ce020fbbfe2cc3960d9c5e042"
+        },
+        "audit": {
+          "path": "crud-absence-reinsert-rollback.audit.json",
+          "bytes": 2038,
+          "sha256": "c185881d97994b70a487e64eb785d5cd7a91076fc4d5ccda8ddf85ddf83b00ab"
+        },
+        "history": {
+          "path": "crud-absence-reinsert-rollback.history.json",
+          "bytes": 5437,
+          "sha256": "f44f71585e1c41cc7e824700f39d03b15c5b4b1550970764b823e5c6f8a51f9f"
+        },
+        "report": {
+          "path": "crud-absence-reinsert-rollback.report.json",
+          "bytes": 3744,
+          "sha256": "830a74d98897a40754f90ddcca21de40659227ec293df5c828a57d32fc7d3714"
+        },
+        "capsule": {
+          "path": "crud-absence-reinsert-rollback.capsule.json",
+          "bytes": 8421,
+          "sha256": "9e90fcee4966d843e80984be5a205c014a8024f6f280f12376706af7c27f0e1a"
+        },
+        "tamperChecks": {
+          "path": "crud-absence-reinsert-rollback.tamper-checks.json",
+          "bytes": 766,
+          "sha256": "795a0a984a8b1f461f34c4d16a47e8d428bad2c7503e3c2577e403e7840ab58c"
+        }
+      }
+    },
+    {
+      "name": "negative-point-write-skew",
+      "trace": "negative-point-write-skew.trace.json",
+      "expectedStatus": "ready",
+      "expectedVerdict": "violation",
+      "facts": {
+        "scope": "two frozen-key absence reads followed by disjoint inserts, not an arbitrary range/predicate scan"
+      },
+      "audit": "negative-point-write-skew.audit.json",
+      "independentAudit": {
+        "versions": 5,
+        "writes": 2,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "committedAuditExactlyMatchesCapturedWrites": true,
+      "initialPresenceMatchedLockedAudit": true,
+      "uninstallPreservedBusinessRows": true,
+      "artifactBindings": {
+        "trace": {
+          "path": "negative-point-write-skew.trace.json",
+          "bytes": 9193,
+          "sha256": "ba2516bab53feb31bf13344fbffe820e702b415f5816af74f2e7ff13b4a4343d"
+        },
+        "coverage": {
+          "path": "negative-point-write-skew.coverage.json",
+          "bytes": 4321,
+          "sha256": "b0849093b7d46869577bf1deed2e6b2cbc57e7ac12fedbeb16737e8f0f4bd91f"
+        },
+        "audit": {
+          "path": "negative-point-write-skew.audit.json",
+          "bytes": 1095,
+          "sha256": "aea9f64d24aff17d9f1beda8197a282a00c90da689c41f5717b663da938954e4"
+        },
+        "history": {
+          "path": "negative-point-write-skew.history.json",
+          "bytes": 2030,
+          "sha256": "37683a25b5245f0729df5c38b6fcb72e1b81f23d1583fe8a62ea290c31ab7044"
+        },
+        "report": {
+          "path": "negative-point-write-skew.report.json",
+          "bytes": 5171,
+          "sha256": "e0e5cf8f8b2d9e59268b5eb88557c233b2d57568d98a1b5b57b13b1ed9a6d36b"
+        },
+        "capsule": {
+          "path": "negative-point-write-skew.capsule.json",
+          "bytes": 6785,
+          "sha256": "0cc96a639546eda3de2640c104b0f97dc946e89e24fe9f0fc5dfe0240b8629af"
+        },
+        "reduction": {
+          "path": "negative-point-write-skew.reduction.json",
+          "bytes": 8248,
+          "sha256": "e6ea0e43e2695ec55df21bb4156dea5669a14ee5ec930bb8d28f6592206e9a7f"
+        }
+      }
+    },
+    {
+      "name": "read-committed-delete-source",
+      "trace": "read-committed-delete-source.trace.json",
+      "expectedStatus": "ready",
+      "expectedVerdict": "consistent",
+      "facts": {
+        "blockingPidObserved": true,
+        "updatedToken": "bbc2423c-0842-44b4-b72c-eca4fc90b018",
+        "deleteOldToken": "bbc2423c-0842-44b4-b72c-eca4fc90b018",
+        "tombstone": "e4cfcb6a-11ae-4413-8e91-8327ccb4abd1",
+        "reinsertPredecessor": "e4cfcb6a-11ae-4413-8e91-8327ccb4abd1",
+        "ownBeforeTriggerVisibleToVolatileReturningHelpers": true,
+        "isolation": "READ COMMITTED configured while raw connections were idle"
+      },
+      "protocol": "rc-delete.protocol.json",
+      "audit": "read-committed-delete-source.audit.json",
+      "independentAudit": {
+        "versions": 6,
+        "writes": 3,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "committedAuditExactlyMatchesCapturedWrites": true,
+      "initialPresenceMatchedLockedAudit": true,
+      "uninstallPreservedBusinessRows": true,
+      "artifactBindings": {
+        "trace": {
+          "path": "read-committed-delete-source.trace.json",
+          "bytes": 9456,
+          "sha256": "29447c4852d8cc753dcfee11b49004d3a1757106ec0c0d2340ac0509dc08c5c6"
+        },
+        "coverage": {
+          "path": "read-committed-delete-source.coverage.json",
+          "bytes": 4600,
+          "sha256": "0f96ad30ba4c1b072ff488424ee1ab67bdd457bffcc997f8b44fe58c932d6b23"
+        },
+        "audit": {
+          "path": "read-committed-delete-source.audit.json",
+          "bytes": 1378,
+          "sha256": "36e374853e04cf76d9ce9fcc12cd748e8a5124c7d58994bca0ae9d59e014d7ef"
+        },
+        "protocol": {
+          "path": "rc-delete.protocol.json",
+          "bytes": 560,
+          "sha256": "5fe2ffcb05101509ed07a9226ab0bdd99134437a7a5e33106242b7d0128135f1"
+        },
+        "history": {
+          "path": "read-committed-delete-source.history.json",
+          "bytes": 2185,
+          "sha256": "e003728d4297453dfab58ab61d547675cf43fa8b1cbe21d776e968b1517cf24d"
+        },
+        "report": {
+          "path": "read-committed-delete-source.report.json",
+          "bytes": 4159,
+          "sha256": "19c03250bb307e8eb192d486e535bddbdc0672a8b331a2dfcdc436bb0fa32755"
+        },
+        "capsule": {
+          "path": "read-committed-delete-source.capsule.json",
+          "bytes": 6055,
+          "sha256": "c5807f9304f79285a12a0de96f585318acd1b5024a652fb53942b20428396b73"
+        }
+      }
+    },
+    {
+      "name": "gap-unread",
+      "trace": "gap-unread.trace.json",
+      "expectedStatus": "inconclusive",
+      "expectedVerdict": null,
+      "facts": {
+        "originalSqlExecuted": true,
+        "originalNullKeyError": null
+      },
+      "audit": "gap-unread.audit.json",
+      "independentAudit": {
+        "versions": 3,
+        "writes": 0,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "committedAuditExactlyMatchesCapturedWrites": true,
+      "initialPresenceMatchedLockedAudit": true,
+      "uninstallPreservedBusinessRows": true,
+      "artifactBindings": {
+        "trace": {
+          "path": "gap-unread.trace.json",
+          "bytes": 3225,
+          "sha256": "cdab621a1a3cf2cb046483644719e8eb06abdbe7a50a3156fae687468daf4172"
+        },
+        "coverage": {
+          "path": "gap-unread.coverage.json",
+          "bytes": 1197,
+          "sha256": "bc597b1ab7de4b0aa089c8b0a7b23ccfb26d891c573d70f831e3973665776e89"
+        },
+        "audit": {
+          "path": "gap-unread.audit.json",
+          "bytes": 616,
+          "sha256": "b00980482cc147dfd7c4e463e9744a1ab7cae0a7ef106c6a67f6518ec65aa19c"
+        }
+      }
+    },
+    {
+      "name": "gap-unknown",
+      "trace": "gap-unknown.trace.json",
+      "expectedStatus": "inconclusive",
+      "expectedVerdict": null,
+      "facts": {
+        "originalSqlExecuted": true,
+        "originalNullKeyError": null
+      },
+      "audit": "gap-unknown.audit.json",
+      "independentAudit": {
+        "versions": 3,
+        "writes": 0,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "committedAuditExactlyMatchesCapturedWrites": true,
+      "initialPresenceMatchedLockedAudit": true,
+      "uninstallPreservedBusinessRows": true,
+      "artifactBindings": {
+        "trace": {
+          "path": "gap-unknown.trace.json",
+          "bytes": 3357,
+          "sha256": "f76a7cef6b2b1fdb5cdf536e64bccb31321940f2ad88a05da81f73886b74164a"
+        },
+        "coverage": {
+          "path": "gap-unknown.coverage.json",
+          "bytes": 1529,
+          "sha256": "43cdc17524a9b421ba1456455c48b66b1e6fa86e9a3afdc38c87f7d879771ea6"
+        },
+        "audit": {
+          "path": "gap-unknown.audit.json",
+          "bytes": 616,
+          "sha256": "341d1a30a90dceeaae35e0c2faae210a46f74884117767329084429e074d9a89"
+        }
+      }
+    },
+    {
+      "name": "gap-zero",
+      "trace": "gap-zero.trace.json",
+      "expectedStatus": "inconclusive",
+      "expectedVerdict": null,
+      "facts": {
+        "originalSqlExecuted": true,
+        "originalNullKeyError": {
+          "class": "NotNullViolation",
+          "sqlstate": "23502",
+          "column": "id"
+        }
+      },
+      "audit": "gap-zero.audit.json",
+      "independentAudit": {
+        "versions": 3,
+        "writes": 0,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "committedAuditExactlyMatchesCapturedWrites": true,
+      "initialPresenceMatchedLockedAudit": true,
+      "uninstallPreservedBusinessRows": true,
+      "artifactBindings": {
+        "trace": {
+          "path": "gap-zero.trace.json",
+          "bytes": 5056,
+          "sha256": "2da3753ba599e198a2bca8a9c1c113b826970d26a0a14fc92e139e46bac481ff"
+        },
+        "coverage": {
+          "path": "gap-zero.coverage.json",
+          "bytes": 1351,
+          "sha256": "7fb148393c4e7cf8036f6122c5c4d52a609818fd31f9e1fd0313f95b1138598c"
+        },
+        "audit": {
+          "path": "gap-zero.audit.json",
+          "bytes": 616,
+          "sha256": "1d97c2958cb27468f9e49dad2bca31c0087070c33bb2def41649758cc3459f6c"
+        }
+      }
+    }
+  ],
+  "rejections": [
+    {
+      "alteration": "nonce",
+      "rejected": true
+    },
+    {
+      "alteration": "trigger-disabled",
+      "rejected": true
+    },
+    {
+      "alteration": "helper-body",
+      "rejected": true
+    },
+    {
+      "alteration": "helper-stable",
+      "rejected": true
+    },
+    {
+      "alteration": "unique-predecessor-index",
+      "rejected": true
+    },
+    {
+      "alteration": "extra-metadata-index",
+      "rejected": true
+    },
+    {
+      "alteration": "metadata-column",
+      "rejected": true
+    },
+    {
+      "alteration": "failed-initialization",
+      "rejected": true,
+      "noNewObjectsOrColumn": true,
+      "originalRowsPreserved": true
+    },
+    {
+      "alteration": "deferred-primary-key",
+      "rejected": true,
+      "noNewObjectsOrColumn": true
+    },
+    {
+      "alteration": "business-default",
+      "rejected": true,
+      "noNewObjectsOrColumn": true
+    }
+  ],
+  "schemaRetained": false,
+  "notMeasured": [
+    "full capture C/A",
+    "CPU/RSS",
+    "WAL",
+    "contention performance",
+    "application deployment"
+  ],
+  "sources": {
+    "presence_postgres.py": "de4629865e1460f40fb9fb8ad6eae233ca8213e4bccb0de53829b09a7e3014a5",
+    "presence_profile.py": "57db283d6370f9f64c18de3edf74947f0d4995010b6f317e8964bd0cd4a6ce01"
+  },
+  "implementationSources": {
+    "before": {
+      "moontxnwitness_capture/__init__.py": {
+        "bytes": 564,
+        "sha256": "82ac16660a6e0ea61da6c19d27ef4f9711d475d2901a91fda4c7b0ea6948c3aa"
+      },
+      "moontxnwitness_capture/capture.py": {
+        "bytes": 56812,
+        "sha256": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e"
+      },
+      "moontxnwitness_capture/_provenance.py": {
+        "bytes": 18417,
+        "sha256": "2e40349d7d44fe8ca54786c0f3a9ecc52847a4558078bc7bd2cab6c1c9e64a71"
+      },
+      "moontxnwitness_capture/_column_profile.py": {
+        "bytes": 24306,
+        "sha256": "1003a4a1cd7a2bbc2ee22bb13632304ef10a464e729642e179736d5ab09c43f7"
+      },
+      "moontxnwitness_capture/_initialization_guard.py": {
+        "bytes": 4420,
+        "sha256": "7a28a1a84e19af89e3ac67aa6a3a27c7cf5ce39df688fed95de590a39fe7253a"
+      },
+      "moontxnwitness_capture/_source_inventory.py": {
+        "bytes": 2497,
+        "sha256": "0b2da28f8ac929b41e53c01b90d538336992705ecb024119cafc662e3e76edc6"
+      },
+      "moontxnwitness_capture/presence.py": {
+        "bytes": 34897,
+        "sha256": "892a412347d9a76cc5a47a15a32ac148b6d915f19a6456394d9f38ce1ae70990"
+      }
+    },
+    "after": {
+      "moontxnwitness_capture/__init__.py": {
+        "bytes": 564,
+        "sha256": "82ac16660a6e0ea61da6c19d27ef4f9711d475d2901a91fda4c7b0ea6948c3aa"
+      },
+      "moontxnwitness_capture/capture.py": {
+        "bytes": 56812,
+        "sha256": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e"
+      },
+      "moontxnwitness_capture/_provenance.py": {
+        "bytes": 18417,
+        "sha256": "2e40349d7d44fe8ca54786c0f3a9ecc52847a4558078bc7bd2cab6c1c9e64a71"
+      },
+      "moontxnwitness_capture/_column_profile.py": {
+        "bytes": 24306,
+        "sha256": "1003a4a1cd7a2bbc2ee22bb13632304ef10a464e729642e179736d5ab09c43f7"
+      },
+      "moontxnwitness_capture/_initialization_guard.py": {
+        "bytes": 4420,
+        "sha256": "7a28a1a84e19af89e3ac67aa6a3a27c7cf5ce39df688fed95de590a39fe7253a"
+      },
+      "moontxnwitness_capture/_source_inventory.py": {
+        "bytes": 2497,
+        "sha256": "0b2da28f8ac929b41e53c01b90d538336992705ecb024119cafc662e3e76edc6"
+      },
+      "moontxnwitness_capture/presence.py": {
+        "bytes": 34897,
+        "sha256": "892a412347d9a76cc5a47a15a32ac148b6d915f19a6456394d9f38ce1ae70990"
+      }
+    },
+    "unchanged": true
+  },
+  "legacySourceRole": "Compatibility shim / fixture hashes; implementationSources binds package code",
+  "passed": true,
+  "coreVersion": "0.1.3",
+  "replayedCapsules": 3,
+  "captureSource": {
+    "files": {
+      "integrations/python/moontxnwitness_capture/capture.py": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e",
+      "experiments/provenance/prototype.py": "e851b183a2362bdee0d34ac8c66c273c038edcd90927032a630f49d019480769",
+      "experiments/provenance/capture_profile.py": "21ea64636c33bd81181146e2d59895f063c5ec36f7e4d827b565a65a81b764fa",
+      "experiments/provenance/presence_profile.py": "57db283d6370f9f64c18de3edf74947f0d4995010b6f317e8964bd0cd4a6ce01",
+      "experiments/provenance/presence_postgres.py": "de4629865e1460f40fb9fb8ad6eae233ca8213e4bccb0de53829b09a7e3014a5",
+      "experiments/provenance/presence_e2e.mjs": "2a8805a14810cd89eddb09d6d92530c40b66d238b683ce6b24797fb2212cceaa",
+      "dist/sdk.mjs": "e6550f476818313b706a611bbf04678ce654f040fc39406f9cd5f3a15edd3d52",
+      "dist/evidence.mjs": "7a9d500fd1c631562a21d4bb988b416e69c24ac6c26d340c8cccb723f95c6e5a",
+      "dist/build-manifest.json": "34e4c279eb87821100ec86ed169150803b2a8201240346ed28440353610f867d",
+      "dist/capture-core.mjs": "60da31aafe9d8fb034289d6deb132c36eb61cb021bf3bc0668401e27987bf5ee",
+      "dist/core.mjs": "023d069214d71d8464adb78a9af83de8cfaca50a69b6a40a9b266a689e120924"
+    },
+    "buildManifestSourceSha256": "1c2f1c43383dea58b8cc82a07171ee6e461f318cc203be338e2319fc652d74fc",
+    "implementationFiles": {
+      "integrations/python/moontxnwitness_capture/__init__.py": "82ac16660a6e0ea61da6c19d27ef4f9711d475d2901a91fda4c7b0ea6948c3aa",
+      "integrations/python/moontxnwitness_capture/capture.py": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e",
+      "integrations/python/moontxnwitness_capture/_provenance.py": "2e40349d7d44fe8ca54786c0f3a9ecc52847a4558078bc7bd2cab6c1c9e64a71",
+      "integrations/python/moontxnwitness_capture/_column_profile.py": "1003a4a1cd7a2bbc2ee22bb13632304ef10a464e729642e179736d5ab09c43f7",
+      "integrations/python/moontxnwitness_capture/_initialization_guard.py": "7a28a1a84e19af89e3ac67aa6a3a27c7cf5ce39df688fed95de590a39fe7253a",
+      "integrations/python/moontxnwitness_capture/_source_inventory.py": "0b2da28f8ac929b41e53c01b90d538336992705ecb024119cafc662e3e76edc6",
+      "integrations/python/moontxnwitness_capture/presence.py": "892a412347d9a76cc5a47a15a32ac148b6d915f19a6456394d9f38ce1ae70990"
+    },
+    "compatibilityRole": "experiments profile hashes bind aliases; implementationFiles binds actual package code"
+  },
+  "projectionVersion": "column-presence-register-v0.1.2-experimental",
+  "projectionScope": "frozen text keys; observed positive/negative point reads and actual CRUD writes; metadata predecessor is not an application read",
+  "bindingClaim": "SHA-256 detects artifact mismatch; it does not authenticate observation, deployment, or v3 completion",
+  "generatedAt": "2026-10-22T11:41:08.934Z"
+}

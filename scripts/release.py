@@ -33,6 +33,10 @@ def validate_scoped_acceptance(acceptance, manifest):
     assert package['passed'] and package['version'] == VERSION and package['sourceRebuilt']
     assert package['freshConsumerChecks'] == len(package['checks'])
     assert 'source fresh JS core tests: ' + str(summary['coreTestsPerTarget']) + ' passed' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 3):
+        assert summary['ormPlanUnitTests']['passed'] and summary['ormPlanUnitTests']['tests'] > 0
+        for kind in ('source', 'portable'):
+            assert kind + ' standalone ORM package construction without optional dependencies or experiments' in package['checks']
     tested = json.loads(run(['node', '--input-type=module', '-e',
         "import {verificationFingerprint} from './scripts/verification-fingerprint.mjs'; console.log(JSON.stringify(verificationFingerprint(process.cwd())));" ]))
     assert tested == summary['testedFileSha256'], 'Current executable files differ from tested release'
@@ -216,6 +220,15 @@ def publish():
             'Extended persistence, v3 models and ORM integrations continue as previews.\n\n'
             'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or download portable ZIP (Node.js >=20). '
             'Python capture uses the optional psycopg driver. See CHANGELOG.md for validation and compatibility.\n', encoding='utf8')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 3):
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- Standalone Python ORM SQL-plan and bounded-cache API for the fixed FastAPI Users SQLAlchemy 7.0.0 base-user point CRUD profile.\n'
+            '- Reuse constructor-compiled SQL plans instead of compiling each shape again on first execution; keep parameters, results and transaction state out of the cache.\n'
+            '- Expose the MoonBit local ORM-source diagnostic with explicit partial coverage; preserve released v1/v2 and compatible v3 replay.\n\n'
+            'Use `moontxnwitness_capture.orm` and see docs/orm-plans.md. Basic imports need no driver or SQLAlchemy; template compilation uses optional SQLAlchemy 2.0.55. '
+            'Source observers and their installation remain experimental; local source proof does not establish complete ORM transaction coverage.\n\n'
+            'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or download the portable ZIP (Node.js >=20). '
+            'Existing register analysis/reduction, PostgreSQL capture and ordinary-table fixed-key CRUD remain available. See CHANGELOG.md for compatibility and validation.\n', encoding='utf8')
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
     if performance_path.exists() and not scoped:
         groups = json.loads(performance_path.read_text(encoding='utf-8'))['groups']

@@ -1,0 +1,1329 @@
+{
+  "schemaVersion": 1,
+  "name": "Actual PostgreSQL SERIALIZABLE controlled point-register capture",
+  "model": "strict-serializable",
+  "initial": {
+    "serial/0/x": "serial/0/x:initial",
+    "serial/0/y": "serial/0/y:initial",
+    "serial/1/x": "serial/1/x:initial",
+    "serial/1/y": "serial/1/y:initial",
+    "serial/2/x": "serial/2/x:initial",
+    "serial/2/y": "serial/2/y:initial",
+    "serial/3/x": "serial/3/x:initial",
+    "serial/3/y": "serial/3/y:initial",
+    "serial/4/x": "serial/4/x:initial",
+    "serial/4/y": "serial/4/y:initial",
+    "serial/5/x": "serial/5/x:initial",
+    "serial/5/y": "serial/5/y:initial",
+    "serial/6/x": "serial/6/x:initial",
+    "serial/6/y": "serial/6/y:initial",
+    "serial/7/x": "serial/7/x:initial",
+    "serial/7/y": "serial/7/y:initial",
+    "serial/8/x": "serial/8/x:initial",
+    "serial/8/y": "serial/8/y:initial",
+    "serial/9/x": "serial/9/x:initial",
+    "serial/9/y": "serial/9/y:initial",
+    "serial/10/x": "serial/10/x:initial",
+    "serial/10/y": "serial/10/y:initial",
+    "serial/11/x": "serial/11/x:initial",
+    "serial/11/y": "serial/11/y:initial",
+    "serial/12/x": "serial/12/x:initial",
+    "serial/12/y": "serial/12/y:initial",
+    "serial/13/x": "serial/13/x:initial",
+    "serial/13/y": "serial/13/y:initial",
+    "serial/14/x": "serial/14/x:initial",
+    "serial/14/y": "serial/14/y:initial",
+    "serial/15/x": "serial/15/x:initial",
+    "serial/15/y": "serial/15/y:initial",
+    "serial/16/x": "serial/16/x:initial",
+    "serial/16/y": "serial/16/y:initial",
+    "serial/17/x": "serial/17/x:initial",
+    "serial/17/y": "serial/17/y:initial",
+    "serial/18/x": "serial/18/x:initial",
+    "serial/18/y": "serial/18/y:initial",
+    "serial/19/x": "serial/19/x:initial",
+    "serial/19/y": "serial/19/y:initial"
+  },
+  "transactions": [
+    {
+      "id": "serial:0:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/0/x",
+          "version": "serial/0/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/0/y",
+          "version": "serial/0/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/0/x",
+          "version": "serial:0:0:write"
+        }
+      ],
+      "start": 2875000,
+      "end": 3125000
+    },
+    {
+      "id": "serial:0:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/0/x",
+          "version": "serial/0/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/0/y",
+          "version": "serial/0/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/0/y",
+          "version": "serial:0:1:write"
+        }
+      ],
+      "start": 2875000,
+      "end": 3125000
+    },
+    {
+      "id": "serial:0:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/0/x",
+          "version": "serial/0/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/0/y",
+          "version": "serial:0:1:write"
+        }
+      ],
+      "start": 3125000,
+      "end": 3250000
+    },
+    {
+      "id": "serial:1:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/1/x",
+          "version": "serial/1/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/1/y",
+          "version": "serial/1/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/1/x",
+          "version": "serial:1:0:write"
+        }
+      ],
+      "start": 3250000,
+      "end": 3375000
+    },
+    {
+      "id": "serial:1:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/1/x",
+          "version": "serial/1/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/1/y",
+          "version": "serial/1/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/1/y",
+          "version": "serial:1:1:write"
+        }
+      ],
+      "start": 3250000,
+      "end": 3375000
+    },
+    {
+      "id": "serial:1:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/1/x",
+          "version": "serial/1/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/1/y",
+          "version": "serial:1:1:write"
+        }
+      ],
+      "start": 3375000,
+      "end": 3468000
+    },
+    {
+      "id": "serial:2:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/2/x",
+          "version": "serial/2/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/2/y",
+          "version": "serial/2/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/2/x",
+          "version": "serial:2:0:write"
+        }
+      ],
+      "start": 3484000,
+      "end": 3593000
+    },
+    {
+      "id": "serial:2:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/2/x",
+          "version": "serial/2/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/2/y",
+          "version": "serial/2/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/2/y",
+          "version": "serial:2:1:write"
+        }
+      ],
+      "start": 3484000,
+      "end": 3593000
+    },
+    {
+      "id": "serial:2:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/2/x",
+          "version": "serial/2/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/2/y",
+          "version": "serial:2:1:write"
+        }
+      ],
+      "start": 3593000,
+      "end": 3703000
+    },
+    {
+      "id": "serial:3:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/3/x",
+          "version": "serial/3/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/3/y",
+          "version": "serial/3/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/3/x",
+          "version": "serial:3:0:write"
+        }
+      ],
+      "start": 3703000,
+      "end": 3828000
+    },
+    {
+      "id": "serial:3:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/3/x",
+          "version": "serial/3/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/3/y",
+          "version": "serial/3/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/3/y",
+          "version": "serial:3:1:write"
+        }
+      ],
+      "start": 3718000,
+      "end": 3828000
+    },
+    {
+      "id": "serial:3:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/3/x",
+          "version": "serial/3/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/3/y",
+          "version": "serial:3:1:write"
+        }
+      ],
+      "start": 3828000,
+      "end": 3937000
+    },
+    {
+      "id": "serial:4:0",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/4/x",
+          "version": "serial/4/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/4/y",
+          "version": "serial/4/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/4/x",
+          "version": "serial:4:0:write"
+        }
+      ],
+      "start": 3937000,
+      "end": 4046000
+    },
+    {
+      "id": "serial:4:1",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/4/x",
+          "version": "serial/4/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/4/y",
+          "version": "serial/4/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/4/y",
+          "version": "serial:4:1:write"
+        }
+      ],
+      "start": 3937000,
+      "end": 4046000
+    },
+    {
+      "id": "serial:4:1:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/4/x",
+          "version": "serial:4:0:write"
+        },
+        {
+          "type": "read",
+          "key": "serial/4/y",
+          "version": "serial/4/y:initial"
+        }
+      ],
+      "start": 4046000,
+      "end": 4140000
+    },
+    {
+      "id": "serial:5:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/5/x",
+          "version": "serial/5/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/5/y",
+          "version": "serial/5/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/5/x",
+          "version": "serial:5:0:write"
+        }
+      ],
+      "start": 4140000,
+      "end": 4250000
+    },
+    {
+      "id": "serial:5:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/5/x",
+          "version": "serial/5/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/5/y",
+          "version": "serial/5/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/5/y",
+          "version": "serial:5:1:write"
+        }
+      ],
+      "start": 4140000,
+      "end": 4250000
+    },
+    {
+      "id": "serial:5:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/5/x",
+          "version": "serial/5/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/5/y",
+          "version": "serial:5:1:write"
+        }
+      ],
+      "start": 4250000,
+      "end": 4359000
+    },
+    {
+      "id": "serial:6:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/6/x",
+          "version": "serial/6/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/6/y",
+          "version": "serial/6/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/6/x",
+          "version": "serial:6:0:write"
+        }
+      ],
+      "start": 4375000,
+      "end": 4484000
+    },
+    {
+      "id": "serial:6:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/6/x",
+          "version": "serial/6/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/6/y",
+          "version": "serial/6/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/6/y",
+          "version": "serial:6:1:write"
+        }
+      ],
+      "start": 4375000,
+      "end": 4484000
+    },
+    {
+      "id": "serial:6:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/6/x",
+          "version": "serial/6/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/6/y",
+          "version": "serial:6:1:write"
+        }
+      ],
+      "start": 4484000,
+      "end": 4578000
+    },
+    {
+      "id": "serial:7:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/7/x",
+          "version": "serial/7/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/7/y",
+          "version": "serial/7/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/7/x",
+          "version": "serial:7:0:write"
+        }
+      ],
+      "start": 4578000,
+      "end": 4703000
+    },
+    {
+      "id": "serial:7:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/7/x",
+          "version": "serial/7/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/7/y",
+          "version": "serial/7/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/7/y",
+          "version": "serial:7:1:write"
+        }
+      ],
+      "start": 4593000,
+      "end": 4703000
+    },
+    {
+      "id": "serial:7:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/7/x",
+          "version": "serial/7/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/7/y",
+          "version": "serial:7:1:write"
+        }
+      ],
+      "start": 4703000,
+      "end": 4812000
+    },
+    {
+      "id": "serial:8:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/8/x",
+          "version": "serial/8/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/8/y",
+          "version": "serial/8/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/8/x",
+          "version": "serial:8:0:write"
+        }
+      ],
+      "start": 4812000,
+      "end": 5046000
+    },
+    {
+      "id": "serial:8:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/8/x",
+          "version": "serial/8/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/8/y",
+          "version": "serial/8/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/8/y",
+          "version": "serial:8:1:write"
+        }
+      ],
+      "start": 4812000,
+      "end": 5046000
+    },
+    {
+      "id": "serial:8:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/8/x",
+          "version": "serial/8/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/8/y",
+          "version": "serial:8:1:write"
+        }
+      ],
+      "start": 5046000,
+      "end": 5250000
+    },
+    {
+      "id": "serial:9:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/9/x",
+          "version": "serial/9/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/9/y",
+          "version": "serial/9/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/9/x",
+          "version": "serial:9:0:write"
+        }
+      ],
+      "start": 5250000,
+      "end": 5468000
+    },
+    {
+      "id": "serial:9:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/9/x",
+          "version": "serial/9/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/9/y",
+          "version": "serial/9/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/9/y",
+          "version": "serial:9:1:write"
+        }
+      ],
+      "start": 5250000,
+      "end": 5484000
+    },
+    {
+      "id": "serial:9:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/9/x",
+          "version": "serial/9/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/9/y",
+          "version": "serial:9:1:write"
+        }
+      ],
+      "start": 5484000,
+      "end": 5578000
+    },
+    {
+      "id": "serial:10:0",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/10/x",
+          "version": "serial/10/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/10/y",
+          "version": "serial/10/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/10/x",
+          "version": "serial:10:0:write"
+        }
+      ],
+      "start": 5578000,
+      "end": 5671000
+    },
+    {
+      "id": "serial:10:1",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/10/x",
+          "version": "serial/10/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/10/y",
+          "version": "serial/10/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/10/y",
+          "version": "serial:10:1:write"
+        }
+      ],
+      "start": 5578000,
+      "end": 5671000
+    },
+    {
+      "id": "serial:10:1:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/10/x",
+          "version": "serial:10:0:write"
+        },
+        {
+          "type": "read",
+          "key": "serial/10/y",
+          "version": "serial/10/y:initial"
+        }
+      ],
+      "start": 5671000,
+      "end": 5796000
+    },
+    {
+      "id": "serial:11:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/11/x",
+          "version": "serial/11/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/11/y",
+          "version": "serial/11/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/11/x",
+          "version": "serial:11:0:write"
+        }
+      ],
+      "start": 5796000,
+      "end": 6000000
+    },
+    {
+      "id": "serial:11:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/11/x",
+          "version": "serial/11/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/11/y",
+          "version": "serial/11/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/11/y",
+          "version": "serial:11:1:write"
+        }
+      ],
+      "start": 5796000,
+      "end": 6000000
+    },
+    {
+      "id": "serial:11:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/11/x",
+          "version": "serial/11/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/11/y",
+          "version": "serial:11:1:write"
+        }
+      ],
+      "start": 6000000,
+      "end": 6156000
+    },
+    {
+      "id": "serial:12:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/12/x",
+          "version": "serial/12/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/12/y",
+          "version": "serial/12/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/12/x",
+          "version": "serial:12:0:write"
+        }
+      ],
+      "start": 6156000,
+      "end": 6281000
+    },
+    {
+      "id": "serial:12:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/12/x",
+          "version": "serial/12/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/12/y",
+          "version": "serial/12/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/12/y",
+          "version": "serial:12:1:write"
+        }
+      ],
+      "start": 6156000,
+      "end": 6281000
+    },
+    {
+      "id": "serial:12:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/12/x",
+          "version": "serial/12/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/12/y",
+          "version": "serial:12:1:write"
+        }
+      ],
+      "start": 6281000,
+      "end": 6390000
+    },
+    {
+      "id": "serial:13:0",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/13/x",
+          "version": "serial/13/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/13/y",
+          "version": "serial/13/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/13/x",
+          "version": "serial:13:0:write"
+        }
+      ],
+      "start": 6390000,
+      "end": 6531000
+    },
+    {
+      "id": "serial:13:1",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/13/x",
+          "version": "serial/13/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/13/y",
+          "version": "serial/13/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/13/y",
+          "version": "serial:13:1:write"
+        }
+      ],
+      "start": 6390000,
+      "end": 6531000
+    },
+    {
+      "id": "serial:13:1:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/13/x",
+          "version": "serial:13:0:write"
+        },
+        {
+          "type": "read",
+          "key": "serial/13/y",
+          "version": "serial/13/y:initial"
+        }
+      ],
+      "start": 6531000,
+      "end": 6640000
+    },
+    {
+      "id": "serial:14:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/14/x",
+          "version": "serial/14/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/14/y",
+          "version": "serial/14/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/14/x",
+          "version": "serial:14:0:write"
+        }
+      ],
+      "start": 6640000,
+      "end": 6765000
+    },
+    {
+      "id": "serial:14:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/14/x",
+          "version": "serial/14/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/14/y",
+          "version": "serial/14/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/14/y",
+          "version": "serial:14:1:write"
+        }
+      ],
+      "start": 6640000,
+      "end": 6765000
+    },
+    {
+      "id": "serial:14:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/14/x",
+          "version": "serial/14/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/14/y",
+          "version": "serial:14:1:write"
+        }
+      ],
+      "start": 6765000,
+      "end": 6859000
+    },
+    {
+      "id": "serial:15:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/15/x",
+          "version": "serial/15/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/15/y",
+          "version": "serial/15/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/15/x",
+          "version": "serial:15:0:write"
+        }
+      ],
+      "start": 6875000,
+      "end": 6984000
+    },
+    {
+      "id": "serial:15:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/15/x",
+          "version": "serial/15/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/15/y",
+          "version": "serial/15/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/15/y",
+          "version": "serial:15:1:write"
+        }
+      ],
+      "start": 6875000,
+      "end": 6984000
+    },
+    {
+      "id": "serial:15:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/15/x",
+          "version": "serial/15/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/15/y",
+          "version": "serial:15:1:write"
+        }
+      ],
+      "start": 6984000,
+      "end": 7093000
+    },
+    {
+      "id": "serial:16:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/16/x",
+          "version": "serial/16/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/16/y",
+          "version": "serial/16/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/16/x",
+          "version": "serial:16:0:write"
+        }
+      ],
+      "start": 7093000,
+      "end": 7218000
+    },
+    {
+      "id": "serial:16:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/16/x",
+          "version": "serial/16/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/16/y",
+          "version": "serial/16/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/16/y",
+          "version": "serial:16:1:write"
+        }
+      ],
+      "start": 7109000,
+      "end": 7218000
+    },
+    {
+      "id": "serial:16:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/16/x",
+          "version": "serial/16/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/16/y",
+          "version": "serial:16:1:write"
+        }
+      ],
+      "start": 7218000,
+      "end": 7312000
+    },
+    {
+      "id": "serial:17:0",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/17/x",
+          "version": "serial/17/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/17/y",
+          "version": "serial/17/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/17/x",
+          "version": "serial:17:0:write"
+        }
+      ],
+      "start": 7312000,
+      "end": 7546000
+    },
+    {
+      "id": "serial:17:1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/17/x",
+          "version": "serial/17/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/17/y",
+          "version": "serial/17/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/17/y",
+          "version": "serial:17:1:write"
+        }
+      ],
+      "start": 7312000,
+      "end": 7546000
+    },
+    {
+      "id": "serial:17:0:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/17/x",
+          "version": "serial/17/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/17/y",
+          "version": "serial:17:1:write"
+        }
+      ],
+      "start": 7546000,
+      "end": 7734000
+    },
+    {
+      "id": "serial:18:0",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/18/x",
+          "version": "serial/18/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/18/y",
+          "version": "serial/18/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/18/x",
+          "version": "serial:18:0:write"
+        }
+      ],
+      "start": 7734000,
+      "end": 7843000
+    },
+    {
+      "id": "serial:18:1",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/18/x",
+          "version": "serial/18/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/18/y",
+          "version": "serial/18/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/18/y",
+          "version": "serial:18:1:write"
+        }
+      ],
+      "start": 7734000,
+      "end": 7843000
+    },
+    {
+      "id": "serial:18:1:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/18/x",
+          "version": "serial:18:0:write"
+        },
+        {
+          "type": "read",
+          "key": "serial/18/y",
+          "version": "serial/18/y:initial"
+        }
+      ],
+      "start": 7843000,
+      "end": 8062000
+    },
+    {
+      "id": "serial:19:0",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/19/x",
+          "version": "serial/19/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/19/y",
+          "version": "serial/19/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/19/x",
+          "version": "serial:19:0:write"
+        }
+      ],
+      "start": 8062000,
+      "end": 8187000
+    },
+    {
+      "id": "serial:19:1",
+      "status": "aborted",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/19/x",
+          "version": "serial/19/x:initial"
+        },
+        {
+          "type": "read",
+          "key": "serial/19/y",
+          "version": "serial/19/y:initial"
+        },
+        {
+          "type": "write",
+          "key": "serial/19/y",
+          "version": "serial:19:1:write"
+        }
+      ],
+      "start": 8062000,
+      "end": 8187000
+    },
+    {
+      "id": "serial:19:1:retry1",
+      "status": "committed",
+      "ops": [
+        {
+          "type": "read",
+          "key": "serial/19/x",
+          "version": "serial:19:0:write"
+        },
+        {
+          "type": "read",
+          "key": "serial/19/y",
+          "version": "serial/19/y:initial"
+        }
+      ],
+      "start": 8187000,
+      "end": 8281000
+    }
+  ]
+}

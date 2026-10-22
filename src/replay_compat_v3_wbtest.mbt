@@ -52,3 +52,25 @@ test "v3 legacy capsule header must match recorded report engine" {
   fields["engineVersion"] = "99.0.0".to_json()
   assert_true(!result_valid(capsule_v3_content_json(capsule.stringify())))
 }
+
+///|
+test "v3 v012 engine accepts unchanged evidence and rejects semantic changes" {
+  let trace = v3_test_completed([
+    { "kind": "read", "tx": "A", "key": "x", "version": "x0" },
+  ]).stringify()
+  let report = v3_analysis(trace, "{}")
+  let fields = object_fields_unchecked_v3(report)
+  let evidence = object_fields_unchecked_v3(fields.at("evidence"))
+  fields["version"] = "0.1.2".to_json()
+  evidence["version"] = "0.1.2".to_json()
+  assert_true(result_valid(verify_v3_json(trace, report.stringify())))
+  evidence["version"] = "0.1.1".to_json()
+  assert_true(!result_valid(verify_v3_json(trace, report.stringify())))
+  evidence["version"] = "0.1.2".to_json()
+  fields["status"] = "violation".to_json()
+  assert_true(!result_valid(verify_v3_json(trace, report.stringify())))
+  fields["status"] = "consistent".to_json()
+  fields["version"] = "0.1.0".to_json()
+  evidence["version"] = "0.1.0".to_json()
+  assert_true(!result_valid(verify_v3_json(trace, report.stringify())))
+}

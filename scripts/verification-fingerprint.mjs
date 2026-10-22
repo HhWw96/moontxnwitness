@@ -21,6 +21,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   for(const folder of ['verification/v3/synthetic-dislock-source-closure-v1','verification/business/dislock/v3-647afacfcbe14586b46714bac34c8f30','verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c'])if(existsSync(resolve(root,folder)))visit(folder,true);
   for(const name of ['verification/v3/dislock-explicit-policy-preregistration-2026-10-21.json','verification/v3/dislock-sql-supplement-preregistration-2026-10-21.json'])if(existsSync(resolve(root,name)))names.push(name);
   names.push('examples/postgres-requirements.txt');
+  names.push('examples/orm-requirements.txt');
   return Object.fromEntries(names.sort().map(name=>[name,
     createHash('sha256').update(readFileSync(resolve(root,name))).digest('hex')]));
 }
