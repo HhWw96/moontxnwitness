@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "kind": "moontxnwitness-register-cycle-explanation/v1",
+  "algorithm": "verified-register-cycle-v1",
+  "traceTextSha256": "26869992a1b45872870b97649715aede0275d367b601941b3284581f37807704",
+  "reportTextSha256": "cdf83b85cdd0102d1f347533da7c61705e60849628720410bb930f718ea0bc24",
+  "verifiedReport": true,
+  "sourceReportVersion": "0.1.8",
+  "sourceStatus": "violation",
+  "sourceCoverageComplete": true,
+  "status": "explained",
+  "reason": "verified-point-cycle",
+  "subtype": "G2-item",
+  "categoriesSearched": false,
+  "scope": {
+    "witnessOnly": true,
+    "searchesOtherCategoryCycles": false,
+    "acceptsIsolationModels": false,
+    "completeIsolationClassification": false,
+    "classifiesExecutionFailures": false,
+    "authenticatesCaptureSources": false
+  },
+  "witness": {
+    "kind": "dependency_cycle",
+    "transactions": [
+      "wraparound-adjacent-is-g2-T0",
+      "wraparound-adjacent-is-g2-T1",
+      "wraparound-adjacent-is-g2-T2",
+      "wraparound-adjacent-is-g2-T0"
+    ],
+    "edges": [
+      {
+        "from": "wraparound-adjacent-is-g2-T0",
+        "to": "wraparound-adjacent-is-g2-T1",
+        "kind": "rw",
+        "key": "wraparound-adjacent-is-g2-k0",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "wraparound-adjacent-is-g2-v0-0",
+        "toVersion": "wraparound-adjacent-is-g2-v0-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "wraparound-adjacent-is-g2-T1",
+        "to": "wraparound-adjacent-is-g2-T2",
+        "kind": "wr",
+        "key": "wraparound-adjacent-is-g2-k1",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "wraparound-adjacent-is-g2-v1-1",
+        "toVersion": "wraparound-adjacent-is-g2-v1-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      },
+      {
+        "from": "wraparound-adjacent-is-g2-T2",
+        "to": "wraparound-adjacent-is-g2-T0",
+        "kind": "rw",
+        "key": "wraparound-adjacent-is-g2-k2",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "wraparound-adjacent-is-g2-v2-0",
+        "toVersion": "wraparound-adjacent-is-g2-v2-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      }
+    ],
+    "minimality": "shortest directed cycle in the constructed graph"
+  },
+  "steps": [
+    {
+      "edgeIndex": 0,
+      "dependency": {
+        "from": "wraparound-adjacent-is-g2-T0",
+        "to": "wraparound-adjacent-is-g2-T1",
+        "kind": "rw",
+        "key": "wraparound-adjacent-is-g2-k0",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "wraparound-adjacent-is-g2-v0-0",
+        "toVersion": "wraparound-adjacent-is-g2-v0-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      "from": {
+        "transaction": "wraparound-adjacent-is-g2-T0",
+        "projectedOperation": 1,
+        "operation": {
+          "type": "read",
+          "key": "wraparound-adjacent-is-g2-k0",
+          "version": "wraparound-adjacent-is-g2-v0-0"
+        },
+        "matchingOriginalSeqs": [
+          8
+        ]
+      },
+      "to": {
+        "transaction": "wraparound-adjacent-is-g2-T1",
+        "projectedOperation": 0,
+        "operation": {
+          "type": "write",
+          "key": "wraparound-adjacent-is-g2-k0",
+          "version": "wraparound-adjacent-is-g2-v0-1"
+        },
+        "matchingOriginalSeqs": [
+          5
+        ]
+      },
+      "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+      "versionOrderSource": "asserted",
+      "versionOrder": [
+        "wraparound-adjacent-is-g2-v0-0",
+        "wraparound-adjacent-is-g2-v0-1"
+      ]
+    },
+    {
+      "edgeIndex": 1,
+      "dependency": {
+        "from": "wraparound-adjacent-is-g2-T1",
+        "to": "wraparound-adjacent-is-g2-T2",
+        "kind": "wr",
+        "key": "wraparound-adjacent-is-g2-k1",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "wraparound-adjacent-is-g2-v1-1",
+        "toVersion": "wraparound-adjacent-is-g2-v1-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      },
+      "from": {
+        "transaction": "wraparound-adjacent-is-g2-T1",
+        "projectedOperation": 1,
+        "operation": {
+          "type": "write",
+          "key": "wraparound-adjacent-is-g2-k1",
+          "version": "wraparound-adjacent-is-g2-v1-1"
+        },
+        "matchingOriginalSeqs": [
+          6
+        ]
+      },
+      "to": {
+        "transaction": "wraparound-adjacent-is-g2-T2",
+        "projectedOperation": 0,
+        "operation": {
+          "type": "read",
+          "key": "wraparound-adjacent-is-g2-k1",
+          "version": "wraparound-adjacent-is-g2-v1-1"
+        },
+        "matchingOriginalSeqs": [
+          9
+        ]
+      },
+      "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+      "versionOrderSource": "asserted",
+      "versionOrder": [
+        "wraparound-adjacent-is-g2-v1-0",
+        "wraparound-adjacent-is-g2-v1-1"
+      ]
+    },
+    {
+      "edgeIndex": 2,
+      "dependency": {
+        "from": "wraparound-adjacent-is-g2-T2",
+        "to": "wraparound-adjacent-is-g2-T0",
+        "kind": "rw",
+        "key": "wraparound-adjacent-is-g2-k2",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "wraparound-adjacent-is-g2-v2-0",
+        "toVersion": "wraparound-adjacent-is-g2-v2-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      "from": {
+        "transaction": "wraparound-adjacent-is-g2-T2",
+        "projectedOperation": 1,
+        "operation": {
+          "type": "read",
+          "key": "wraparound-adjacent-is-g2-k2",
+          "version": "wraparound-adjacent-is-g2-v2-0"
+        },
+        "matchingOriginalSeqs": [
+          10
+        ]
+      },
+      "to": {
+        "transaction": "wraparound-adjacent-is-g2-T0",
+        "projectedOperation": 0,
+        "operation": {
+          "type": "write",
+          "key": "wraparound-adjacent-is-g2-k2",
+          "version": "wraparound-adjacent-is-g2-v2-1"
+        },
+        "matchingOriginalSeqs": [
+          7
+        ]
+      },
+      "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+      "versionOrderSource": "asserted",
+      "versionOrder": [
+        "wraparound-adjacent-is-g2-v2-0",
+        "wraparound-adjacent-is-g2-v2-1"
+      ]
+    }
+  ],
+  "rules": {
+    "repository": "jepsen-io/elle",
+    "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+    "file": "src/elle/txn.clj",
+    "definition": "cycle-explainer; ww/wr/item-rw subset only"
+  },
+  "pattern": {
+    "itemAntiDependencies": 2,
+    "adjacentAntiDependenciesIncludingWraparound": true
+  },
+  "categoryCoverage": "Only this existing witness; another anomaly may exist elsewhere in the history."
+}

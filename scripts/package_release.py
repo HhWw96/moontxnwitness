@@ -188,6 +188,27 @@ for kind in ("portable", "source"):
         assert comparison['cases'][0]['observedFaultKinds'] == ['deadlock']
         checks.append(kind + ' execution diagnostic capsule and recorded-MLflow offline comparison round trip')
 
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 8):
+        previous_execution = json.loads(run([NODE, '--input-type=module', '-e',
+            "import assert from'node:assert/strict';import{readFileSync}from'node:fs';import{createHash}from'node:crypto';"
+            "import{replayExecutionCapsuleV3,makeExecutionCapsuleV3,version}from'./dist/sdk.mjs';"
+            "const dir='fixtures/execution-v3/compat/v017/',o=JSON.parse(readFileSync(dir+'origin.json','utf8'));"
+            "const sha=s=>createHash('sha256').update(s).digest('hex'),cases=[];"
+            "assert.equal(o.obtainedFromGitHubPackage,false);assert.equal(o.producerEngineVersion,'0.1.7');"
+            "for(const row of o.cases){const text=readFileSync(dir+row.file,'utf8'),c=JSON.parse(text);"
+            "assert.equal(sha(text),row.sha256);assert.equal(Buffer.byteLength(text,'utf8'),row.bytes);"
+            "assert.equal(c.engineVersion,'0.1.7');const r=replayExecutionCapsuleV3(text);"
+            "assert.equal(r.valid,true);assert.equal(r.engineVersion,'0.1.7');assert.equal(r.traceSha256,c.traceSha256);"
+            "assert.equal(JSON.stringify(r.diagnostic),c.diagnosticText);assert.equal(r.scope.modelViolationClaim,false);"
+            "const n=JSON.parse(makeExecutionCapsuleV3(c.traceText));assert.equal(n.engineVersion,version());"
+            "assert.equal(n.traceText,c.traceText);assert.equal(n.diagnosticText,c.diagnosticText);"
+            "cases.push({id:row.id,valid:r.valid,engineVersion:r.engineVersion,capsuleSha256:sha(text)});}"
+            "assert.equal(cases.length,2);console.log(JSON.stringify({passed:true,runtimeVersion:version(),producerEngineVersion:'0.1.7',cases}));"], consumer))
+        assert previous_execution['passed'] and previous_execution['runtimeVersion'] == VERSION
+        assert previous_execution['producerEngineVersion'] == '0.1.7' and len(previous_execution['cases']) == 2
+        assert all(item['valid'] and item['engineVersion'] == '0.1.7' for item in previous_execution['cases'])
+        checks.append(kind + ' actual-v017 execution-capsule compatibility')
+
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 3):
         isolated = work / (kind + '-orm-only')
         copied = isolated / 'moontxnwitness_capture'

@@ -61,6 +61,13 @@ def validate_scoped_acceptance(acceptance, manifest):
         assert execution['handwrittenCases'] == 10 and execution['recordedMlflowCases'] == 2
         for kind in ('source', 'portable'):
             assert kind + ' execution diagnostic capsule and recorded-MLflow offline comparison round trip' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 8):
+        compatibility = summary['executionCapsuleCompatibilityTests']
+        assert compatibility['passed'] is True and compatibility['checks'] >= 18
+        assert compatibility['runtimeVersion'] == VERSION
+        assert compatibility['producerEngineVersion'] == '0.1.7' and compatibility['capsuleCount'] == 2
+        for kind in ('source', 'portable'):
+            assert kind + ' actual-v017 execution-capsule compatibility' in package['checks']
     tested = json.loads(run(['node', '--input-type=module', '-e',
         "import {verificationFingerprint} from './scripts/verification-fingerprint.mjs'; console.log(JSON.stringify(verificationFingerprint(process.cwd())));" ]))
     assert tested == summary['testedFileSha256'], 'Current executable files differ from tested release'
@@ -293,6 +300,15 @@ def publish():
             'for the distinct execution format, fixed budgets and the meaning of valid replay. This does not run a database, certify failure absence or prove an application repair.\n\n'
             'Install the MoonBit core with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for the Node.js SDK. '
             'Actual verification and public download receipts are recorded separately in verification/.\n', encoding='utf8')
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 8):
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- Replay genuine v0.1.7 execution capsules while retaining original engine, capture text, diagnostic and model compatibility.\n'
+            '- Keep the published v0.1.7 production parser byte-for-byte and retain nine unchanged parser boundary tests with the experimental helper in test-only code.\n'
+            '- Preserve the first rejected optimization comparison; its correctness passed but performance controls did not. No stable18 performance or RSS success is claimed.\n\n'
+            'See CHANGELOG.md and [the execution-capsule guide](https://github.com/' + MODULE + '/blob/' + tag + '/docs/execution-capsule-v3.md). '
+            'Performance results and actual release verification are recorded separately; this note makes no speedup or memory claim.\n\n'
+            'Install with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for Node.js.\n', encoding='utf8')
 
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
     if performance_path.exists() and not scoped:

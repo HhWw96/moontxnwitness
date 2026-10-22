@@ -1,3 +1,9 @@
+# 0.1.8 — 2026-10-22
+
+- Replay two genuine v0.1.7 execution capsules with their original engine, trace and full diagnostic; retain explicit model compatibility and all existing SDK entries, budgets and release checks.
+- Keep the published v0.1.7 production parser byte-for-byte. Move the ASCII reuse helper into test-only code and retain the original nine parser boundary tests unchanged.
+- Preserve the rejected optimization experiment and its first formal comparison: correctness passed, performance controls did not. The optimized candidate is not the stable default; stable18 has no new measured performance or RSS success claim.
+
 # 0.1.7 — 2026-10-22
 
 - Add execution-diagnostic capsule creation and replay, retaining exact capture text, fixed budgets, unknown outcomes and coverage gaps.

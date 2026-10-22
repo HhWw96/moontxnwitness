@@ -6,13 +6,17 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-## v0.1.7 支持范围
+## v0.1.8 支持范围
 
-本版新增执行故障诊断包：`makeExecutionCapsuleV3`、`replayExecutionCapsuleV3`，把原始记录与完整诊断封存并重新计算。运行 `node examples/execution-roundtrip.mjs` 可离线比较两份既有 MLflow 记录，见[诊断包说明](docs/execution-capsule-v3.md)；有效重放不表示没有故障、业务修复或数据库真实性证明。
+本版明确支持实际 v0.1.7 执行诊断包的兼容重放，保留完整诊断、原始 trace 和旧引擎标识，并新增九项解析边界回归。默认生产解析器采用已发布 v0.1.7 的完整实现。
+
+常见 ASCII 字段复用保留为试验候选。首次正式对照的正确性核对通过，但性能控制验收未满足，因此该候选没有进入本版默认路径；原测量与失败记录保留。稳定版本身尚未进行新性能测量，不声明提速或 RSS 目标通过。
+
+继续提供执行故障诊断包：`makeExecutionCapsuleV3`、`replayExecutionCapsuleV3`，把原始记录与完整诊断封存并重新计算。运行 `node examples/execution-roundtrip.mjs` 可离线比较两份既有 MLflow 记录，见[诊断包说明](docs/execution-capsule-v3.md)；有效重放不表示没有故障、业务修复或数据库真实性证明。
 
 继续提供已验证点寄存器证据环的类型与来源解读：`explainRegisterCycleV3`、`verifyRegisterCycleExplanationV3`。运行 `node examples/register-cycle-roundtrip.mjs`，见[证据环解读说明](docs/cycle-explanation-v3.md)。
 
-关系集合的六个专用 SDK 入口与来源闭包缩减示例继续提供；保留列表、ORM 模板、局部来源诊断、普通表 CRUD 与已有分析接口。v0.1.5 已发布至 GitHub 与 Mooncakes，并通过[公开下载验证](https://github.com/HhWw96/moontxnwitness/actions/runs/39792872938)；本版实际构建、安装和公开发布状态以 `verification/releases/0.1.7/` 收据及[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。
+关系集合的六个专用 SDK 入口与来源闭包缩减示例继续提供；保留列表、ORM 模板、局部来源诊断、普通表 CRUD 与已有分析接口。v0.1.7 已发布至 GitHub 与 Mooncakes，并通过[公开下载验证](https://github.com/HhWw96/moontxnwitness/actions/runs/39820215994)；本版实际构建、安装和公开发布状态以 `verification/releases/0.1.8/` 收据及[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。
 
 | 能力 | 本版支持 |
 | --- | --- |
@@ -64,7 +68,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.1.7
+moon add HhWw96/moontxnwitness@0.1.8
 ```
 
 ```javascript
@@ -135,7 +139,7 @@ node examples/relation-roundtrip.mjs
 - [普通表扩展来源](experiments/provenance/PRESENCE_PROFILE.md)、[dislock](docs/dislock-v3.md)：按适配器声明的 SQL 与来源范围使用。
 - [执行故障诊断](experiments/faults/mlflow/README.md)：死锁等故障单列，不冒充隔离模型违反。
 
-预览格式可能调整。v0.1.7 显式兼容 v0.1.1 至 v0.1.6 的既有算法的显式兼容检查；更早研究期记录仍可能需要对应源码回放。不支持的 SQL、缺失来源与覆盖缺口始终可见；尚不提供任意 SQL 插桩或完整隔离级别分类。
+预览格式可能调整。v0.1.8 对 v0.1.1 至 v0.1.7 的既有算法保留显式兼容检查；更早研究期记录仍可能需要对应源码回放。不支持的 SQL、缺失来源与覆盖缺口始终可见；尚不提供任意 SQL 插桩或完整隔离级别分类。
 
 ## 开发与验证
 

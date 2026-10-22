@@ -15,11 +15,13 @@ npm run postgres:verify
 npm run package
 ```
 
-`npm test` 检查格式、四目标类型，在 JS / Wasm GC / Wasm 各运行 94 项核心测试，然后执行 2,542 份解析差分、10,320 份独立串行重放、6,373 份环证据、旧/新缩减核对和 75 项 CLI/SDK/导出/回放检查。独立 oracle 枚举整个事务的串行排列并实际重放，不复用生产依赖推导。更大搜索案例另有 8 份独立可验证样本。
+`npm test` 检查格式、四目标类型，在 JS / Wasm GC / Wasm 分别运行全部当前核心测试；准确计数以当前 `verification/summary.json` 为准。随后执行 2,542 份解析差分、10,320 份独立串行重放、6,373 份环证据、旧/新缩减核对及 CLI/SDK/导出/回放检查。独立 oracle 枚举整个事务的串行排列并实际重放，不复用生产依赖推导。更大搜索案例另有 8 份独立可验证样本。
 
-Native 在 Windows 本地只检查类型；本机没有配置 C 编译器。Linux CI 另外实际执行相同 94 项 Native 核心测试。已安装支持的 C 编译器时可运行 `node scripts/test.mjs --all`。实际远端运行证据以各版 publication.json 和对应 Actions 为准。
+Native 在 Windows 本地只检查类型；本机没有配置 C 编译器。Linux CI 另外实际执行相同源码的完整 Native 核心测试，计数以对应实际收据为准。已安装支持的 C 编译器时可运行 `node scripts/test.mjs --all`。实际远端运行证据以各版 publication.json 和对应 Actions 为准。
 
 ## 性能和真实数据库
+
+稳定 v0.1.8 的生产解析器采用已发布17版完整实现，保留九项原解析边界测试。ASCII 字段复用候选首次正式对照的正确性通过，但性能控制验收未满足，已回退；原实验输入、样本和失败记录保留。回退后稳定版未进行新性能测量，不能继承候选性能结论或宣称提速、尾延迟、RSS 目标通过。
 
 `npm run benchmark` 会先重建，再自动准备固定摘要的公开 v0.0.6 基线。固定输入在 verification/fixtures/v006-comparison；计时、环境、峰值内存、输出大小和阶段数据在每版目录。完整协议是 5 次预热、30 次测量、3 批交替独立进程。默认推荐 balanced，可显式 `--profile compat`。`--quick` 或 `--group reduction` 用于开发，不能满足全部性能验收。每次测量保存带时间戳的独立记录，标签文件仅为最近结果的便捷入口。
 

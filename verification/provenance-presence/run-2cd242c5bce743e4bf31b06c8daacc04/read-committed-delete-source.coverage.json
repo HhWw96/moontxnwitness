@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "status": "ready",
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "history": {
+    "schemaVersion": 1,
+    "model": "serializable",
+    "initial": {
+      "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"a\"]": "d7a855bd-d93b-46e9-9f93-30d6e541bb90",
+      "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"b\"]": "82932564-13fb-40ae-8c7a-812046ae9c30",
+      "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"never\"]": "0c7a7712-8c53-4513-9a30-6ef4f85e9cc8"
+    },
+    "versionOrders": {
+      "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"a\"]": [
+        "d7a855bd-d93b-46e9-9f93-30d6e541bb90",
+        "93e78445-4310-43c6-9b81-9e927d4981c0",
+        "dba2358a-30c7-4f68-885a-d88919972397",
+        "3aef4565-dbdc-426f-8de2-6cc8b2b746ca"
+      ],
+      "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"b\"]": [
+        "82932564-13fb-40ae-8c7a-812046ae9c30"
+      ],
+      "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"never\"]": [
+        "0c7a7712-8c53-4513-9a30-6ef4f85e9cc8"
+      ]
+    },
+    "transactions": [
+      {
+        "id": "tx-1",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"a\"]",
+            "version": "93e78445-4310-43c6-9b81-9e927d4981c0"
+          }
+        ],
+        "start": 390000,
+        "end": 469000
+      },
+      {
+        "id": "tx-2",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"a\"]",
+            "version": "dba2358a-30c7-4f68-885a-d88919972397"
+          }
+        ],
+        "start": 422000,
+        "end": 500000
+      },
+      {
+        "id": "tx-3",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "read",
+            "key": "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"a\"]",
+            "version": "dba2358a-30c7-4f68-885a-d88919972397"
+          },
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"a\"]",
+            "version": "3aef4565-dbdc-426f-8de2-6cc8b2b746ca"
+          }
+        ],
+        "start": 500000,
+        "end": 515000
+      }
+    ]
+  },
+  "projection": {
+    "version": "column-presence-register-v0.1.2-experimental",
+    "scope": "unique-version point-register projection"
+  },
+  "sourceFacts": {
+    "schema": 1,
+    "projection": "column-presence-register-v0.1.2-experimental",
+    "initial": [
+      {
+        "key": "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"a\"]",
+        "version": "d7a855bd-d93b-46e9-9f93-30d6e541bb90",
+        "present": true
+      },
+      {
+        "key": "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"b\"]",
+        "version": "82932564-13fb-40ae-8c7a-812046ae9c30",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"never\"]",
+        "version": "0c7a7712-8c53-4513-9a30-6ef4f85e9cc8",
+        "present": false
+      }
+    ],
+    "reads": [
+      {
+        "seq": 20,
+        "tx": "tx-3",
+        "key": "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"a\"]",
+        "version": "dba2358a-30c7-4f68-885a-d88919972397",
+        "present": false
+      }
+    ],
+    "writes": [
+      {
+        "seq": 6,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"a\"]",
+        "version": "93e78445-4310-43c6-9b81-9e927d4981c0",
+        "predecessor": "d7a855bd-d93b-46e9-9f93-30d6e541bb90",
+        "oldPresent": true,
+        "newPresent": true,
+        "action": "update"
+      },
+      {
+        "seq": 13,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"a\"]",
+        "version": "dba2358a-30c7-4f68-885a-d88919972397",
+        "predecessor": "93e78445-4310-43c6-9b81-9e927d4981c0",
+        "oldPresent": true,
+        "newPresent": false,
+        "action": "delete"
+      },
+      {
+        "seq": 24,
+        "tx": "tx-3",
+        "key": "[\"mtw_provenance_presence_27c51dcd744c.presence_rc\",\"text\",\"a\"]",
+        "version": "3aef4565-dbdc-426f-8de2-6cc8b2b746ca",
+        "predecessor": "dba2358a-30c7-4f68-885a-d88919972397",
+        "oldPresent": false,
+        "newPresent": true,
+        "action": "insert"
+      }
+    ]
+  }
+}

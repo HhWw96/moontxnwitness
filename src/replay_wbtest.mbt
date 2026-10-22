@@ -24,6 +24,7 @@ test "stable v1 and v2 replay accepts released engines only in supported headers
             "0.1.4",
             "0.1.5",
             "0.1.6",
+            "0.1.7",
             version(),
           ] {
           fields["version"] = engine.to_json()
