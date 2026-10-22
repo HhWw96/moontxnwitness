@@ -32,7 +32,7 @@
   },
   "databaseEvidence": "database-with-models.json",
   "tests": {
-    "receipt": "../../summary.json",
+    "receipt": "test-summary.json",
     "executedTargets": [
       "js",
       "wasm-gc",
@@ -64,7 +64,8 @@
     "independentFirstRunPassedGroups": 105,
     "independentStoredLegacyCapsules": 287,
     "additionalActual18CompatibilityGroups": 4,
-    "actual20FullRegressionChangedOutputs": 610
+    "actual20FullRegressionChangedOutputs": 610,
+    "publishedPackageIndependentGroups": 210
   },
   "independentReview": {
     "receipt": "release-independent/public-reproduction/evidence/actual20-105-receipt.json",
@@ -131,7 +132,7 @@
   ],
   "compatibility": "Existing v1/v2 and explicitly listed v3 model engines retained through0.1.8; execution/v1 accepts current20 plus17/18 without rewriting capture text, business versions or diagnostics.",
   "performance": "No new formal20 performance success. Production parser retains published17 complete source; rejected5999/5b63 experiment and its failed control result remain separate.",
-  "publicReleaseVerified": false,
+  "publicReleaseVerified": true,
   "humanAcceptanceRecorded": false,
   "organizerAcceptanceRecorded": false,
   "cycleExplanationScope": {
@@ -216,10 +217,15 @@
     "scope": "No new20 runtime, throughput, tail-latency or RSS measurement; historical rejected candidate is separate"
   },
   "packageAcceptance": {
-    "status": "pending",
-    "executedHere": false,
-    "sourceAndPortableCurrentChecksRequired": true,
-    "publicDownloadAcceptance": false
+    "status": "passed",
+    "executedHere": true,
+    "receipt": "package-acceptance.json",
+    "receiptSha256": "fac150f5d8c6733543cbe741389b0f2316dff5b55c1495810896960e30f5932c",
+    "freshConsumerChecks": 94,
+    "sourceRebuilt": true,
+    "publicDownloadAcceptance": true,
+    "publicReceipt": "publication.json",
+    "publicReceiptSha256": "b0dff61613164ce36b6977e97269225a5714d0bfa121d43498e81d502f0c63da"
   },
   "knownFailureRecord": "../../experimental-candidates/parser-v018-first-performance/public-failure-evidence/README.md",
   "scopeConvergence": {
@@ -238,5 +244,38 @@
     "cycleExplanation": "Selected verified register witness only; no complete isolation classification",
     "fullAutomaticSql": false,
     "fullProductionDislockOrMlflow": false
+  },
+  "publicVerificationReceipt": "publication.json",
+  "publicVerificationRun": "https://github.com/HhWw96/moontxnwitness/actions/runs/39841131136",
+  "publicPackageIndependentReview": {
+    "passed": true,
+    "receipt": "published-package-review/public-reproduction/evidence/published-package-210-receipt.json",
+    "receiptSha256": "7369dcc8441b33b8439c8d9c2ed6eb3b848793c66f5964fa38209640dbdd4a51",
+    "closure": "published-package-review/public-reproduction/public-closure.json",
+    "closureSha256": "2ac7b172c0cc318427df2437b8cbf384d58e9eba963d424ccbdf823b26ec1996",
+    "groups": 210,
+    "consumers": [
+      {
+        "variant": "source-wrapper with public portable core",
+        "groups": 105
+      },
+      {
+        "variant": "portable",
+        "groups": 105
+      }
+    ],
+    "anonymousPackages": 6,
+    "versions": [
+      "0.1.7",
+      "0.1.8",
+      "0.2.0"
+    ],
+    "sourceRebuiltHere": false,
+    "authorDistRead": false,
+    "actualDatabaseExecutedHere": false,
+    "formalPerformanceMeasuredHere": false,
+    "original105AssertionsUnchanged": true,
+    "firstHarnessPreparationFailurePreserved": true,
+    "scope": "Independent AI technical verification of anonymous public package runtimes; separate from publisher source rebuild and human or organizer acceptance"
   }
 }
