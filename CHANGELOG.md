@@ -1,3 +1,10 @@
+# 0.1.5 — 2026-10-22
+
+- Deliver six fixed-model relation-set SDK entries for normalization, bounded analysis, source-closed reduction, verification and replay capsules; retain generic v3 and list APIs.
+- Add a four-to-three-transaction example that preserves the producer required by the remaining anomaly and records reproducible outputs and digests.
+- Preserve exact JSON, typed row values, complete-query semantics, source gaps, unknown outcomes and existing computation budgets.
+- Extend released-engine compatibility to v0.1.4 and exercise the relation example in fresh source and portable consumers. Actual execution receipts and retained failures are recorded separately.
+
 # 0.1.4 — 2026-10-22
 
 - Deliver bounded `append-list-v1` analysis, source diagnostics, transaction reduction and replay through six explicit list SDK entry points; retain the generic v3 interfaces.

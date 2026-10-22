@@ -1,6 +1,6 @@
-# relation-set-v1 开发模型
+# relation-set-v1 有界关系模型
 
-v3 现在可以分析完整谓词查询与实际行写入的关系集合事实。此入口属于实验实现，使用 [关系模型契约](relation-v3-contract-draft.md)，尚未冻结 v0.2.0。它不自动证明任意 SQL 或 ORM 的语义，也不提供六种隔离模型分类。旧 v1/v2 接口和证据重放规则保持原样。
+v0.1.5 为完整谓词查询与实际行写入的关系集合事实提供明确支持的有界入口，使用 [关系模型契约](relation-v3-contract-draft.md)与[关系 SDK](relation-sdk.md)。它不自动证明任意 SQL 或 ORM 的语义，也不提供六种隔离模型分类。旧 v1/v2 接口和证据重放规则保持原样；完整 v0.2.0 契约仍另行整理。
 
 ## 支持范围
 
@@ -16,7 +16,7 @@ v3 现在可以分析完整谓词查询与实际行写入的关系集合事实�
 
 ## 使用与证据
 
-统一 SDK 通过 `normalizeCaptureV3`、`analyzeV3`、`reduceV3`、`verifyV3` 按 dataModel 分派；CLI 使用原有 `ingest-v3`、`check-v3`、`reduce-v3`、`verify-v3` 和 `replay-v3`。无需切换旧入口的默认模型。
+关系 SDK 通过 `normalizeRelationCaptureV3`、`analyzeRelationV3`、`reduceRelationV3`、`verifyRelationV3`、`makeRelationCapsuleV3` 和 `replayRelationCapsuleV3` 检查固定模型。通用 SDK 继续按 dataModel 分派；CLI 使用原有 `ingest-v3`、`check-v3`、`reduce-v3`、`verify-v3` 和 `replay-v3`。无需切换旧入口的默认模型。运行 `node examples/relation-roundtrip.mjs` 可生成来源闭包缩减及复现包。
 
 ```text
 node dist/moontxnwitness.mjs check-v3 TRACE.json --output NEW_REPORT.json --capsule NEW_CAPSULE.json

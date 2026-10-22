@@ -1,0 +1,242 @@
+{
+  "schema": 3,
+  "dataModel": "relation-set-v1",
+  "algorithm": "v3-relation-lifecycle-1",
+  "status": "ready",
+  "relationSchema": {
+    "accounts": {
+      "primaryKey": "id",
+      "columns": {
+        "id": "int64",
+        "balance": "int64",
+        "active": "bool",
+        "region": "text"
+      }
+    }
+  },
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "observations": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "accounts": [
+          {
+            "key": "1",
+            "version": "749d073f-064e-4f8f-98ed-62525cca276e",
+            "values": {
+              "balance": "10",
+              "active": true,
+              "region": "east"
+            }
+          },
+          {
+            "key": "2",
+            "version": "69f3b17d-3d2b-4881-8672-2e624acec722",
+            "values": {
+              "balance": "20",
+              "active": true,
+              "region": "west"
+            }
+          }
+        ]
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 78000,
+      "kind": "begin",
+      "tx": "A",
+      "connection": "C-A"
+    },
+    {
+      "seq": 3,
+      "time": 187000,
+      "kind": "begin",
+      "tx": "B",
+      "connection": "C-B"
+    },
+    {
+      "seq": 4,
+      "time": 187000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [
+        {
+          "column": "region",
+          "op": "eq",
+          "value": "east"
+        }
+      ],
+      "rows": [
+        {
+          "key": "1",
+          "version": "749d073f-064e-4f8f-98ed-62525cca276e",
+          "values": {
+            "balance": "10",
+            "active": true,
+            "region": "east"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 5,
+      "time": 203000,
+      "kind": "row_read",
+      "tx": "B",
+      "relation": "accounts",
+      "predicate": [
+        {
+          "column": "region",
+          "op": "eq",
+          "value": "west"
+        }
+      ],
+      "rows": [
+        {
+          "key": "2",
+          "version": "69f3b17d-3d2b-4881-8672-2e624acec722",
+          "values": {
+            "balance": "20",
+            "active": true,
+            "region": "west"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 6,
+      "time": 218000,
+      "kind": "row_write",
+      "tx": "A",
+      "relation": "accounts",
+      "key": "1",
+      "action": "update",
+      "version": "c711d334-0bed-4869-b43a-59acfea2776a",
+      "predecessor": "749d073f-064e-4f8f-98ed-62525cca276e",
+      "values": {
+        "balance": "10",
+        "active": true,
+        "region": "west"
+      }
+    },
+    {
+      "seq": 7,
+      "time": 250000,
+      "kind": "row_write",
+      "tx": "B",
+      "relation": "accounts",
+      "key": "2",
+      "action": "update",
+      "version": "e5b5f549-afdb-45d9-b2c3-70d202457a35",
+      "predecessor": "69f3b17d-3d2b-4881-8672-2e624acec722",
+      "values": {
+        "balance": "20",
+        "active": true,
+        "region": "east"
+      }
+    },
+    {
+      "seq": 8,
+      "time": 250000,
+      "kind": "commit_request",
+      "tx": "A"
+    },
+    {
+      "seq": 9,
+      "time": 250000,
+      "kind": "commit_ok",
+      "tx": "A"
+    },
+    {
+      "seq": 10,
+      "time": 250000,
+      "kind": "commit_request",
+      "tx": "B"
+    },
+    {
+      "seq": 11,
+      "time": 250000,
+      "kind": "commit_ok",
+      "tx": "B"
+    }
+  ],
+  "effects": [
+    {
+      "seq": 6,
+      "tx": "A",
+      "relation": "accounts",
+      "key": "1",
+      "action": "update",
+      "version": "c711d334-0bed-4869-b43a-59acfea2776a",
+      "predecessor": "749d073f-064e-4f8f-98ed-62525cca276e",
+      "values": {
+        "balance": "10",
+        "active": true,
+        "region": "west"
+      },
+      "revertedBy": null
+    },
+    {
+      "seq": 7,
+      "tx": "B",
+      "relation": "accounts",
+      "key": "2",
+      "action": "update",
+      "version": "e5b5f549-afdb-45d9-b2c3-70d202457a35",
+      "predecessor": "69f3b17d-3d2b-4881-8672-2e624acec722",
+      "values": {
+        "balance": "20",
+        "active": true,
+        "region": "east"
+      },
+      "revertedBy": null
+    }
+  ],
+  "transactions": [
+    {
+      "id": "A",
+      "connection": "C-A",
+      "status": "committed",
+      "beginSeq": 2,
+      "endSeq": 9,
+      "events": [
+        2,
+        4,
+        6,
+        8,
+        9
+      ],
+      "finalWrites": [
+        6
+      ]
+    },
+    {
+      "id": "B",
+      "connection": "C-B",
+      "status": "committed",
+      "beginSeq": 3,
+      "endSeq": 11,
+      "events": [
+        3,
+        5,
+        7,
+        10,
+        11
+      ],
+      "finalWrites": [
+        7
+      ]
+    }
+  ],
+  "history": null
+}

@@ -23,6 +23,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   names.push('examples/postgres-requirements.txt');
   names.push('examples/orm-requirements.txt');
   names.push('examples/list-cycle.json', 'examples/list-roundtrip.mjs');
+  names.push('examples/relation-source-closure.json', 'examples/relation-roundtrip.mjs');
   return Object.fromEntries(names.sort().map(name=>[name,
     createHash('sha256').update(readFileSync(resolve(root,name))).digest('hex')]));
 }

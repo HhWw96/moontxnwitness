@@ -30,6 +30,11 @@ if (listSDKChild.error) throw listSDKChild.error;
 if (listSDKChild.status !== 0) throw new Error('Fixed append-list SDK checks failed: ' + listSDKChild.stdout + listSDKChild.stderr);
 const listSDK = JSON.parse(listSDKChild.stdout);
 assert.equal(listSDK.passed,true);
+const relationSDKChild = spawnSync(process.execPath, ['scripts/relation-sdk-test.mjs'], {cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:4*1024*1024});
+if (relationSDKChild.error) throw relationSDKChild.error;
+if (relationSDKChild.status !== 0) throw new Error('Fixed relation-set SDK checks failed: ' + relationSDKChild.stdout + relationSDKChild.stderr);
+const relationSDK = JSON.parse(relationSDKChild.stdout);
+assert.equal(relationSDK.passed,true);
 const adapter = spawnSync(process.env.MTW_PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), ['scripts/capture-unit-test.py'], {cwd:root,stdio:'inherit',windowsHide:true});
 if (adapter.error) throw adapter.error;
 if (adapter.status !== 0) throw new Error('Capture adapter unit tests failed: ' + adapter.status);
@@ -121,5 +126,6 @@ receipt.captureAdapterUnitTests = 'passed; driver-interface tests, not actual da
 receipt.presenceAdapterUnitTests = {passed:presenceUnitReceipt.passed,tests:presenceUnitReceipt.testsRun,actualDatabaseExecution:false};
 receipt.ormPlanUnitTests = {passed:ormUnitReceipt.passed,tests:ormUnitReceipt.testsRun,actualDatabaseExecution:false};
 receipt.appendListSdkTests = listSDK;
+receipt.relationSdkTests = relationSDK;
 writeVerifiedJson(resolve(root, 'verification/summary.json'), receipt);
 console.log(`MoonTxnWitness v${receipt.version} verification complete.`);

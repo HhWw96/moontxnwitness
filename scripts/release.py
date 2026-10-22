@@ -42,6 +42,11 @@ def validate_scoped_acceptance(acceptance, manifest):
         assert summary['appendListSdkTests']['checks'] > 0 and summary['appendListSdkTests']['manualCases'] > 0
         for kind in ('source', 'portable'):
             assert kind + ' append-list SDK and source-closed example round trip' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 5):
+        assert summary['relationSdkTests']['passed'] is True
+        assert summary['relationSdkTests']['checks'] > 0 and summary['relationSdkTests']['manualCases'] > 0
+        for kind in ('source', 'portable'):
+            assert kind + ' relation-set SDK and source-closed example round trip' in package['checks']
     tested = json.loads(run(['node', '--input-type=module', '-e',
         "import {verificationFingerprint} from './scripts/verification-fingerprint.mjs'; console.log(JSON.stringify(verificationFingerprint(process.cwd())));" ]))
     assert tested == summary['testedFileSha256'], 'Current executable files differ from tested release'
@@ -246,6 +251,15 @@ def publish():
             'Existing PostgreSQL fixtures, actual release checks and fresh-consumer evidence are recorded separately in CHANGELOG.md and verification/.\n\n'
             'Install the MoonBit core: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or download the portable ZIP for the Node.js SDK (Node.js >=20). '
             'Existing register, presence and optional ORM-plan APIs remain available.\n', encoding='utf8')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 5):
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- Six relation-model SDK entries for analysis, source-preserving reduction and replay.\n'
+            '- A runnable example removes an unrelated transaction and retains the version source needed by the counterexample.\n'
+            '- Existing register/list APIs and explicitly supported released v3 replay remain compatible.\n\n'
+            'Run `node examples/relation-roundtrip.mjs`; see [the SDK guide](docs/relation-sdk.md) for usage, supported queries, budgets and diagnostic status. '
+            'Arbitrary SQL instrumentation and complete isolation-level classification remain outside this scope.\n\n'
+            'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '` for the MoonBit core, or use the portable ZIP for Node.js SDK. '
+            'See CHANGELOG.md and verification/ for actual validation and retained failures.\n', encoding='utf8')
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
     if performance_path.exists() and not scoped:
         groups = json.loads(performance_path.read_text(encoding='utf-8'))['groups']

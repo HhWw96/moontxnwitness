@@ -118,6 +118,19 @@ for kind in ("portable", "source"):
             assert sha256(path) == item['sha256'] and path.stat().st_size == item['bytes']
         assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-v3', str(case)], consumer))['valid']
         checks.append(kind + ' append-list SDK and source-closed example round trip')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 5):
+        relation_demo = json.loads(run([NODE, 'examples/relation-roundtrip.mjs', '--out-root', str(work)], consumer))
+        assert relation_demo['passed'] and relation_demo['version'] == VERSION
+        assert relation_demo['originalTransactions'] == 4 and relation_demo['reducedTransactions'] == 3
+        assert relation_demo['oneMinimal'] and relation_demo['replayValid']
+        case = work / relation_demo['outputDirectory'] / 'case.capsule.json'
+        assert case.resolve().is_relative_to(work.resolve())
+        for item in relation_demo['files']:
+            path = (case.parent / item['file']).resolve()
+            assert path.is_relative_to(case.parent.resolve())
+            assert sha256(path) == item['sha256'] and path.stat().st_size == item['bytes']
+        assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-v3', str(case)], consumer))['valid']
+        checks.append(kind + ' relation-set SDK and source-closed example round trip')
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 3):
         isolated = work / (kind + '-orm-only')
         copied = isolated / 'moontxnwitness_capture'

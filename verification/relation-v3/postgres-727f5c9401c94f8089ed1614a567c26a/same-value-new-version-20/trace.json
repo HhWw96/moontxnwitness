@@ -1,0 +1,194 @@
+{
+  "traceSchema": 3,
+  "dataModel": "relation-set-v1",
+  "relationSchema": {
+    "accounts": {
+      "primaryKey": "id",
+      "columns": {
+        "id": "int64",
+        "balance": "int64",
+        "active": "bool",
+        "region": "text"
+      }
+    }
+  },
+  "clockDomain": "relation-fixture-mtw_relation_v3_f97389f13988_6_19",
+  "scope": {
+    "exclusiveWriters": true,
+    "completeSnapshotTables": [
+      "accounts"
+    ]
+  },
+  "events": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "accounts": [
+          {
+            "key": "1",
+            "version": "72195284-fe10-47cd-920d-6d8a6d20a645",
+            "values": {
+              "balance": "10",
+              "active": true,
+              "region": "east"
+            }
+          }
+        ]
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 218000,
+      "kind": "begin",
+      "tx": "A",
+      "connection": "C-A"
+    },
+    {
+      "seq": 3,
+      "time": 234000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [],
+      "rows": [
+        {
+          "key": "1",
+          "version": "72195284-fe10-47cd-920d-6d8a6d20a645",
+          "values": {
+            "balance": "10",
+            "active": true,
+            "region": "east"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 4,
+      "time": 265000,
+      "kind": "row_write",
+      "tx": "A",
+      "relation": "accounts",
+      "key": "1",
+      "action": "update",
+      "version": "a78b1f45-7019-4d5b-a5d5-e9d5b6146239",
+      "predecessor": "72195284-fe10-47cd-920d-6d8a6d20a645",
+      "values": {
+        "balance": "10",
+        "active": true,
+        "region": "east"
+      }
+    },
+    {
+      "seq": 5,
+      "time": 281000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [],
+      "rows": [
+        {
+          "key": "1",
+          "version": "a78b1f45-7019-4d5b-a5d5-e9d5b6146239",
+          "values": {
+            "balance": "10",
+            "active": true,
+            "region": "east"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 6,
+      "time": 281000,
+      "kind": "row_write",
+      "tx": "A",
+      "relation": "accounts",
+      "key": "1",
+      "action": "update",
+      "version": "c88d4d27-c5ad-464c-84e2-5b6b3db0db3e",
+      "predecessor": "a78b1f45-7019-4d5b-a5d5-e9d5b6146239",
+      "values": {
+        "balance": "10",
+        "active": true,
+        "region": "east"
+      }
+    },
+    {
+      "seq": 7,
+      "time": 281000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [],
+      "rows": [
+        {
+          "key": "1",
+          "version": "c88d4d27-c5ad-464c-84e2-5b6b3db0db3e",
+          "values": {
+            "balance": "10",
+            "active": true,
+            "region": "east"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 8,
+      "time": 281000,
+      "kind": "commit_request",
+      "tx": "A"
+    },
+    {
+      "seq": 9,
+      "time": 281000,
+      "kind": "commit_ok",
+      "tx": "A"
+    },
+    {
+      "seq": 10,
+      "time": 390000,
+      "kind": "begin",
+      "tx": "B",
+      "connection": "C-B"
+    },
+    {
+      "seq": 11,
+      "time": 406000,
+      "kind": "row_read",
+      "tx": "B",
+      "relation": "accounts",
+      "predicate": [],
+      "rows": [
+        {
+          "key": "1",
+          "version": "c88d4d27-c5ad-464c-84e2-5b6b3db0db3e",
+          "values": {
+            "balance": "10",
+            "active": true,
+            "region": "east"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 12,
+      "time": 406000,
+      "kind": "commit_request",
+      "tx": "B"
+    },
+    {
+      "seq": 13,
+      "time": 406000,
+      "kind": "commit_ok",
+      "tx": "B"
+    }
+  ],
+  "gaps": []
+}

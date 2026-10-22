@@ -6,14 +6,15 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-## v0.1.4 支持范围
+## v0.1.5 支持范围
 
-本版新增有界追加列表分析、六个列表 SDK 入口和异常缩减演示，保留 ORM 模板、局部来源诊断、普通表 CRUD 与已有分析接口。v0.1.3 已发布至 GitHub 与 Mooncakes，并通过[公开下载验证](https://github.com/HhWw96/moontxnwitness/actions/runs/39775819554)；本版实际构建、安装和公开发布状态以 `verification/releases/0.1.4/` 收据及[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。
+本版新增关系集合的六个专用 SDK 入口与来源闭包缩减示例，保留列表、ORM 模板、局部来源诊断、普通表 CRUD 与已有分析接口。v0.1.4 已发布至 GitHub 与 Mooncakes，并通过[公开下载验证](https://github.com/HhWw96/moontxnwitness/actions/runs/39784187020)；本版实际构建、安装和公开发布状态以 `verification/releases/0.1.5/` 收据及[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。
 
 | 能力 | 本版支持 |
 | --- | --- |
 | 离线分析 | 带唯一写入版本的点读写寄存器；serializable / strict-serializable |
 | 追加列表 | `append-list-v1` 的来源检查、有界串行分析、缩减及胶囊重放；显式列表 SDK 入口 |
+| 关系集合 | `relation-set-v1` 的完整谓词查询、行写入、来源闭包缩减及胶囊重放；显式关系 SDK 入口 |
 | 异常解释 | 直接读写异常、完整依赖来源、图中最短有向环和有界串行补全 |
 | 反例与证据 | 事务缩减、中文报告、图导出、v1/v2 证据及复现包回放 |
 | PostgreSQL 采集 | psycopg 同步/异步连接；已有版本列、单列主键及明确映射的点读写 SQL |
@@ -22,7 +23,7 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 | ORM 局部诊断 | `inspectOrmSourceV3` / `inspect-orm-source-v3` 核验固定来源片段；保留 `history:null` 和明确覆盖缺口 |
 | 数据库演示 | PostgreSQL 18 写偏斜与 Serializable 回滚/全新事务重试；SQLite WAL 并发案例 |
 
-采集需要显式声明写者范围和 SQL 映射。未知提交、丢失来源或预算耗尽保留为无法判定。普通表入口会安装版本列、触发器和来源表，适用条件及示例见[普通表采集](docs/presence-capture.md)。关系模型、扩展来源持久化和完整 ORM 自动采集继续使用实验入口。
+采集需要显式声明写者范围和 SQL 映射。未知提交、丢失来源或预算耗尽保留为无法判定。普通表入口会安装版本列、触发器和来源表，适用条件及示例见[普通表采集](docs/presence-capture.md)。关系分析要求显式模型事实；扩展来源持久化和完整 ORM 自动采集继续使用实验入口。
 
 ## 运行演示
 
@@ -59,7 +60,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.1.4
+moon add HhWw96/moontxnwitness@0.1.5
 ```
 
 ```javascript
@@ -108,6 +109,16 @@ node examples/list-roundtrip.mjs
 
 胶囊 `valid:true` 表示报告可重算，仍须读取 `status` 与覆盖标记；它也可能重放如实记录的 invalid 或 inconclusive 诊断。列表入口不提供自动 SQL 采集或完整隔离级别分类，语义与额度见[模型说明](docs/list-v3.md)。
 
+## 有界关系集合
+
+[关系 SDK](docs/relation-sdk.md)提供规范化、分析、缩减、验证和复现包重放六个入口，要求显式 `dataModel:"relation-set-v1"`。支持完整结果集合与空结果、字段等值/区间 AND 谓词，以及插入、更新、删除和保存点；实际写影响与完整查询分别记录。
+
+```powershell
+node examples/relation-roundtrip.mjs
+```
+
+合成示例将四个事务缩为三个，保留被异常事务读取的生产者。删除该生产者会丢失来源，不能为了得到更小反例而忽略。类型、完整性与精确搜索额度见[关系模型](docs/relation-v3.md)；任意 SQL 自动映射、混合模型和完整隔离分类仍不支持。
+
 ## ORM 模板与来源诊断
 
 [Python 模板入口](docs/orm-plans.md)提供固定 FastAPI Users SQLAlchemy v7.0.0 base-user 的按 ID 查询、创建、修改及删除 SQL。普通导入无需可选依赖，编译时使用 SQLAlchemy 2.0.55。缓存只保存不可变计划，默认最多 128 项、1 MiB 计费条目字节；参数、结果与事务状态不进入缓存。该入口本身不执行 SQL。
@@ -117,11 +128,10 @@ node examples/list-roundtrip.mjs
 ## 预览功能
 
 - [v3 生命周期](docs/v3-contract.md)、[分段磁盘日志](docs/capture-journal-v3.md)：独立 `check-v3` / `reduce-v3` / `replay-v3` 入口。
-- [关系集合](docs/relation-v3.md)：固定关系模型和预算内的分析、缩减及回放。
 - [普通表扩展来源](experiments/provenance/PRESENCE_PROFILE.md)、[dislock](docs/dislock-v3.md)：按适配器声明的 SQL 与来源范围使用。
 - [执行故障诊断](experiments/faults/mlflow/README.md)：死锁等故障单列，不冒充隔离模型违反。
 
-预览格式可能调整。v0.1.2 额外支持已核验的 v0.1.1 算法与 v3 证据；更早研究期记录仍可能需要对应源码回放。不支持的 SQL、缺失来源与覆盖缺口始终可见；尚不提供任意 SQL 插桩或完整隔离级别分类。
+预览格式可能调整。v0.1.5 保留已发布 v0.1.1 至 v0.1.4 算法的显式兼容检查；更早研究期记录仍可能需要对应源码回放。不支持的 SQL、缺失来源与覆盖缺口始终可见；尚不提供任意 SQL 插桩或完整隔离级别分类。
 
 ## 开发与验证
 

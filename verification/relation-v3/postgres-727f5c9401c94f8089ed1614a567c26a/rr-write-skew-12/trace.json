@@ -1,0 +1,193 @@
+{
+  "traceSchema": 3,
+  "dataModel": "relation-set-v1",
+  "relationSchema": {
+    "accounts": {
+      "primaryKey": "id",
+      "columns": {
+        "id": "int64",
+        "balance": "int64",
+        "active": "bool",
+        "region": "text"
+      }
+    }
+  },
+  "clockDomain": "relation-fixture-mtw_relation_v3_f97389f13988_4_11",
+  "scope": {
+    "exclusiveWriters": true,
+    "completeSnapshotTables": [
+      "accounts"
+    ]
+  },
+  "events": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "accounts": [
+          {
+            "key": "1",
+            "version": "ef9bca78-b855-4593-8f31-ee1b6f401cf1",
+            "values": {
+              "balance": "10",
+              "active": true,
+              "region": "east"
+            }
+          },
+          {
+            "key": "2",
+            "version": "02be7a9c-e150-4dbb-b656-f686cb32a7a9",
+            "values": {
+              "balance": "20",
+              "active": true,
+              "region": "west"
+            }
+          }
+        ]
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 93000,
+      "kind": "begin",
+      "tx": "A",
+      "connection": "C-A"
+    },
+    {
+      "seq": 3,
+      "time": 187000,
+      "kind": "begin",
+      "tx": "B",
+      "connection": "C-B"
+    },
+    {
+      "seq": 4,
+      "time": 187000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [
+        {
+          "column": "active",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "rows": [
+        {
+          "key": "1",
+          "version": "ef9bca78-b855-4593-8f31-ee1b6f401cf1",
+          "values": {
+            "balance": "10",
+            "active": true,
+            "region": "east"
+          }
+        },
+        {
+          "key": "2",
+          "version": "02be7a9c-e150-4dbb-b656-f686cb32a7a9",
+          "values": {
+            "balance": "20",
+            "active": true,
+            "region": "west"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 5,
+      "time": 187000,
+      "kind": "row_read",
+      "tx": "B",
+      "relation": "accounts",
+      "predicate": [
+        {
+          "column": "active",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "rows": [
+        {
+          "key": "1",
+          "version": "ef9bca78-b855-4593-8f31-ee1b6f401cf1",
+          "values": {
+            "balance": "10",
+            "active": true,
+            "region": "east"
+          }
+        },
+        {
+          "key": "2",
+          "version": "02be7a9c-e150-4dbb-b656-f686cb32a7a9",
+          "values": {
+            "balance": "20",
+            "active": true,
+            "region": "west"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 6,
+      "time": 218000,
+      "kind": "row_write",
+      "tx": "A",
+      "relation": "accounts",
+      "key": "1",
+      "action": "update",
+      "version": "5c136eb0-1a8e-49eb-bd5f-a0ff31f325fc",
+      "predecessor": "ef9bca78-b855-4593-8f31-ee1b6f401cf1",
+      "values": {
+        "balance": "10",
+        "active": false,
+        "region": "east"
+      }
+    },
+    {
+      "seq": 7,
+      "time": 234000,
+      "kind": "row_write",
+      "tx": "B",
+      "relation": "accounts",
+      "key": "2",
+      "action": "update",
+      "version": "5b646101-3141-4e58-afe2-96ee5fecb650",
+      "predecessor": "02be7a9c-e150-4dbb-b656-f686cb32a7a9",
+      "values": {
+        "balance": "20",
+        "active": false,
+        "region": "west"
+      }
+    },
+    {
+      "seq": 8,
+      "time": 234000,
+      "kind": "commit_request",
+      "tx": "A"
+    },
+    {
+      "seq": 9,
+      "time": 250000,
+      "kind": "commit_ok",
+      "tx": "A"
+    },
+    {
+      "seq": 10,
+      "time": 250000,
+      "kind": "commit_request",
+      "tx": "B"
+    },
+    {
+      "seq": 11,
+      "time": 250000,
+      "kind": "commit_ok",
+      "tx": "B"
+    }
+  ],
+  "gaps": []
+}
