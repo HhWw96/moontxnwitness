@@ -59,6 +59,7 @@ const executionFailureAudit = JSON.parse(pythonJSON(['-B','verification/v3/tools
 assert.equal(executionFailureAudit.passed,true);
 assert.equal(executionFailureAudit.complete,true);
 pythonJSON(['-B','scripts/test_package_archive.py'],'Bounded archive and cross-chunk privacy checks');
+pythonJSON(['-B','scripts/test_publication_download.py'],'Bounded public downloads and safe fresh ZIP extraction');
 const collectorOutput = pythonJSON(['-B','integrations/python/moontxnwitness_capture/test_capture_v3.py'],'Bounded v3 protocol collector');
 const collectorFolder = collectorOutput.match(/^Collector test artifacts: (.+)$/m)?.[1]?.trim();
 if (!collectorFolder) throw new Error('Protocol collector suite did not identify its retained evidence');

@@ -1,8 +1,10 @@
-# PostgreSQL 自动采集开发版
+# PostgreSQL 已有版本列自动采集
 
-v0.1.1 开发版增加可选 Python 驱动适配器。应用通过连接入口接入，配置已有版本列和点查询映射后，由适配器记录实际执行并生成采集文档；MoonBit 校验完整性和事务生命周期，再交给原有分析器。
+v0.1.1 的稳定采集范围是 `CaptureSession` 与 `traceSchema: 1` 已有版本列点读写。应用通过连接入口接入，配置版本列和明确的 SQL 映射后，由可选 Python 驱动适配器记录实际执行；MoonBit 校验完整性和事务生命周期，再交给原有分析器。适配器支持 psycopg 3 同步及异步连接，固定驱动环境使用 3.3.6。
 
-该版本要求已有的文本版本列、每键唯一的写入版本、单列主键和普通表。普通无版本列业务、ORM、保存点、插入删除和范围查询属于后续版本；当前遇到这些操作会保留业务执行并给出覆盖缺口。详细 API、同步及异步例子见 [适配器说明](../integrations/python/moontxnwitness_capture/README.md)。
+该范围要求已有的文本版本列、每键唯一的写入版本、单列主键和普通表。`CaptureSession` 对普通无版本列业务、ORM、保存点、插入删除和范围查询保留业务执行并给出覆盖缺口。详细 API、同步及异步例子见 [适配器说明](../integrations/python/moontxnwitness_capture/README.md)。
+
+普通表 `traceSchema: 2`、v3 日志与生命周期、列表/关系模型及 ORM 来源诊断使用独立预览入口，按各自说明使用。它们不改变本页 `traceSchema: 1` 的稳定范围。
 
 ## 安装与使用
 
@@ -25,7 +27,7 @@ node dist/moontxnwitness.mjs replay case.capsule.json
 
 SDK 提供 `normalizeCapture(trace)`。它与命令行共同使用 MoonBit `normalize_capture_json`，不在 JS 中另写判定逻辑。`ingest` 接受文件或标准输入，输出文件必须尚不存在。
 
-普通表 CRUD 的实验使用独立 `traceSchema: 2`，调用 `normalizePresenceCapture(trace)` 或 `ingest-presence`。它在固定已知键集合内记录存在性、墓碑和同语句版本来源，详情见 [实验说明](../experiments/provenance/PRESENCE_PROFILE.md)。原 `normalizeCapture` / `ingest` 继续拒绝该新格式；实验不是任意 SQL、ORM 或范围查询支持。
+普通表 CRUD 的预览使用独立 `traceSchema: 2`，调用 `normalizePresenceCapture(trace)` 或 `ingest-presence`。它在固定已知键集合内记录存在性、墓碑和同语句版本来源，详情见 [预览说明](../experiments/provenance/PRESENCE_PROFILE.md)。原 `normalizeCapture` / `ingest` 继续拒绝该新格式。v3 与 ORM 预览见 [日志说明](capture-journal-v3.md)及[来源诊断](orm-source-v3.md)。
 
 ## 采集结果和分析结果分开
 
@@ -69,6 +71,6 @@ npm run benchmark:baseline
 
 `capture:verify` 要求 `MTW_PG_DSN`，或仅指向本地连接配置文件的 `MTW_PG_CONNECTION_FILE`，以及可选 `MTW_PYTHON`。受控实例可用 `scripts/capture-local-postgres.py` 启动，验证后关闭，日志保存在被忽略的本地 artifacts 目录；凭据不进入公开记录。正式 PostgreSQL CI 另行运行相同测试。
 
-受控场景用于验证采集、归一化、异常分析、缩减和复现，不能替代真实业务采用证据。v0.1.1 的已有外部业务接入验收仍需单独完成；尚未完成时保持开发版状态。
+受控场景验证该稳定范围内的采集、归一化、异常分析、缩减和复现。更多业务接入及采用反馈随后续版本扩展，实际记录见 [开发状态](development-status.md)。
 
 直接性能基线见 [固定 v0.1.0 基线](../verification/baselines/0.1.0/README.md)。新记录不会把历史测量拼接成当前提速结论。

@@ -7,11 +7,55 @@ import sys
 import time
 import zipfile
 from pathlib import Path
+from package_archive import sha256
 
 ROOT = Path(__file__).resolve().parent.parent
 VERSION = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))['version']
 MODULE = 'HhWw96/moontxnwitness'
 ENV = dict(os.environ)
+
+
+def validate_scoped_acceptance(acceptance, manifest):
+    """Validate the declared stable profiles, without promoting preview goals."""
+    assert acceptance['policy'] == 'scoped-stable-v1'
+    assert acceptance['version'] == VERSION and acceptance['passed'] is True and acceptance['releaseReady'] is True
+    assert acceptance['supportedProfiles'] == ['register-v1', 'register-v2', 'postgres-point-capture-v1']
+    assert acceptance['buildManifest'] == manifest
+    summary = json.loads((ROOT / 'verification/summary.json').read_text(encoding='utf8'))
+    package = json.loads((ROOT / 'verification/package.json').read_text(encoding='utf8'))
+    assert summary['passed'] and summary['version'] == VERSION
+    assert {'js', 'wasm-gc', 'wasm'}.issubset(summary['executedTargets'])
+    assert package['passed'] and package['version'] == VERSION and package['sourceRebuilt']
+    assert package['freshConsumerChecks'] == len(package['checks'])
+    assert 'source fresh JS core tests: ' + str(summary['coreTestsPerTarget']) + ' passed' in package['checks']
+    tested = json.loads(run(['node', '--input-type=module', '-e',
+        "import {verificationFingerprint} from './scripts/verification-fingerprint.mjs'; console.log(JSON.stringify(verificationFingerprint(process.cwd())));" ]))
+    assert tested == summary['testedFileSha256'], 'Current executable files differ from tested release'
+    source = run(['node', '--input-type=module', '-e',
+        "import {sourceFingerprint} from './scripts/build-fingerprint.mjs'; console.log(sourceFingerprint(process.cwd()));"])
+    assert source == manifest['sourceSha256'] and summary['buildManifest'] == manifest
+    for name, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'captureCoreSha256')):
+        assert sha256(ROOT / 'dist' / name) == manifest[field], 'Runtime differs from tested build'
+    expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
+    assert {item['file'] for item in package['archives']} == expected_names
+    for item in package['archives']:
+        path = ROOT / 'artifacts' / item['file']
+        assert path.stat().st_size == item['bytes'] and sha256(path) == item['sha256'], 'Archive differs from fresh consumer input'
+        with zipfile.ZipFile(path) as packed:
+            assert len(packed.infolist()) == item['files']
+    expected_sums = ''.join(item['sha256'] + '  ' + item['file'] + '\n' for item in package['archives'])
+    assert (ROOT / ('artifacts/MoonTxnWitness-v' + VERSION + '-SHA256SUMS.txt')).read_text(encoding='utf8') == expected_sums, 'Public digest manifest differs from tested archives'
+    actual = json.loads((ROOT / 'verification/releases' / VERSION / acceptance['databaseEvidence']).read_text(encoding='utf8'))
+    assert actual['passed'] is True and actual['actualDatabaseExecution'] is True
+    assert actual['buildManifestBefore'] == manifest and actual['buildManifestAfter'] == manifest
+    assert actual['exitCode'] == 0
+    capture = json.loads((ROOT / 'verification/capture-postgres.json').read_text(encoding='utf8'))
+    assert capture['version'] == VERSION and capture['passed'] and capture['actualDatabaseExecution']
+    for field, name in (
+        ('adapterSha256', 'integrations/python/moontxnwitness_capture/capture.py'),
+        ('captureCoreSha256', 'dist/capture-core.mjs'), ('analysisCoreSha256', 'dist/core.mjs'),
+        ('fixtureSha256', 'scripts/capture-postgres-test.py'), ('e2eSha256', 'scripts/capture-postgres-e2e.mjs')):
+        assert capture['captureSource'][field] == sha256(ROOT / name), 'Capture evidence differs from release: ' + name
 
 
 def run(args, timeout=300, capture=True):
@@ -29,8 +73,18 @@ def wait_for_ci(sha):
     for workflow in workflows:
         deadline = time.monotonic() + 1800
         while time.monotonic() < deadline:
-            runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', sha, '--workflow', workflow, '--json', 'databaseId,status,conclusion', '--limit', '10']))
-            if any(r['conclusion'] == 'success' for r in runs):
+            runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', sha, '--workflow', workflow, '--json', 'databaseId,status,conclusion,headSha,event', '--limit', '10']))
+            # workflow_dispatch may check out a different inputs.source_ref.
+            # A normal push always tests this commit under the pinned workflow.
+            runs = [r for r in runs if r['headSha'] == sha and r['event'] == 'push']
+            successes = [r for r in runs if r['conclusion'] == 'success']
+            if successes:
+                if workflow == 'ci.yml':
+                    ci = json.loads(run(['gh', 'run', 'view', str(successes[0]['databaseId']), '--repo', MODULE, '--json', 'headSha,conclusion,jobs']))
+                    assert ci['headSha'] == sha and ci['conclusion'] == 'success'
+                    assert len(ci['jobs']) == 2 and all(job['conclusion'] == 'success' for job in ci['jobs'])
+                    assert any(step['name'] == 'Execute Native core on Linux' and step['conclusion'] == 'success'
+                               for job in ci['jobs'] for step in job['steps']), 'Linux Native must execute'
                 print('Exact-commit CI passed: ' + workflow, flush=True)
                 break
             if runs and all(r['status'] == 'completed' for r in runs):
@@ -55,13 +109,22 @@ def publish():
             assert member.filename.startswith(prefix)
             relative = Path(member.filename[len(prefix):])
             assert (ROOT / relative).resolve().is_relative_to(ROOT.resolve())
-            assert source.read(member) == (ROOT / relative).read_bytes(), 'Source archive is stale: ' + relative.as_posix()
+            with source.open(member) as archived, (ROOT / relative).open('rb') as current:
+                while True:
+                    chunk = archived.read(65536)
+                    assert chunk == current.read(65536), 'Source archive is stale: ' + relative.as_posix()
+                    if not chunk:break
+    scoped = False
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 0):
         acceptance = json.loads((ROOT / 'verification/releases' / VERSION / 'acceptance.json').read_text(encoding='utf-8'))
-        performance = json.loads((ROOT / 'verification/releases' / VERSION / acceptance['performanceReceipt']).read_text(encoding='utf-8'))
         manifest = json.loads((ROOT / 'dist/build-manifest.json').read_text(encoding='utf-8'))
         assert acceptance['passed']
-        if tuple(map(int, VERSION.split('.'))) >= (0, 1, 1):
+        scoped = acceptance.get('policy') == 'scoped-stable-v1'
+        if scoped:
+            validate_scoped_acceptance(acceptance, manifest)
+        else:
+            performance = json.loads((ROOT / 'verification/releases' / VERSION / acceptance['performanceReceipt']).read_text(encoding='utf-8'))
+        if not scoped and tuple(map(int, VERSION.split('.'))) >= (0, 1, 1):
             assert acceptance['releaseReady'] and acceptance['existingBusinessIntegration']['passed']
             assert performance['formalReleaseGatePassed'] and performance['correctnessPassed'] and not performance['smokeOnly']
             current = performance['provenance']['currentBuildManifest']
@@ -76,7 +139,7 @@ def publish():
                 ('e2eSha256', 'scripts/capture-postgres-e2e.mjs'),
             ):
                 assert capture['captureSource'][field] == hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), 'Actual capture receipt is stale: ' + path
-        else:
+        elif not scoped:
             assert performance['performanceTargetsMet']
             assert performance['sourceSha256'] == manifest['sourceSha256'] and performance['currentSha256'] == manifest['coreSha256']
         postgres = json.loads((ROOT / 'verification/postgres.json').read_text(encoding='utf-8'))
@@ -84,7 +147,7 @@ def publish():
     sha = run(['git', 'rev-parse', 'HEAD'])
     tag = 'v' + VERSION
     assert run(['git', 'rev-list', '-n', '1', tag]) == sha
-    run(['git', '-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential', 'push', 'origin', 'main'])
+    run(['git', '-c', 'core.longpaths=true', '-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential', 'push', 'origin', 'main'])
     print('Release candidate pushed; waiting for actual CI before package publication: ' + tag, flush=True)
     wait_for_ci(sha)
     assert run(['git', 'rev-parse', 'HEAD']) == sha and not run(['git', 'status', '--porcelain'])
@@ -94,21 +157,25 @@ def publish():
     print('Mooncakes upload completed: ' + VERSION, flush=True)
     run(['git', '-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential', 'push', 'origin', tag])
     notes = ROOT / ('artifacts/release-notes-v' + VERSION + '.md')
-    notes.write_text('MoonTxnWitness v' + VERSION + '\n\n'
-                     'Balanced analysis/reduction and schema-2 replay are recommended; legacy API defaults remain available.\n\n'
-                     'See CHANGELOG.md and verification/releases/' + VERSION + '/ for implementation and evidence.\n'
-                     'Core JS/Wasm/Linux Native CI, independent serial replay, actual SQLite and fresh ZIP consumers passed before package publication.\n'
-                     'Public download/registry verification is recorded after publishing; no organizer acceptance is claimed.\n'
-                     'Portable runtime requires Node.js >=20. PostgreSQL capture additionally requires its documented optional driver.\n', encoding='utf-8')
+    notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+                     '- PostgreSQL point-read/write capture for psycopg sync/async connections, with explicit version columns and SQL mappings.\n'
+                     '- MoonBit coverage validation preserves unknown commits and incomplete observations.\n'
+                     '- Lower allocation in graph/report/search paths; v1/v2 analysis and replay remain compatible.\n\n'
+                     'Supported: versioned point registers, bounded analysis/reduction, v1/v2 replay and traceSchema1 capture. '
+                     'v3 models and ordinary-table/ORM adapters remain opt-in previews; v3 capsules require their original engine version.\n\n'
+                     'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or download the portable ZIP (Node.js >=20). '
+                     'PostgreSQL capture needs its optional Python driver.\n\n'
+                     'Cross-target tests, real PostgreSQL scenarios and fresh source/portable consumers are checked for this scope. '
+                     'See CHANGELOG.md for details.\n', encoding='utf-8')
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
-    if performance_path.exists():
+    if performance_path.exists() and not scoped:
         groups = json.loads(performance_path.read_text(encoding='utf-8'))['groups']
         with notes.open('a', encoding='utf-8') as output:
             output.write('\nFull-report local comparison with v0.0.6: graph %.2fx, bounded search %.2fx, reduction %.2fx; graph peak RSS %.2f%% lower (group geometric means).\n' % (groups['graph']['geometricMeanSpeedup'], groups['search']['geometricMeanSpeedup'], groups['reduction']['geometricMeanSpeedup'], (1-groups['graph']['geometricMeanPeakMemoryRatio'])*100))
             output.write('Actual PostgreSQL 18: 20 RR write-skew rounds + 20 Serializable abort/fresh-retry rounds on Windows and independent Linux CI, with 2-transaction reduction and three replay capsules.\n')
             output.write('See docs/performance.md, docs/project-brief.md and docs/human-acceptance.md. Participant explanation/registration and organizer acceptance remain separate.\n')
     assets = [str(ROOT / ('artifacts/MoonTxnWitness-v' + VERSION + suffix)) for suffix in ('-source.zip', '-portable.zip', '-SHA256SUMS.txt')]
-    run(['gh', 'release', 'create', tag, '--repo', MODULE, '--target', sha, '--title', 'MoonTxnWitness ' + tag, '--notes-file', str(notes), *assets])
+    run(['gh', 'release', 'create', tag, '--repo', MODULE, '--target', sha, '--title', 'MoonTxnWitness ' + tag, '--notes-file', str(notes), *assets], timeout=900)
     print('Public GitHub Release created: ' + tag, flush=True)
     run([sys.executable, 'scripts/verify_publication.py', VERSION], timeout=900, capture=False)
     print('Public download, exact-commit CI and registry-only consumers passed: ' + tag, flush=True)

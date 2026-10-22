@@ -1,0 +1,39 @@
+{
+  "version": "0.1.1",
+  "scope": "Scoped stable release preparation; previous roadmap checkpoints retained separately",
+  "attempts": [
+    {
+      "phase": "local core regression",
+      "result": "not executed",
+      "reason": "Sandbox denied MoonBit process access before tests started",
+      "resolution": "Executed the owned pinned toolchain with the approved process permission"
+    },
+    {
+      "phase": "first full regression",
+      "result": "source binding refused",
+      "reason": "Independent review found a CI source-selection issue; release.py was repaired while verification was running",
+      "resolution": "Retained the failed attempt and reran the entire regression after the executable change"
+    },
+    {
+      "phase": "final full regression",
+      "result": "passed",
+      "receipt": "../../summary.json",
+      "scope": "JS, Wasm GC and Wasm core, independent semantic oracles, CLI, capture and protocol/storage suites; Linux Native is required separately in exact-commit CI"
+    },
+    {
+      "phase": "real database",
+      "result": "passed",
+      "receipt": "scoped-database-20261022T081024Z-6e8d3352.json",
+      "scope": "Owned Windows PostgreSQL 18.6; 20 RR and 20 Serializable rounds, sync/async capture and evidence replay"
+    },
+    {
+      "phase": "release CI selector",
+      "result": "passed",
+      "receipt": "release-selector-independent-audit.json",
+      "checks": 9,
+      "scope": "Offline failure injection, separate from actual CI execution"
+    }
+  ],
+  "performance": "No new formal measurement in this preparation run; historical results and failed targets remain available",
+  "organizerAcceptance": "not claimed"
+}

@@ -1,8 +1,10 @@
-# Python capture adapter (v0.1.1 development)
+# Python capture adapter (v0.1.1 version-column profile)
 
 This optional adapter supports psycopg 3 synchronous and asynchronous connections.
 It records actual driver observations; the MoonBit core validates and normalizes
-the resulting `traceSchema: 1` document. It does not analyze arbitrary SQL.
+the resulting `traceSchema: 1` document. The stable v0.1.1 profile is
+`CaptureSession` with existing version columns and explicit point-query mappings.
+It does not analyze arbitrary SQL. The pinned driver environment uses psycopg 3.3.6.
 
 ## Supported profile
 
@@ -200,6 +202,16 @@ and must still satisfy the MoonBit core's independent input limits.
 The test command is `python scripts/capture-unit-test.py`. These are driver
 interface unit tests, with `actualDatabaseExecution: false`; real PostgreSQL
 execution is a separate acceptance step.
+
+## Other profiles (preview)
+
+Unversioned ordinary-table CRUD, `traceSchema: 2` presence capture and v3
+journal/lifecycle/model APIs use separate preview entry points. ORM source
+inspection is also a preview and does not establish complete ORM analysis.
+These capabilities do not widen the stable `CaptureSession` profile above.
+See the [ordinary-table profile](../../../experiments/provenance/PRESENCE_PROFILE.md),
+[v3 journal](../../../docs/capture-journal-v3.md) and
+[ORM source inspection](../../../docs/orm-source-v3.md) for their current scopes.
 
 ## API sources
 

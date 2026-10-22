@@ -65,10 +65,13 @@ SqlLatestMetric class are compiled; the runs table/session scheduler are
 controlled fixtures. This is not a complete MLflow server integration, an
 isolation-level proof or a port of MLflow into MoonBit.
 
-## AI assistance and evidence
+## Development assistance
 
-The implementation, documentation and tests were created with AI
-assistance. The production algorithms are in MoonBit. The test oracle replays
+AI assisted the implementation, documentation and tests.
+
+## Verification
+
+The production algorithms are in MoonBit. The test oracle replays
 every possible serial permutation of small whole transactions and does not use
 the production dependency inference rules. Certificate verification shares
 inference rules and separately checks a supplied cycle without searching for one.

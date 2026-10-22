@@ -1,5 +1,4 @@
 """Download public bytes, verify hashes, and exercise a registry-only consumer."""
-import hashlib
 import json
 import os
 import re
@@ -7,10 +6,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import urllib.request
-import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
+from publication_download import MAX_MANIFEST_BYTES, download_file, extract_zip, sha256_file
 
 ROOT = Path(__file__).resolve().parent.parent
 CURRENT_VERSION = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))['version']
@@ -44,19 +42,13 @@ def run(args, cwd=ROOT, expected=0):
     return result.stdout
 
 
-def download(url, name):
-    request = urllib.request.Request(url, headers={'User-Agent': 'MoonTxnWitness-public-verification/' + VERSION})
-    with urllib.request.urlopen(request, timeout=60) as response:
-        assert response.status == 200
-        content = response.read(16 * 1024 * 1024 + 1)
-        assert len(content) <= 16 * 1024 * 1024
-    path = WORK / name
-    path.write_bytes(content)
-    return path
+def download(url, name, **options):
+    return download_file(url, WORK / name,
+                         user_agent='MoonTxnWitness-public-verification/' + VERSION, **options)
 
 
 def digest(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return sha256_file(path)
 
 
 def history(name):
@@ -66,22 +58,19 @@ def history(name):
 try:
     # No Authorization header, saved browser session or GitHub token is used here.
     prefix = REPOSITORY + '/releases/download/v' + VERSION + '/'
-    sums = download(prefix + NAME + '-SHA256SUMS.txt', 'SHA256SUMS')
+    sums = download(prefix + NAME + '-SHA256SUMS.txt', 'SHA256SUMS', max_bytes=MAX_MANIFEST_BYTES)
     assets = []
     for line in sums.read_text(encoding='utf-8').splitlines():
         expected, name = line.split('  ', 1)
         assert re.fullmatch(r'[0-9a-f]{64}', expected) and Path(name).name == name
         assert name in {NAME + '-source.zip', NAME + '-portable.zip'}
-        path = download(prefix + name, name)
-        assert digest(path) == expected, 'Published asset digest mismatch'
+        path = download(prefix + name, name, expected_sha256=expected)
         assets.append({'name': name, 'url': prefix + name, 'bytes': path.stat().st_size, 'sha256': expected, 'anonymousDownload': True})
     assert len(assets) == 2
     RECEIPT['github']['assets'] = assets
-    with zipfile.ZipFile(WORK / (NAME + '-portable.zip')) as packed:
-        destination = WORK / 'portable'
-        for member in packed.infolist():
-            assert (destination / member.filename).resolve().is_relative_to(destination.resolve())
-        packed.extractall(destination)
+    destination = WORK / 'portable'
+    extraction = extract_zip(WORK / (NAME + '-portable.zip'), destination)
+    RECEIPT['github']['portableExtraction'] = {key: extraction[key] for key in ('entries', 'files', 'uncompressedBytes')}
     portable = destination / NAME
     assert run([NODE, 'dist/moontxnwitness.mjs', '--version'], portable).strip() == VERSION
     assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'check', 'examples/write-skew.json', '--format', 'json'], portable, 1))['status'] == 'violation'
@@ -185,6 +174,37 @@ test "published semantic report replay" {{
 }}
 '''
         expected_tests += 1
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 1):
+        complete_capture = json.loads((ROOT / 'examples/capture-complete.json').read_text(encoding='utf-8'))
+        incomplete_capture = json.loads(json.dumps(complete_capture))
+        incomplete_capture['events'].pop()
+        test += f'''\n///|\ntest "published complete capture normalizes to analyzable history" {{
+  let result = @json.parse(@txn.normalize_capture_json({json.dumps(json.dumps(complete_capture), ensure_ascii=True)}))
+  match result {{
+    Object(fields) => {{
+      assert_eq(fields.get("status"), Some("ready".to_json()))
+      assert_true(fields.get("coverage") is Some(Object(coverage)) && coverage.get("complete") == Some(true.to_json()))
+      let h = load(fields.at("history").stringify())
+      assert_true(@txn.analyze(h).outcome == @txn.Violation)
+    }}
+    _ => abort("Normalized capture object required")
+  }}
+}}
+
+///|
+test "published incomplete capture refuses a history" {{
+  let result = @json.parse(@txn.normalize_capture_json({json.dumps(json.dumps(incomplete_capture), ensure_ascii=True)}))
+  match result {{
+    Object(fields) => {{
+      assert_eq(fields.get("status"), Some("inconclusive".to_json()))
+      assert_eq(fields.get("history"), Some(Json::null()))
+      assert_true(fields.get("coverage") is Some(Object(coverage)) && coverage.get("complete") == Some(false.to_json()))
+    }}
+    _ => abort("Normalized capture object required")
+  }}
+}}
+'''
+        expected_tests += 2
     (consumer / 'consumer_wbtest.mbt').write_text(test, encoding='utf-8')
     run([MOON, 'add', MODULE + '@' + VERSION], consumer)
     assert not (consumer / 'moon.work').exists()
