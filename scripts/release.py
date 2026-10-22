@@ -47,6 +47,13 @@ def validate_scoped_acceptance(acceptance, manifest):
         assert summary['relationSdkTests']['checks'] > 0 and summary['relationSdkTests']['manualCases'] > 0
         for kind in ('source', 'portable'):
             assert kind + ' relation-set SDK and source-closed example round trip' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 6):
+        cycle = summary['registerCycleSdkTests']
+        assert cycle['passed'] is True and cycle['checks'] > 0
+        assert cycle['runtimeVersion'] == VERSION and cycle['frozenHistoryCases'] == 132
+        assert cycle['handwrittenCases'] == 13
+        for kind in ('source', 'portable'):
+            assert kind + ' verified register-cycle SDK and original-capsule derived-explanation round trip' in package['checks']
     tested = json.loads(run(['node', '--input-type=module', '-e',
         "import {verificationFingerprint} from './scripts/verification-fingerprint.mjs'; console.log(JSON.stringify(verificationFingerprint(process.cwd())));" ]))
     assert tested == summary['testedFileSha256'], 'Current executable files differ from tested release'
@@ -260,6 +267,16 @@ def publish():
             'Arbitrary SQL instrumentation and complete isolation-level classification remain outside this scope.\n\n'
             'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '` for the MoonBit core, or use the portable ZIP for Node.js SDK. '
             'See CHANGELOG.md and verification/ for actual validation and retained failures.\n', encoding='utf8')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 6):
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- Explain the type and original sources of an already verified point-register dependency cycle.\n'
+            '- Recompute the separate explanation while preserving the original report and v3 capsule.\n'
+            '- Preserve generic, list and relation APIs; explicitly retain released-engine replay compatibility through v0.1.5.\n\n'
+            'Run `node examples/register-cycle-roundtrip.mjs`. See [the SDK guide](https://github.com/' + MODULE + '/blob/' + tag + '/docs/cycle-explanation-v3.md) '
+            'for input limits, diagnostic states and witness-only scope. This does not search all anomaly classes or accept an isolation model.\n\n'
+            'Install the MoonBit core with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for the Node.js SDK. '
+            'Actual verification, installation and download receipts remain in verification/; see CHANGELOG.md for details.\n', encoding='utf8')
+
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
     if performance_path.exists() and not scoped:
         groups = json.loads(performance_path.read_text(encoding='utf-8'))['groups']

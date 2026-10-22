@@ -1,0 +1,180 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-04899b55e7d94569862476e65ec8a4e5",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 79000,
+      "initial": {
+        "[\"mtw_provenance_dislock_b92cc7e05bfe.wrong_owner\",\"text\",\"cronjob-lock:lease:importer\"]": "a01d7c49-0c87-4b2d-8ad4-bec97d40bd06",
+        "[\"mtw_provenance_dislock_b92cc7e05bfe.wrong_owner\",\"text\",\"cronjob-lock:lease:synchronizer\"]": "30b57561-dba7-4606-876f-aac07c8bb514"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 172000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 172000,
+      "phase": "execute-request",
+      "sql": "\n        SELECT expire_at, value\n        FROM \"mtw_provenance_dislock_b92cc7e05bfe\".\"wrong_owner\"\n        WHERE key = %s;\n        ",
+      "parameters": [
+        "cronjob-lock:lease:importer"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "execute-ack",
+      "sql": "\n        SELECT expire_at, value,\"mtwp_75b1c44e4791b9cd_version\"::text\n        FROM \"mtw_provenance_dislock_b92cc7e05bfe\".\"wrong_owner\"\n        WHERE key = %s;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-22 22:57:08.287425+08:00"
+          },
+          "mtw-dislock:1001",
+          "a01d7c49-0c87-4b2d-8ad4-bec97d40bd06"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "op",
+      "time": 188000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_b92cc7e05bfe.wrong_owner\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "a01d7c49-0c87-4b2d-8ad4-bec97d40bd06"
+      }
+    },
+    {
+      "seq": 7,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "execute-request",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_b92cc7e05bfe\".\"wrong_owner\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at;\n        ",
+      "parameters": [
+        60,
+        "cronjob-lock:lease:importer",
+        "different-owner:9999"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "execute-ack",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_b92cc7e05bfe\".\"wrong_owner\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at,OLD.\"mtwp_75b1c44e4791b9cd_version\"::text,NEW.\"mtwp_75b1c44e4791b9cd_version\"::text;\n        ",
+      "affectedRows": 0,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 9,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "fetch",
+      "returnedRows": 0,
+      "exhausted": true,
+      "rows": [],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 10,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "execute-request",
+      "sql": "\n        SELECT expire_at, value\n        FROM \"mtw_provenance_dislock_b92cc7e05bfe\".\"wrong_owner\"\n        WHERE key = %s;\n        ",
+      "parameters": [
+        "cronjob-lock:lease:importer"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 11,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "execute-ack",
+      "sql": "\n        SELECT expire_at, value,\"mtwp_75b1c44e4791b9cd_version\"::text\n        FROM \"mtw_provenance_dislock_b92cc7e05bfe\".\"wrong_owner\"\n        WHERE key = %s;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 12,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-22 22:57:08.287425+08:00"
+          },
+          "mtw-dislock:1001",
+          "a01d7c49-0c87-4b2d-8ad4-bec97d40bd06"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 13,
+      "kind": "op",
+      "time": 188000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_b92cc7e05bfe.wrong_owner\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "a01d7c49-0c87-4b2d-8ad4-bec97d40bd06"
+      }
+    },
+    {
+      "seq": 14,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 15,
+      "kind": "end",
+      "time": 188000,
+      "tx": "tx-1",
+      "status": "committed"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "conditional_update_cardinality",
+      "message": "A conditional update did not return exactly one existing row; failed predicates are not inferred as reads."
+    }
+  ]
+}

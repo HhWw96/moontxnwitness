@@ -84,3 +84,7 @@ vulnerability or certify all database executions. See the official
 [WAL](https://www.sqlite.org/wal.html) documentation for the underlying behavior.
 Public release verification is recorded separately in verification/publication.json.
 PostgreSQL controlled fixtures also retain real SQL results, server-reported rollbacks and fresh retries; expectations follow the [PostgreSQL 18 isolation documentation](https://www.postgresql.org/docs/18/transaction-iso.html). No claim of a prize or organizer acceptance is made.
+
+## Fixed cycle-rule reference materials
+
+The unmodified Elle `txn.clj`, `project.clj` and `LICENSE` in `fixtures/register-cycle-v3/elle-reference/primary-references/` are pinned to commit `4e359e597c52938b0afebb8bc42273914d68a424`. Their original source, notices and license text are retained byte-for-byte; `reference-attribution.json` binds their source hashes. The upstream project declares `EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0`; the retained LICENSE is the original EPL-2.0 text. These reference materials keep their upstream terms and are not relabeled as this project's Apache-2.0 code. The SDK independently implements the selected ww/wr/item-rw mathematical conditions; it does not copy the Clojure implementation or load an Elle checker runtime.

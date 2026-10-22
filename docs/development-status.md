@@ -1,6 +1,10 @@
 # 开发与发行状态
 
-2026 年 10 月 22 日：v0.1.4 已发布至 GitHub 与 Mooncakes，并通过[公开 Linux 下载验证](https://github.com/HhWw96/moontxnwitness/actions/runs/39784187020)，实际结果见[发布收据](../verification/releases/0.1.4/publication.json)。该版交付有界列表 SDK、来源检查及 3→2 缩减复现，保留已发布的寄存器、采集、普通表和 ORM 模板能力。普通表稳定范围仍见[使用说明](presence-capture.md)。
+2026 年 10 月 22 日：v0.1.5 已发布至 GitHub 与 Mooncakes，并通过[公开 Linux 下载验证](https://github.com/HhWw96/moontxnwitness/actions/runs/39792872938)，实际结果见[发布收据](../verification/releases/0.1.5/publication.json)。该版交付关系集合 SDK 和保留版本来源的 4→3 缩减复现，继续提供寄存器、列表、采集、普通表及 ORM 模板能力。
+
+## v0.1.6
+
+本版提供已有点寄存器环的类型与来源解释和两项 SDK 入口，原报告与原 v3 胶囊保持，派生解读单独复核。支持边界见[解读说明](cycle-explanation-v3.md)。正式构建、安装、数据库回归与公开下载以 `verification/releases/0.1.6/` 的实际收据为准。先前候选独立审查覆盖 132 份历史及其保存点、来源、首尾相邻和篡改边界，使用 v0.1.4/v0.1.5 运行时；不得计成正式 v0.1.6 验收。
 
 ## v0.1.5
 

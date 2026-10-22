@@ -131,6 +131,29 @@ for kind in ("portable", "source"):
             assert sha256(path) == item['sha256'] and path.stat().st_size == item['bytes']
         assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-v3', str(case)], consumer))['valid']
         checks.append(kind + ' relation-set SDK and source-closed example round trip')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 6):
+        cycle_demo = json.loads(run([NODE, 'examples/register-cycle-roundtrip.mjs', '--out-root', str(work)], consumer))
+        assert cycle_demo['passed'] and cycle_demo['version'] == VERSION
+        assert cycle_demo['sourceReportStatus'] == 'violation' and cycle_demo['selectedCycleSubtype'] == 'G2-item'
+        assert cycle_demo['explanationVerified'] and cycle_demo['originalCapsuleReplayed']
+        assert not cycle_demo['acceptsIsolationModels'] and not cycle_demo['searchesOtherCategories']
+        directory = (work / cycle_demo['outputDirectory']).resolve()
+        assert directory.is_relative_to(work.resolve())
+        for item in cycle_demo['files']:
+            path = (directory / item['file']).resolve()
+            assert path.is_relative_to(directory)
+            assert sha256(path) == item['sha256'] and path.stat().st_size == item['bytes']
+        replay = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-v3', str(directory / 'original-v3.capsule.json')], consumer))
+        assert replay['valid']
+        derived = json.loads(run([NODE, '--input-type=module', '-e',
+            "import{readFileSync}from'node:fs';import{verifyRegisterCycleExplanationV3}from'./dist/sdk.mjs';"
+            "const c=JSON.parse(readFileSync(process.argv[1],'utf8'));"
+            "const e=JSON.parse(readFileSync(process.argv[2],'utf8'));"
+            "console.log(JSON.stringify(verifyRegisterCycleExplanationV3(c.traceText,c.reportText,e)));",
+            str(directory / 'original-v3.capsule.json'), str(directory / 'cycle-explanation.json')], consumer))
+        assert derived['valid'] and derived['subtype'] == 'G2-item'
+        checks.append(kind + ' verified register-cycle SDK and original-capsule derived-explanation round trip')
+
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 3):
         isolated = work / (kind + '-orm-only')
         copied = isolated / 'moontxnwitness_capture'

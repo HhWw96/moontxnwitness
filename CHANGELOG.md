@@ -1,3 +1,9 @@
+# 0.1.6 — 2026-10-22
+
+- Add SDK explanation and verification of the selected, fully verified point-register dependency cycle, including five fixed rule-based labels and original source references.
+- Ship a runnable original-capsule and separate derived-explanation round trip; preserve generic, list and relation SDK entries.
+- Extend explicit released-engine replay compatibility through v0.1.5. See docs/cycle-explanation-v3.md for input limits, diagnostic states and witness-only scope; this is not full isolation classification.
+
 # 0.1.5 — 2026-10-22
 
 - Deliver six fixed-model relation-set SDK entries for normalization, bounded analysis, source-closed reduction, verification and replay capsules; retain generic v3 and list APIs.

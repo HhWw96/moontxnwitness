@@ -1,0 +1,549 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.1.6",
+  "algorithm": "v3-relation-1",
+  "status": "violation",
+  "modelDefinition": {
+    "id": "append-list-serializable-v1",
+    "scope": "complete relation snapshots and committed full row-query/write/savepoint journals; no SQL mapping, opacity, isolation-level classification or real-time claim"
+  },
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "normalized": {
+    "schema": 3,
+    "dataModel": "relation-set-v1",
+    "algorithm": "v3-relation-lifecycle-1",
+    "status": "ready",
+    "relationSchema": {
+      "r": {
+        "primaryKey": "id",
+        "columns": {
+          "id": "int64",
+          "n": "int64",
+          "b": "bool",
+          "t": "text"
+        }
+      },
+      "noise": {
+        "primaryKey": "id",
+        "columns": {
+          "id": "int64",
+          "n": "int64",
+          "b": "bool",
+          "t": "text"
+        }
+      }
+    },
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "observations": [
+      {
+        "seq": 1,
+        "time": 1,
+        "kind": "snapshot",
+        "initial": {
+          "r": [
+            {
+              "key": "0",
+              "version": "p0",
+              "values": {
+                "n": "0",
+                "b": true,
+                "t": ""
+              }
+            }
+          ],
+          "noise": []
+        },
+        "consistent": true
+      },
+      {
+        "seq": 2,
+        "time": 2,
+        "kind": "begin",
+        "tx": "P",
+        "connection": "connection-P"
+      },
+      {
+        "seq": 3,
+        "time": 3,
+        "kind": "row_write",
+        "tx": "P",
+        "relation": "r",
+        "key": "0",
+        "action": "update",
+        "version": "p1",
+        "predecessor": "p0",
+        "values": {
+          "n": "1",
+          "b": true,
+          "t": ""
+        }
+      },
+      {
+        "seq": 4,
+        "time": 4,
+        "kind": "commit_request",
+        "tx": "P"
+      },
+      {
+        "seq": 5,
+        "time": 5,
+        "kind": "commit_ok",
+        "tx": "P"
+      },
+      {
+        "seq": 6,
+        "time": 6,
+        "kind": "begin",
+        "tx": "A",
+        "connection": "connection-A"
+      },
+      {
+        "seq": 7,
+        "time": 7,
+        "kind": "row_read",
+        "tx": "A",
+        "relation": "r",
+        "predicate": [],
+        "rows": [
+          {
+            "key": "0",
+            "version": "p1",
+            "values": {
+              "n": "1",
+              "b": true,
+              "t": ""
+            }
+          }
+        ],
+        "complete": true
+      },
+      {
+        "seq": 8,
+        "time": 8,
+        "kind": "begin",
+        "tx": "B",
+        "connection": "connection-B"
+      },
+      {
+        "seq": 9,
+        "time": 9,
+        "kind": "row_read",
+        "tx": "B",
+        "relation": "r",
+        "predicate": [],
+        "rows": [
+          {
+            "key": "0",
+            "version": "p1",
+            "values": {
+              "n": "1",
+              "b": true,
+              "t": ""
+            }
+          }
+        ],
+        "complete": true
+      },
+      {
+        "seq": 10,
+        "time": 10,
+        "kind": "row_write",
+        "tx": "A",
+        "relation": "r",
+        "key": "1",
+        "action": "insert",
+        "version": "a1",
+        "predecessor": null,
+        "values": {
+          "n": "2",
+          "b": true,
+          "t": ""
+        }
+      },
+      {
+        "seq": 11,
+        "time": 11,
+        "kind": "commit_request",
+        "tx": "A"
+      },
+      {
+        "seq": 12,
+        "time": 12,
+        "kind": "commit_ok",
+        "tx": "A"
+      },
+      {
+        "seq": 13,
+        "time": 13,
+        "kind": "row_write",
+        "tx": "B",
+        "relation": "r",
+        "key": "2",
+        "action": "insert",
+        "version": "b1",
+        "predecessor": null,
+        "values": {
+          "n": "3",
+          "b": true,
+          "t": ""
+        }
+      },
+      {
+        "seq": 14,
+        "time": 14,
+        "kind": "commit_request",
+        "tx": "B"
+      },
+      {
+        "seq": 15,
+        "time": 15,
+        "kind": "commit_ok",
+        "tx": "B"
+      },
+      {
+        "seq": 16,
+        "time": 16,
+        "kind": "begin",
+        "tx": "N",
+        "connection": "connection-N"
+      },
+      {
+        "seq": 17,
+        "time": 17,
+        "kind": "row_write",
+        "tx": "N",
+        "relation": "noise",
+        "key": "9",
+        "action": "insert",
+        "version": "n1",
+        "predecessor": null,
+        "values": {
+          "n": "9",
+          "b": true,
+          "t": ""
+        }
+      },
+      {
+        "seq": 18,
+        "time": 18,
+        "kind": "commit_request",
+        "tx": "N"
+      },
+      {
+        "seq": 19,
+        "time": 19,
+        "kind": "commit_ok",
+        "tx": "N"
+      }
+    ],
+    "effects": [
+      {
+        "seq": 3,
+        "tx": "P",
+        "relation": "r",
+        "key": "0",
+        "action": "update",
+        "version": "p1",
+        "predecessor": "p0",
+        "values": {
+          "n": "1",
+          "b": true,
+          "t": ""
+        },
+        "revertedBy": null
+      },
+      {
+        "seq": 10,
+        "tx": "A",
+        "relation": "r",
+        "key": "1",
+        "action": "insert",
+        "version": "a1",
+        "predecessor": null,
+        "values": {
+          "n": "2",
+          "b": true,
+          "t": ""
+        },
+        "revertedBy": null
+      },
+      {
+        "seq": 13,
+        "tx": "B",
+        "relation": "r",
+        "key": "2",
+        "action": "insert",
+        "version": "b1",
+        "predecessor": null,
+        "values": {
+          "n": "3",
+          "b": true,
+          "t": ""
+        },
+        "revertedBy": null
+      },
+      {
+        "seq": 17,
+        "tx": "N",
+        "relation": "noise",
+        "key": "9",
+        "action": "insert",
+        "version": "n1",
+        "predecessor": null,
+        "values": {
+          "n": "9",
+          "b": true,
+          "t": ""
+        },
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "P",
+        "connection": "connection-P",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 5,
+        "events": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "finalWrites": [
+          3
+        ]
+      },
+      {
+        "id": "A",
+        "connection": "connection-A",
+        "status": "committed",
+        "beginSeq": 6,
+        "endSeq": 12,
+        "events": [
+          6,
+          7,
+          10,
+          11,
+          12
+        ],
+        "finalWrites": [
+          10
+        ]
+      },
+      {
+        "id": "B",
+        "connection": "connection-B",
+        "status": "committed",
+        "beginSeq": 8,
+        "endSeq": 15,
+        "events": [
+          8,
+          9,
+          13,
+          14,
+          15
+        ],
+        "finalWrites": [
+          13
+        ]
+      },
+      {
+        "id": "N",
+        "connection": "connection-N",
+        "status": "committed",
+        "beginSeq": 16,
+        "endSeq": 19,
+        "events": [
+          16,
+          17,
+          18,
+          19
+        ],
+        "finalWrites": [
+          17
+        ]
+      }
+    ],
+    "history": null
+  },
+  "evidence": {
+    "kind": "bounded-serial-exhaustion",
+    "code": "no_serial_relation_execution",
+    "sampleBlockers": [
+      {
+        "tx": "B",
+        "seq": 9,
+        "code": "query_result_length_mismatch"
+      },
+      {
+        "tx": "B",
+        "seq": 9,
+        "code": "query_result_length_mismatch"
+      },
+      {
+        "tx": "A",
+        "seq": 7,
+        "code": "query_result_length_mismatch"
+      },
+      {
+        "tx": "A",
+        "seq": 7,
+        "code": "query_result_length_mismatch"
+      },
+      {
+        "tx": "B",
+        "seq": 9,
+        "code": "query_result_length_mismatch"
+      },
+      {
+        "tx": "A",
+        "seq": 7,
+        "code": "query_result_length_mismatch"
+      },
+      {
+        "tx": "A",
+        "seq": 7,
+        "code": "query_version_mismatch"
+      },
+      {
+        "tx": "B",
+        "seq": 9,
+        "code": "query_version_mismatch"
+      },
+      {
+        "tx": "B",
+        "seq": 9,
+        "code": "query_result_length_mismatch"
+      },
+      {
+        "tx": "A",
+        "seq": 7,
+        "code": "query_result_length_mismatch"
+      },
+      {
+        "tx": "A",
+        "seq": 7,
+        "code": "query_version_mismatch"
+      },
+      {
+        "tx": "B",
+        "seq": 9,
+        "code": "query_version_mismatch"
+      }
+    ],
+    "sourceEvidence": [
+      {
+        "relation": "r",
+        "key": "0",
+        "version": "p0",
+        "values": {
+          "n": "0",
+          "b": true,
+          "t": ""
+        },
+        "action": "snapshot",
+        "predecessor": null,
+        "sourceSeq": 1,
+        "writer": null,
+        "revertedBy": null
+      },
+      {
+        "relation": "r",
+        "key": "0",
+        "version": "p1",
+        "values": {
+          "n": "1",
+          "b": true,
+          "t": ""
+        },
+        "action": "update",
+        "predecessor": "p0",
+        "sourceSeq": 3,
+        "writer": "P",
+        "revertedBy": null
+      },
+      {
+        "relation": "r",
+        "key": "1",
+        "version": "a1",
+        "values": {
+          "n": "2",
+          "b": true,
+          "t": ""
+        },
+        "action": "insert",
+        "predecessor": null,
+        "sourceSeq": 10,
+        "writer": "A",
+        "revertedBy": null
+      },
+      {
+        "relation": "r",
+        "key": "2",
+        "version": "b1",
+        "values": {
+          "n": "3",
+          "b": true,
+          "t": ""
+        },
+        "action": "insert",
+        "predecessor": null,
+        "sourceSeq": 13,
+        "writer": "B",
+        "revertedBy": null
+      },
+      {
+        "relation": "noise",
+        "key": "9",
+        "version": "n1",
+        "values": {
+          "n": "9",
+          "b": true,
+          "t": ""
+        },
+        "action": "insert",
+        "predecessor": null,
+        "sourceSeq": 17,
+        "writer": "N",
+        "revertedBy": null
+      }
+    ]
+  },
+  "execution": {
+    "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
+    "analysisOptions": {
+      "maxStates": 100000,
+      "maxOperationChecks": 1000000
+    },
+    "effectiveLimits": {
+      "committedTransactions": 6,
+      "operations": 128,
+      "states": 100000,
+      "operationChecks": 1000000,
+      "budgetScope": "serial-search-only",
+      "relations": 8,
+      "columns": 16,
+      "inputUtf16Units": 8388608,
+      "transactions": 512,
+      "events": 65536,
+      "semanticOperations": 10000,
+      "distinctKeys": 1024,
+      "returnedRowReferences": 100000
+    },
+    "metrics": {
+      "states": 24,
+      "operationChecks": 86,
+      "complete": true,
+      "reason": "exhausted"
+    }
+  }
+}

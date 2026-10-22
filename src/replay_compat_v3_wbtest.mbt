@@ -19,7 +19,7 @@ test "v3 released engines preserve nested engine and exact semantic field checks
   let trace = v3_test_completed([
     { "kind": "read", "tx": "A", "key": "x", "version": "x0" },
   ]).stringify()
-  for engine in ["0.1.1", "0.1.2", "0.1.3", "0.1.4"] {
+  for engine in ["0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5"] {
     let report = recorded_legacy_v3_report(trace, engine)
     assert_true(result_valid(verify_v3_json(trace, report.stringify())))
     let fields = object_fields_unchecked_v3(report)
@@ -39,7 +39,7 @@ test "v3 released engines preserve nested engine and exact semantic field checks
 ///|
 test "v3 released capsule header must match recorded report engine" {
   let trace = v3_test_completed([]).stringify()
-  for engine in ["0.1.1", "0.1.2", "0.1.3", "0.1.4"] {
+  for engine in ["0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5"] {
     let report = recorded_legacy_v3_report(trace, engine)
     let report_fields = object_fields_unchecked_v3(report)
     let capsule : Json = {
@@ -107,7 +107,7 @@ test "v3 released list replay preserves observed values and exact budgets" {
     ],
   }
   let text = trace.stringify()
-  for engine in ["0.1.1", "0.1.2", "0.1.3", "0.1.4"] {
+  for engine in ["0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5"] {
     let report = recorded_legacy_v3_report(text, engine)
     assert_true(result_valid(verify_v3_json(text, report.stringify())))
     let fields = object_fields_unchecked_v3(report)

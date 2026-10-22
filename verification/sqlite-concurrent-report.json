@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "tool": "MoonTxnWitness",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "status": "consistent",
   "model": "strict-serializable",
   "scope": "versioned point-read/write registers; supplied history and asserted version orders",
@@ -10,7 +10,7 @@
     "transactions": 6,
     "committed": 4,
     "operations": 10,
-    "dependencies": 14
+    "dependencies": 12
   },
   "findings": [],
   "edges": [
@@ -115,17 +115,6 @@
     },
     {
       "from": "r0-A",
-      "to": "r0-B-retry",
-      "kind": "rt",
-      "key": null,
-      "fromOp": null,
-      "toOp": null,
-      "fromVersion": null,
-      "toVersion": null,
-      "reason": "The source completed before the target began on the asserted common observer clock."
-    },
-    {
-      "from": "r0-A",
       "to": "r1-B",
       "kind": "rt",
       "key": null,
@@ -148,17 +137,6 @@
     },
     {
       "from": "r0-B-retry",
-      "to": "r1-A-retry",
-      "kind": "rt",
-      "key": null,
-      "fromOp": null,
-      "toOp": null,
-      "fromVersion": null,
-      "toVersion": null,
-      "reason": "The source completed before the target began on the asserted common observer clock."
-    },
-    {
-      "from": "r1-B",
       "to": "r1-A-retry",
       "kind": "rt",
       "key": null,

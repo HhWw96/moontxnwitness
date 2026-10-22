@@ -1,0 +1,170 @@
+[
+  {
+    "edges": [
+      {
+        "from": "short-T0",
+        "to": "short-T1",
+        "kind": "ww",
+        "key": "short-k0",
+        "fromOp": 0,
+        "toOp": 0,
+        "fromVersion": "short-v0-1",
+        "toVersion": "short-v0-1-2",
+        "reason": "The asserted per-key version order puts this write before the next write."
+      },
+      {
+        "from": "short-T1",
+        "to": "short-T0",
+        "kind": "ww",
+        "key": "short-k1",
+        "fromOp": 1,
+        "toOp": 1,
+        "fromVersion": "short-v1-1",
+        "toVersion": "short-v1-1-2",
+        "reason": "The asserted per-key version order puts this write before the next write."
+      }
+    ],
+    "subtype": "G0"
+  },
+  {
+    "edges": [
+      {
+        "from": "short-T1",
+        "to": "short-T0",
+        "kind": "ww",
+        "key": "short-k1",
+        "fromOp": 1,
+        "toOp": 1,
+        "fromVersion": "short-v1-1",
+        "toVersion": "short-v1-1-2",
+        "reason": "The asserted per-key version order puts this write before the next write."
+      },
+      {
+        "from": "short-T0",
+        "to": "short-T1",
+        "kind": "ww",
+        "key": "short-k0",
+        "fromOp": 0,
+        "toOp": 0,
+        "fromVersion": "short-v0-1",
+        "toVersion": "short-v0-1-2",
+        "reason": "The asserted per-key version order puts this write before the next write."
+      }
+    ],
+    "subtype": "G0"
+  },
+  {
+    "edges": [
+      {
+        "from": "long-T0",
+        "to": "long-T1",
+        "kind": "rw",
+        "key": "long-k0",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "long-v0-0",
+        "toVersion": "long-v0-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "long-T1",
+        "to": "long-T2",
+        "kind": "wr",
+        "key": "long-k1",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "long-v1-1",
+        "toVersion": "long-v1-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      },
+      {
+        "from": "long-T2",
+        "to": "long-T0",
+        "kind": "rw",
+        "key": "long-k2",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "long-v2-0",
+        "toVersion": "long-v2-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      }
+    ],
+    "subtype": "G2-item"
+  },
+  {
+    "edges": [
+      {
+        "from": "long-T1",
+        "to": "long-T2",
+        "kind": "wr",
+        "key": "long-k1",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "long-v1-1",
+        "toVersion": "long-v1-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      },
+      {
+        "from": "long-T2",
+        "to": "long-T0",
+        "kind": "rw",
+        "key": "long-k2",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "long-v2-0",
+        "toVersion": "long-v2-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "long-T0",
+        "to": "long-T1",
+        "kind": "rw",
+        "key": "long-k0",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "long-v0-0",
+        "toVersion": "long-v0-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      }
+    ],
+    "subtype": "G2-item"
+  },
+  {
+    "edges": [
+      {
+        "from": "long-T2",
+        "to": "long-T0",
+        "kind": "rw",
+        "key": "long-k2",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "long-v2-0",
+        "toVersion": "long-v2-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "long-T0",
+        "to": "long-T1",
+        "kind": "rw",
+        "key": "long-k0",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "long-v0-0",
+        "toVersion": "long-v0-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "long-T1",
+        "to": "long-T2",
+        "kind": "wr",
+        "key": "long-k1",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "long-v1-1",
+        "toVersion": "long-v1-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      }
+    ],
+    "subtype": "G2-item"
+  }
+]

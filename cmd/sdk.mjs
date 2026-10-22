@@ -208,3 +208,135 @@ export function replayRelationCapsuleV3(text) {
   }
   return result;
 }
+
+import {createHash as cycleHashV3} from 'node:crypto';
+import {isDeepStrictEqual as cycleEqualV3} from 'node:util';
+
+const cycleDigestV3 = text => cycleHashV3('sha256').update(text, 'utf8').digest('hex');
+const cycleScopeV3 = () => ({
+  witnessOnly: true,
+  searchesOtherCategoryCycles: false,
+  acceptsIsolationModels: false,
+  completeIsolationClassification: false,
+  classifiesExecutionFailures: false,
+  authenticatesCaptureSources: false,
+});
+
+// Derived explanations of an existing MoonBit witness. No new graph or model
+// search is performed here; the original core must reproduce the whole report.
+export function explainRegisterCycleV3(trace, report) {
+  const traceText = v3Text(trace, 8 * 1024 * 1024);
+  const reportText = v3Text(report, 32 * 1024 * 1024);
+  const checked = verifyV3(traceText, reportText);
+  const base = {
+    schemaVersion: 1,
+    kind: 'moontxnwitness-register-cycle-explanation/v1',
+    algorithm: 'verified-register-cycle-v1',
+    traceTextSha256: cycleDigestV3(traceText),
+    reportTextSha256: cycleDigestV3(reportText),
+    verifiedReport: checked.valid === true,
+    sourceReportVersion: null,
+    sourceStatus: null,
+    sourceCoverageComplete: false,
+    status: 'invalid',
+    reason: 'report-does-not-reproduce',
+    subtype: null,
+    categoriesSearched: false,
+    scope: cycleScopeV3(),
+    witness: null,
+    steps: [],
+    rules: {repository: 'jepsen-io/elle', commit: '4e359e597c52938b0afebb8bc42273914d68a424',
+      file: 'src/elle/txn.clj', definition: 'cycle-explainer; ww/wr/item-rw subset only'},
+  };
+  if (!checked.valid) return base;
+  const supplied = JSON.parse(reportText);
+  base.sourceReportVersion = supplied.version;
+  base.sourceStatus = supplied.status;
+  base.sourceCoverageComplete = supplied.coverage?.complete === true;
+  if (supplied.status === 'invalid') return {...base, reason: 'invalid-source-analysis'};
+  if (!base.sourceCoverageComplete || supplied.status === 'inconclusive') {
+    return {...base, status: 'inconclusive', reason: 'source-analysis-incomplete'};
+  }
+  if (supplied.modelDefinition?.id !== 'register-serializable-v1' || supplied.algorithm !== 'v3-register-1') {
+    return {...base, status: 'not-applicable', reason: 'explicit-register-observations-required'};
+  }
+  const evidence = supplied.evidence, witness = evidence?.witness;
+  if (supplied.status !== 'violation' || witness?.kind !== 'dependency_cycle' || !Array.isArray(witness.edges) || !witness.edges.length) {
+    return {...base, status: 'not-applicable', reason: 'no-cycle-witness'};
+  }
+  if (evidence.complete !== true || evidence.graph?.analyzed !== true || evidence.graph.edgeBudgetExceeded !== false) {
+    return {...base, status: 'inconclusive', reason: 'dependency-graph-incomplete'};
+  }
+  const history = supplied.normalized?.history, observations = supplied.normalized?.observations;
+  if (!Array.isArray(history?.transactions) || !Array.isArray(observations) || witness.edges.length > 512) {
+    return {...base, status: 'not-applicable', reason: 'unsupported-projected-witness'};
+  }
+  const transactions = new Map(history.transactions.map(transaction => [transaction.id, transaction]));
+  const original = new Map();
+  // Structured maps preserve identifiers containing separators and controls.
+  for (const event of observations) {
+    if (event.kind !== 'read' && event.kind !== 'write') continue;
+    if (!original.has(event.tx)) original.set(event.tx, new Map());
+    const tx = original.get(event.tx);
+    if (!tx.has(event.key)) tx.set(event.key, new Map());
+    const key = tx.get(event.key);
+    if (!key.has(event.kind)) key.set(event.kind, new Map());
+    const kind = key.get(event.kind);
+    if (!kind.has(event.version)) kind.set(event.version, []);
+    kind.get(event.version).push(event.seq);
+  }
+  const matching = (tx, operation) => original.get(tx)?.get(operation.key)?.get(operation.type)?.get(operation.version) || [];
+  const steps = [];
+  for (let index = 0; index < witness.edges.length; index++) {
+    const edge = witness.edges[index], next = witness.edges[(index + 1) % witness.edges.length];
+    const from = transactions.get(edge.from), to = transactions.get(edge.to);
+    if (!['ww', 'wr', 'rw'].includes(edge.kind) || edge.from === edge.to || edge.to !== next.from ||
+        from?.status !== 'committed' || to?.status !== 'committed' ||
+        !Number.isInteger(edge.fromOp) || !Number.isInteger(edge.toOp) ||
+        !evidence.edges.some(candidate => cycleEqualV3(candidate, edge))) {
+      return {...base, status: 'not-applicable', reason: 'unsupported-typed-cycle'};
+    }
+    const fromOp = from.ops[edge.fromOp], toOp = to.ops[edge.toOp];
+    const expectedKinds = {ww: ['write', 'write'], wr: ['write', 'read'], rw: ['read', 'write']}[edge.kind];
+    if (!fromOp || !toOp || fromOp.type !== expectedKinds[0] || toOp.type !== expectedKinds[1] ||
+        fromOp.key !== edge.key || toOp.key !== edge.key || fromOp.version !== edge.fromVersion || toOp.version !== edge.toVersion) {
+      return {...base, status: 'not-applicable', reason: 'projected-operation-source-mismatch'};
+    }
+    const fromSeqs = matching(edge.from, fromOp), toSeqs = matching(edge.to, toOp);
+    if (!fromSeqs.length || !toSeqs.length) return {...base, status: 'not-applicable', reason: 'original-point-source-unavailable'};
+    const chain = evidence.versionOrders?.[edge.key], orderSource = evidence.versionOrderSources?.[edge.key];
+    if (edge.kind !== 'wr' && (!['asserted', 'single-writer'].includes(orderSource) || !Array.isArray(chain) ||
+        chain.indexOf(edge.fromVersion) < 0 || chain.indexOf(edge.fromVersion) >= chain.indexOf(edge.toVersion))) {
+      return {...base, status: 'inconclusive', reason: 'nonfactual-version-order'};
+    }
+    steps.push({edgeIndex: index, dependency: edge,
+      from: {transaction: edge.from, projectedOperation: edge.fromOp, operation: fromOp, matchingOriginalSeqs: fromSeqs},
+      to: {transaction: edge.to, projectedOperation: edge.toOp, operation: toOp, matchingOriginalSeqs: toSeqs},
+      sourceReferenceKind: 'all matching original point observations; no unique occurrence inferred',
+      versionOrderSource: orderSource ?? null, versionOrder: chain ?? null});
+  }
+  // Rules independently implemented from the fixed upstream mathematical
+  // definition. The last and first edge are adjacent as well.
+  const rw = witness.edges.filter(edge => edge.kind === 'rw').length;
+  const adjacent = witness.edges.some((edge, index) => edge.kind === 'rw' && witness.edges[(index + 1) % witness.edges.length].kind === 'rw');
+  const subtype = rw === 1 ? 'G-single-item' : rw > 1 ? (adjacent ? 'G2-item' : 'G-nonadjacent-item') :
+    witness.edges.some(edge => edge.kind === 'wr') ? 'G1c' : 'G0';
+  const result = {...base, status: 'explained', reason: 'verified-point-cycle', subtype,
+    witness, steps, pattern: {itemAntiDependencies: rw, adjacentAntiDependenciesIncludingWraparound: adjacent},
+    categoryCoverage: 'Only this existing witness; another anomaly may exist elsewhere in the history.'};
+  if (Buffer.byteLength(JSON.stringify(result), 'utf8') > 8 * 1024 * 1024) {
+    return {...base, status: 'inconclusive', reason: 'explanation-output-byte-budget'};
+  }
+  return result;
+}
+
+export function verifyRegisterCycleExplanationV3(trace, report, explanation) {
+  if (explanation === null || typeof explanation !== 'object' || Array.isArray(explanation)) {
+    throw new TypeError('Cycle explanation must be an object; parse saved JSON explicitly');
+  }
+  const encoded = v3Text(explanation, 8 * 1024 * 1024);
+  const expected = explainRegisterCycleV3(trace, report);
+  return {valid: expected.verifiedReport && cycleEqualV3(JSON.parse(encoded), expected),
+    status: expected.status, subtype: expected.subtype,
+    scope: 'Recomputed derived explanation and verified source report; no source authentication or complete model classification.'};
+}
