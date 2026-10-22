@@ -77,16 +77,38 @@ pub fn analyze_v3_json(text : String, options_text : String) -> String {
 }
 
 ///|
+fn compatible_v3_engine(v : Json?) -> Bool {
+  v == Some(version().to_json()) ||
+  (version() == "0.1.2" && v == Some("0.1.1".to_json()))
+}
+
+///|
 pub fn verify_v3_json(text : String, report_text : String) -> String {
   try {
     let supplied = guarded_json(report_text, limit=33554432)
     let fields = object_fields(supplied, "report")
+    let recorded_engine = fields.get("version")
+    if !compatible_v3_engine(recorded_engine) {
+      fail("Unsupported v3 report engine")
+    }
     let execution = object_fields(
       required(fields, "execution", "report"),
       "execution",
     )
     let options = required(execution, "analysisOptions", "execution").stringify()
     let expected = v3_analysis(text, options)
+    // v0.1.2 preserves the v0.1.1 algorithms. Compare every recomputed field;
+    // translate only the two engine headers, never observed version identities.
+    let expected_fields = object_fields(expected, "expected report")
+    expected_fields["version"] = fields.at("version")
+    match expected_fields.get("evidence") {
+      Some(Object(evidence)) =>
+        if evidence.get("tool") == Some("MoonTxnWitness".to_json()) &&
+          evidence.get("schemaVersion") == Some((2).to_json()) {
+          evidence["version"] = fields.at("version")
+        }
+      _ => ()
+    }
     let valid = supplied == expected
     let result : Json = {
       "valid": valid.to_json(),
@@ -128,7 +150,7 @@ pub fn capsule_v3_content_json(text : String) -> String {
     if root.get("format") != Some("moontxnwitness-replay/v3".to_json()) ||
       root.get("schemaVersion") != Some((3).to_json()) ||
       root.get("tool") != Some("MoonTxnWitness".to_json()) ||
-      root.get("engineVersion") != Some(version().to_json()) {
+      !compatible_v3_engine(root.get("engineVersion")) {
       fail("Unsupported v3 capsule header")
     }
     for key in ["traceText", "normalizedText", "reportText", "evidenceText"] {
@@ -136,6 +158,17 @@ pub fn capsule_v3_content_json(text : String) -> String {
         String(_) => ()
         _ => fail("Capsule content must be text")
       }
+    }
+    let report_text = match required(root, "reportText", "capsule") {
+      String(s) => s
+      _ => fail("Capsule report must be text")
+    }
+    let report = object_fields(
+      guarded_json(report_text, limit=33554432),
+      "capsule report",
+    )
+    if report.get("version") != root.get("engineVersion") {
+      fail("Capsule and report engine headers differ")
     }
     for
       key in [

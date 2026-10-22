@@ -159,6 +159,12 @@ def main():
                     cwd=ROOT, env=env, creationflags=flags)
                 if result.returncode:
                     return result.returncode
+                extra = output / 'initialization'
+                guard = subprocess.run([sys.executable, '-B', str(ROOT / 'experiments/provenance/initialization_postgres.py'),
+                    '--schema', 'mtw_provenance_ack_' + uuid.uuid4().hex[:12], '--output', str(extra)],
+                    cwd=ROOT, env=env, creationflags=flags)
+                if guard.returncode:
+                    return guard.returncode
                 continue
             if suite == 'dislock':
                 output = ROOT / 'verification/business/dislock' / ('run-' + uuid.uuid4().hex)

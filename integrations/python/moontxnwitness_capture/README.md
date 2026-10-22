@@ -1,4 +1,12 @@
-# Python capture adapter (v0.1.1 version-column profile)
+# Python capture adapters
+
+v0.1.2 adds `moontxnwitness_capture.presence` for controlled PostgreSQL 18
+two-column tables and a fixed text-key universe. It installs source metadata and
+supports synchronous generated point CRUD, negative reads and tombstones. See
+[setup, limits and example](../../../docs/presence-capture.md). The package is
+self-contained; copying this package does not require an experiments directory.
+
+The existing version-column adapter below retains its v0.1.1 behavior and API.
 
 This optional adapter supports psycopg 3 synchronous and asynchronous connections.
 It records actual driver observations; the MoonBit core validates and normalizes

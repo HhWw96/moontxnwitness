@@ -29,7 +29,7 @@ export function makeCapsuleV3(trace, report) {
   const parsed = JSON.parse(reportText);
   const normalizedText = JSON.stringify(parsed.normalized);
   const evidenceText = JSON.stringify(parsed.evidence);
-  const content = {format:'moontxnwitness-replay/v3',schemaVersion:3,tool:'MoonTxnWitness',engineVersion:version(),traceText,normalizedText,reportText,evidenceText};
+  const content = {format:'moontxnwitness-replay/v3',schemaVersion:3,tool:'MoonTxnWitness',engineVersion:parsed.version,traceText,normalizedText,reportText,evidenceText};
   for (const key of ['trace','normalized','report','evidence']) content[key + 'Sha256'] = hash(content[key + 'Text']);
   const text = JSON.stringify(content, null, 2) + '\n';
   if (Buffer.byteLength(text) > 32 * 1024 * 1024) throw new Error('v3 capsule exceeds 32 MiB');

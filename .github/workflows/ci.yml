@@ -54,16 +54,13 @@ jobs:
         run: node scripts/moon.mjs test --target native --deny-warn
       - name: Verify fresh source and portable consumers
         run: npm run package
+      - name: Stage current-run evidence and exact current-version downloads
+        if: always()
+        run: python scripts/stage_ci_evidence.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: evidence-${{ matrix.os }}
-          path: |
-            verification/
-            artifacts/*-SHA256SUMS.txt
-            artifacts/MoonTxnWitness-v*-source.zip
-            artifacts/MoonTxnWitness-v*-portable.zip
-            dist/
-            cmd/*.mjs
-            integrations/python/moontxnwitness_capture/*.py
+          path: artifacts/ci-evidence/
+          if-no-files-found: error
           compression-level: 6

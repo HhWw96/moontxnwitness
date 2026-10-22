@@ -6,7 +6,7 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-## v0.1.1 支持范围
+## v0.1.2 支持范围
 
 | 能力 | 本版支持 |
 | --- | --- |
@@ -14,9 +14,10 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 | 异常解释 | 直接读写异常、完整依赖来源、图中最短有向环和有界串行补全 |
 | 反例与证据 | 事务缩减、中文报告、图导出、v1/v2 证据及复现包回放 |
 | PostgreSQL 采集 | psycopg 同步/异步连接；已有版本列、单列主键及明确映射的点读写 SQL |
+| 普通表 CRUD | 独立 `moontxnwitness_capture.presence` 入口；受控两列表、固定文本键集合、同步点查询及插入/更新/删除、负读与墓碑来源 |
 | 数据库演示 | PostgreSQL 18 写偏斜与 Serializable 回滚/全新事务重试；SQLite WAL 并发案例 |
 
-采集需要显式声明写者范围和 SQL 映射，不自动识别任意业务 SQL。未知提交、丢失来源或预算耗尽保留为无法判定。v3 模型、普通表和 ORM 适配是独立预览功能，不阻塞上表功能发布。
+采集需要显式声明写者范围和 SQL 映射。未知提交、丢失来源或预算耗尽保留为无法判定。普通表入口会安装版本列、触发器和来源表，适用条件及示例见[普通表采集](docs/presence-capture.md)。v3 模型、扩展普通表持久化和 ORM 适配继续使用预览入口。
 
 ## 运行演示
 
@@ -97,7 +98,7 @@ node dist/postgres-demo.mjs
 - [普通表 CRUD](experiments/provenance/PRESENCE_PROFILE.md)、[dislock](docs/dislock-v3.md)、[ORM 来源诊断](docs/orm-source-v3.md)：按适配器声明的 SQL 与来源范围使用。
 - [执行故障诊断](experiments/faults/mlflow/README.md)：死锁等故障单列，不冒充隔离模型违反。
 
-预览格式可能调整，v3 复现包目前需要原引擎版本回放。不支持的 SQL、缺失来源与覆盖缺口始终可见；尚不提供任意 SQL 插桩或完整隔离级别分类。
+预览格式可能调整。v0.1.2 额外支持已核验的 v0.1.1 算法与 v3 证据；更早研究期记录仍可能需要对应源码回放。不支持的 SQL、缺失来源与覆盖缺口始终可见；尚不提供任意 SQL 插桩或完整隔离级别分类。
 
 ## 开发与验证
 

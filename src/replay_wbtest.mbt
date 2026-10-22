@@ -5,6 +5,34 @@ fn result_valid(text : String) -> Bool {
 }
 
 ///|
+test "stable v1 and v2 replay accepts v011 and current engines only in supported headers" {
+  let h = skew()
+  let history = history_json(h).stringify()
+  for v2 in [false, true] {
+    let report = if v2 {
+      analysis_result_json(analyze_with_options(h))
+    } else {
+      report_json(analyze(h))
+    }
+    match report {
+      Object(fields) => {
+        for engine in ["0.1.1", version()] {
+          fields["version"] = engine.to_json()
+          assert_true(
+            result_valid(replay_report_json(history, report.stringify())),
+          )
+        }
+        fields["version"] = "99.0.0".to_json()
+        assert_true(
+          !result_valid(replay_report_json(history, report.stringify())),
+        )
+      }
+      _ => abort("report object")
+    }
+  }
+}
+
+///|
 test "semantic report replay checks a genuine report" {
   let h = skew()
   assert_true(

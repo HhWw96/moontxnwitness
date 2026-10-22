@@ -100,8 +100,9 @@ jobs:
           MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
         run: |
           if [ -f experiments/provenance/presence_e2e.mjs ]; then
-            python experiments/provenance/test_presence_profile.py
+            python -B scripts/presence-unit-test.py --node "$(command -v node)"
             node experiments/provenance/presence_e2e.mjs --schema mtw_provenance_presence_ci --output verification/provenance-presence/ci
+            python -B experiments/provenance/initialization_postgres.py --schema mtw_provenance_initialization_ci --output verification/provenance-presence/ci/initialization
           fi
       - name: Verify v3 savepoint and cursor observations on PostgreSQL
         env:

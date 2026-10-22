@@ -20,6 +20,10 @@ const captureSource={adapterSha256:digest('integrations/python/moontxnwitness_ca
   analysisCoreSha256:digest('dist/core.mjs'),captureCoreSha256:digest('dist/capture-core.mjs'),
   buildManifestSha256:digest('dist/build-manifest.json'),buildManifestSourceSha256:manifest.sourceSha256,
   e2eSha256:digest('experiments/business/dislock/e2e.mjs')};
+const implementationPaths=["integrations/python/moontxnwitness_capture/__init__.py", "integrations/python/moontxnwitness_capture/capture.py", "integrations/python/moontxnwitness_capture/_provenance.py", "integrations/python/moontxnwitness_capture/_column_profile.py", "integrations/python/moontxnwitness_capture/_initialization_guard.py", "integrations/python/moontxnwitness_capture/_source_inventory.py", "integrations/python/moontxnwitness_capture/presence.py"];
+const implementationFiles=Object.fromEntries(implementationPaths.map(path=>[path,digest(path)]));
+captureSource.implementationFiles=implementationFiles;
+captureSource.compatibilityRole="experiments profile hashes bind aliases; implementationFiles binds actual package code";
 const child=spawnSync(process.env.MTW_PYTHON || (process.platform==='win32'?'python':'python3'),
   ['experiments/business/dislock/postgres_test.py',...args],{encoding:'utf8',windowsHide:true});
 if(child.stdout)process.stdout.write(child.stdout);
@@ -28,6 +32,16 @@ if(child.status!==0)process.exit(child.status??1);
 const receipt=JSON.parse(readFileSync(resolve(folder,'business-database.json'),'utf8'));
 let capsules=0;
 try{
+  for(const[path,sha]of Object.entries(implementationFiles))assert.equal(digest(path),sha,"Implementation changed: "+path);
+  const expectedImplementationKeys=implementationPaths.map(path=>path.slice('integrations/python/'.length)).sort();
+  assert.equal(receipt.implementationSources.unchanged,true);
+  assert.deepEqual(Object.keys(receipt.implementationSources.before).sort(),expectedImplementationKeys,'Incomplete implementation source inventory before execution');
+  assert.deepEqual(Object.keys(receipt.implementationSources.after).sort(),expectedImplementationKeys,'Incomplete implementation source inventory after execution');
+  assert.deepEqual(receipt.implementationSources.before,receipt.implementationSources.after,'Implementation source inventory changed during execution');
+  for(const[path,item]of Object.entries(receipt.implementationSources.after)){
+    assert.equal(implementationFiles["integrations/python/"+path],item.sha256,"Actual package source differs: "+path);
+    assert.equal(readFileSync("integrations/python/"+path).length,item.bytes,"Actual package source size differs: "+path);
+  }
   for(const item of receipt.scenarios){
     const normalized=normalizeCapture(readFileSync(resolve(folder,item.trace),'utf8'));
     const coverage=item.name+'.coverage.json';

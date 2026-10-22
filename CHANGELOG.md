@@ -1,3 +1,11 @@
+# 0.1.2 — 2026-10-22
+
+- Add the standalone `moontxnwitness_capture.presence` Python entry for generated synchronous point CRUD on controlled two-column PostgreSQL 18 tables, including negative reads and deletion tombstones.
+- Bound initialization key consumption, require a confirmed server COMMIT before publishing initial facts, and prevent reusing a failed or uncertain initializer.
+- Preserve legacy imports and capture formats; bind receipts to the actual installed implementation.
+- Preserve v0.1.1 v1/v2 replay and explicitly verified v3 algorithm compatibility; unknown engines and mismatched capsule/report headers remain rejected.
+- Trim source and portable downloads to current evidence and required fixtures; retain historical evidence in Git and upload the actual compiled core with current CI results.
+
 # 0.1.1 — 2026-10-22
 
 - Add PostgreSQL point-read/write capture for psycopg synchronous and asynchronous connections, with explicit version columns and SQL mappings.

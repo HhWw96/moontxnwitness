@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "audit": "independent observed post-close activity audit",
+  "createdAt": "2026-10-22T10:19:45.949378+00:00",
+  "actualDatabaseExecution": false,
+  "productionModified": false,
+  "sourceBindings": {
+    "integrations/python/moontxnwitness_capture/capture_v3.py": {
+      "sha256": "92691d80b50196131a8df01e61f2c96336c6d0e977a385979e7d7044cbdc025a",
+      "bytes": 35289
+    },
+    "integrations/python/moontxnwitness_capture/journal_v3.py": {
+      "sha256": "c2f367721bc5d82ee4d98e27ee33a02b000a08094ea055432ee2cb3ba8b16391",
+      "bytes": 60881
+    },
+    "integrations/python/moontxnwitness_capture/capture.py": {
+      "sha256": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e",
+      "bytes": 56812
+    }
+  },
+  "sourceUnchangedDuringRun": true,
+  "auditImplementation": {
+    "sha256": "84e4692b09e1ddecb907a56e0a992b6293922c996e75134f960076376aec814e",
+    "bytes": 10111
+  },
+  "cases": [
+    {
+      "mode": "wrapper-execute",
+      "passed": true,
+      "checks": {
+        "originalWindowComplete": true,
+        "businessRowsPreserved": true,
+        "businessCommitReturnPreserved": true,
+        "actualSecondBusinessExecution": true,
+        "sealedEvidenceBytesUnchanged": true,
+        "instanceExportRefused": true,
+        "noInstanceExportPublished": true,
+        "freshReaderNotComplete": true,
+        "readerExportRefused": true,
+        "readerArchiveRefused": true,
+        "readerIterationRefused": true,
+        "reopenRefused": true
+      },
+      "receipt": "wrapper-execute/case-receipt.json",
+      "sha256": "166633952f01086446c4b41bf83eb127dd3a85b0676547b6d79efb8f63991479",
+      "bytes": 3124
+    },
+    {
+      "mode": "facade-connect",
+      "passed": true,
+      "checks": {
+        "originalWindowComplete": true,
+        "businessConnectionIdentityPreserved": true,
+        "businessRowsPreserved": true,
+        "businessCommitReturnPreserved": true,
+        "sealedEvidenceBytesUnchanged": true,
+        "instanceExportRefused": true,
+        "noInstanceExportPublished": true,
+        "freshReaderNotComplete": true,
+        "readerExportRefused": true,
+        "readerArchiveRefused": true,
+        "readerIterationRefused": true,
+        "reopenRefused": true
+      },
+      "receipt": "facade-connect/case-receipt.json",
+      "sha256": "1f7bc8719c970f6d72c8399007a8cde75493d816642d95c9ab7ec2ef291ceff0",
+      "bytes": 3259
+    },
+    {
+      "mode": "journal-append",
+      "passed": true,
+      "checks": {
+        "originalWindowComplete": true,
+        "appendRejected": true,
+        "sealedEvidenceBytesUnchanged": true,
+        "instanceExportRefused": true,
+        "noInstanceExportPublished": true,
+        "freshReaderNotComplete": true,
+        "readerExportRefused": true,
+        "readerArchiveRefused": true,
+        "readerIterationRefused": true,
+        "reopenRefused": true
+      },
+      "receipt": "journal-append/case-receipt.json",
+      "sha256": "9c12934aed0685f348a589127e70fb6bd56dbd1bb9106b6daf3d91c2d6ddb1e7",
+      "bytes": 2883
+    },
+    {
+      "mode": "marker-io-outage",
+      "passed": true,
+      "checks": {
+        "originalWindowComplete": true,
+        "businessRowsPreserved": true,
+        "businessCommitReturnPreserved": true,
+        "actualSecondBusinessExecution": true,
+        "outageActuallyInterceptedWrite": true,
+        "sealedEvidenceBytesUnchanged": true,
+        "instanceExportRefused": true,
+        "noInstanceExportPublished": true
+      },
+      "receipt": "marker-io-outage/case-receipt.json",
+      "sha256": "09a27c8197b8cc287e00c2323f8525e921220e12813fa25d49f384cd43c833b9",
+      "bytes": 2842
+    }
+  ],
+  "passed": true,
+  "scope": "Independent minimal synchronous fake driver with actual journal filesystem IO; not a database or application consistency verdict."
+}

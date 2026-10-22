@@ -59,7 +59,11 @@ const executionFailureAudit = JSON.parse(pythonJSON(['-B','verification/v3/tools
 assert.equal(executionFailureAudit.passed,true);
 assert.equal(executionFailureAudit.complete,true);
 pythonJSON(['-B','scripts/test_package_archive.py'],'Bounded archive and cross-chunk privacy checks');
+pythonJSON(['-B','scripts/test_distribution.py'],'Distribution input closure and CI private-file checks');
+pythonJSON(['-B','scripts/test_hosted_publication.py'],'Hosted public download controller fault checks');
 pythonJSON(['-B','scripts/test_publication_download.py'],'Bounded public downloads and safe fresh ZIP extraction');
+const presenceUnitReceipt = JSON.parse(pythonJSON(['-B','scripts/presence-unit-test.py','--node',process.execPath],'Ordinary-table initialization, standalone package and metadata failure units'));
+assert.equal(presenceUnitReceipt.passed,true);
 const collectorOutput = pythonJSON(['-B','integrations/python/moontxnwitness_capture/test_capture_v3.py'],'Bounded v3 protocol collector');
 const collectorFolder = collectorOutput.match(/^Collector test artifacts: (.+)$/m)?.[1]?.trim();
 if (!collectorFolder) throw new Error('Protocol collector suite did not identify its retained evidence');
@@ -107,5 +111,6 @@ receipt.buildManifest = JSON.parse(readFileSync(resolve(root, 'dist/build-manife
 assert.deepEqual(verificationFingerprint(root),testedFiles,'Executable sources or runtime changed during verification');
 receipt.testedFileSha256 = testedFiles;
 receipt.captureAdapterUnitTests = 'passed; driver-interface tests, not actual database execution';
+receipt.presenceAdapterUnitTests = {passed:presenceUnitReceipt.passed,tests:presenceUnitReceipt.testsRun,actualDatabaseExecution:false};
 writeVerifiedJson(resolve(root, 'verification/summary.json'), receipt);
 console.log(`MoonTxnWitness v${receipt.version} verification complete.`);

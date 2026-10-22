@@ -401,6 +401,8 @@ def tampering(setup, schema):
 
 
 def main():
+    from moontxnwitness_capture.presence import implementation_bindings
+    implementation_before = implementation_bindings()
     parser = argparse.ArgumentParser()
     parser.add_argument("--schema", required=True)
     parser.add_argument("--output", required=True)
@@ -433,6 +435,10 @@ def main():
             "scenarios": scenarios, "rejections": rejections, "schemaRetained": args.keep_schema,
             "notMeasured": ["full capture C/A", "CPU/RSS", "WAL", "contention performance", "application deployment"],
             "sources": {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in (Path(__file__), Path(__file__).with_name("presence_profile.py"))}}
+        implementation_after = implementation_bindings()
+        assert implementation_before == implementation_after, "Installed implementation changed during execution"
+        receipt["implementationSources"] = {"before": implementation_before, "after": implementation_after, "unchanged": True}
+        receipt["legacySourceRole"] = "Compatibility shim / fixture hashes; implementationSources binds package code"
         (folder / "presence-database.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
         print(json.dumps({"status": receipt["status"], "actualDatabaseExecution": True, "scenarios": len(scenarios)}))
         return 0

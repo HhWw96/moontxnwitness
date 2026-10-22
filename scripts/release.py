@@ -17,9 +17,14 @@ ENV = dict(os.environ)
 
 def validate_scoped_acceptance(acceptance, manifest):
     """Validate the declared stable profiles, without promoting preview goals."""
-    assert acceptance['policy'] == 'scoped-stable-v1'
+    assert acceptance['policy'] in ('scoped-stable-v1', 'scoped-stable-v2')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 2):
+        assert acceptance['policy'] == 'scoped-stable-v2'
     assert acceptance['version'] == VERSION and acceptance['passed'] is True and acceptance['releaseReady'] is True
-    assert acceptance['supportedProfiles'] == ['register-v1', 'register-v2', 'postgres-point-capture-v1']
+    profiles = ['register-v1', 'register-v2', 'postgres-point-capture-v1']
+    if acceptance['policy'] == 'scoped-stable-v2':
+        profiles.append('postgres-fixed-key-presence-v2')
+    assert acceptance['supportedProfiles'] == profiles
     assert acceptance['buildManifest'] == manifest
     summary = json.loads((ROOT / 'verification/summary.json').read_text(encoding='utf8'))
     package = json.loads((ROOT / 'verification/package.json').read_text(encoding='utf8'))
@@ -49,6 +54,40 @@ def validate_scoped_acceptance(acceptance, manifest):
     assert actual['passed'] is True and actual['actualDatabaseExecution'] is True
     assert actual['buildManifestBefore'] == manifest and actual['buildManifestAfter'] == manifest
     assert actual['exitCode'] == 0
+    if acceptance['policy'] == 'scoped-stable-v2':
+        assert actual['testedFileSha256Before'] == actual['testedFileSha256After'] == tested
+        for label in ('presence', 'initialization'):
+            reference = actual['receipts'][label]
+            path = (ROOT / 'verification' / reference['path'] / reference['receiptFile']).resolve()
+            assert path.is_relative_to((ROOT / 'verification').resolve())
+            assert sha256(path) == reference['sha256'], 'Database receipt changed: ' + label
+        presence_root = ROOT / 'verification' / actual['receipts']['presence']['path']
+        presence = json.loads((presence_root / 'presence-receipt.json').read_text(encoding='utf8'))
+        assert presence['passed'] and presence['actualDatabaseExecution'] and presence['coreVersion'] == VERSION
+        assert len(presence['scenarios']) == 6 and presence['replayedCapsules'] == 3
+        expected_implementation = {
+            'integrations/python/moontxnwitness_capture/' + name for name in (
+                '__init__.py', 'capture.py', '_provenance.py', '_column_profile.py',
+                '_initialization_guard.py', '_source_inventory.py', 'presence.py')}
+        assert set(presence['captureSource']['implementationFiles']) == expected_implementation
+        for name, expected in presence['captureSource']['implementationFiles'].items():
+            assert sha256(ROOT / name) == expected, 'Presence implementation differs: ' + name
+        for name, expected in presence['captureSource']['files'].items():
+            assert sha256(ROOT / name) == expected, 'Presence fixture/runtime differs: ' + name
+        initialization_root = ROOT / 'verification' / actual['receipts']['initialization']['path']
+        initialization = json.loads((initialization_root / 'initialization-receipt.json').read_text(encoding='utf8'))
+        assert initialization['passed'] and initialization['actualDatabaseExecution']
+        assert initialization['packageVersion'] == VERSION and initialization['analyzerExecuted'] is False
+        assert len(initialization['cases']) == 4 and all(case['passed'] for case in initialization['cases'])
+        sources = initialization['implementationSources']
+        assert sources['unchanged'] is True and sources['before'] == sources['after']
+        assert {'integrations/python/' + name for name in sources['after']} == expected_implementation
+        for name, observed in sources['after'].items():
+            path = ROOT / 'integrations/python' / name
+            assert sha256(path) == observed['sha256'] and path.stat().st_size == observed['bytes']
+        fixture = initialization['fixtureSources']
+        assert fixture['unchanged'] is True and fixture['before'] == fixture['after']
+        assert fixture['after'] == sha256(ROOT / 'experiments/provenance/initialization_postgres.py')
     capture = json.loads((ROOT / 'verification/capture-postgres.json').read_text(encoding='utf8'))
     assert capture['version'] == VERSION and capture['passed'] and capture['actualDatabaseExecution']
     for field, name in (
@@ -119,7 +158,7 @@ def publish():
         acceptance = json.loads((ROOT / 'verification/releases' / VERSION / 'acceptance.json').read_text(encoding='utf-8'))
         manifest = json.loads((ROOT / 'dist/build-manifest.json').read_text(encoding='utf-8'))
         assert acceptance['passed']
-        scoped = acceptance.get('policy') == 'scoped-stable-v1'
+        scoped = acceptance.get('policy') in ('scoped-stable-v1', 'scoped-stable-v2')
         if scoped:
             validate_scoped_acceptance(acceptance, manifest)
         else:
@@ -167,6 +206,16 @@ def publish():
                      'PostgreSQL capture needs its optional Python driver.\n\n'
                      'Cross-target tests, real PostgreSQL scenarios and fresh source/portable consumers are checked for this scope. '
                      'See CHANGELOG.md for details.\n', encoding='utf-8')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 2):
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- Standalone Python presence capture for controlled PostgreSQL 18 two-column tables: generated synchronous point CRUD, negative reads and tombstone sources.\n'
+            '- Bounded initialization, explicit server COMMIT confirmation, failed/unknown initialization lockout and legacy import compatibility.\n'
+            '- Smaller source/portable downloads retain current reproduction evidence and required fixtures; full historical evidence remains in Git.\n\n'
+            'Existing v1/v2 analysis/reduction/replay and schema-1 sync/async capture remain supported. '
+            'See docs/presence-capture.md for installation changes and the fixed-key scope. '
+            'Extended persistence, v3 models and ORM integrations continue as previews.\n\n'
+            'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or download portable ZIP (Node.js >=20). '
+            'Python capture uses the optional psycopg driver. See CHANGELOG.md for validation and compatibility.\n', encoding='utf8')
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
     if performance_path.exists() and not scoped:
         groups = json.loads(performance_path.read_text(encoding='utf-8'))['groups']

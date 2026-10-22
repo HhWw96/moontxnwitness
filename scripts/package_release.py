@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -10,6 +11,7 @@ import zipfile
 from pathlib import Path
 from package_archive import sha256, write_archive
 from publication_privacy import private_home_paths
+from distribution_manifest import select_distribution_files, assert_complete
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -45,28 +47,15 @@ def archive(files, path):
                          {str(ROOT), ROOT.as_posix(), *home_paths})
 
 
-excluded_dirs = {".git", "_build", ".mooncakes", "node_modules", "artifacts", "dist", "__pycache__", ".venv-pg"}
-excluded_names = {".local-toolchain.json", ".DS_Store"}
-# Match the public source inventory, including uncommitted public additions.
-# Ignored diagnostics and draft work must not enter a source or portable export.
+# Keep the existing source/runtime fingerprint and every consumer check intact.
+# Only the exported file inventory changes; historical evidence stays in Git.
 public_names = set(filter(None, subprocess.check_output(
     ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
     cwd=ROOT).decode('utf-8').split('\0')))
-source = []
-for name in sorted(public_names):
-    relative = Path(name)
-    item = ROOT / relative
-    if not item.is_file() or any(part in excluded_dirs or part.startswith(('moontxnwitness-demo-', 'moontxnwitness-postgres-')) for part in relative.parts) or item.name in excluded_names:
-        continue
-    if item.suffix in {".log", ".pyc"} or relative.as_posix() == "verification/package.json":
-        continue
-    source.append(relative.as_posix())
-portable = ["README.md", "LICENSE", "CHANGELOG.md", "THIRD_PARTY.md", "run-demo.cmd"]
-for folder in ("dist", "docs", "examples", "verification", "integrations", "experiments"):
-    for item in (ROOT / folder).rglob("*"):
-        relative = item.relative_to(ROOT).as_posix()
-        if item.is_file() and "__pycache__" not in item.parts and item.name != "package.json" and (folder == 'dist' or relative in public_names):
-            portable.append(item.relative_to(ROOT).as_posix())
+selection = select_distribution_files(ROOT, public_names, tested_files, VERSION)
+assert_complete(selection)
+source = selection['source']
+portable = selection['portable']
 
 ARTIFACTS.mkdir(exist_ok=True)
 archives = [archive(source, ARTIFACTS / (NAME + "-source.zip")), archive(portable, ARTIFACTS / (NAME + "-portable.zip"))]
@@ -116,6 +105,45 @@ for kind in ("portable", "source"):
         checks.append(f"source fresh JS core tests: {test_count} passed")
     assert run([NODE, "dist/moontxnwitness.mjs", "--version"], consumer).strip() == VERSION
     checks.append(kind + " version")
+    if tuple(map(int, VERSION.split('.'))) >= (0, 1, 2):
+        # A copied package imports and constructs without site packages, the
+        # optional driver or an experiments directory on the Python import path.
+        package_only = work / (kind + '-presence-only')
+        installed_package = package_only / 'moontxnwitness_capture'
+        installed_package.mkdir(parents=True, exist_ok=False)
+        for name in ('__init__.py', 'capture.py', '_provenance.py', '_column_profile.py',
+                     '_initialization_guard.py', '_source_inventory.py', 'presence.py'):
+            shutil.copyfile(consumer / 'integrations/python/moontxnwitness_capture' / name,
+                            installed_package / name)
+        installed = json.loads(run([sys.executable, '-I', '-S', '-B', '-c',
+            'import json,sys;sys.path.insert(0,sys.argv[1]);'
+            'from moontxnwitness_capture.presence import PresenceCapture,PresencePointProfile,implementation_bindings;'
+            'c=PresenceCapture(PresencePointProfile("mtw_provenance_consumer","items"),keys=("a","missing"));'
+            'assert not c._initialized;assert "psycopg" not in sys.modules;'
+            'print(json.dumps(implementation_bindings()))',
+            str(package_only)], package_only))
+        assert len(installed) == 7
+        for path, observed in installed.items():
+            assert observed['sha256'] == sha256(package_only / path)
+        checks.append(kind + ' standalone presence package import without optional driver or experiments')
+        declaration = json.loads((consumer / ('verification/releases/' + VERSION + '/acceptance.json')).read_text(encoding='utf8'))
+        database = json.loads((consumer / ('verification/releases/' + VERSION) / declaration['databaseEvidence']).read_text(encoding='utf8'))
+        presence_run = 'verification/' + database['receipts']['presence']['path']
+        presence_receipt = json.loads((consumer / presence_run / 'presence-receipt.json').read_text(encoding='utf8'))
+        ready = [row for row in presence_receipt['scenarios'] if row['expectedStatus'] == 'ready']
+        assert len(ready) == 3
+        for scenario in ready:
+            for bound in scenario['artifactBindings'].values():
+                path = (consumer / presence_run / bound['path']).resolve()
+                assert path.is_relative_to((consumer / presence_run).resolve())
+                assert sha256(path) == bound['sha256'] and path.stat().st_size == bound['bytes']
+            normalized = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'ingest-presence', presence_run + '/' + scenario['trace']], consumer))
+            original_history = json.loads((consumer / presence_run / scenario['artifactBindings']['history']['path']).read_text(encoding='utf8'))
+            assert normalized['status'] == 'ready' and normalized['history'] == original_history
+            capsule = presence_run + '/' + scenario['name'] + '.capsule.json'
+            assert json.loads(json.loads((consumer / capsule).read_text(encoding='utf8'))['historyText']) == original_history
+            assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay', capsule], consumer))['valid']
+        checks.append(kind + ' actual ordinary-table CRUD, negative-read and lock-wait capsules')
     for filename, status, exit_code in fixtures:
         report = json.loads(run([NODE, "dist/moontxnwitness.mjs", "check", "examples/" + filename + ".json", "--format", "json"], consumer, exit_code))
         assert report["status"] == status

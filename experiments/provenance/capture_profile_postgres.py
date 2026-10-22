@@ -281,6 +281,8 @@ def rejection_cases(setup, schema):
 
 
 def main():
+    from moontxnwitness_capture.presence import implementation_bindings
+    implementation_before = implementation_bindings()
     parser = argparse.ArgumentParser()
     parser.add_argument("--schema", required=True)
     parser.add_argument("--output", required=True)
@@ -317,6 +319,10 @@ def main():
             "notMeasured": ["full capture C/A performance", "multi-client contention cost", "CPU", "RSS", "lock waits"],
             "sources": {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in
                 (Path(__file__), Path(__file__).with_name("capture_profile.py"), Path(__file__).with_name("prototype.py"))}}
+        implementation_after = implementation_bindings()
+        assert implementation_before == implementation_after, "Installed implementation changed during execution"
+        receipt["implementationSources"] = {"before": implementation_before, "after": implementation_after, "unchanged": True}
+        receipt["legacySourceRole"] = "Compatibility shim / fixture hashes; implementationSources binds package code"
         (folder / "profile-database.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
         print(json.dumps({"status": receipt["status"], "actualDatabaseExecution": True, "scenarios": len(scenarios)}))
         return 0

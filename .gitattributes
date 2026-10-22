@@ -36,3 +36,9 @@ verification/experimental-candidates/plain-epoch-r1-2026-10-21/bundle/**/epoch_s
 verification/experimental-candidates/plain-epoch-r2-2026-10-21/bundle/**/epoch_sources.py -text -whitespace
 experiments/faults/mlflow/upstream/fetch-receipt.json -text
 experiments/relation_v3/candidate-index.json -text
+# Executable collector/tool sources are byte-bound in capture and test receipts.
+# Preserve those exact bytes in Git and on every consumer OS.
+*.py -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+*.mjs -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+verification/releases/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+verification/provenance-profile/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

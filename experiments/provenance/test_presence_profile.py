@@ -30,7 +30,11 @@ class Cursor:
         c = self.connection
         c.calls.append((query, params))
         self.rows, self.position, self.rowcount, self.description, self.statusmessage = None, 0, -1, None, None
-        if query.startswith("BEGIN"):
+        if query == "COMMIT":
+            c.commit()
+            self.pgresult = SimpleNamespace(status=psycopg.pq.ExecStatus.COMMAND_OK)
+            self.statusmessage = "COMMIT"
+        elif query.startswith("BEGIN"):
             c.begin()
             self.statusmessage = "BEGIN"
         elif query.startswith("LOCK TABLE") or query.startswith(("CREATE ", "ALTER ")):

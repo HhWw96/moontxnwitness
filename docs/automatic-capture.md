@@ -4,7 +4,7 @@ v0.1.1 的稳定采集范围是 `CaptureSession` 与 `traceSchema: 1` 已有版�
 
 该范围要求已有的文本版本列、每键唯一的写入版本、单列主键和普通表。`CaptureSession` 对普通无版本列业务、ORM、保存点、插入删除和范围查询保留业务执行并给出覆盖缺口。详细 API、同步及异步例子见 [适配器说明](../integrations/python/moontxnwitness_capture/README.md)。
 
-普通表 `traceSchema: 2`、v3 日志与生命周期、列表/关系模型及 ORM 来源诊断使用独立预览入口，按各自说明使用。它们不改变本页 `traceSchema: 1` 的稳定范围。
+v0.1.2 的[普通表 CRUD](presence-capture.md)使用独立 `traceSchema: 2` 与显式包入口；v3 日志与生命周期、列表/关系模型及 ORM 来源诊断继续预览。它们不改变本页 `traceSchema: 1` 的接口和行为。
 
 ## 安装与使用
 
@@ -27,7 +27,7 @@ node dist/moontxnwitness.mjs replay case.capsule.json
 
 SDK 提供 `normalizeCapture(trace)`。它与命令行共同使用 MoonBit `normalize_capture_json`，不在 JS 中另写判定逻辑。`ingest` 接受文件或标准输入，输出文件必须尚不存在。
 
-普通表 CRUD 的预览使用独立 `traceSchema: 2`，调用 `normalizePresenceCapture(trace)` 或 `ingest-presence`。它在固定已知键集合内记录存在性、墓碑和同语句版本来源，详情见 [预览说明](../experiments/provenance/PRESENCE_PROFILE.md)。原 `normalizeCapture` / `ingest` 继续拒绝该新格式。v3 与 ORM 预览见 [日志说明](capture-journal-v3.md)及[来源诊断](orm-source-v3.md)。
+普通表 CRUD 使用 `normalizePresenceCapture(trace)` 或 `ingest-presence`，在固定已知键集合内记录存在性、墓碑和同语句版本来源，详情见[使用说明](presence-capture.md)。原 `normalizeCapture` / `ingest` 继续拒绝该格式。v3 与 ORM 预览见[日志说明](capture-journal-v3.md)及[来源诊断](orm-source-v3.md)。
 
 ## 采集结果和分析结果分开
 
