@@ -26,8 +26,11 @@ import uuid
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'integrations/python'))
+sys.path.insert(0,str(ROOT/'experiments/provenance'))
 from moontxnwitness_capture._provenance import install,qualified,identifier
-from moontxnwitness_capture.instrumentation import Instrumentation
+from moontxnwitness_capture.instrumentation import Instrumentation,verify_lifecycle_storage
+from moontxnwitness_capture._experimental_budget import PROFILE,LIMITS,profile
+from capacity_budget import preparation,scratch_preparation,live_reserve,raw_envelope,required_free,AttemptByteBudget
 from moontxnwitness_capture.source_sink import GroupedSourceSink
 
 WORKLOADS={
@@ -43,7 +46,7 @@ STORAGE_RESERVE_BYTES=512*1024*1024
 
 def runtime_sources():
     package=ROOT/'integrations/python/moontxnwitness_capture'
-    return [Path(__file__).resolve(),Path(__file__).with_name('cell_archive.py'),
+    return [Path(__file__).resolve(),Path(__file__).with_name('cell_archive.py'),Path(__file__).with_name('capacity_budget.py'),
             *sorted(path for path in package.glob('*.py') if not path.name.startswith('test_'))]
 
 
@@ -106,6 +109,11 @@ def _begin_warmup(connections_ready,start,shared,seconds,timeout):
 
 
 def run_cell(config,output,connect):
+    selected=profile(config.get('experimentalBudget'))
+    if selected:
+        if config.get('storageLimits')!=LIMITS:raise ValueError('Experimental configuration must bind the exact finite storage profile')
+        for key,maximum in [('maxAttemptsPerWorker',LIMITS['maxAttemptsPerWorker']),('maxWarmupAttemptsPerWorker',LIMITS['maxWarmupAttemptsPerWorker'])]:
+            if type(config.get(key)) is not int or not 1<=config[key]<=maximum:raise ValueError('Experimental attempt ceiling is invalid')
     spec=WORKLOADS[config['workload']];mode=config['mode']
     schema='mtw_provenance_cost_'+uuid.uuid4().hex[:16]
     table=qualified(schema,'items')
@@ -122,6 +130,17 @@ def run_cell(config,output,connect):
              'configuration':config,'fixtureSchema':schema,'workloadSpec':spec,'generator':GENERATOR,
              'formalProtocolCompleted':False,'allAttemptsRetained':True}
     setup=None;failed=[]
+    attempt_budget=AttemptByteBudget(LIMITS["attemptBytes"]) if selected else None
+    if selected:
+        checked=preparation(output)
+        receipt.update(experimentalBudget=selected,actualStorageLimits=dict(LIMITS),storageCapacityEstimate=checked)
+        if not checked["eligibleToStart"]:
+            receipt.update(status="not-executed",errorClass="CapacityPreflightRefused",reason=checked["reason"])
+            return receipt
+        scratch=scratch_preparation(output);receipt["verificationScratchPreparation"]=scratch
+        if not scratch["eligibleToStart"]:
+            receipt.update(status="not-executed",errorClass="CapacityPreflightRefused",reason=scratch["reason"])
+            return receipt
     try:
         setup=connect(autocommit=True)
         receipt.update(actualDatabaseExecution=True,server=setup.execute('SELECT version()').fetchone()[0])
@@ -134,10 +153,14 @@ def run_cell(config,output,connect):
             provenance=install(setup,schema=schema,table='items',mode=config['profile'],
                                missing_keys=tuple('missing-'+str(i) for i in range(32)))
         if mode=='C':
-            capture=Instrumentation(output/'capture',max_lifecycle_bytes=512*1024*1024,
-                                    max_lifecycle_records=2000000,
-                                    journal_options={'max_total_bytes':1024**3})
-            sources=GroupedSourceSink(output/'sources.jsonl',max_total_bytes=1024**3,max_records=1000000)
+            capture=Instrumentation(output/'capture',
+                                    max_lifecycle_bytes=LIMITS['lifecycleBytes'] if selected else 512*1024*1024,
+                                    max_lifecycle_records=LIMITS['lifecycleRecords'] if selected else 2000000,
+                                    journal_options={'max_total_bytes':LIMITS['journalBytes'] if selected else 1024**3,
+                                                     **({'transaction_index_bytes':LIMITS['transactionIndexBytes']} if selected else {})},
+                                    experimental_budget=selected)
+            sources=GroupedSourceSink(output/'sources.jsonl',max_total_bytes=LIMITS['sourceBytes'] if selected else 1024**3,
+                                      max_records=LIMITS['sourceRecords'] if selected else 1000000,experimental_budget=selected)
             for key,value in provenance.initial.items():
                 result=sources.append({'kind':'source-batch','phase':'initial','observation':value.as_dict()})
                 if not result.accepted:raise RuntimeError('Initial source budget exhausted')
@@ -194,6 +217,9 @@ def run_cell(config,output,connect):
                 rng=random.Random(config['seed']+1000000+number)
                 ordinal=0
                 while time.monotonic()<shared['warmDeadline'] and not stop.is_set():
+                    if selected and warm_attempts>=config['maxWarmupAttemptsPerWorker']:
+                        with lock:failed.append({'worker':number,'errorClass':'WarmupAttemptBudgetExhausted','sqlstate':None})
+                        stop.set();break
                     op,ok,state,elapsed,count=one(connection,rng,number,ordinal,False);ordinal+=1
                     warm_attempts+=1;warm_commits+=int(ok);warm_errors+=int(not ok)
                     if not ok:warm_sqlstates[state or '<unavailable>']=warm_sqlstates.get(state or '<unavailable>',0)+1
@@ -205,10 +231,21 @@ def run_cell(config,output,connect):
                     while time.monotonic()<shared['measureDeadline'] and not stop.is_set():
                         if attempts>=config['maxAttemptsPerWorker']:
                             failed.append({'worker':number,'errorClass':'AttemptBudgetExhausted','sqlstate':None});stop.set();break
-                        op,ok,state,elapsed,count=one(connection,rng,number,attempts,True)
-                        line={'ordinal':attempts,'committed':ok,'sqlstate':state,'latencyNs':elapsed,
-                              'key':op['key'],'action':op['action'],'rowcount':count}
-                        log.write((json.dumps(line,separators=(',',':'))+'\n').encode())
+                        reservation=512 if selected else 0
+                        if selected and not attempt_budget.reserve(reservation):
+                            with lock:failed.append({'worker':number,'errorClass':'AttemptLogBudgetExhausted','sqlstate':None})
+                            stop.set();break
+                        try:
+                            op,ok,state,elapsed,count=one(connection,rng,number,attempts,True)
+                            line={'ordinal':attempts,'committed':ok,'sqlstate':state,'latencyNs':elapsed,
+                                  'key':op['key'],'action':op['action'],'rowcount':count}
+                            encoded=(json.dumps(line,separators=(',',':'))+'\n').encode()
+                            if selected and len(encoded)>reservation:raise ValueError('Attempt record exceeds fixed reservation')
+                            written=log.write(encoded)
+                            if selected and written!=len(encoded):raise OSError('Short attempt log write')
+                            if selected:attempt_budget.complete(reservation,len(encoded));reservation=0
+                        finally:
+                            if reservation:attempt_budget.release(reservation)
                         attempts+=1;commits+=int(ok);errors+=int(not ok)
                         if ok and not spec['crud']:updates[op['key']]=updates.get(op['key'],0)+1
                     log.flush();os.fsync(log.fileno())
@@ -217,7 +254,9 @@ def run_cell(config,output,connect):
                                      warmupAttempts=warm_attempts,warmupCommits=warm_commits,
                                      warmupFailures=warm_errors,warmupSqlstateCounts=warm_sqlstates)
             except BaseException as error:
-                with lock:failed.append({'worker':number,'errorClass':type(error).__name__,'sqlstate':getattr(error,'sqlstate',None)})
+                with lock:
+                    if selected:shared['attemptEvidenceIncomplete']=True
+                    failed.append({'worker':number,'errorClass':type(error).__name__,'sqlstate':getattr(error,'sqlstate',None)})
                 stop.set()
                 try:connections_ready.abort()
                 except Exception:pass
@@ -237,12 +276,26 @@ def run_cell(config,output,connect):
             connection=None
             try:
                 connection=connect(autocommit=True)
+                budget_samples=0
+                def database_budget():
+                    nonlocal budget_samples
+                    if not selected:return True
+                    budget_samples+=1
+                    if budget_samples%10!=1:return True
+                    db_bytes,wal_bytes=connection.execute('SELECT pg_database_size(current_database()),COALESCE((SELECT sum(size) FROM pg_ls_waldir()),0)').fetchone()
+                    total=int(db_bytes)+int(wal_bytes)
+                    blocking['maximumDatabaseAndWalBytes']=max(blocking.get('maximumDatabaseAndWalBytes',0),total)
+                    if total>LIMITS['databaseAndWalBytes']:
+                        with lock:failed.append({'errorClass':'DatabaseAndWalBudgetExhausted','sqlstate':None})
+                        stop.set();return False
+                    return True
                 # Capacity protection also runs during warmup. It never archives
                 # or deletes a live log, and every A/B/C cell pays this sampler.
                 while not measure.wait(.1) and not monitor_stop.is_set():
                     free=shutil.disk_usage(output).free
                     blocking['minimumFreeBytes']=min(free,blocking['minimumFreeBytes'])
-                    if free<config.get('storageReserveBytes',STORAGE_RESERVE_BYTES):
+                    if not database_budget():return
+                    if free<(live_reserve() if selected else config.get('storageReserveBytes',STORAGE_RESERVE_BYTES)):
                         with lock:failed.append({'errorClass':'StorageReserveReached','sqlstate':None})
                         stop.set();return
                 pids=[raw.info.backend_pid for raw in active]
@@ -250,7 +303,8 @@ def run_cell(config,output,connect):
                     while not monitor_stop.is_set():
                         free=shutil.disk_usage(output).free
                         blocking['minimumFreeBytes']=min(free,blocking['minimumFreeBytes'])
-                        if free<config.get('storageReserveBytes',STORAGE_RESERVE_BYTES):
+                        if not database_budget():break
+                        if free<(live_reserve() if selected else config.get('storageReserveBytes',STORAGE_RESERVE_BYTES)):
                             with lock:failed.append({'errorClass':'StorageReserveReached','sqlstate':None})
                             stop.set();break
                         rows=connection.execute('SELECT pid,wait_event_type,wait_event,pg_blocking_pids(pid) FROM pg_stat_activity WHERE pid=ANY(%s)',(pids,)).fetchall()
@@ -312,6 +366,8 @@ def run_cell(config,output,connect):
             raw_status=json.loads((capture.output/'instrumentation.json').read_text(encoding='utf8'))
             if not raw_status['lifecycle']['sealed']:
                 failed.append({'errorClass':'LifecycleStorageIncomplete','sqlstate':None})
+            elif selected:
+                receipt['lifecycleStorage']=verify_lifecycle_storage(capture.output/'lifecycle.jsonl',raw_status['lifecycle'],experimental_budget=selected)
         persisted=time.perf_counter_ns();cpu_after=time.process_time_ns()
         rss=peak_rss()
         wal_after=setup.execute('SELECT pg_current_wal_insert_lsn()::text').fetchone()[0]
@@ -343,7 +399,8 @@ def run_cell(config,output,connect):
         if attempt_count!=sum(x['attempts'] for x in results):
             failed.append({'errorClass':'AttemptLogCountMismatch','sqlstate':None})
         wall=persisted-began
-        receipt.update(status='failed' if failed else 'smoke-passed' if config['quick'] else 'passed',
+        receipt.update(allAttemptsRetained=not shared.get('attemptEvidenceIncomplete',False),
+                       status='failed' if failed else 'smoke-passed' if config['quick'] else 'passed',
                        formalProtocolCompleted=not config['quick'] and not failed,
                        attempts=attempt_count,commits=commits,failures=attempt_count-commits,
                        sqlstateCounts=sqlstates,warmupAttempts=sum(x.get('warmupAttempts',0) for x in results),
@@ -361,10 +418,12 @@ def run_cell(config,output,connect):
                        scope='One child process per cell; throughput includes drain and durable capture tail; SQLSTATE failures all retained',
                        sourceSemanticsCertified=False,serverCpuMeasured=False,
                        locks='Actual SQL errors and server lock/deadlock counters; no invented lock-wait duration')
+        if selected:receipt['attemptLogStorage']={'bytesWritten':attempt_budget.written,'bytesLimit':attempt_budget.limit,'bytesStillReserved':attempt_budget.reserved}
         receipt['eligibilityReasons']=target_eligibility_reasons(receipt)
         receipt['eligibleForTargets']=not receipt['eligibilityReasons']
         return receipt
     except BaseException as error:
+        if selected:receipt['allAttemptsRetained']=False
         receipt.update(status='failed',formalProtocolCompleted=False,errorClass=type(error).__name__,
                        protocolFailures=list(failed),
                        sqlstate=getattr(error,'sqlstate',None),frames=[{'file':Path(f.filename).name,'line':f.lineno} for f in traceback.extract_tb(error.__traceback__)])
@@ -398,7 +457,14 @@ def plan(args):
                               'seed':args.seed+batch*10000,'warmupSeconds':warmup,
                               'durationSeconds':duration,'drainSeconds':drain,
                               'maxAttemptsPerWorker':100000,'storageReserveBytes':STORAGE_RESERVE_BYTES,'quick':args.quick})
+    selected=profile(getattr(args,'experimental_budget',None))
+    if selected:
+        for cell in cells:
+            cell.update(experimentalBudget=selected,storageLimits=dict(LIMITS),maxAttemptsPerWorker=LIMITS['maxAttemptsPerWorker'],
+                        maxWarmupAttemptsPerWorker=LIMITS['maxWarmupAttemptsPerWorker'],storageReserveBytes=LIMITS['storageReserveBytes'])
     return {'schema':1,'generator':GENERATOR,'profile':args.profile,'seed':args.seed,
+            **({'experimentalBudget':selected,'protocolVersion':'full-capture-cost/v2-capacity','actualStorageLimits':dict(LIMITS),
+                'diskPreparationRequiredBytes':required_free()} if selected else {}),
             'orders':[list(x) for x in ORDERS],'workloads':WORKLOADS,'cells':cells,
             'performanceTargets':{'fullCaptureThroughputCOverAAtLeast':.90,'fullCaptureP95COverAAtMost':1.15},
             'retentionPolicy':'post-child verified archive then release only own new cell files' if getattr(args,'archive_cells',False) else 'retain all raw cell files',
@@ -491,6 +557,7 @@ def main():
     parser.add_argument('--archive-cells',action='store_true',help='After each child exits, SHA-verify a lossless zip before releasing only its new cell raw files')
     parser.add_argument('--max-cells',type=int,help='Run only a prefix of the full preregistered plan; summary remains partial and ineligible')
     parser.add_argument('--worker-config')
+    parser.add_argument('--experimental-budget',choices=[PROFILE],help='Explicit finite measurement-only storage limits; legacy defaults remain unchanged')
     args=parser.parse_args()
     if args.max_cells is not None and not 1<=args.max_cells<=36:parser.error('--max-cells must be between 1 and 36')
     output=Path(args.output).resolve();output.mkdir(parents=True,exist_ok=False)
@@ -515,10 +582,18 @@ def main():
         write_json(output/'receipt.json',{'status':'not-executed','actualDatabaseExecution':False,'reason':'plan-only','cells':len(frozen['cells'])});return 0
     if not args.quick and not (args.exclusive_host and args.exclusive_cluster):
         write_json(output/'receipt.json',{'status':'not-executed','actualDatabaseExecution':False,'reason':'formal run requires explicit exclusive host and cluster assertions'});return 3
-    results=[];archives=[];complete=True;stop_reason=None
+    results=[];archives=[];capacity_checks=[];complete=True;stop_reason=None
+    selected=profile(args.experimental_budget)
     for i,config in enumerate(frozen['cells']):
         if args.max_cells is not None and i>=args.max_cells:
             complete=False;stop_reason='explicit partial preregistered prefix';break
+        if selected:
+            checked=preparation(output);capacity_checks.append({'cell':i,**checked})
+            if not checked['eligibleToStart']:
+                complete=False;stop_reason=checked['reason'];break
+            scratch=scratch_preparation(output);capacity_checks[-1]['verificationScratch']=scratch
+            if not scratch['eligibleToStart']:
+                complete=False;stop_reason=scratch['reason'];break
         if shutil.disk_usage(output).free<STORAGE_RESERVE_BYTES:
             complete=False;stop_reason='storage reserve reached before next cell';break
         config_path=output/('cell-'+str(i)+'.config.json');write_json(config_path,config)
@@ -539,10 +614,13 @@ def main():
                 cell=receipt.parent
                 original_bytes=sum(p.stat().st_size for p in cell.rglob('*') if p.is_file())
                 free=shutil.disk_usage(output).free
-                if free<original_bytes+STORAGE_RESERVE_BYTES+16*1024*1024:
+                if selected and original_bytes>raw_envelope():
+                    raise ValueError('Measured raw cell exceeded preregistered envelope; original evidence retained')
+                reserve=LIMITS['storageReserveBytes'] if selected else STORAGE_RESERVE_BYTES
+                if free<original_bytes+reserve+16*1024*1024:
                     raise ValueError('No space for conservative full zip copy plus reserve; original raw cell retained')
-                pointer=archive_cell(output,cell)
-                archives.append(release_cell(output,cell,pointer))
+                pointer=archive_cell(output,cell,experimental_budget=selected)
+                archives.append(release_cell(output,cell,pointer,experimental_budget=selected))
             except Exception as error:
                 complete=False;stop_reason='post-measurement retention failed: '+type(error).__name__
                 write_json(output/('cell-'+str(i)+'-archive-failure.json'),{'status':'failed','reason':str(error),'originalRawRetainedUnlessExplicitPointerSaysReleased':True,'measurementHasEnded':True})
@@ -556,6 +634,7 @@ def main():
              'comparison':comparison,'stopReason':stop_reason,'cellArchives':archives,
              'performanceTargetsPassed':bool(complete and comparison and all(x.get('performanceTargetsPassed',False) for x in comparison.values())),
              'fullCaptureComparison':True,'onlySourceCostBOverA':False,'allFirstFailuresRetained':True,
+             **({'experimentalBudget':selected,'actualStorageLimits':dict(LIMITS),'capacityChecksBeforeCells':capacity_checks} if selected else {}),
              'measurementScope':'Current automatic diagnostic capture plus controlled provenance, not complete arbitrary SQL/ORM model coverage'}
     write_json(output/'receipt.json',summary)
     return 0 if complete else 2 if summary['status']=='partial' else 1

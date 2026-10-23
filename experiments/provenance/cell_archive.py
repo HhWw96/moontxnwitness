@@ -12,12 +12,17 @@ from pathlib import Path,PurePosixPath
 import re
 import stat
 import zipfile
+import sys
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT/"integrations/python"))
+from moontxnwitness_capture._experimental_budget import PROFILE,LIMITS,profile,authorize
 
 FORMAT='moontxnwitness-cost-cell-archive/v1'
 MANIFEST='archive-manifest.json'
 CHUNK=1024*1024
 MAX_TOTAL=8*1024**3
 MAX_MEMBERS=10000
+_DEFAULT_BYTE_LIMIT=object()
 
 def digest(path):
     value=hashlib.sha256()
@@ -41,7 +46,9 @@ def _cell(run_root,cell_root):
     if cell.parent!=root or not re.fullmatch(r'cell-[0-9]+',cell.name) or not cell.is_dir():raise ValueError('Only a direct new run cell may be archived')
     return root,cell
 
-def _files(cell):
+def _files(cell, *, experimental_budget=None):
+    selected=profile(experimental_budget)
+    maximum=LIMITS["archiveExpandedBytes"] if selected else MAX_TOTAL
     result={}
     for path in sorted(cell.rglob('*')):
         if _unsafe(path) or not path.resolve().is_relative_to(cell):raise ValueError('Unsafe cell member')
@@ -50,10 +57,11 @@ def _files(cell):
         name=_name(path.relative_to(cell).as_posix())
         if name in (MANIFEST,'archive-pointer.json'):raise ValueError('Cell was already archived or uses a reserved name')
         result[name]={'bytes':path.stat().st_size,'sha256':digest(path)}
-    if not result or len(result)>MAX_MEMBERS or sum(x['bytes'] for x in result.values())>MAX_TOTAL:raise ValueError('Cell retention budget')
+    if not result or len(result)>MAX_MEMBERS or sum(x['bytes'] for x in result.values())>maximum:raise ValueError('Cell retention budget')
     return result
 
-def verify_archive(path,*,expected_sha256=None,max_total_bytes=MAX_TOTAL):
+def verify_archive(path,*,expected_sha256=None,max_total_bytes=_DEFAULT_BYTE_LIMIT,experimental_budget=None):
+    profile(experimental_budget)
     path=Path(path)
     if _unsafe(path) or not path.is_file():raise ValueError('Unsafe archive file')
     archive_sha=digest(path)
@@ -66,6 +74,11 @@ def verify_archive(path,*,expected_sha256=None,max_total_bytes=MAX_TOTAL):
         if info.file_size>4*1024*1024:raise ValueError('Archive manifest budget')
         manifest_raw=archive.read(MANIFEST);manifest=json.loads(manifest_raw)
         if manifest.get('format')!=FORMAT or not isinstance(manifest.get('files'),dict):raise ValueError('Archive manifest format')
+        selected=authorize(manifest.get('experimentalBudget'),experimental_budget)
+        maximum=LIMITS['archiveExpandedBytes'] if selected else MAX_TOTAL
+        if selected and manifest.get('maximumExpandedBytes')!=maximum:raise ValueError('Experimental archive limit binding')
+        expanded_limit=maximum if max_total_bytes is _DEFAULT_BYTE_LIMIT else max_total_bytes
+        if type(expanded_limit) is not int or expanded_limit<0 or selected and expanded_limit>maximum:raise ValueError('Archive reader byte budget')
         files=manifest['files']
         if set(names)!={MANIFEST,*files}:raise ValueError('Archive files differ from manifest')
         total=0
@@ -73,7 +86,7 @@ def verify_archive(path,*,expected_sha256=None,max_total_bytes=MAX_TOTAL):
             _name(name)
             if not isinstance(expected,dict) or type(expected.get('bytes')) is not int or expected['bytes']<0 or not re.fullmatch('[0-9a-f]{64}',str(expected.get('sha256'))):raise ValueError('Archive file binding')
             member=archive.getinfo(name);total+=member.file_size
-            if member.file_size!=expected['bytes'] or total>max_total_bytes:raise ValueError('Archive expanded-size budget')
+            if member.file_size!=expected['bytes'] or total>expanded_limit:raise ValueError('Archive expanded-size budget')
             value=hashlib.sha256();size=0
             with archive.open(member) as file:
                 for block in iter(lambda:file.read(CHUNK),b''):
@@ -84,8 +97,9 @@ def verify_archive(path,*,expected_sha256=None,max_total_bytes=MAX_TOTAL):
     return {'verified':True,'archiveSha256':archive_sha,'manifestSha256':hashlib.sha256(manifest_raw).hexdigest(),
             'originalBytes':total,'archiveBytes':path.stat().st_size,'files':files,'manifest':manifest}
 
-def archive_cell(run_root,cell_root):
-    root,cell=_cell(run_root,cell_root);files=_files(cell)
+def archive_cell(run_root,cell_root,*,experimental_budget=None):
+    selected=profile(experimental_budget)
+    root,cell=_cell(run_root,cell_root);files=_files(cell,experimental_budget=selected)
     receipt=cell/'receipt.json'
     if not receipt.is_file():raise ValueError('No terminal child receipt; retain raw partial cell')
     value=json.loads(receipt.read_text(encoding='utf8'))
@@ -97,6 +111,7 @@ def archive_cell(run_root,cell_root):
     manifest={'format':FORMAT,'cell':cell.name,'files':files,'receiptSha256':files['receipt.json']['sha256'],
               'cellStatus':value['status'],'formalProtocolCompleted':bool(value.get('formalProtocolCompleted')),
               'scope':'Exact cell bytes only; no semantic coverage or complete multi-cell protocol assertion'}
+    if selected:manifest.update(experimentalBudget=selected,maximumExpandedBytes=LIMITS['archiveExpandedBytes'])
     raw=(json.dumps(manifest,sort_keys=True,separators=(',',':'))+'\n').encode()
     with zipfile.ZipFile(temporary,'x',compression=zipfile.ZIP_DEFLATED,compresslevel=6,allowZip64=True) as archive:
         for name in files:
@@ -107,7 +122,7 @@ def archive_cell(run_root,cell_root):
         archive.writestr(MANIFEST,raw)
     # Windows CRT _commit requires a writable descriptor.
     with temporary.open('r+b') as file:file.flush();os.fsync(file.fileno())
-    verified=verify_archive(temporary)
+    verified=verify_archive(temporary,experimental_budget=selected)
     if verified['files']!=files:raise ValueError('Archive binding changed')
     temporary.rename(destination)
     pointer={'format':FORMAT,'archive':destination.relative_to(root).as_posix(),
@@ -115,17 +130,19 @@ def archive_cell(run_root,cell_root):
              'originalBytes':verified['originalBytes'],'archiveBytes':verified['archiveBytes'],
              'originalReceiptSha256':files['receipt.json']['sha256'],'cellStatus':value['status'],
              'archivalOutsideMeasurement':True,'rawReleased':False}
+    if selected:pointer.update(experimentalBudget=selected,maximumExpandedBytes=LIMITS['archiveExpandedBytes'])
     with (directory/(cell.name+'.archive.json')).open('x',encoding='utf8',newline='\n') as file:json.dump(pointer,file,indent=2);file.write('\n');file.flush();os.fsync(file.fileno())
     return pointer
 
-def release_cell(run_root,cell_root,pointer):
+def release_cell(run_root,cell_root,pointer,*,experimental_budget=None):
+    selected=profile(experimental_budget)
     root,cell=_cell(run_root,cell_root)
     expected=root/'archives'/(cell.name+'.zip')
     if pointer.get('archive')!=expected.relative_to(root).as_posix():raise ValueError('Pointer is outside the owned cell archive')
-    verified=verify_archive(expected,expected_sha256=pointer.get('archiveSha256'))
+    verified=verify_archive(expected,expected_sha256=pointer.get('archiveSha256'),experimental_budget=selected)
     if verified['manifestSha256']!=pointer.get('manifestSha256') or verified['manifest']['cell']!=cell.name:raise ValueError('Archive pointer mismatch')
     # Verify the complete set before any deletion. Do not follow shell/glob paths.
-    if _files(cell)!=verified['files']:raise ValueError('Original cell changed; all raw files retained')
+    if _files(cell,experimental_budget=selected)!=verified['files']:raise ValueError('Original cell changed; all raw files retained')
     for name in verified['files']:
         target=cell/name
         if _unsafe(target) or not target.resolve().is_relative_to(cell):raise ValueError('Unsafe release target')
@@ -136,8 +153,8 @@ def release_cell(run_root,cell_root,pointer):
         with path.open('w',encoding='utf8',newline='\n') as file:json.dump(result,file,indent=2);file.write('\n');file.flush();os.fsync(file.fileno())
     return result
 
-def restore_archive(path,destination,*,expected_sha256=None):
-    verified=verify_archive(path,expected_sha256=expected_sha256)
+def restore_archive(path,destination,*,expected_sha256=None,experimental_budget=None):
+    verified=verify_archive(path,expected_sha256=expected_sha256,experimental_budget=experimental_budget)
     destination=Path(destination)
     destination.mkdir(parents=True,exist_ok=False);root=destination.resolve()
     with zipfile.ZipFile(path) as archive:
@@ -153,8 +170,9 @@ def restore_archive(path,destination,*,expected_sha256=None):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('archive');parser.add_argument('--sha256');parser.add_argument('--restore')
+    parser.add_argument("--experimental-budget",choices=[PROFILE])
     args=parser.parse_args()
-    result=restore_archive(args.archive,args.restore,expected_sha256=args.sha256) if args.restore else verify_archive(args.archive,expected_sha256=args.sha256)
+    result=restore_archive(args.archive,args.restore,expected_sha256=args.sha256,experimental_budget=args.experimental_budget) if args.restore else verify_archive(args.archive,expected_sha256=args.sha256,experimental_budget=args.experimental_budget)
     print(json.dumps({k:v for k,v in result.items() if k not in ('files','manifest')},indent=2));return 0
 
 if __name__=='__main__':raise SystemExit(main())

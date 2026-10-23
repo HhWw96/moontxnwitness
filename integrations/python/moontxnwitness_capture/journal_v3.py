@@ -26,8 +26,10 @@ from pathlib import Path
 
 if __package__:
     from ._durable_policy import CapacityQueue, sync_due, sync_wait, should_sync, flush_pending
+    from ._experimental_budget import PROFILE, LIMITS, profile, authorize, sqlite_limit
 else:  # Preserve the documented standalone verify/export command.
     from _durable_policy import CapacityQueue, sync_due, sync_wait, should_sync, flush_pending
+    from _experimental_budget import PROFILE, LIMITS, profile, authorize, sqlite_limit
 
 KINDS = frozenset(("snapshot", "begin", "read", "write", "condition", "savepoint",
                    "rollback_to", "release", "commit_request", "commit_ok",
@@ -204,11 +206,20 @@ def _sync_directory(folder):
 
 class _Identities:
     """Rebuildable disk index; transaction facts remain in the raw segments."""
-    def __init__(self, path, *, existing=False):
+    def __init__(self, path, *, existing=False, byte_limit=None):
         self.path = Path(path)
         if not existing and self.path.exists():
             raise JournalError("Transaction index already exists")
         self.connection = sqlite3.connect(self.path, check_same_thread=False)
+        if byte_limit is not None:
+            if type(byte_limit) is not int or byte_limit<8192 or byte_limit%4096:
+                self.connection.close(); raise JournalError("Invalid SQLite page budget")
+            self.connection.execute("PRAGMA page_size=4096")
+            page_size=self.connection.execute("PRAGMA page_size").fetchone()[0]
+            pages=byte_limit//page_size
+            actual=self.connection.execute("PRAGMA max_page_count="+str(pages)).fetchone()[0]
+            if actual!=pages or actual*page_size>byte_limit:
+                self.connection.close(); raise JournalError("Existing SQLite exceeds the requested page budget")
         self.connection.execute("PRAGMA journal_mode=DELETE")
         self.connection.execute("PRAGMA synchronous=FULL")
         self.connection.execute("PRAGMA trusted_schema=OFF")
@@ -295,7 +306,12 @@ class SegmentedJournal:
     def __init__(self, path, *, max_queue_bytes=4 * 1024 * 1024,
                  segment_bytes=16 * 1024 * 1024, flush_bytes=256 * 1024,
                  flush_interval=0.1, max_record_bytes=512 * 1024,
-                 max_total_bytes=1024 * 1024 * 1024, _resume=None):
+                 max_total_bytes=1024 * 1024 * 1024, _resume=None,
+                 experimental_budget=None, transaction_index_bytes=None):
+        self.experimental_budget=profile(experimental_budget)
+        self.transaction_index_bytes=sqlite_limit(transaction_index_bytes,self.experimental_budget)
+        if self.experimental_budget and max_total_bytes>LIMITS["journalBytes"]:
+            raise ValueError("Journal total exceeds experimental ceiling")
         for value in (max_queue_bytes, segment_bytes, flush_bytes, max_record_bytes, max_total_bytes):
             if not _integer(value, 128):
                 raise ValueError("journal byte limits must be safe integers >=128")
@@ -341,7 +357,7 @@ class SegmentedJournal:
             lock.flush()
             os.fsync(lock.fileno())
             lock.close()
-            self._identities = _Identities(self.path / TRANSACTIONS, existing=_resume is not None)
+            self._identities = _Identities(self.path / TRANSACTIONS, existing=_resume is not None, byte_limit=self.transaction_index_bytes)
             self._persist_index(False)
         except BaseException:
             if lock is not None and not lock.closed:
@@ -370,11 +386,13 @@ class SegmentedJournal:
     def reopen(cls, path, *, exclusive_continuation=False, **options):
         if not exclusive_continuation:
             raise JournalError("Reopening for append requires an explicit uninterrupted exclusive-source continuation assertion")
-        reader = JournalReader(path)
+        reader = JournalReader(path, experimental_budget=options.get("experimental_budget"))
         if not reader.verify().complete:
             raise JournalError("Only a complete sealed source can be reopened; crash recovery is not inferred")
         index, _ = reader._index()
         original = index["limits"]
+        if index.get("experimentalBudget"):
+            options.setdefault("transaction_index_bytes",index["transactionIndex"]["maxBytes"])
         options = {**{"max_queue_bytes": original["queueBytes"], "segment_bytes": original["segmentBytes"],
                       "flush_bytes": original["flushBytes"], "flush_interval": original["flushIntervalSeconds"],
                       "max_record_bytes": original["recordBytes"], "max_total_bytes": original["totalBytes"]}, **options}
@@ -540,7 +558,7 @@ class SegmentedJournal:
         return self._verified_status()
 
     def _verified_status(self):
-        status = JournalReader(self.path).verify()
+        status = JournalReader(self.path, experimental_budget=self.experimental_budget).verify()
         if self._invalidated:
             gaps = list(status.gaps)
             for gap in self._gaps:
@@ -599,6 +617,9 @@ class SegmentedJournal:
                 "stats": {**self._stats, "durableRecords": self._written_count},
                 "retention": {"deletionImplemented": False, "policy": "retain all source/version-chain records"},
                 "directorySync": "not-available-in-Windows-stdlib" if os.name == "nt" else "fsync"}
+            if self.experimental_budget:
+                payload["experimentalBudget"]=self.experimental_budget
+                payload["transactionIndex"]["maxBytes"]=self.transaction_index_bytes
             payload["indexSha256"] = hashlib.sha256(_json(payload)).hexdigest()
             encoded = _json(payload) + b"\n"
             if len(encoded) > MAX_INDEX_BYTES:
@@ -729,7 +750,7 @@ class SegmentedJournal:
     def archive(self, destination):
         if self._invalidated:
             raise JournalVerificationError("This journal instance was invalidated after closure")
-        return JournalReader(self.path).archive(destination)
+        return JournalReader(self.path, experimental_budget=self.experimental_budget).archive(destination)
 
     def invalidate(self, *, code="capture_window_invalidated", message="Activity was observed after the capture window was sealed."):
         """Persist a separate fail-closed signal without rewriting sealed bytes.
@@ -746,7 +767,7 @@ class SegmentedJournal:
             with target.open("xb") as file:
                 # Open first: even a later index/read/write failure leaves a
                 # recognizable fail-closed marker where the filesystem permits.
-                binding = JournalReader(self.path)._index()[1]
+                binding = JournalReader(self.path, experimental_budget=self.experimental_budget)._index()[1]
                 file.write(_json({"schema": 1, "code": code, "message": message, "indexSha256": binding}))
                 file.flush()
                 os.fsync(file.fileno())
@@ -761,7 +782,8 @@ class SegmentedJournal:
 class JournalReader:
     """Two streaming passes: verify bindings first, then bounded event iteration."""
 
-    def __init__(self, path):
+    def __init__(self, path, *, experimental_budget=None):
+        self.experimental_budget=profile(experimental_budget)
         self.path = Path(path).resolve()
 
     def _marker_exists(self, name):
@@ -788,6 +810,7 @@ class JournalReader:
         actual = hashlib.sha256(_json({k: v for k, v in index.items() if k != "indexSha256"})).hexdigest()
         if expected != actual or index.get("indexSchema") != 1 or index.get("traceSchema") != 3:
             raise JournalVerificationError("Index checksum/schema mismatch")
+        selected=authorize(index.get("experimentalBudget"),self.experimental_budget)
         segments = index.get("segments")
         if not isinstance(segments, list) or len(segments) > MAX_SEGMENTS:
             raise JournalVerificationError("Index segment budget")
@@ -799,6 +822,8 @@ class JournalReader:
                 or type(limits.get("flushIntervalSeconds")) not in (int, float)
                 or not 0 < limits["flushIntervalSeconds"] <= 60):
             raise JournalVerificationError("Index limits invalid")
+        if selected and limits["totalBytes"]>LIMITS["journalBytes"]:
+            raise JournalVerificationError("Journal exceeds experimental reader ceiling")
         if not all(_integer(index.get(name)) for name in ("durableSeq", "lastTime", "eventCount")):
             raise JournalVerificationError("Index tail counters invalid")
         for name in ("activeTransactions", "commitRequests"):
@@ -813,6 +838,9 @@ class JournalReader:
                 or txindex.get("synchronous") != "FULL" or not _integer(txindex.get("entries"))
                 or txindex.get("durableThroughSeq") != index["durableSeq"]):
             raise JournalVerificationError("Disk transaction index binding invalid")
+        if selected:
+            if type(txindex.get("maxBytes")) is not int: raise JournalVerificationError("Missing experimental SQLite budget")
+            sqlite_limit(txindex["maxBytes"],selected)
         refs = index.get("references")
         if not isinstance(refs, dict) or set(refs) != {"activeTransactions", "unreadResults", "versionSources"}:
             raise JournalVerificationError("Reference tracking missing")
@@ -881,7 +909,7 @@ class JournalReader:
         try:
             index, index_sha = self._index()
             scratch = tempfile.TemporaryDirectory(prefix="mtw-journal-verify-", dir=os.environ.get("MTW_JOURNAL_SCRATCH"))
-            identities = _Identities(Path(scratch.name) / TRANSACTIONS)
+            identities = _Identities(Path(scratch.name) / TRANSACTIONS, byte_limit=index["transactionIndex"].get("maxBytes") if index.get("experimentalBudget") else None)
             if type(index.get("closed")) is not bool or type(index.get("sourceClosed")) is not bool:
                 raise JournalVerificationError("Index closure flags invalid")
             closed, source_closed = index["closed"], index["sourceClosed"]
@@ -938,7 +966,8 @@ class JournalReader:
 
     def _verify_identities(self, index, expected):
         path = self.path / TRANSACTIONS
-        if path.is_symlink() or not path.is_file() or path.stat().st_size > 2 * 1024 * 1024 * 1024:
+        maximum=index["transactionIndex"]["maxBytes"] if index.get("experimentalBudget") else 2*1024**3
+        if path.is_symlink() or not path.is_file() or path.stat().st_size > maximum:
             raise JournalVerificationError("Transaction index absent/unsafe/over budget")
         if any((self.path / (TRANSACTIONS + suffix)).exists() for suffix in ("-wal", "-shm", "-journal")):
             raise JournalVerificationError("Transaction cache has an unsealed SQLite sidecar")
@@ -1076,7 +1105,7 @@ class JournalReader:
                             remaining -= len(block)
                         if source.read(1):
                             raise JournalVerificationError("Over-budget archived member")
-                if not JournalReader(scratch).verify().complete:
+                if not JournalReader(scratch, experimental_budget=self.experimental_budget).verify().complete:
                     raise JournalVerificationError("Archived storage failed independent reconstruction")
         if not self.verify().complete:
             raise JournalVerificationError("Source no longer complete after archive")
@@ -1091,6 +1120,8 @@ class JournalReader:
         filesystem without hard-link support fails rather than publishing a
         partly written destination. The journal itself is never altered.
         """
+        if self.experimental_budget and max_bytes>8*1024*1024:
+            raise ValueError("Experimental storage does not extend the 8 MiB export limit")
         if not isinstance(clock_domain, str) or not 1 <= len(clock_domain) <= 256:
             raise ValueError("clock_domain must contain 1..256 characters")
         if type(exclusive_writers) is not bool or not _integer(max_bytes, 128):
@@ -1154,8 +1185,10 @@ def main(argv=None):
     export.add_argument("--clock-domain", required=True)
     export.add_argument("--exclusive-writers", action="store_true")
     export.add_argument("--max-bytes", type=int, default=8 * 1024 * 1024)
+    verify.add_argument("--experimental-budget",choices=[PROFILE])
+    export.add_argument("--experimental-budget",choices=[PROFILE])
     args = parser.parse_args(argv)
-    reader = JournalReader(args.directory)
+    reader = JournalReader(args.directory, experimental_budget=args.experimental_budget)
     if args.command == "verify":
         status = reader.verify()
         print(json.dumps(status.as_dict(), ensure_ascii=False))

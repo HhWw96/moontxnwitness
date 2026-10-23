@@ -11,7 +11,9 @@ SUITES=['integrations/python/moontxnwitness_capture/test_source_sink.py',
         'experiments/provenance/test_formal_harness_fix.py',
         'experiments/provenance/test_formal_startup_failure.py',
         'experiments/provenance/test_formal_workflow_contexts.py',
-        'experiments/provenance/test_cell_archive.py']
+        'experiments/provenance/test_cell_archive.py',
+        'experiments/provenance/test_experimental_capacity.py',
+        'experiments/provenance/test_capacity_budget.py']
 def bindings():
     files=[Path(__file__),*(ROOT/'integrations/python/moontxnwitness_capture').glob('*.py'),
            *(ROOT/'experiments/provenance').glob('*.py')]
