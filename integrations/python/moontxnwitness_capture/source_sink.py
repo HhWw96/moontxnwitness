@@ -16,6 +16,7 @@ import uuid
 from ._durable_policy import CapacityQueue, sync_due, sync_wait, should_sync, flush_pending
 from ._orm_source_sink import _Encoder
 from .capture import _Budget
+from ._experimental_budget import profile, authorize, LIMITS
 from .journal_v3 import _json, _sync_directory
 
 
@@ -34,10 +35,14 @@ class SourceAppendResult:
 class GroupedSourceSink:
     def __init__(self, path, *, max_queue_bytes=4 * 1024 * 1024,
                  max_record_bytes=128 * 1024, max_total_bytes=16 * 1024 * 1024,
-                 max_records=16384, flush_bytes=256 * 1024, flush_interval=0.1):
+                 max_records=16384, flush_bytes=256 * 1024, flush_interval=0.1,
+                 experimental_budget=None):
+        self.experimental_budget = profile(experimental_budget)
+        total_ceiling = LIMITS["sourceBytes"] if self.experimental_budget else 1024**3
+        count_ceiling = LIMITS["sourceRecords"] if self.experimental_budget else 1000000
         values = (max_queue_bytes, max_record_bytes, max_total_bytes, max_records, flush_bytes)
         if any(type(v) is not int or not 128 <= v <= 9007199254740991 for v in values): raise ValueError('Positive bounded integer budgets required')
-        if max_record_bytes > min(max_queue_bytes,128*1024) or max_queue_bytes > 64*1024*1024 or max_total_bytes > 1024**3 or max_records > 1000000 or flush_bytes > 64*1024*1024:
+        if max_record_bytes > min(max_queue_bytes,128*1024) or max_queue_bytes > 64*1024*1024 or max_total_bytes > total_ceiling or max_records > count_ceiling or flush_bytes > 64*1024*1024:
             raise ValueError('Source size/count budgets exceed the supported range')
         if type(flush_interval) not in (float,int) or not 0 < flush_interval <= 60:
             raise ValueError('Flush interval must be in (0,60]')
@@ -148,6 +153,7 @@ class GroupedSourceSink:
                                'totalBytes':self.max_total_bytes,'records':self.max_records,
                                'flushBytes':self.flush_bytes,'flushIntervalSeconds':self.flush_interval},
                      'stats':{**self.stats,'durableRecords':self._written_seq,'indexSyncCount':self.stats['indexSyncCount']+1},'completeCapture':False,'coreProofAccepted':False}
+            if self.experimental_budget: payload['experimentalBudget']=self.experimental_budget
             payload['indexSha256']=hashlib.sha256(_json(payload)).hexdigest()
         tmp=Path(str(self.index)+'.'+self._nonce+'.tmp')
         with tmp.open('wb') as file:
@@ -217,7 +223,7 @@ class GroupedSourceSink:
                 with self._cv:
                     if 'source_not_writable' in self._gaps:
                         raise SourceSinkError('Known unretained source append; invalidation marker may be unavailable')
-                return verify_grouped_source(self.path)
+                return verify_grouped_source(self.path, experimental_budget=self.experimental_budget)
             if not self._closing and not self._closed:
                 self._control_append=True
                 result=self.append({'kind':'seal','prefixSha256':self._accepted_digest.hexdigest(),
@@ -240,11 +246,12 @@ class GroupedSourceSink:
             # removing the writer guard. Serialize this final read with append
             # so a known post-close refusal cannot be lost in the response.
             self.lock_path.unlink()
-            return verify_grouped_source(self.path)
+            return verify_grouped_source(self.path, experimental_budget=self.experimental_budget)
 
 
-def verify_grouped_source(path):
+def verify_grouped_source(path, *, experimental_budget=None):
     """Stream and bind the source/index. Storage integrity never means SQL proof."""
+    profile(experimental_budget)
     supplied=Path(path)
     if supplied.is_symlink(): raise SourceSinkError('Symbolic source files are not accepted')
     path=supplied.resolve()
@@ -262,6 +269,9 @@ def verify_grouped_source(path):
         raise SourceSinkError('Source storage is not sealed')
     if meta.get('completeCapture') is not False or meta.get('coreProofAccepted') is not False:
         raise SourceSinkError('Grouped storage cannot claim model/source proof')
+    selected=authorize(meta.get('experimentalBudget'),experimental_budget)
+    total_ceiling=LIMITS['sourceBytes'] if selected else 1024**3
+    count_ceiling=LIMITS['sourceRecords'] if selected else 1000000
     limits=meta['limits']
     required={'queueBytes','recordBytes','totalBytes','records','flushBytes','flushIntervalSeconds'}
     if not isinstance(limits,dict) or set(limits)!=required:
@@ -269,7 +279,7 @@ def verify_grouped_source(path):
     for key in required-{'flushIntervalSeconds'}:
         if type(limits[key]) is not int or not 128<=limits[key]<=9007199254740991:
             raise SourceSinkError('Unsafe source limit')
-    if not 128<=limits['recordBytes']<=min(limits['queueBytes'],128*1024) or limits['queueBytes']>64*1024*1024 or limits['totalBytes']>1024**3 or limits['records']>1000000 or limits['flushBytes']>64*1024*1024:
+    if not 128<=limits['recordBytes']<=min(limits['queueBytes'],128*1024) or limits['queueBytes']>64*1024*1024 or limits['totalBytes']>total_ceiling or limits['records']>count_ceiling or limits['flushBytes']>64*1024*1024:
         raise SourceSinkError('Source limits exceed supported bounds')
     if type(limits['flushIntervalSeconds']) not in (int,float) or not 0<limits['flushIntervalSeconds']<=60:
         raise SourceSinkError('Invalid source flush interval')

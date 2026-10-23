@@ -1,0 +1,27 @@
+{
+  "kind": "G1c-independent-request-logical-closure-regression",
+  "baseCommit": "7301653d8fb4e7031bea0f36a76c259396b0f05f",
+  "expectedRule": "G1c",
+  "expectedStatus": "refuted",
+  "expectedSpecificCategory": "G0",
+  "reason": "G0 implies G1c; a public independent G1c request must include the implication, while witness specificity remains G0",
+  "primarySource": {
+    "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+    "path": "src/elle/consistency_model.clj",
+    "lines": "55-71"
+  },
+  "priorOracle": "most-specific-label: WW/WR cycle with at least one WR",
+  "correctedOracle": "logical-public-rule: any WW/WR cycle",
+  "moonCheckExecuted": true,
+  "moonTestsExecuted": true,
+  "formalPerformanceExecuted": false,
+  "createdAt": "2026-10-23T03:35:12.374160+00:00",
+  "preFixObservedRuleStatus": "checked-compatible",
+  "preFixBugReproduced": true,
+  "postFixSourceWritten": true,
+  "postFixMoonChecksPending": false,
+  "postFixSelectedTestsPassed": 19,
+  "postFixFirstSelectedTestsPassed": 17,
+  "postFixFirstSelectedTestsFailed": 2,
+  "fixtureCorrections": "Two old fixtures assumed G1c excluded G0. Replaced irrelevant shorter WW cycle with RW-only for independent G1c search, and checked G2-item exhaustion in independent-budget fixture. Original assertions and initial failure logs retained."
+}

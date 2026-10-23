@@ -1,0 +1,180 @@
+{
+  "format": "moontxnwitness-classification-report/v1",
+  "schemaVersion": 1,
+  "tool": "MoonTxnWitness",
+  "algorithm": "classification-host-1",
+  "operation": "classify",
+  "coreAlgorithm": "v3-register-category-1",
+  "engine": {
+    "version": "0.2.0",
+    "coreSha256": "e1cbb0d0bd014b468d72af90a7b8a2224c84889a50132cd2b99273f91d24fdef",
+    "hostSha256": "dab6206661c94baeb6e25c61afa7b33e7f94265cbd4dc97ef664bd5890fedcec"
+  },
+  "status": "invalid",
+  "requestOptionsText": "{}",
+  "originalSourceText": "{\n  \"traceSchema\": 3,\n  \"clockDomain\": \"classification-host-synthetic\",\n  \"scope\": {\n    \"exclusiveWriters\": true\n  },\n  \"events\": [\n    {\n      \"kind\": \"snapshot\",\n      \"initial\": {\n        \"x\": \"0.2.0\",\n        \"y\": \"y0\"\n      },\n      \"consistent\": true,\n      \"seq\": 1,\n      \"time\": 0\n    },\n    {\n      \"kind\": \"begin\",\n      \"tx\": \"U\",\n      \"connection\": \"u\",\n      \"seq\": 2,\n      \"time\": 1\n    },\n    {\n      \"kind\": \"statement\",\n      \"tx\": \"U\",\n      \"sql\": \"SELECT unknown_business()\",\n      \"params\": [],\n      \"seq\": 3,\n      \"time\": 2\n    },\n    {\n      \"kind\": \"commit_request\",\n      \"tx\": \"U\",\n      \"seq\": 4,\n      \"time\": 3\n    },\n    {\n      \"kind\": \"commit_ok\",\n      \"tx\": \"U\",\n      \"seq\": 5,\n      \"time\": 4\n    }\n  ],\n  \"gaps\": []\n}\n",
+  "sourceBindings": {
+    "sourceSha256": "74e28ccf8e2c44297310a83a2f6cfa27e602cd89edc17e7ec6ce5f4385ffd55d",
+    "traceSha256": "74e28ccf8e2c44297310a83a2f6cfa27e602cd89edc17e7ec6ce5f4385ffd55d"
+  },
+  "budgets": {
+    "sourceUtf8Bytes": 8388608,
+    "optionsUtf8Bytes": 4096,
+    "reductionOptionsUtf8Bytes": 8192,
+    "coreReportUtf8Bytes": 33554432,
+    "reportUtf8Bytes": 67108864,
+    "capsuleUtf8Bytes": 134217728,
+    "transactions": 128,
+    "operations": 4096,
+    "edges": 50000,
+    "statesPerCategory": 100000,
+    "edgeChecksPerCategory": 1000000,
+    "maxCandidateChecks": 256
+  },
+  "scope": {
+    "categoryDefinitions": [
+      "G0",
+      "G1c",
+      "G2-item"
+    ],
+    "isolationModelsAccepted": false,
+    "supportedDataModel": "point-register-v1",
+    "versionOrderCompletion": false,
+    "categoryShortestWitnessClaim": false,
+    "collectorAuthenticityVerified": false,
+    "actualDatabaseExecution": false,
+    "oldAnalyzeAndCapsulesUnchanged": true,
+    "reductionPredicate": "the same requested category has a source-verified counterexample",
+    "oneMinimalMeaning": "transaction single deletion under this fixed source-checked category predicate"
+  },
+  "result": {
+    "schemaVersion": 3,
+    "tool": "MoonTxnWitness",
+    "version": "0.2.0",
+    "kind": "isolation-classification",
+    "algorithm": "v3-register-category-1",
+    "dataModel": "point-register-v1",
+    "status": "invalid",
+    "acceptsIsolationModels": false,
+    "scope": "requested point-register dependency-cycle categories only; checked-compatible is not acceptance of an isolation model or certification of a database",
+    "sourceTraceText": "{\n  \"traceSchema\": 3,\n  \"clockDomain\": \"classification-host-synthetic\",\n  \"scope\": {\n    \"exclusiveWriters\": true\n  },\n  \"events\": [\n    {\n      \"kind\": \"snapshot\",\n      \"initial\": {\n        \"x\": \"0.2.0\",\n        \"y\": \"y0\"\n      },\n      \"consistent\": true,\n      \"seq\": 1,\n      \"time\": 0\n    },\n    {\n      \"kind\": \"begin\",\n      \"tx\": \"U\",\n      \"connection\": \"u\",\n      \"seq\": 2,\n      \"time\": 1\n    },\n    {\n      \"kind\": \"statement\",\n      \"tx\": \"U\",\n      \"sql\": \"SELECT unknown_business()\",\n      \"params\": [],\n      \"seq\": 3,\n      \"time\": 2\n    },\n    {\n      \"kind\": \"commit_request\",\n      \"tx\": \"U\",\n      \"seq\": 4,\n      \"time\": 3\n    },\n    {\n      \"kind\": \"commit_ok\",\n      \"tx\": \"U\",\n      \"seq\": 5,\n      \"time\": 4\n    }\n  ],\n  \"gaps\": []\n}\n",
+    "normalized": {
+      "schema": 3,
+      "algorithm": "v3-lifecycle-1",
+      "status": "invalid",
+      "coverage": {
+        "complete": false,
+        "gaps": [
+          {
+            "code": "invalid_capture_v3",
+            "message": "Failure(src/parse.mbt:17:7-17:42@HhWw96/moontxnwitness FAILED: statement: unknown field params)"
+          }
+        ]
+      },
+      "observations": [
+        {
+          "kind": "snapshot",
+          "initial": {
+            "x": "0.2.0",
+            "y": "y0"
+          },
+          "consistent": true,
+          "seq": 1,
+          "time": 0
+        },
+        {
+          "kind": "begin",
+          "tx": "U",
+          "connection": "u",
+          "seq": 2,
+          "time": 1
+        },
+        {
+          "kind": "statement",
+          "tx": "U",
+          "sql": "SELECT unknown_business()",
+          "params": [],
+          "seq": 3,
+          "time": 2
+        },
+        {
+          "kind": "commit_request",
+          "tx": "U",
+          "seq": 4,
+          "time": 3
+        },
+        {
+          "kind": "commit_ok",
+          "tx": "U",
+          "seq": 5,
+          "time": 4
+        }
+      ],
+      "effects": [],
+      "transactions": [
+        {
+          "id": "U",
+          "connection": "u",
+          "status": "unknown",
+          "beginSeq": 2,
+          "endSeq": null,
+          "events": [
+            2,
+            3
+          ],
+          "finalWrites": []
+        }
+      ],
+      "history": null,
+      "error": "Failure(src/parse.mbt:17:7-17:42@HhWw96/moontxnwitness FAILED: statement: unknown field params)"
+    },
+    "dependencies": [],
+    "dependencyGraphComplete": false,
+    "rules": {
+      "G0": {
+        "status": "unknown",
+        "reason": "Invalid capture",
+        "states": 0,
+        "edgeChecks": 0,
+        "evidence": null
+      },
+      "G1c": {
+        "status": "unknown",
+        "reason": "Invalid capture",
+        "states": 0,
+        "edgeChecks": 0,
+        "evidence": null
+      },
+      "G2-item": {
+        "status": "unknown",
+        "reason": "Invalid capture",
+        "states": 0,
+        "edgeChecks": 0,
+        "evidence": null
+      }
+    },
+    "impliedAnomalies": [],
+    "execution": {
+      "classificationOptions": {
+        "categories": [
+          "G0",
+          "G1c",
+          "G2-item"
+        ],
+        "maxStates": 100000,
+        "maxEdgeChecks": 1000000
+      },
+      "limits": {
+        "transactions": 128,
+        "operations": 4096,
+        "edges": 50000,
+        "statesPerCategory": 100000,
+        "edgeChecksPerCategory": 1000000
+      },
+      "versionOrderCompletion": false
+    }
+  },
+  "verificationPasses": {
+    "coreClassification": 1
+  }
+}

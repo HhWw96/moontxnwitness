@@ -61,6 +61,8 @@ class DistributionTests(unittest.TestCase):
         put('docs/usage.md', 'fixture\n')
         put('examples/input.json', {})
         put('examples/orm-profile-roundtrip.mjs', '// offline configured-profile consumer\n')
+        put('examples/classification-roundtrip.mjs', '// offline category source consumer\n')
+        put('fixtures/classification-v3/source-closed-noisy-g2.json', {'syntheticInputs': True})
         put('fixtures/orm-profile-v3/synthetic-nonrepeatable-first/profile-source.json', {'explicitlySynthetic': True})
         cls.run_git('init', '--quiet')
         cls.run_git('add', '.')
@@ -74,6 +76,7 @@ class DistributionTests(unittest.TestCase):
         put('dist/core.mjs', 'export const actualCore = true;\n')
         put('dist/capture-core.mjs', 'export const actualCaptureCore = true;\n')
         put('dist/orm-profile.mjs', 'export const analyzeOrmProfileV3 = true;\n')
+        put('dist/classification.mjs', 'export const classifyV3 = true;\n')
         cls.tested = {'cmd/sdk.mjs': 'fixture', 'dist/core.mjs': 'fixture'}
         cls.selection = inventory.select_distribution_files(cls.root, cls.public, cls.tested, '0.1.2')
         for name in ('verification/private.json', 'verification/private.log', 'cmd/private.log',
@@ -116,6 +119,12 @@ class DistributionTests(unittest.TestCase):
             self.assertIn('fixtures/orm-profile-v3/synthetic-nonrepeatable-first/profile-source.json',self.selection[kind])
             self.assertIn('verification/configured-user-profile/v024-initial/fixture.json',self.selection[kind])
             self.assertIn('verification/capture-persistence/v023-initial/fixture.json',self.selection[kind])
+
+    def test_category_runtime_example_and_synthetic_source_remain(self):
+        self.assertIn('dist/classification.mjs',self.selection['portable'])
+        for kind in ('source','portable'):
+            self.assertIn('examples/classification-roundtrip.mjs',self.selection[kind])
+            self.assertIn('fixtures/classification-v3/source-closed-noisy-g2.json',self.selection[kind])
 
     def test_actual_presence_and_capture_run_closures_remain(self):
         for kind in ('source', 'portable'):

@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.0",
+  "kind": "isolation-classification",
+  "algorithm": "v3-register-category-1",
+  "dataModel": "point-register-v1",
+  "status": "checked-compatible",
+  "acceptsIsolationModels": false,
+  "scope": "requested point-register dependency-cycle categories only; checked-compatible is not acceptance of an isolation model or certification of a database",
+  "sourceTraceText": "{\"traceSchema\":3,\"clockDomain\":\"v3-test\",\"scope\":{\"exclusiveWriters\":true},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"x\":\"x0\",\"y\":\"y0\"},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"a\",\"seq\":2,\"time\":1},{\"kind\":\"begin\",\"tx\":\"B\",\"connection\":\"b\",\"seq\":3,\"time\":2},{\"kind\":\"write\",\"tx\":\"A\",\"key\":\"x\",\"version\":\"x1\",\"predecessor\":\"x0\",\"seq\":4,\"time\":3},{\"kind\":\"write\",\"tx\":\"B\",\"key\":\"y\",\"version\":\"y1\",\"predecessor\":\"y0\",\"seq\":5,\"time\":4},{\"kind\":\"write\",\"tx\":\"A\",\"key\":\"y\",\"version\":\"y2\",\"predecessor\":\"y1\",\"seq\":6,\"time\":5},{\"kind\":\"write\",\"tx\":\"B\",\"key\":\"x\",\"version\":\"x2\",\"predecessor\":\"x1\",\"seq\":7,\"time\":6},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":8,\"time\":7},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":9,\"time\":8},{\"kind\":\"commit_request\",\"tx\":\"B\",\"seq\":10,\"time\":9},{\"kind\":\"commit_ok\",\"tx\":\"B\",\"seq\":11,\"time\":10}],\"gaps\":[]}",
+  "normalized": {
+    "schema": 3,
+    "algorithm": "v3-lifecycle-1",
+    "status": "ready",
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "observations": [
+      {
+        "kind": "snapshot",
+        "initial": {
+          "x": "x0",
+          "y": "y0"
+        },
+        "consistent": true,
+        "seq": 1,
+        "time": 0
+      },
+      {
+        "kind": "begin",
+        "tx": "A",
+        "connection": "a",
+        "seq": 2,
+        "time": 1
+      },
+      {
+        "kind": "begin",
+        "tx": "B",
+        "connection": "b",
+        "seq": 3,
+        "time": 2
+      },
+      {
+        "kind": "write",
+        "tx": "A",
+        "key": "x",
+        "version": "x1",
+        "predecessor": "x0",
+        "seq": 4,
+        "time": 3
+      },
+      {
+        "kind": "write",
+        "tx": "B",
+        "key": "y",
+        "version": "y1",
+        "predecessor": "y0",
+        "seq": 5,
+        "time": 4
+      },
+      {
+        "kind": "write",
+        "tx": "A",
+        "key": "y",
+        "version": "y2",
+        "predecessor": "y1",
+        "seq": 6,
+        "time": 5
+      },
+      {
+        "kind": "write",
+        "tx": "B",
+        "key": "x",
+        "version": "x2",
+        "predecessor": "x1",
+        "seq": 7,
+        "time": 6
+      },
+      {
+        "kind": "commit_request",
+        "tx": "A",
+        "seq": 8,
+        "time": 7
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "A",
+        "seq": 9,
+        "time": 8
+      },
+      {
+        "kind": "commit_request",
+        "tx": "B",
+        "seq": 10,
+        "time": 9
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "B",
+        "seq": 11,
+        "time": 10
+      }
+    ],
+    "effects": [
+      {
+        "seq": 4,
+        "tx": "A",
+        "key": "x",
+        "version": "x1",
+        "predecessor": "x0",
+        "revertedBy": null
+      },
+      {
+        "seq": 5,
+        "tx": "B",
+        "key": "y",
+        "version": "y1",
+        "predecessor": "y0",
+        "revertedBy": null
+      },
+      {
+        "seq": 6,
+        "tx": "A",
+        "key": "y",
+        "version": "y2",
+        "predecessor": "y1",
+        "revertedBy": null
+      },
+      {
+        "seq": 7,
+        "tx": "B",
+        "key": "x",
+        "version": "x2",
+        "predecessor": "x1",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "A",
+        "connection": "a",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          4,
+          6,
+          8,
+          9
+        ],
+        "finalWrites": [
+          4,
+          6
+        ]
+      },
+      {
+        "id": "B",
+        "connection": "b",
+        "status": "committed",
+        "beginSeq": 3,
+        "endSeq": 11,
+        "events": [
+          3,
+          5,
+          7,
+          10,
+          11
+        ],
+        "finalWrites": [
+          5,
+          7
+        ]
+      }
+    ],
+    "history": {
+      "schemaVersion": 1,
+      "model": "serializable",
+      "initial": {
+        "x": "x0",
+        "y": "y0"
+      },
+      "versionOrders": {
+        "x": [
+          "x0",
+          "x1",
+          "x2"
+        ],
+        "y": [
+          "y0",
+          "y1",
+          "y2"
+        ]
+      },
+      "transactions": [
+        {
+          "id": "A",
+          "status": "committed",
+          "ops": [
+            {
+              "type": "write",
+              "key": "x",
+              "version": "x1"
+            },
+            {
+              "type": "write",
+              "key": "y",
+              "version": "y2"
+            }
+          ],
+          "start": null,
+          "end": null
+        },
+        {
+          "id": "B",
+          "status": "committed",
+          "ops": [
+            {
+              "type": "write",
+              "key": "y",
+              "version": "y1"
+            },
+            {
+              "type": "write",
+              "key": "x",
+              "version": "x2"
+            }
+          ],
+          "start": null,
+          "end": null
+        }
+      ]
+    }
+  },
+  "dependencies": [
+    {
+      "from": "A",
+      "to": "B",
+      "kind": "ww",
+      "key": "x",
+      "fromOp": 0,
+      "toOp": 1,
+      "fromVersion": "x1",
+      "toVersion": "x2",
+      "reason": "The asserted per-key version order puts this write before the next write."
+    },
+    {
+      "from": "B",
+      "to": "A",
+      "kind": "ww",
+      "key": "y",
+      "fromOp": 0,
+      "toOp": 1,
+      "fromVersion": "y1",
+      "toVersion": "y2",
+      "reason": "The asserted per-key version order puts this write before the next write."
+    }
+  ],
+  "dependencyGraphComplete": true,
+  "rules": {
+    "G1c": {
+      "status": "checked-compatible",
+      "reason": "complete",
+      "states": 0,
+      "edgeChecks": 2,
+      "evidence": null
+    }
+  },
+  "impliedAnomalies": [],
+  "execution": {
+    "classificationOptions": {
+      "categories": [
+        "G1c"
+      ],
+      "maxStates": 100000,
+      "maxEdgeChecks": 1000000
+    },
+    "limits": {
+      "transactions": 128,
+      "operations": 4096,
+      "edges": 50000,
+      "statesPerCategory": 100000,
+      "edgeChecksPerCategory": 1000000
+    },
+    "versionOrderCompletion": false
+  }
+}

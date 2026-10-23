@@ -11,6 +11,12 @@ on:
         required: true
         type: choice
         options: [column, sidecar]
+      experimental_budget:
+        description: Explicit measurement-only storage profile; legacy keeps published limits
+        required: true
+        type: choice
+        default: legacy
+        options: [legacy, full-capture-cost-capacity/v2]
 permissions:
   contents: read
 jobs:
@@ -20,6 +26,7 @@ jobs:
     env:
       MTW_COST_SOURCE: ${{ inputs.source_sha }}
       MTW_COST_PROFILE: ${{ inputs.profile }}
+      MTW_COST_BUDGET: ${{ inputs.experimental_budget }}
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONUTF8: '1'
     steps:
@@ -46,8 +53,12 @@ jobs:
           assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()==source
           PY
           python -m pip install --require-hashes -r examples/postgres-requirements.txt
+          export MTW_JOURNAL_SCRATCH="$MTW_JOURNAL_TEST_ROOT"
+          mkdir -p "$MTW_JOURNAL_SCRATCH"
           python -B scripts/persistence-unit-test.py
-          python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/preregistered --plan-only --archive-cells --exclusive-host --exclusive-cluster
+          budget_args=()
+          if [ "$MTW_COST_BUDGET" != "legacy" ]; then budget_args=(--experimental-budget "$MTW_COST_BUDGET"); fi
+          python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/preregistered --plan-only --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}"
       - name: Prepare isolated PostgreSQL before measurement
         timeout-minutes: 5
         run: |
@@ -66,13 +77,17 @@ jobs:
                   if attempt==59:raise
                   time.sleep(1)
           out=pathlib.Path('verification/full-capture-cost')
-          metadata={'sourceCommit':os.environ['MTW_COST_SOURCE'],'profile':os.environ['MTW_COST_PROFILE'],'python':platform.python_version(),'driver':psycopg.__version__,'platform':platform.platform(),'server':server,'cpu':subprocess.check_output(['lscpu'],text=True),'filesystem':subprocess.check_output(['df','-h','.'],text=True),'dockerImageId':subprocess.check_output(['docker','inspect','--format','{{.Image}}','mtw-cost'],text=True).strip(),'environment':'Dedicated GitHub-hosted job and owned PostgreSQL container; underlying physical-host tenancy is not measured','exclusiveTaskWindow':'All downloads, installs and tests complete before timing; no build, packaging or other database suite in this job during measurement','formalResultNotPredetermined':True}
+          metadata={'sourceCommit':os.environ['MTW_COST_SOURCE'],'profile':os.environ['MTW_COST_PROFILE'],'python':platform.python_version(),'driver':psycopg.__version__,'platform':platform.platform(),'server':server,'cpu':subprocess.check_output(['lscpu'],text=True),'filesystem':subprocess.check_output(['df','-h','.'],text=True),'filesystemBytes':subprocess.check_output(['df','-B1','.',os.environ['RUNNER_TEMP']],text=True),'memory':pathlib.Path('/proc/meminfo').read_text(encoding='ascii'),'experimentalBudget':os.environ['MTW_COST_BUDGET'],'dockerImageId':subprocess.check_output(['docker','inspect','--format','{{.Image}}','mtw-cost'],text=True).strip(),'environment':'Dedicated GitHub-hosted job and owned PostgreSQL container; underlying physical-host tenancy is not measured','exclusiveTaskWindow':'All downloads, installs and tests complete before timing; no build, packaging or other database suite in this job during measurement','formalResultNotPredetermined':True}
           (out/'environment.json').write_text(json.dumps(metadata,indent=2)+'\n',encoding='utf8')
           PY
       - name: Execute all thirty-six preregistered full-duration cells once
         timeout-minutes: 180
         run: |
-          python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/measured --archive-cells --exclusive-host --exclusive-cluster
+          export MTW_JOURNAL_SCRATCH="$MTW_JOURNAL_TEST_ROOT"
+          mkdir -p "$MTW_JOURNAL_SCRATCH"
+          budget_args=()
+          if [ "$MTW_COST_BUDGET" != "legacy" ]; then budget_args=(--experimental-budget "$MTW_COST_BUDGET"); fi
+          python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/measured --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}"
       - name: Retain exact plans and qualification separately from timing completion
         timeout-minutes: 10
         if: always()
@@ -83,7 +98,7 @@ jobs:
           before=root/'preregistered/plan.json';after=root/'measured/plan.json';receipt=root/'measured/receipt.json'
           summary=json.loads(receipt.read_text(encoding='utf8')) if receipt.exists() else {}
           plansEqual=before.is_file() and after.is_file() and before.read_bytes()==after.read_bytes()
-          result={'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'expectedSourceCommit':os.environ['MTW_COST_SOURCE'],'plansByteIdentical':plansEqual,'planSha256':hashlib.sha256(before.read_bytes()).hexdigest() if before.is_file() else None,'actualDatabaseExecution':summary.get('actualDatabaseExecution',False),'formalProtocolCompleted':summary.get('formalProtocolCompleted',False),'performanceTargetsPassed':summary.get('performanceTargetsPassed',False),'completeCells':summary.get('completeCells',0),'plannedCells':summary.get('plannedCells',36),'performanceSuccessDoesNotFollowFromWorkflowSuccess':True}
+          result={'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'expectedSourceCommit':os.environ['MTW_COST_SOURCE'],'plansByteIdentical':plansEqual,'planSha256':hashlib.sha256(before.read_bytes()).hexdigest() if before.is_file() else None,'actualDatabaseExecution':summary.get('actualDatabaseExecution',False),'formalProtocolCompleted':summary.get('formalProtocolCompleted',False),'performanceTargetsPassed':summary.get('performanceTargetsPassed',False),'completeCells':summary.get('completeCells',0),'plannedCells':summary.get('plannedCells',36),'performanceSuccessDoesNotFollowFromWorkflowSuccess':True,'experimentalBudget':summary.get('experimentalBudget'),'actualStorageLimits':summary.get('actualStorageLimits'),'capacityChecksBeforeCells':summary.get('capacityChecksBeforeCells',[])}
           (root/'hosted-receipt.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf8')
           if receipt.exists():
               assert plansEqual,'Preregistered plan changed'

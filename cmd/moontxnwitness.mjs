@@ -6,6 +6,8 @@ import { makeCapsule, replayCapsule, makeCapsuleV3, replayCapsuleV3 } from './ev
 import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFailuresV3, inspectOrmSourceV3 } from './sdk.mjs';
 import { analyzeOrmProfileV3, reduceOrmProfileV3, verifyOrmProfileV3,
   makeOrmProfileCapsuleV3, makeOrmProfileReductionCapsuleV3, replayOrmProfileCapsuleV3 } from './orm-profile.mjs';
+import { classifyV3, reduceClassificationV3, verifyClassificationV3, makeClassificationCapsuleV3,
+  makeClassificationReductionCapsuleV3, replayClassificationCapsuleV3 } from './classification.mjs';
 
 const help = `MoonTxnWitness v${version()}
 用法：
@@ -27,6 +29,10 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs shrink-orm-profile-v3 PROFILE_SOURCE.json [--options OPTIONS.json] [--max-checks N] [--output REDUCTION.json] [--history MINI.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs replay-orm-profile-v3 CAPSULE.json [--output REPLAY.json]
   node dist/moontxnwitness.mjs verify-orm-profile-v3 PROFILE_SOURCE.json REPORT.json [--options OPTIONS.json] [--output VERIFIED.json]
+  node dist/moontxnwitness.mjs classify-v3 TRACE3.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs shrink-classification-v3 TRACE3.json --category G0|G1c|G2-item [--max-checks N] [--options REDUCTION_OPTIONS.json] [--output REPORT.json] [--capture MINI.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs verify-classification-v3 TRACE3.json REPORT.json [--options OPTIONS.json] [--output VERIFIED.json]
+  node dist/moontxnwitness.mjs replay-classification-v3 CAPSULE.json [--output REPLAY.json]
   ingest-v3/check-v3/reduce-v3 可选 --sql-proof dislock-f9946f0-sql-proof-1 核验固定 SQL 来源；默认保留原 v3 规则。
   check 也支持 --capsule FILE 导出含日志、报告和 SHA-256 的自包含复现包。
   check 支持 --profile balanced 使用 12 事务搜索和 v2 证据；默认 compat 保留旧接口行为。
@@ -42,6 +48,9 @@ inspect-orm-source-v3 为固定 FastAPI Users SQLAlchemy 7.0.0/PG18 来源诊断
 orm-profile-v3 是显式安装来源并完整观察engine借还窗口的base-user点CRUD入口；原通用诊断缺口保留，不代表任意ORM/SQL。
 profile限制：来源包64MiB、4原文分别8/16/8/2MiB、选项4KiB、报告64MiB、胶囊128MiB；精确搜索12事务/512操作/128键，候选语义复验最多256次，缓存查找/尝试总数分列。
 profile只对证明完整的原始派生事实做事务删除；无法证明/预算不足保留无法判定。profile重放退出0只表示当前算法逐项重算相符，无法判定事实保持。
+classify-v3 只检查点寄存器的指定依赖环类别；checked-compatible不代表符合完整隔离模型。分类缩减固定原类别并重验来源，预算不足不宣称单最小。
+分类限制：原记录8MiB、分类选项4KiB/缩减选项8KiB、核心报告32MiB、host报告64MiB、胶囊128MiB；128事务/4096操作/5万边，每类10万状态/100万边检查，256次候选检查。最终核验开销另列，不受候选次数限制。
+分类退出码：1为已证伪类别（含完成缩减）；0为所选类别检查相容或重放一致；3为未知/不支持/预算不足；重放一致不将未知变为符合模型。
 结果只针对提供的唯一版本读写历史及版本顺序约束。不会连接数据库或上传数据。
 `;
 
@@ -123,6 +132,44 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (['classify-v3','shrink-classification-v3','verify-classification-v3','replay-classification-v3'].includes(args[0])) {
+    const command=args[0];
+    const allowed=command==='replay-classification-v3'?['--output']:command==='verify-classification-v3'?['--options','--output']:
+      command==='shrink-classification-v3'?['--category','--max-checks','--options','--output','--capsule','--capture']:['--options','--output','--capsule'];
+    const {paths,options}=localArgs(args.slice(1),allowed,command==='verify-classification-v3'?2:1);
+    const inputs=[...paths,...(options['--options']?[options['--options']]:[])];
+    if(inputs.filter(path=>path==='-').length>1)throw new Error('多个输入不能同时使用标准输入');
+    const source=readBounded(paths[0],command==='replay-classification-v3'?128*1024*1024:8*1024*1024);
+    let requested=options['--options']===undefined?{}:JSON.parse(readBounded(options['--options'],command==='shrink-classification-v3'?8192:4096));
+    if(command==='shrink-classification-v3'){
+      if(requested===null||typeof requested!=='object'||Array.isArray(requested))throw new Error('分类缩减选项必须是对象');
+      if(options['--category']!==undefined){
+        if(Object.hasOwn(requested,'category'))throw new Error('不能重复指定 category');
+        requested={...requested,category:options['--category']};
+      }
+      if(options['--max-checks']!==undefined){
+        if(!/^(0|[1-9][0-9]*)$/.test(options['--max-checks'])||Number(options['--max-checks'])>256)throw new Error('max-checks 必须为0..256整数');
+        if(Object.hasOwn(requested,'maxChecks'))throw new Error('不能重复指定 maxChecks');
+        requested={...requested,maxChecks:Number(options['--max-checks'])};
+      }
+    }
+    let result;const companions=[];
+    if(command==='replay-classification-v3')result=replayClassificationCapsuleV3(source);
+    else if(command==='verify-classification-v3')result=verifyClassificationV3(source,readBounded(paths[1],64*1024*1024),options['--options']===undefined?undefined:requested);
+    else if(options['--capsule']){
+      const capsule=command==='classify-v3'?makeClassificationCapsuleV3(source,requested):makeClassificationReductionCapsuleV3(source,requested);
+      result=JSON.parse(JSON.parse(capsule).reportText);companions.push([options['--capsule'],capsule]);
+    }else result=command==='classify-v3'?classifyV3(source,requested):reduceClassificationV3(source,requested);
+    if(options['--capture']){
+      if(result.sourceClosure?.complete!==true||result.finalReplay?.valid!==true||typeof result.result?.reducedTraceText!=='string')
+        throw new Error('没有经完整来源和最终重放核验的分类缩减记录');
+      companions.push([options['--capture'],result.result.reducedTraceText]);
+    }
+    if(Buffer.byteLength(JSON.stringify(result,null,2)+'\n','utf8')>128*1024*1024)throw new Error('classification输出超过128MiB');
+    emitJSON(result,options['--output'],inputs,companions);
+    process.exitCode='valid' in result?(result.valid?0:2):result.status==='invalid'?2:
+      ['refuted','reduced','unchanged'].includes(result.status)?1:result.status==='checked-compatible'?0:
+      result.status==='not-refuted'&&result.result?.report?.rules?.[result.result.category]?.status==='checked-compatible'?0:3;
   } else if (['orm-profile-v3','shrink-orm-profile-v3','replay-orm-profile-v3','verify-orm-profile-v3'].includes(args[0])) {
     const command=args[0];
     const allowed=command==='replay-orm-profile-v3'?['--output']:command==='verify-orm-profile-v3'?['--options','--output']:command==='shrink-orm-profile-v3'?['--options','--max-checks','--output','--history','--capsule']:['--options','--output','--capsule'];

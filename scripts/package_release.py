@@ -35,7 +35,7 @@ current_source = subprocess.check_output([NODE, '--input-type=module', '-e',
 assert current_source == MANIFEST['sourceSha256'], 'MoonBit source changed after the verified build'
 for runtime, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'captureCoreSha256')):
     assert hashlib.sha256((ROOT / 'dist' / runtime).read_bytes()).hexdigest() == MANIFEST[field], 'Compiled runtime changed after build'
-for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'demo.mjs', 'postgres-demo.mjs'):
+for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'classification.mjs', 'demo.mjs', 'postgres-demo.mjs'):
     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
 
 
@@ -173,6 +173,23 @@ for kind in ("portable", "source"):
         replay = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-orm-profile-v3', str(directory / 'synthetic-closed.capsule.json')], consumer))
         assert replay['valid'] and replay['report']['result']['reduction']['sourceClosure']['complete']
         checks.append(kind + ' configured ORM explicit-profile source binding, closed reduction and capsule replay')
+
+    if (consumer / 'dist/classification.mjs').is_file():
+        classification_demo = json.loads(run([NODE, 'examples/classification-roundtrip.mjs', '--out-root', str(work)], consumer))
+        assert classification_demo['passed'] and classification_demo['version'] == VERSION
+        assert classification_demo['syntheticInputs'] and classification_demo['actualDatabaseExecution'] is False
+        assert classification_demo['formalPerformanceMeasured'] is False
+        assert classification_demo['originalTransactions'] == 4 and classification_demo['reducedTransactions'] == 3
+        assert classification_demo['preservedCategory'] == 'G2-item' and classification_demo['sourceClosureComplete'] and classification_demo['oneMinimal']
+        assert classification_demo['fixedCandidateChecks'] <= classification_demo['maxCandidateChecks'] == 256
+        directory = (work / classification_demo['outputDirectory']).resolve()
+        assert directory.is_relative_to(work.resolve())
+        for item in classification_demo['files']:
+            path = (directory / item['file']).resolve()
+            assert path.is_relative_to(directory) and sha256(path) == item['sha256'] and path.stat().st_size == item['bytes']
+        replay = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-classification-v3', str(directory / 'reduction.capsule.json')], consumer))
+        assert replay['valid'] and replay['report']['sourceClosure']['complete'] and replay['report']['result']['category'] == 'G2-item'
+        checks.append(kind + ' category-specific source-closed reduction and exact classification capsule replay')
 
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 7):
         execution_demo = json.loads(run([NODE, 'examples/execution-roundtrip.mjs', '--out-root', str(work)], consumer))

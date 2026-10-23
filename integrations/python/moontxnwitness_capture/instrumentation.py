@@ -22,15 +22,22 @@ from ._orm_raw_async import DraftAsyncConnection, DraftAsyncCursor
 PROCESS_MONOTONIC_DOMAIN = "mtw-process-" + uuid.uuid4().hex
 
 
+from ._experimental_budget import profile, authorize, LIMITS
+
+
 class _LifecycleLog:
     """Bounded metadata outside the frozen v3 semantic event vocabulary."""
-    def __init__(self, path, *, max_bytes=8*1024*1024, max_records=65536):
+    def __init__(self, path, *, max_bytes=8*1024*1024, max_records=65536, experimental_budget=None):
+        self.experimental_budget=profile(experimental_budget)
         self.max_bytes, self.max_records = max_bytes, max_records
         self.file = Path(path).open('xb')
         self.lock = threading.RLock()
         self.digest, self.count, self.size = hashlib.sha256(), 0, 0
         self.failed = self.closed = False
-        self.append({'kind': 'header', 'format': 'moontxnwitness-instrumentation/v1', 'diagnosticOnly': True, 'processMonotonicDomain': PROCESS_MONOTONIC_DOMAIN})
+        header={'kind': 'header', 'format': 'moontxnwitness-instrumentation/v1', 'diagnosticOnly': True, 'processMonotonicDomain': PROCESS_MONOTONIC_DOMAIN}
+        if self.experimental_budget:
+            header.update(experimentalBudget=self.experimental_budget, limits={'bytes':max_bytes,'records':max_records})
+        self.append(header)
 
     def append(self, item):
         with self.lock:
@@ -61,8 +68,11 @@ class _LifecycleLog:
                     raise
                 finally:
                     self.closed = True; self.file.close()
-            return {'sealed': not self.failed, 'records': self.count, 'bytes': self.size,
+            result={'sealed': not self.failed, 'records': self.count, 'bytes': self.size,
                     'sha256': self.digest.hexdigest()}
+            if self.experimental_budget:
+                result.update(experimentalBudget=self.experimental_budget,limits={'bytes':self.max_bytes,'records':self.max_records})
+            return result
 
 
 class Instrumentation(CaptureV3Session):
@@ -73,8 +83,12 @@ class Instrumentation(CaptureV3Session):
     """
     def __init__(self, path, *, journal_options=None, max_connections=128, max_cursors=512,
                  max_value_bytes=256 * 1024, max_value_nodes=16384,
-                 max_lifecycle_bytes=8*1024*1024, max_lifecycle_records=65536):
-        if type(max_lifecycle_bytes) is not int or not 4096 <= max_lifecycle_bytes <= 1024**3 or type(max_lifecycle_records) is not int or not 128 <= max_lifecycle_records <= 2000000:
+                 max_lifecycle_bytes=8*1024*1024, max_lifecycle_records=65536,
+                 experimental_budget=None):
+        selected=profile(experimental_budget)
+        byte_ceiling=LIMITS["lifecycleBytes"] if selected else 1024**3
+        record_ceiling=LIMITS["lifecycleRecords"] if selected else 2000000
+        if type(max_lifecycle_bytes) is not int or not 4096 <= max_lifecycle_bytes <= byte_ceiling or type(max_lifecycle_records) is not int or not 128 <= max_lifecycle_records <= record_ceiling:
             raise ValueError("Lifecycle raw storage budgets exceed supported bounds")
         self.output = Path(path).resolve()
         self.output.mkdir(parents=True, exist_ok=False)
@@ -84,8 +98,9 @@ class Instrumentation(CaptureV3Session):
         self._last_exported_trace = None
         super().__init__(self.output / 'journal', journal_options=journal_options,
                          max_connections=max_connections, max_cursors=max_cursors,
-                         max_value_bytes=max_value_bytes, max_value_nodes=max_value_nodes)
-        self.lifecycle = _LifecycleLog(self.output / 'lifecycle.jsonl', max_bytes=max_lifecycle_bytes, max_records=max_lifecycle_records)
+                         max_value_bytes=max_value_bytes, max_value_nodes=max_value_nodes,
+                         experimental_budget=selected)
+        self.lifecycle = _LifecycleLog(self.output / 'lifecycle.jsonl', max_bytes=max_lifecycle_bytes, max_records=max_lifecycle_records, experimental_budget=selected)
         self.publish_snapshot({}, consistent=False)
         self.gap('diagnostic_instrumentation_only', 'No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage.')
 
@@ -779,3 +794,47 @@ class _AdapterCursor:
     def __setattr__(self, name, value):
         if name.startswith('_'): object.__setattr__(self, name, value)
         else: setattr(self._raw, name, value)
+
+
+def verify_lifecycle_storage(path, expected, *, experimental_budget=None):
+    """Stream storage integrity only; does not prove lifecycle/model semantics."""
+    profile(experimental_budget)
+    if not isinstance(expected,dict) or expected.get('sealed') is not True:
+        raise ValueError('Expected sealed lifecycle metadata is required')
+    selected=authorize(expected.get('experimentalBudget'),experimental_budget)
+    limits=expected.get('limits',{'bytes':1024**3,'records':2000000})
+    if not isinstance(limits,dict) or set(limits)!={'bytes','records'}:
+        raise ValueError('Invalid lifecycle limits')
+    byte_ceiling=LIMITS['lifecycleBytes'] if selected else 1024**3
+    record_ceiling=LIMITS['lifecycleRecords'] if selected else 2000000
+    if type(limits['bytes']) is not int or not 4096<=limits['bytes']<=byte_ceiling or type(limits['records']) is not int or not 128<=limits['records']<=record_ceiling:
+        raise ValueError('Lifecycle limits exceed reader budget')
+    supplied=Path(path)
+    if supplied.is_symlink() or not supplied.is_file():raise ValueError('Unsafe lifecycle storage')
+    digest=hashlib.sha256();count=size=0;sealed=False;domain=None
+    with supplied.open('rb') as file:
+        while True:
+            raw=file.readline(512*1024+1)
+            if not raw:break
+            if sealed or len(raw)>512*1024 or not raw.endswith(b'\n'):
+                raise ValueError('Partial, trailing or oversized lifecycle record')
+            item=json.loads(raw);count+=1;size+=len(raw)
+            if not isinstance(item,dict) or type(item.get('seq')) is not int or item['seq']!=count or count>limits['records'] or size>limits['bytes']:
+                raise ValueError('Lifecycle sequence/count/byte bound mismatch')
+            if count==1:
+                if item.get('kind')!='header' or item.get('format')!='moontxnwitness-instrumentation/v1' or item.get('diagnosticOnly') is not True:
+                    raise ValueError('Invalid lifecycle header')
+                domain=item.get('processMonotonicDomain')
+                if not isinstance(domain,str) or not domain:raise ValueError('Missing lifecycle clock domain')
+                if item.get('experimentalBudget')!=selected or selected and item.get('limits')!=limits:
+                    raise ValueError('Lifecycle profile/limit binding mismatch')
+            elif item.get('kind')=='seal':
+                if item.get('prefixSha256')!=digest.hexdigest() or item.get('records')!=count-1:
+                    raise ValueError('Lifecycle seal mismatch')
+                sealed=True
+            elif item.get('processMonotonicDomain')!=domain:
+                raise ValueError('Lifecycle clock domain changed')
+            digest.update(raw)
+    if not sealed or count!=expected.get('records') or size!=expected.get('bytes') or digest.hexdigest()!=expected.get('sha256'):
+        raise ValueError('Lifecycle bytes differ from expected sealed metadata')
+    return {'storageSealed':True,'records':count,'bytes':size,'sha256':digest.hexdigest(),'experimentalBudget':selected,'limits':limits,'semanticCoverage':False}

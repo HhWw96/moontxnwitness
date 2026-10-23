@@ -28,6 +28,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   names.push('examples/register-cycle.json', 'examples/register-cycle-roundtrip.mjs');
   names.push('examples/execution-roundtrip.mjs');
   names.push('examples/orm-profile-roundtrip.mjs');
+  names.push('examples/classification-roundtrip.mjs');
   return Object.fromEntries(names.sort().map(name=>[name,
     createHash('sha256').update(readFileSync(resolve(root,name))).digest('hex')]));
 }

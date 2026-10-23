@@ -81,12 +81,16 @@ class SQLMapping:
             raise ValueError("business_columns must be 1..64")
 
 
+from ._experimental_budget import profile
+
+
 class CaptureV3Session:
     _value = CaptureSession._value  # Only bounded typed encoding is reused.
 
     def __init__(self, path, *, mappings=(), exclusive_writers=False, journal_options=None,
                  max_connections=128, max_cursors=512, max_value_bytes=256 * 1024,
-                 max_value_nodes=16_384):
+                 max_value_nodes=16_384, experimental_budget=None):
+        self.experimental_budget=profile(experimental_budget)
         if type(exclusive_writers) is not bool:
             raise ValueError("exclusive_writers must be explicit boolean")
         if (type(max_connections) is not int or not 1 <= max_connections <= 128
@@ -108,7 +112,11 @@ class CaptureV3Session:
             if not isinstance(mapping, SQLMapping) or mapping.sql in self._mappings or len(self._mappings) >= 256:
                 raise ValueError("Mappings must have distinct exact SQL")
             self._mappings[mapping.sql] = mapping
-        self.journal = SegmentedJournal(path, **(journal_options or {}))
+        options=dict(journal_options or {})
+        if "experimental_budget" in options and options["experimental_budget"]!=self.experimental_budget:
+            raise ValueError("Journal experiment must match explicit session budget")
+        options["experimental_budget"]=self.experimental_budget
+        self.journal = SegmentedJournal(path, **options)
 
     def gap(self, code, message):
         with self._lock:
@@ -214,7 +222,7 @@ class CaptureV3Session:
                 if self._closed:
                     if self._close_error is not None:
                         raise self._close_error
-                    return self._apply_invalidation(JournalReader(self.journal.path).verify())
+                    return self._apply_invalidation(JournalReader(self.journal.path, experimental_budget=self.experimental_budget).verify())
                 active, unread = [], []
                 for connection in self._connections:
                     if connection._tx:
@@ -247,7 +255,7 @@ class CaptureV3Session:
         with self._lock:
             if self._invalidated:
                 raise JournalError("This capture session observed post-close activity and can never export a complete window")
-            return JournalReader(self.journal.path).export(destination, clock_domain=self.clock_domain,
+            return JournalReader(self.journal.path, experimental_budget=self.experimental_budget).export(destination, clock_domain=self.clock_domain,
                 exclusive_writers=self.exclusive_writers, max_bytes=max_bytes, sql_profiles=sql_profiles)
 
     def export_diagnostic(self, destination, *, sql_profiles=None, max_bytes=8 * 1024 * 1024):
@@ -260,7 +268,7 @@ class CaptureV3Session:
         Unlike strict journal.export this preserves diagnostic observations
         after an unknown outcome. The output receipt is always complete:false.
         """
-        reader = JournalReader(self.journal.path)
+        reader = JournalReader(self.journal.path, experimental_budget=self.experimental_budget)
         if self._invalidated:
             raise JournalError("Post-close activity was not recorded; diagnostic re-export from this reused observer is refused")
         if not self._closed:

@@ -1,3 +1,11 @@
+# v0.2.5 稳定支持矩阵
+
+新增 `classifyV3`、`reduceClassificationV3`、`verifyClassificationV3` 及独立分类复现包。分别搜索 G0（WW）、G1c（WW/WR，包含 G0 蕴含）和 G2-item（包含项目反依赖）；每类独立预算，不用全局最短环替代类别搜索。原 `analyzeV3` 与最短环定义保持。见[用法及完整契约](classification-sdk.md)。
+
+分类首版支持来源完整、必要版本顺序明确的唯一版本点寄存器。图容量为128事务、4096操作、50000边；每类别最多100000状态、1000000边检查。分类缩减固定一个类别，最多256候选，并复核最终原始事实子集和来源。剩余单删遇到无法判定时不声明 `oneMinimal`。类别检查相容不代表整个隔离模型相容，可靠反证不会被其他类别的预算耗尽覆盖。
+
+本版的分类功能与旧完整分析性能分别报告。平铺索引候选未通过正式尾部耗时控制，保留原默认实现和失败记录；未据此宣称提速或内存下降。更早版本的范围与历史证据如下。
+
 # v0.2.4 稳定支持矩阵
 
 新增固定 FastAPI Users SQLAlchemy base-user profile：显式安装来源配置，在首次业务连接前接入指定 engine，记录原始 SQL、交付结果、来源及完整窗口，再由 MoonBit 独立核验。支持按 ID 查询、创建、声明字段更新和删除；提供独立分析、缩减及复现包入口。见[采集步骤](configured-user-profile.md)、[映射条件](orm-profile-promotion.md)与[SDK/CLI](orm-profile-sdk.md)。

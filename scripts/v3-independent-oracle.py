@@ -527,6 +527,13 @@ def journal_audit(scratch):
     policy = importlib.util.module_from_spec(policy_spec)
     sys.modules[policy_spec.name] = policy
     exec(compile(policy_bytes, str(policy_path), "exec"), policy.__dict__)
+    # The experimental capacity dependency is also isolated and byte-bound.
+    budget_path = module_path.with_name("_experimental_budget.py")
+    budget_bytes = budget_path.read_bytes()
+    budget_spec = importlib.util.spec_from_file_location(package_name + "._experimental_budget", budget_path)
+    budget = importlib.util.module_from_spec(budget_spec)
+    sys.modules[budget_spec.name] = budget
+    exec(compile(budget_bytes, str(budget_path), "exec"), budget.__dict__)
     spec = importlib.util.spec_from_file_location(package_name + ".journal_v3", module_path)
     storage = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = storage
@@ -787,13 +794,18 @@ def journal_audit(scratch):
 
     demand(policy_path.read_bytes() == policy_bytes,
            "Bound durable policy changed during the independent storage audit")
+    demand(budget_path.read_bytes() == budget_bytes,
+           "Bound experimental budget changed during the independent storage audit")
     receipt = {"schema": 1, "check": "independent-v3-journal-real-file-audit", "actualDatabaseExecution": False,
                "performanceMeasurement": False, "complete": True, "passed": all(case["passed"] for case in checks),
                "sourceSha256": digest(source_bytes), "sourceAfterSha256": digest(module_path.read_bytes()),
                "auditSourceSha256": digest(audit_bytes),
                "dependencySourceBindings": {"integrations/python/moontxnwitness_capture/_durable_policy.py":
                    {"bytes": len(policy_bytes), "sha256": digest(policy_bytes),
-                    "afterSha256": digest(policy_path.read_bytes()), "loadedFromExactBoundBytes": True}},
+                    "afterSha256": digest(policy_path.read_bytes()), "loadedFromExactBoundBytes": True},
+                   "integrations/python/moontxnwitness_capture/_experimental_budget.py":
+                   {"bytes": len(budget_bytes), "sha256": digest(budget_bytes),
+                    "afterSha256": digest(budget_path.read_bytes()), "loadedFromExactBoundBytes": True}},
                "inputFixture": {"path": "fixtures/v3/initial-read-commit.json", "sha256": digest((FIXTURES / "initial-read-commit.json").read_bytes())},
                "rawArtifacts": str(run).replace(str(ROOT), "<workspace>"), "checks": checks, "details": details,
                "boundaries": ["A storage checksum is not database/source authentication", "No garbage collection or database workload was run"]}

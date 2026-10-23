@@ -202,6 +202,7 @@ def select_distribution_files(root, public_names, tested_files, version):
     # The standalone execution example consumes exact frozen traces and licenses.
     portable.update(n for n in public_names if n.startswith('fixtures/execution-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
+    portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     for name in sorted(source | portable):
         if not (root / name).is_file() or (root / name).is_symlink():
             missing.append({'file': name, 'problem': 'selected item missing or non-regular'})

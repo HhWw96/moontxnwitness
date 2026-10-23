@@ -8,13 +8,13 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-## v0.2.4 支持范围
+## v0.2.5 支持范围
 
-本版新增固定 base-user 的完整窗口来源映射、原始证据绑定及来源闭合缩减，并保留指定 engine／连接工厂启动插桩、有界寄存器分析、固定键普通表存在性与 CRUD、固定 ORM SQL 模板/缓存及局部来源诊断、追加列表、关系集合、已选中环解读和独立执行诊断包。前提、推荐入口、预算和限制集中在[稳定支持矩阵](docs/stable-scope.md)。
+本版新增独立的 G0、G1c、G2-item 类别搜索、固定类别缩减及精确复现包；目标异常不会因另一个更短的环而被忽略。见[分类 SDK 与示例](docs/classification-sdk.md)。继续提供固定 base-user 的完整窗口来源映射、原始证据绑定及来源闭合缩减，并保留指定 engine／连接工厂启动插桩、有界寄存器分析、固定键普通表存在性与 CRUD、固定 ORM SQL 模板/缓存及局部来源诊断、追加列表、关系集合、已选中环解读和独立执行诊断包。前提、推荐入口、预算和限制集中在[稳定支持矩阵](docs/stable-scope.md)。
 
-模型与诊断各自保留未知提交、来源缺口和计算额度；包可重放不表示数据库真实性、无故障或完整应用修复。全部自动 SQL、完整 ORM、六模型分类及完整 MLflow/dislock 生产接入继续后续迭代。
+模型与诊断各自保留未知提交、来源缺口和计算额度；包可重放不表示数据库真实性、无故障或完整应用修复。分类相容仅表示所选类别的检查完成，六模型分类仍独立迭代；全部自动 SQL、完整 ORM 及完整 MLflow/dislock 生产接入继续后续迭代。
 
-本版实际构建、回归、安装和公开下载以 `verification/releases/0.2.4/` 收据与[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。默认生产解析器沿用已发布17版完整实现；ASCII 复用和 v0.2.1 结构化优化候选未通过性能控制，原试验与失败结果保留并已回退。本版不据这些候选声明提速或 RSS 收益。批量持久化的完整 A/B/C 采集成本按独立协议测量，结果与是否达标分别记录。
+本版实际构建、回归、安装和公开下载以 `verification/releases/0.2.5/` 收据与[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。默认生产解析器沿用已发布17版完整实现；ASCII 复用和 v0.2.1 结构化优化候选未通过性能控制，原试验与失败结果保留并已回退。本版不据这些候选声明提速或 RSS 收益。批量持久化的完整 A/B/C 采集成本按独立协议测量，结果与是否达标分别记录。
 
 ## 运行演示
 
@@ -53,7 +53,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.2.4
+moon add HhWw96/moontxnwitness@0.2.5
 ```
 
 ```javascript

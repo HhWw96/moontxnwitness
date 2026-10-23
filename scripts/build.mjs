@@ -11,7 +11,7 @@ const output = resolve(root, 'dist');
 mkdirSync(output, { recursive: true });
 copyFileSync(resolve(root, '_build/js/release/build/bridge/bridge.js'), resolve(output, 'core.mjs'));
 copyFileSync(resolve(root, '_build/js/release/build/capture_bridge/capture_bridge.js'), resolve(output, 'capture-core.mjs'));
-for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
+for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'classification.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
 const core = await import(pathToFileURL(resolve(output, 'core.mjs')).href + `?build=${Date.now()}`);
 const packageVersion = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
 const sourceVersion = readFileSync(resolve(root, 'moon.mod'), 'utf8').match(/^version\s*=\s*"([^"]+)"/m)?.[1];

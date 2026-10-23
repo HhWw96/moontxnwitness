@@ -1,0 +1,5 @@
+# Category host development evidence
+
+The first actual-core host run passed 58 of 60 new checks. Its exact test/input snapshots, all original outputs and decisions remain under classification-host-first. Two new fixture/assertion mistakes were corrected: params was not the supported parameters field, and removing a whole mutually source-dependent G0 component would require a multi-transaction deletion. The unchanged functional expectations for source-closed category evidence then passed 60/60. The inherited 19 category tests and typed graph oracle stayed byte-identical and passed strict JS; no other target was rerun in this slice.
+
+The offline example reduced four synthetic transactions to three, preserved its required writer and G2-item proof, used seven candidate checks and replayed both capsules. Thirteen distribution unit tests passed. All inputs here are synthetic, not actual database evidence. Runtime stores the exact development core and wrappers used. Source/portable consumer wiring is implemented, but no full release archive consumer or independent acceptance was run by this slice. No performance measurement was run.

@@ -156,3 +156,21 @@ pub fn benchmark_reduce(h : @txn.History) -> @txn.Reduction {
 pub fn benchmark_reduce_balanced(h : @txn.History) -> @txn.ReductionResult {
   @txn.benchmark_reduce_balanced(h)
 }
+
+///|
+#export_name("classify_v3_json")
+pub fn classify_v3_json(text : String, options : String) -> String {
+  @txn.classify_v3_json(text, options)
+}
+
+///|
+#export_name("reduce_classification_v3_json")
+pub fn reduce_classification_v3_json(text : String, options : String) -> String {
+  @txn.reduce_classification_v3_json(text, options)
+}
+
+///|
+#export_name("verify_classification_v3_json")
+pub fn verify_classification_v3_json(text : String, report : String) -> String {
+  @txn.verify_classification_v3_json(text, report)
+}

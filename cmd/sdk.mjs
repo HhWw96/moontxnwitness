@@ -2,6 +2,8 @@ import { analyze_json, analyze_options_json, verify_certificate_json, shrink_jso
 import { normalize_capture_json, normalize_presence_json, normalize_capture_v3_json, normalize_capture_v3_options_json, dislock_sql_v3_proof_json, inspect_execution_failures_v3_json, orm_sql_source2_v3_proof_json } from './capture-core.mjs';
 
 export { version };
+export { classifyV3, reduceClassificationV3, verifyClassificationV3, makeClassificationCapsuleV3,
+  makeClassificationReductionCapsuleV3, replayClassificationCapsuleV3 } from './classification.mjs';
 export { analyzeOrmProfileV3, verifyOrmProfileV3, reduceOrmProfileV3,
   makeOrmProfileCapsuleV3, makeOrmProfileReductionCapsuleV3, replayOrmProfileCapsuleV3 } from './orm-profile.mjs';
 import { makeCapsuleV3, replayCapsuleV3 } from './evidence.mjs';

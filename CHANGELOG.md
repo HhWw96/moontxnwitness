@@ -1,3 +1,11 @@
+# 0.2.5 — 2026-10-23
+
+- Search G0, G1c and G2-item independently, retaining complete dependency evidence and explicit per-category budgets. Existing shortest-cycle analysis keeps its original definition.
+- Add classification SDK/CLI, fixed-category source-closed reduction and exact report/capsule verification. Unknown candidate checks prevent a one-minimal claim.
+- Retain complete observations, source gaps and prior replay formats. Category compatibility does not certify a complete isolation model.
+- Add an explicit finite storage profile for complete capture-cost experiments, with preflight space checks and bounded streaming verification. Legacy defaults stay unchanged; small-file checks do not certify large-scale throughput.
+- Keep the flat-index optimization candidate outside stable defaults after failed tail-latency controls. No performance gain is claimed for this release from that experiment.
+
 # 0.2.4 — 2026-10-23
 
 - Add an opt-in fixed base-user profile that collects original SQL, delivered results and version sources, then validates the full window in MoonBit before analysis.
