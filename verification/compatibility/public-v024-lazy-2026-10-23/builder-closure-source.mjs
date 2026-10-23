@@ -1,7 +1,0 @@
-import assert from 'node:assert/strict';import{readFileSync,appendFileSync,mkdirSync,writeFileSync}from'node:fs';import{resolve}from'node:path';import{verifyFrozenLegacyV024,copyFrozenLegacyV024}from'./scripts/legacy-v024-runtime.mjs';import{verificationFingerprint}from'./scripts/verification-fingerprint.mjs';
-const root=process.cwd(),output=resolve('artifacts/public-v024-lazy-first/builder-copy');mkdirSync(output);const checks=[];
-const original=verifyFrozenLegacyV024(root);checks.push('exact original/derived source closure verified');
-copyFrozenLegacyV024(root,output);checks.push('copy retains complete exact runtime file set');
-const target=resolve(output,'legacy/v024');appendFileSync(resolve(target,'core.cjs'),' ');assert.throws(()=>verifyFrozenLegacyV024(root,target));checks.push('derived byte tamper is rejected');
-const fp=verificationFingerprint(root,{includeDist:false});for(const name of ['core.cjs','orm-profile.cjs']){const expected=JSON.parse(readFileSync('cmd/legacy/v024/manifest.json')).files[name];assert.equal(fp['cmd/legacy/v024/'+name],expected.sha256);}checks.push('both derived CommonJS modules participate in verification fingerprint');
-writeFileSync('artifacts/public-v024-lazy-first/builder-closure-receipt.json',JSON.stringify({passed:true,checks,manifestSha256:original.manifestSha256,compilerExecuted:false,formalPerformanceMeasurement:false},null,2)+'\n');console.log(JSON.stringify({passed:true,checks:checks.length,manifestSha256:original.manifestSha256}));

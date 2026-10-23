@@ -1,9 +1,0 @@
-{
-  "schemaVersion": 1,
-  "name": "Synthetic mutually dependent reads of committed writes",
-  "initial": {"x": "x0", "y": "y0"},
-  "transactions": [
-    {"id": "A", "status": "committed", "ops": [{"type": "read", "key": "y", "version": "y1"}, {"type": "write", "key": "x", "version": "x1"}]},
-    {"id": "B", "status": "committed", "ops": [{"type": "read", "key": "x", "version": "x1"}, {"type": "write", "key": "y", "version": "y1"}]}
-  ]
-}
