@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "version": "0.2.3-frozen",
+  "sourceCommit": "273a3deb24c6d02a49b3772541ce9162d5c565d0",
+  "passed": false,
+  "groups": 13,
+  "checks": 546,
+  "cases": [
+    {
+      "name": "capacity retains in-flight bytes and separates reservations",
+      "passed": true
+    },
+    {
+      "name": "admission, explicit watermark and close tail remain distinct",
+      "passed": true
+    },
+    {
+      "name": "grouped and legacy SourceSink produce identical raw wire bytes",
+      "passed": true
+    },
+    {
+      "name": "positive short data writes complete without byte loss",
+      "passed": true
+    },
+    {
+      "name": "source zero write leaves failure and writer guards",
+      "passed": true
+    },
+    {
+      "name": "source diskfull write leaves failure and writer guards",
+      "passed": true
+    },
+    {
+      "name": "failed source fsync cannot advance durable prefix",
+      "passed": true
+    },
+    {
+      "name": "full source queue applies real measurable producer backpressure",
+      "passed": true
+    },
+    {
+      "name": "changed data/index and truncated seal remain visible",
+      "passed": true
+    },
+    {
+      "name": "source queue releases records without an in-memory event history",
+      "passed": true
+    },
+    {
+      "name": "known post-close refusal cannot regain sealed status when marker IO fails",
+      "passed": false,
+      "error": "AssertionError",
+      "message": "same source object returned sealed after known post-close refusal with failed marker",
+      "stack": "Traceback (most recent call last):\n  File \"D:\\CodexScratch\\MoonTxnWitness-public023-independent-20261023\\independent-durability.py\", line 19, in test\n    try:f();cases.append({'name':name,'passed':True})\n        ^^^\n  File \"D:\\CodexScratch\\MoonTxnWitness-public023-independent-20261023\\independent-durability.py\", line 131, in source_postclose_marker_failure\n    ck(not r.accepted and r.gap is not None,'post-close refusal missing');result=x.close();save('postclose-known-refusal.json',{'append':dataclasses.asdict(r),'closeAfterKnownMarkerFailure':result,'inMemoryGaps':x._gaps});ck(result['storageSealed'] is False,'same source object returned sealed after known post-close refusal with failed marker')\n                                                                                                                                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\CodexScratch\\MoonTxnWitness-public023-independent-20261023\\independent-durability.py\", line 13, in ck\n    assert x,msg;checks+=1\n           ^\nAssertionError: same source object returned sealed after known post-close refusal with failed marker\n"
+    },
+    {
+      "name": "journal flush requires a complete synchronized index despite short writes",
+      "passed": false,
+      "error": "AssertionError",
+      "message": "journal flush acknowledged a torn short-written index",
+      "stack": "Traceback (most recent call last):\n  File \"D:\\CodexScratch\\MoonTxnWitness-public023-independent-20261023\\independent-durability.py\", line 145, in journal_short_index\n    try:meta=json.loads(raw)\n             ^^^^^^^^^^^^^^^\n  File \"D:\\Border\\python\\Lib\\json\\__init__.py\", line 346, in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\Border\\python\\Lib\\json\\decoder.py\", line 337, in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\Border\\python\\Lib\\json\\decoder.py\", line 353, in raw_decode\n    obj, end = self.scan_once(s, idx)\n               ^^^^^^^^^^^^^^^^^^^^^^\njson.decoder.JSONDecodeError: Unterminated string starting at: line 1 column 2 (char 1)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"D:\\CodexScratch\\MoonTxnWitness-public023-independent-20261023\\independent-durability.py\", line 19, in test\n    try:f();cases.append({'name':name,'passed':True})\n        ^^^\n  File \"D:\\CodexScratch\\MoonTxnWitness-public023-independent-20261023\\independent-durability.py\", line 146, in journal_short_index\n    except ValueError:raise AssertionError('journal flush acknowledged a torn short-written index')\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: journal flush acknowledged a torn short-written index\n"
+    },
+    {
+      "name": "sealed source export/archive never deletes original evidence",
+      "passed": false,
+      "error": "AssertionError",
+      "message": "unproven source deletion allowed",
+      "stack": "Traceback (most recent call last):\n  File \"D:\\CodexScratch\\MoonTxnWitness-public023-independent-20261023\\independent-durability.py\", line 19, in test\n    try:f();cases.append({'name':name,'passed':True})\n        ^^^\n  File \"D:\\CodexScratch\\MoonTxnWitness-public023-independent-20261023\\independent-durability.py\", line 160, in journal_retains_sources\n    else:raise AssertionError('unproven source deletion allowed')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: unproven source deletion allowed\n"
+    }
+  ],
+  "actualDatabaseExecution": false,
+  "formalPerformanceMeasurement": false,
+  "scope": "Independent small files, controlled queue gates and IO fault injection; no Moon/DB/benchmark"
+}

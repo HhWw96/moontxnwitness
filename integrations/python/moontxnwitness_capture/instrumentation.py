@@ -5,6 +5,10 @@ hooks observe pool ownership only. Unknown SQL never becomes a model fact.
 """
 from __future__ import annotations
 import asyncio
+import functools
+import inspect
+import time
+import uuid
 import hashlib
 import json
 import os
@@ -15,15 +19,18 @@ from .capture import _status
 from .capture_v3 import CaptureV3Session, CapturedV3Connection, CapturedV3Cursor, _server_abort
 from ._orm_raw_async import DraftAsyncConnection, DraftAsyncCursor
 
+PROCESS_MONOTONIC_DOMAIN = "mtw-process-" + uuid.uuid4().hex
+
 
 class _LifecycleLog:
     """Bounded metadata outside the frozen v3 semantic event vocabulary."""
-    def __init__(self, path):
+    def __init__(self, path, *, max_bytes=8*1024*1024, max_records=65536):
+        self.max_bytes, self.max_records = max_bytes, max_records
         self.file = Path(path).open('xb')
         self.lock = threading.RLock()
         self.digest, self.count, self.size = hashlib.sha256(), 0, 0
         self.failed = self.closed = False
-        self.append({'kind': 'header', 'format': 'moontxnwitness-instrumentation/v1', 'diagnosticOnly': True})
+        self.append({'kind': 'header', 'format': 'moontxnwitness-instrumentation/v1', 'diagnosticOnly': True, 'processMonotonicDomain': PROCESS_MONOTONIC_DOMAIN})
 
     def append(self, item):
         with self.lock:
@@ -31,7 +38,7 @@ class _LifecycleLog:
                 raise ValueError('Diagnostic lifecycle log is not writable')
             raw = (json.dumps({'seq': self.count + 1, **item}, ensure_ascii=False,
                               allow_nan=False, separators=(',', ':')) + '\n').encode('utf8')
-            if len(raw) > 512 * 1024 or self.count >= 65535 or self.size + len(raw) > 8 * 1024 * 1024 - 1024:
+            if len(raw) > 512 * 1024 or self.count >= self.max_records-1 or self.size + len(raw) > self.max_bytes-1024:
                 self.failed = True
                 raise ValueError('Diagnostic lifecycle budget exhausted')
             try:
@@ -65,14 +72,20 @@ class Instrumentation(CaptureV3Session):
     remains diagnostic-only, even when every recorded byte is integrity-valid.
     """
     def __init__(self, path, *, journal_options=None, max_connections=128, max_cursors=512,
-                 max_value_bytes=256 * 1024, max_value_nodes=16384):
+                 max_value_bytes=256 * 1024, max_value_nodes=16384,
+                 max_lifecycle_bytes=8*1024*1024, max_lifecycle_records=65536):
+        if type(max_lifecycle_bytes) is not int or not 4096 <= max_lifecycle_bytes <= 1024**3 or type(max_lifecycle_records) is not int or not 128 <= max_lifecycle_records <= 2000000:
+            raise ValueError("Lifecycle raw storage budgets exceed supported bounds")
         self.output = Path(path).resolve()
         self.output.mkdir(parents=True, exist_ok=False)
         self._enabled, self._listeners, self._borrowed = True, [], set()
+        self._call_events = {}
+        self._active_call_depths = {}
+        self._last_exported_trace = None
         super().__init__(self.output / 'journal', journal_options=journal_options,
                          max_connections=max_connections, max_cursors=max_cursors,
                          max_value_bytes=max_value_bytes, max_value_nodes=max_value_nodes)
-        self.lifecycle = _LifecycleLog(self.output / 'lifecycle.jsonl')
+        self.lifecycle = _LifecycleLog(self.output / 'lifecycle.jsonl', max_bytes=max_lifecycle_bytes, max_records=max_lifecycle_records)
         self.publish_snapshot({}, consistent=False)
         self.gap('diagnostic_instrumentation_only', 'No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage.')
 
@@ -80,9 +93,66 @@ class Instrumentation(CaptureV3Session):
         if not self._enabled:
             return
         try:
-            self.lifecycle.append({'kind': kind, **self.encode(fields)})
+            self.lifecycle.append({'kind': kind, 'processMonotonicDomain': PROCESS_MONOTONIC_DOMAIN,
+                                   'monotonicNs': str(time.monotonic_ns()), **self.encode(fields)})
         except Exception:
             self.gap('instrumentation_metadata_missing', 'Diagnostic lifecycle or batch metadata could not be retained.')
+
+    def emit(self, kind, **fields):
+        seq = super().emit(kind, **fields)
+        tx = fields.get('tx')
+        if tx and seq is not None and kind in ('begin', 'commit_request', 'commit_ok', 'rollback_ok', 'disconnect'):
+            with self._lock:
+                if tx in self._call_events or len(self._call_events) < 512:
+                    self._call_events.setdefault(tx, {})[kind] = seq
+                    if kind in ('commit_ok', 'rollback_ok', 'disconnect') and not self._active_call_depths.get(tx):
+                        self._call_events.pop(tx, None)
+                else:
+                    self.gap('call_reference_budget', 'Client-call journal references exceeded the bounded registry.')
+        return seq
+
+    def export_diagnostic(self, destination, **options):
+        receipt = super().export_diagnostic(destination, **options)
+        self._last_exported_trace = (Path(destination).resolve(), receipt['sha256'])
+        return receipt
+
+    def export_call_intervals(self, trace_path, destination):
+        """Bind original diagnostic records; does not accept a model or authenticate a collector."""
+        from .journal_v3 import JournalReader
+        trace_path, destination = Path(trace_path).resolve(), Path(destination).resolve()
+        if not self._closed or self._last_exported_trace is None or trace_path != self._last_exported_trace[0]:
+            raise ValueError('First close and export this observer trace unchanged')
+        with trace_path.open('rb') as file:
+            trace = file.read(8 * 1024 * 1024 + 1)
+        if len(trace) > 8 * 1024 * 1024 or hashlib.sha256(trace).hexdigest() != self._last_exported_trace[1]:
+            raise ValueError('Original exported trace changed')
+        status = JournalReader(self.journal.path).verify()
+        if not status.valid: raise ValueError('Original journal is invalid')
+        meta = json.loads((self.output / 'instrumentation.json').read_text(encoding='utf8'))
+        with (self.output / 'lifecycle.jsonl').open('rb') as file:
+            lifecycle = file.read(8 * 1024 * 1024 + 1)
+        if len(lifecycle) > 8 * 1024 * 1024 or not meta['lifecycle'].get('sealed'):
+            raise ValueError('Original lifecycle evidence was not sealed')
+        if hashlib.sha256(lifecycle).hexdigest() != meta['lifecycle']['sha256']:
+            raise ValueError('Original lifecycle digest changed')
+        records = [json.loads(line) for line in lifecycle.splitlines()]
+        if not records or any(record.get('seq') != i for i, record in enumerate(records, 1)):
+            raise ValueError('Original lifecycle sequence is incomplete')
+        lines = lifecycle.splitlines(keepends=True)
+        seal = records[-1]
+        if seal.get('kind') != 'seal' or seal.get('records') != len(records) - 1 or seal.get('prefixSha256') != hashlib.sha256(b''.join(lines[:-1])).hexdigest():
+            raise ValueError('Original lifecycle seal is invalid')
+        index = (self.journal.path / 'journal-index.json').read_bytes()
+        result = {'format': 'moontxnwitness-client-intervals/v1',
+                  'sourceTraceSha256': hashlib.sha256(trace).hexdigest(),
+                  'sourceLifecycleSha256': hashlib.sha256(lifecycle).hexdigest(),
+                  'sourceJournalIndexSha256': hashlib.sha256(index).hexdigest(),
+                  'records': records}
+        with destination.open('xb') as file:
+            raw = (json.dumps(result, ensure_ascii=False, separators=(',', ':')) + '\n').encode('utf8')
+            file.write(raw); file.flush(); os.fsync(file.fileno())
+        return {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
+                'actualDatabaseExecution': False, 'modelAccepted': False}
 
     def wrap(self, raw, *, role=None):
         return self._wrap(raw, asynchronous=False)
@@ -290,6 +360,74 @@ class _Parameters:
         return value
 
 
+def _start_call(value, method):
+    observer = value._session
+    if not observer._enabled: return None
+    started = str(time.monotonic_ns())
+    connection = getattr(value, '_connection', value)
+    if method in ('execute', 'executemany'):
+        connection._begin()
+    tx = connection._tx
+    if tx:
+        with observer._lock:
+            if tx in observer._active_call_depths or len(observer._active_call_depths) < 512:
+                observer._active_call_depths[tx] = observer._active_call_depths.get(tx, 0) + 1
+            else:
+                observer.gap('call_reference_budget', 'Client-call references exceeded the bounded active-call registry.')
+    if method == 'commit': connection._last_native_command_tag = None
+    call = {'callId': 'call-' + uuid.uuid4().hex, 'method': method,
+            'connection': connection._identity, 'tx': tx}
+    observer.note('call-start', **call, monotonicNs=started,
+                  statementSeq=None, journalEventSeqs=dict(observer._call_events.get(tx, {})))
+    return call
+
+
+def _end_call(value, call, succeeded):
+    if call is None: return
+    observer = value._session
+    connection = getattr(value, '_connection', value)
+    with observer._lock:
+        refs = dict(observer._call_events.get(call['tx'], {}))
+    fields = {'succeeded': succeeded, 'statementSeq': getattr(value, '_statement', None),
+              'journalEventSeqs': refs}
+    if call['method'] == 'commit':
+        fields['nativeCommandTag'] = getattr(connection, '_last_native_command_tag', None)
+    observer.note('call-end', **call, **fields)
+    with observer._lock:
+        tx = call['tx']
+        depth = observer._active_call_depths.get(tx, 0)
+        if depth <= 1:
+            observer._active_call_depths.pop(tx, None)
+            if call['method'] in ('commit', 'rollback') or any(kind in refs for kind in ('commit_ok', 'rollback_ok', 'disconnect')):
+                observer._call_events.pop(tx, None)
+        else:
+            observer._active_call_depths[tx] = depth - 1
+
+
+def _diagnostic_call(function):
+    if inspect.iscoroutinefunction(function):
+        @functools.wraps(function)
+        async def wrapped(self, *args, **kwargs):
+            call = _start_call(self, function.__name__)
+            try: result = await function(self, *args, **kwargs)
+            except BaseException:
+                _end_call(self, call, False)
+                raise
+            _end_call(self, call, True)
+            return result
+    else:
+        @functools.wraps(function)
+        def wrapped(self, *args, **kwargs):
+            call = _start_call(self, function.__name__)
+            try: result = function(self, *args, **kwargs)
+            except BaseException:
+                _end_call(self, call, False)
+                raise
+            _end_call(self, call, True)
+            return result
+    return wrapped
+
+
 class DiagnosticConnection(CapturedV3Connection):
     def cursor(self, *args, **kwargs):
         raw = self._raw.cursor(*args, **kwargs)
@@ -303,6 +441,7 @@ class DiagnosticConnection(CapturedV3Connection):
             self._session.gap('cursor_mode_unsupported', 'Non-default cursor mode is partially observed.')
         return cursor
 
+    @_diagnostic_call
     def commit(self):
         if not self._session._enabled: return self._raw.commit()
         with self._operation_lock:
@@ -324,6 +463,7 @@ class DiagnosticConnection(CapturedV3Connection):
             _finish_commit(self, request, response)
             return result
 
+    @_diagnostic_call
     def rollback(self):
         if not self._session._enabled: return self._raw.rollback()
         return super().rollback()
@@ -339,6 +479,7 @@ class DiagnosticCursor(CapturedV3Cursor):
         super().__init__(connection, raw)
         self._many = False
 
+    @_diagnostic_call
     def execute(self, query, params=None, **kwargs):
         if not self._session._enabled:
             result = self._raw.execute(query, params, **kwargs)
@@ -351,6 +492,7 @@ class DiagnosticCursor(CapturedV3Cursor):
                                sqlstate=getattr(error, 'sqlstate', None))
             raise
 
+    @_diagnostic_call
     def executemany(self, query, params_seq, **kwargs):
         if not self._session._enabled: return self._raw.executemany(query, params_seq, **kwargs)
         with self._connection._operation_lock:
@@ -412,6 +554,7 @@ def _finish_commit(connection, request, response):
     if not connection._tx: return
     observer = connection._session
     tag = response.get('commandTag')
+    connection._last_native_command_tag = tag
     observer.note('commit-response', connection=connection._identity, request=request,
                   commandTag=tag, transactionStatus=_status(connection._raw))
     if request is not None and _status(connection._raw) == 0 and tag == 'ROLLBACK':
@@ -439,6 +582,7 @@ class DiagnosticAsyncConnection(DraftAsyncConnection):
             self._session.gap('cursor_mode_unsupported', 'Non-default async cursor mode is partially observed.')
         return cursor
 
+    @_diagnostic_call
     async def commit(self):
         if not self._session._enabled: return await self._raw.commit()
         async with self._lock:
@@ -460,6 +604,7 @@ class DiagnosticAsyncConnection(DraftAsyncConnection):
             _finish_commit(self, request, response)
             return result
 
+    @_diagnostic_call
     async def rollback(self):
         if not self._session._enabled: return await self._raw.rollback()
         return await super().rollback()
@@ -474,6 +619,7 @@ class DiagnosticAsyncConnection(DraftAsyncConnection):
         return self
 
     async def __aexit__(self, kind, value, traceback):
+        if self._raw.closed: return False
         if kind is None: await self.commit()
         else:
             try: await self.rollback()
@@ -501,6 +647,7 @@ class DiagnosticAsyncCursor(DraftAsyncCursor):
         try: return self._rows(rows, complete)
         finally: self._adapter_delivery = flag
 
+    @_diagnostic_call
     async def execute(self, query, params=None, **kwargs):
         if not self._session._enabled:
             result = await self._raw.execute(query, params, **kwargs)
@@ -513,6 +660,7 @@ class DiagnosticAsyncCursor(DraftAsyncCursor):
                                sqlstate=getattr(error, 'sqlstate', None))
             raise
 
+    @_diagnostic_call
     async def executemany(self, query, params_seq, **kwargs):
         if not self._session._enabled: return await self._raw.executemany(query, params_seq, **kwargs)
         async with self._connection._lock:

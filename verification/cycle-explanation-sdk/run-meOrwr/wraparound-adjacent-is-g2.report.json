@@ -1,0 +1,515 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.3",
+  "algorithm": "v3-register-1",
+  "status": "violation",
+  "modelDefinition": {
+    "id": "register-serializable-v1",
+    "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+  },
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "normalized": {
+    "schema": 3,
+    "algorithm": "v3-lifecycle-1",
+    "status": "ready",
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "observations": [
+      {
+        "kind": "snapshot",
+        "consistent": true,
+        "initial": {
+          "wraparound-adjacent-is-g2-k0": "wraparound-adjacent-is-g2-v0-0",
+          "wraparound-adjacent-is-g2-k1": "wraparound-adjacent-is-g2-v1-0",
+          "wraparound-adjacent-is-g2-k2": "wraparound-adjacent-is-g2-v2-0"
+        },
+        "seq": 1,
+        "time": 0
+      },
+      {
+        "kind": "begin",
+        "tx": "wraparound-adjacent-is-g2-T0",
+        "connection": "wraparound-adjacent-is-g2-T0",
+        "seq": 2,
+        "time": 1
+      },
+      {
+        "kind": "begin",
+        "tx": "wraparound-adjacent-is-g2-T1",
+        "connection": "wraparound-adjacent-is-g2-T1",
+        "seq": 3,
+        "time": 2
+      },
+      {
+        "kind": "begin",
+        "tx": "wraparound-adjacent-is-g2-T2",
+        "connection": "wraparound-adjacent-is-g2-T2",
+        "seq": 4,
+        "time": 3
+      },
+      {
+        "kind": "write",
+        "tx": "wraparound-adjacent-is-g2-T1",
+        "key": "wraparound-adjacent-is-g2-k0",
+        "version": "wraparound-adjacent-is-g2-v0-1",
+        "predecessor": "wraparound-adjacent-is-g2-v0-0",
+        "seq": 5,
+        "time": 4
+      },
+      {
+        "kind": "write",
+        "tx": "wraparound-adjacent-is-g2-T1",
+        "key": "wraparound-adjacent-is-g2-k1",
+        "version": "wraparound-adjacent-is-g2-v1-1",
+        "predecessor": "wraparound-adjacent-is-g2-v1-0",
+        "seq": 6,
+        "time": 5
+      },
+      {
+        "kind": "write",
+        "tx": "wraparound-adjacent-is-g2-T0",
+        "key": "wraparound-adjacent-is-g2-k2",
+        "version": "wraparound-adjacent-is-g2-v2-1",
+        "predecessor": "wraparound-adjacent-is-g2-v2-0",
+        "seq": 7,
+        "time": 6
+      },
+      {
+        "kind": "read",
+        "tx": "wraparound-adjacent-is-g2-T0",
+        "key": "wraparound-adjacent-is-g2-k0",
+        "version": "wraparound-adjacent-is-g2-v0-0",
+        "seq": 8,
+        "time": 7
+      },
+      {
+        "kind": "read",
+        "tx": "wraparound-adjacent-is-g2-T2",
+        "key": "wraparound-adjacent-is-g2-k1",
+        "version": "wraparound-adjacent-is-g2-v1-1",
+        "seq": 9,
+        "time": 8
+      },
+      {
+        "kind": "read",
+        "tx": "wraparound-adjacent-is-g2-T2",
+        "key": "wraparound-adjacent-is-g2-k2",
+        "version": "wraparound-adjacent-is-g2-v2-0",
+        "seq": 10,
+        "time": 9
+      },
+      {
+        "kind": "commit_request",
+        "tx": "wraparound-adjacent-is-g2-T0",
+        "seq": 11,
+        "time": 10
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "wraparound-adjacent-is-g2-T0",
+        "seq": 12,
+        "time": 11
+      },
+      {
+        "kind": "commit_request",
+        "tx": "wraparound-adjacent-is-g2-T1",
+        "seq": 13,
+        "time": 12
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "wraparound-adjacent-is-g2-T1",
+        "seq": 14,
+        "time": 13
+      },
+      {
+        "kind": "commit_request",
+        "tx": "wraparound-adjacent-is-g2-T2",
+        "seq": 15,
+        "time": 14
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "wraparound-adjacent-is-g2-T2",
+        "seq": 16,
+        "time": 15
+      }
+    ],
+    "effects": [
+      {
+        "seq": 5,
+        "tx": "wraparound-adjacent-is-g2-T1",
+        "key": "wraparound-adjacent-is-g2-k0",
+        "version": "wraparound-adjacent-is-g2-v0-1",
+        "predecessor": "wraparound-adjacent-is-g2-v0-0",
+        "revertedBy": null
+      },
+      {
+        "seq": 6,
+        "tx": "wraparound-adjacent-is-g2-T1",
+        "key": "wraparound-adjacent-is-g2-k1",
+        "version": "wraparound-adjacent-is-g2-v1-1",
+        "predecessor": "wraparound-adjacent-is-g2-v1-0",
+        "revertedBy": null
+      },
+      {
+        "seq": 7,
+        "tx": "wraparound-adjacent-is-g2-T0",
+        "key": "wraparound-adjacent-is-g2-k2",
+        "version": "wraparound-adjacent-is-g2-v2-1",
+        "predecessor": "wraparound-adjacent-is-g2-v2-0",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "wraparound-adjacent-is-g2-T0",
+        "connection": "wraparound-adjacent-is-g2-T0",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 12,
+        "events": [
+          2,
+          7,
+          8,
+          11,
+          12
+        ],
+        "finalWrites": [
+          7
+        ]
+      },
+      {
+        "id": "wraparound-adjacent-is-g2-T1",
+        "connection": "wraparound-adjacent-is-g2-T1",
+        "status": "committed",
+        "beginSeq": 3,
+        "endSeq": 14,
+        "events": [
+          3,
+          5,
+          6,
+          13,
+          14
+        ],
+        "finalWrites": [
+          5,
+          6
+        ]
+      },
+      {
+        "id": "wraparound-adjacent-is-g2-T2",
+        "connection": "wraparound-adjacent-is-g2-T2",
+        "status": "committed",
+        "beginSeq": 4,
+        "endSeq": 16,
+        "events": [
+          4,
+          9,
+          10,
+          15,
+          16
+        ],
+        "finalWrites": []
+      }
+    ],
+    "history": {
+      "schemaVersion": 1,
+      "model": "serializable",
+      "initial": {
+        "wraparound-adjacent-is-g2-k0": "wraparound-adjacent-is-g2-v0-0",
+        "wraparound-adjacent-is-g2-k1": "wraparound-adjacent-is-g2-v1-0",
+        "wraparound-adjacent-is-g2-k2": "wraparound-adjacent-is-g2-v2-0"
+      },
+      "versionOrders": {
+        "wraparound-adjacent-is-g2-k0": [
+          "wraparound-adjacent-is-g2-v0-0",
+          "wraparound-adjacent-is-g2-v0-1"
+        ],
+        "wraparound-adjacent-is-g2-k1": [
+          "wraparound-adjacent-is-g2-v1-0",
+          "wraparound-adjacent-is-g2-v1-1"
+        ],
+        "wraparound-adjacent-is-g2-k2": [
+          "wraparound-adjacent-is-g2-v2-0",
+          "wraparound-adjacent-is-g2-v2-1"
+        ]
+      },
+      "transactions": [
+        {
+          "id": "wraparound-adjacent-is-g2-T0",
+          "status": "committed",
+          "ops": [
+            {
+              "type": "write",
+              "key": "wraparound-adjacent-is-g2-k2",
+              "version": "wraparound-adjacent-is-g2-v2-1"
+            },
+            {
+              "type": "read",
+              "key": "wraparound-adjacent-is-g2-k0",
+              "version": "wraparound-adjacent-is-g2-v0-0"
+            }
+          ],
+          "start": null,
+          "end": null
+        },
+        {
+          "id": "wraparound-adjacent-is-g2-T1",
+          "status": "committed",
+          "ops": [
+            {
+              "type": "write",
+              "key": "wraparound-adjacent-is-g2-k0",
+              "version": "wraparound-adjacent-is-g2-v0-1"
+            },
+            {
+              "type": "write",
+              "key": "wraparound-adjacent-is-g2-k1",
+              "version": "wraparound-adjacent-is-g2-v1-1"
+            }
+          ],
+          "start": null,
+          "end": null
+        },
+        {
+          "id": "wraparound-adjacent-is-g2-T2",
+          "status": "committed",
+          "ops": [
+            {
+              "type": "read",
+              "key": "wraparound-adjacent-is-g2-k1",
+              "version": "wraparound-adjacent-is-g2-v1-1"
+            },
+            {
+              "type": "read",
+              "key": "wraparound-adjacent-is-g2-k2",
+              "version": "wraparound-adjacent-is-g2-v2-0"
+            }
+          ],
+          "start": null,
+          "end": null
+        }
+      ]
+    }
+  },
+  "evidence": {
+    "schemaVersion": 2,
+    "tool": "MoonTxnWitness",
+    "version": "0.2.3",
+    "status": "violation",
+    "model": "serializable",
+    "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+    "complete": true,
+    "stats": {
+      "transactions": 3,
+      "committed": 3,
+      "operations": 6,
+      "dependencies": 3
+    },
+    "findings": [
+      {
+        "code": "dependency_cycle",
+        "severity": "violation",
+        "message": "The dependency cycle prevents any serial order satisfying these observations and constraints",
+        "transactions": [
+          "wraparound-adjacent-is-g2-T0",
+          "wraparound-adjacent-is-g2-T1",
+          "wraparound-adjacent-is-g2-T2"
+        ],
+        "key": null,
+        "ops": []
+      }
+    ],
+    "edges": [
+      {
+        "from": "wraparound-adjacent-is-g2-T0",
+        "to": "wraparound-adjacent-is-g2-T1",
+        "kind": "rw",
+        "key": "wraparound-adjacent-is-g2-k0",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "wraparound-adjacent-is-g2-v0-0",
+        "toVersion": "wraparound-adjacent-is-g2-v0-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "wraparound-adjacent-is-g2-T1",
+        "to": "wraparound-adjacent-is-g2-T2",
+        "kind": "wr",
+        "key": "wraparound-adjacent-is-g2-k1",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "wraparound-adjacent-is-g2-v1-1",
+        "toVersion": "wraparound-adjacent-is-g2-v1-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      },
+      {
+        "from": "wraparound-adjacent-is-g2-T2",
+        "to": "wraparound-adjacent-is-g2-T0",
+        "kind": "rw",
+        "key": "wraparound-adjacent-is-g2-k2",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "wraparound-adjacent-is-g2-v2-0",
+        "toVersion": "wraparound-adjacent-is-g2-v2-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      }
+    ],
+    "witness": {
+      "kind": "dependency_cycle",
+      "transactions": [
+        "wraparound-adjacent-is-g2-T0",
+        "wraparound-adjacent-is-g2-T1",
+        "wraparound-adjacent-is-g2-T2",
+        "wraparound-adjacent-is-g2-T0"
+      ],
+      "edges": [
+        {
+          "from": "wraparound-adjacent-is-g2-T0",
+          "to": "wraparound-adjacent-is-g2-T1",
+          "kind": "rw",
+          "key": "wraparound-adjacent-is-g2-k0",
+          "fromOp": 1,
+          "toOp": 0,
+          "fromVersion": "wraparound-adjacent-is-g2-v0-0",
+          "toVersion": "wraparound-adjacent-is-g2-v0-1",
+          "reason": "The reader observes an earlier version and must precede this later committed write."
+        },
+        {
+          "from": "wraparound-adjacent-is-g2-T1",
+          "to": "wraparound-adjacent-is-g2-T2",
+          "kind": "wr",
+          "key": "wraparound-adjacent-is-g2-k1",
+          "fromOp": 1,
+          "toOp": 0,
+          "fromVersion": "wraparound-adjacent-is-g2-v1-1",
+          "toVersion": "wraparound-adjacent-is-g2-v1-1",
+          "reason": "The reader observes the unique final version written by the source transaction."
+        },
+        {
+          "from": "wraparound-adjacent-is-g2-T2",
+          "to": "wraparound-adjacent-is-g2-T0",
+          "kind": "rw",
+          "key": "wraparound-adjacent-is-g2-k2",
+          "fromOp": 1,
+          "toOp": 0,
+          "fromVersion": "wraparound-adjacent-is-g2-v2-0",
+          "toVersion": "wraparound-adjacent-is-g2-v2-1",
+          "reason": "The reader observes an earlier version and must precede this later committed write."
+        }
+      ],
+      "minimality": "shortest directed cycle in the constructed graph"
+    },
+    "serialOrder": [],
+    "versionOrders": {
+      "wraparound-adjacent-is-g2-k0": [
+        "wraparound-adjacent-is-g2-v0-0",
+        "wraparound-adjacent-is-g2-v0-1"
+      ],
+      "wraparound-adjacent-is-g2-k1": [
+        "wraparound-adjacent-is-g2-v1-0",
+        "wraparound-adjacent-is-g2-v1-1"
+      ],
+      "wraparound-adjacent-is-g2-k2": [
+        "wraparound-adjacent-is-g2-v2-0",
+        "wraparound-adjacent-is-g2-v2-1"
+      ]
+    },
+    "versionOrderSources": {
+      "wraparound-adjacent-is-g2-k0": "asserted",
+      "wraparound-adjacent-is-g2-k1": "asserted",
+      "wraparound-adjacent-is-g2-k2": "asserted"
+    },
+    "graph": {
+      "analyzed": true,
+      "components": 1,
+      "cyclicComponents": 1,
+      "cyclicTransactions": 3,
+      "bfsRoots": 3,
+      "edgeBudgetExceeded": false
+    },
+    "coverage": [
+      {
+        "key": "wraparound-adjacent-is-g2-k0",
+        "committedReads": 1,
+        "committedFinalWrites": 1,
+        "unresolvedReads": 0,
+        "versionOrderSource": "asserted",
+        "sourceLabel": "采集声明的版本链"
+      },
+      {
+        "key": "wraparound-adjacent-is-g2-k1",
+        "committedReads": 1,
+        "committedFinalWrites": 1,
+        "unresolvedReads": 0,
+        "versionOrderSource": "asserted",
+        "sourceLabel": "采集声明的版本链"
+      },
+      {
+        "key": "wraparound-adjacent-is-g2-k2",
+        "committedReads": 1,
+        "committedFinalWrites": 1,
+        "unresolvedReads": 0,
+        "versionOrderSource": "asserted",
+        "sourceLabel": "采集声明的版本链"
+      }
+    ],
+    "nextSteps": [
+      "保留原始日志，使用 shrink 缩减反例，并用 capsule 保存可复现证据。"
+    ],
+    "search": {
+      "status": "not-needed",
+      "reason": "No bounded completion search was required."
+    },
+    "algorithm": "bounded-register-v2.1",
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "metrics": {
+      "attempts": 0,
+      "operationChecks": 0,
+      "cacheHits": 0,
+      "cachedStates": 0,
+      "blockers": []
+    }
+  },
+  "execution": {
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "metrics": {
+      "attempts": 0,
+      "operationChecks": 0,
+      "cacheHits": 0,
+      "cachedStates": 0,
+      "blockers": []
+    }
+  }
+}

@@ -44,7 +44,7 @@ def no_delivery_yet(observer,sql):
 def finish(observer,output):
     status=observer.close();assert status.valid and not status.complete
     observer.export_diagnostic(output/'trace.json')
-    # v022 diagnostics predate the optional v023 client-interval export.
+    observer.export_call_intervals(output/'trace.json',output/'interval-evidence.json')
     trace=json.loads((output/'trace.json').read_text(encoding='utf8'))
     assert not any(e['kind'] in ('read','write','condition') for e in trace['events'])
     return {'validStorage':status.valid,'completeAnalysisCoverage':False,
@@ -285,7 +285,7 @@ def main():
     except ImportError:
         receipt['reason']='optional pinned driver/SQLAlchemy missing'
         (output/'receipt.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf8');return 3
-    inputs=[Path(__file__).resolve(),*(ROOT/'integrations/python/moontxnwitness_capture'/name for name in ['instrumentation.py','capture_v3.py','journal_v3.py','capture.py','_orm_raw_async.py'])]
+    inputs=[Path(__file__).resolve(),*(ROOT/'integrations/python/moontxnwitness_capture'/name for name in ['instrumentation.py','capture_v3.py','journal_v3.py','_durable_policy.py','capture.py','_orm_raw_async.py'])]
     before={p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs}
     kwargs=json.loads(Path(args.connection_file).read_text(encoding='utf8'))
     kwargs.setdefault('connect_timeout',5)

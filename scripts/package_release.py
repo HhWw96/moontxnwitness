@@ -209,6 +209,12 @@ for kind in ("portable", "source"):
         assert all(item['valid'] and item['engineVersion'] == '0.1.7' for item in previous_execution['cases'])
         checks.append(kind + ' actual-v017 execution-capsule compatibility')
 
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 3):
+        original22 = json.loads(run([NODE, 'scripts/v022-compatibility-test.mjs'], consumer))
+        assert original22['passed'] and original22['runtimeVersion'] == VERSION
+        assert original22['producerEngineVersion'] == '0.2.2' and original22['actualPublishedProducer']
+        assert original22['capsules'] == 8 and original22['checks'] >= 100
+        checks.append(kind + ' actual-public-v022 model, execution and invalid-diagnostic capsule compatibility')
     if tuple(map(int, VERSION.split('.'))) >= (0, 2, 2):
         original21 = json.loads(run([NODE, 'scripts/v021-compatibility-test.mjs'], consumer))
         assert original21['passed'] and original21['runtimeVersion'] == VERSION
@@ -320,6 +326,22 @@ for kind in ("portable", "source"):
             str(instrumentation_only)], instrumentation_only))
         assert diagnostic == {'passed': True, 'complete': False, 'optionalDependenciesImported': False}
         checks.append(kind + ' standalone automatic instrumentation without optional dependencies and with explicit diagnostic gaps')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 3):
+        grouped = json.loads(run([sys.executable, '-I', '-S', '-B', '-c',
+            'import sys,json;from pathlib import Path;sys.path.insert(0,sys.argv[1]);'
+            'from moontxnwitness_capture.source_sink import GroupedSourceSink,verify_grouped_source;'
+            'from moontxnwitness_capture._orm_source_sink import SourceSink,verify as verify_legacy;'
+            'base=Path(sys.argv[1]);p=base/"grouped.jsonl";s=GroupedSourceSink(p);'
+            'a=s.append({"kind":"source-batch","observation":{"opaque":"original"}});'
+            'assert a.accepted;s.flush();sealed=s.close();'
+            'assert sealed["storageSealed"] and verify_grouped_source(p)["storageSealed"];'
+            'old=base/"legacy.jsonl";legacy=SourceSink(old);legacy.append({"kind":"source-batch","observation":{"opaque":"original"}});'
+            'assert legacy.close()["storageSealed"];assert verify_legacy(p)==verify_legacy(old);assert p.read_bytes()==old.read_bytes();'
+            'assert "sqlalchemy" not in sys.modules and "psycopg" not in sys.modules;'
+            'print(json.dumps({"passed":True,"completeCapture":sealed["completeCapture"]}))',
+            str(instrumentation_only)], instrumentation_only))
+        assert grouped == {'passed': True, 'completeCapture': False}
+        checks.append(kind + ' standalone grouped source durability and legacy source compatibility')
     for filename, status, exit_code in fixtures:
         report = json.loads(run([NODE, "dist/moontxnwitness.mjs", "check", "examples/" + filename + ".json", "--format", "json"], consumer, exit_code))
         assert report["status"] == status

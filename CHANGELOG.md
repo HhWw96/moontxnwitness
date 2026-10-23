@@ -1,3 +1,11 @@
+# 0.2.3 — 2026-10-23
+
+- Add bounded group synchronization for event journals and optional provenance sources, with queue backpressure, durable watermarks and streaming source verification. Legacy source synchronization remains unchanged.
+- Release completed connection/call bookkeeping while retaining original observations on disk. Export source-closed windows without deleting original sources.
+- Reject incomplete index writes and retain post-close refusal state even when a disk-full error prevents writing the invalidation marker.
+- Add preregistered A/B/C cost and lossless evidence-retention tools; failed SQL, gaps and exhausted budgets remain ineligible for performance target claims. Actual measured results are recorded separately.
+- Preserve released replay engines through v0.2.2 and retain original failure records and independent review findings.
+
 # 0.2.2 — 2026-10-23
 
 - Attach diagnostic collection to one SQLAlchemy engine or a local psycopg connection factory before business use; no global driver replacement or database migration.

@@ -1,0 +1,42 @@
+test_postclose_marker_diskfull_does_not_forget_known_refusal (integrations.python.moontxnwitness_capture.test_source_sink.Tests.test_postclose_marker_diskfull_does_not_forget_known_refusal) ... FAIL
+test_short_index_writes_complete_before_durable_ack (integrations.python.moontxnwitness_capture.test_journal_v3.JournalTests.test_short_index_writes_complete_before_durable_ack) ... ERROR
+test_zero_index_write_never_advances_durable_ack (integrations.python.moontxnwitness_capture.test_journal_v3.JournalTests.test_zero_index_write_never_advances_durable_ack) ... FAIL
+
+======================================================================
+ERROR: test_short_index_writes_complete_before_durable_ack (integrations.python.moontxnwitness_capture.test_journal_v3.JournalTests.test_short_index_writes_complete_before_durable_ack)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\integrations\python\moontxnwitness_capture\test_journal_v3.py", line 352, in test_short_index_writes_complete_before_durable_ack
+    actual=json.loads((self.path/j.INDEX).read_bytes())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Border\python\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Border\python\Lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Border\python\Lib\json\decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Unterminated string starting at: line 1 column 2 (char 1)
+
+======================================================================
+FAIL: test_postclose_marker_diskfull_does_not_forget_known_refusal (integrations.python.moontxnwitness_capture.test_source_sink.Tests.test_postclose_marker_diskfull_does_not_forget_known_refusal)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\integrations\python\moontxnwitness_capture\test_source_sink.py", line 108, in test_postclose_marker_diskfull_does_not_forget_known_refusal
+    with self.assertRaises(SourceSinkError):sink.close()
+AssertionError: SourceSinkError not raised
+
+======================================================================
+FAIL: test_zero_index_write_never_advances_durable_ack (integrations.python.moontxnwitness_capture.test_journal_v3.JournalTests.test_zero_index_write_never_advances_durable_ack)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\integrations\python\moontxnwitness_capture\test_journal_v3.py", line 372, in test_zero_index_write_never_advances_durable_ack
+    with self.assertRaises(j.JournalIOError):writer.flush()
+AssertionError: JournalIOError not raised
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.395s
+
+FAILED (failures=2, errors=1)

@@ -1,0 +1,40 @@
+--- a/scripts/v3-independent-oracle.py
++++ b/scripts/v3-independent-oracle.py
+@@ -514,7 +514,20 @@
+ 
+     module_path = ROOT / "integrations/python/moontxnwitness_capture/journal_v3.py"
+     source_bytes, audit_bytes = module_path.read_bytes(), Path(__file__).read_bytes()
+-    spec = importlib.util.spec_from_file_location("mtw_storage_under_audit", module_path)
++    # Isolate the storage package from sys.path and any ambient module named
++    # _durable_policy. Execute the exact sibling bytes bound in this receipt.
++    import types
++    policy_path = module_path.with_name("_durable_policy.py")
++    policy_bytes = policy_path.read_bytes()
++    package_name = "mtw_storage_under_audit_" + uuid.uuid4().hex
++    package = types.ModuleType(package_name)
++    package.__path__ = []
++    sys.modules[package_name] = package
++    policy_spec = importlib.util.spec_from_file_location(package_name + "._durable_policy", policy_path)
++    policy = importlib.util.module_from_spec(policy_spec)
++    sys.modules[policy_spec.name] = policy
++    exec(compile(policy_bytes, str(policy_path), "exec"), policy.__dict__)
++    spec = importlib.util.spec_from_file_location(package_name + ".journal_v3", module_path)
+     storage = importlib.util.module_from_spec(spec)
+     sys.modules[spec.name] = storage
+     # Compile the exact bound bytes, rather than relying on a possibly cached
+@@ -772,10 +785,15 @@
+         module_path.read_bytes() == source_bytes and Path(__file__).read_bytes() == audit_bytes,
+         "Production journal or independent audit changed during the audit"))
+ 
++    demand(policy_path.read_bytes() == policy_bytes,
++           "Bound durable policy changed during the independent storage audit")
+     receipt = {"schema": 1, "check": "independent-v3-journal-real-file-audit", "actualDatabaseExecution": False,
+                "performanceMeasurement": False, "complete": True, "passed": all(case["passed"] for case in checks),
+                "sourceSha256": digest(source_bytes), "sourceAfterSha256": digest(module_path.read_bytes()),
+                "auditSourceSha256": digest(audit_bytes),
++               "dependencySourceBindings": {"integrations/python/moontxnwitness_capture/_durable_policy.py":
++                   {"bytes": len(policy_bytes), "sha256": digest(policy_bytes),
++                    "afterSha256": digest(policy_path.read_bytes()), "loadedFromExactBoundBytes": True}},
+                "inputFixture": {"path": "fixtures/v3/initial-read-commit.json", "sha256": digest((FIXTURES / "initial-read-commit.json").read_bytes())},
+                "rawArtifacts": str(run).replace(str(ROOT), "<workspace>"), "checks": checks, "details": details,
+                "boundaries": ["A storage checksum is not database/source authentication", "No garbage collection or database workload was run"]}

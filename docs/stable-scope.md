@@ -1,4 +1,6 @@
-# v0.2.2 稳定支持矩阵
+# v0.2.3 稳定支持矩阵
+
+v0.2.3 增加可选 `GroupedSourceSink`、共享有界队列与批量同步、持久化水位和来源索引核验；旧来源入口保留逐条同步。关闭后失败、短写和损坏索引会显式拒绝，连接与事务完成后释放活跃内存记录。完整采集成本与模型覆盖分别记录；使用方式见[批量持久化](grouped-source-persistence.md)。
 
 v0.2.2 增加指定 SQLAlchemy engine 和局部 psycopg 工厂的启动插桩：记录实际结果交付、异常、原生提交响应、连接池及批量参数观察；同步、异步及丢失提交响应已单独执行六项 PostgreSQL 测试。使用方法见[启动插桩](diagnostic-instrumentation.md)，本版证据见 `verification/releases/0.2.2/`。此入口始终保留诊断覆盖缺口，尚不提供自动版本来源和完整隔离分析。
 

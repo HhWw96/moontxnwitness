@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.3",
+  "status": "consistent",
+  "model": "serializable",
+  "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+  "complete": true,
+  "stats": {
+    "transactions": 2,
+    "committed": 1,
+    "operations": 5,
+    "dependencies": 0
+  },
+  "findings": [],
+  "edges": [],
+  "witness": null,
+  "serialOrder": [
+    "tx-2"
+  ],
+  "versionOrders": {
+    "[\"mtw_provenance_dislock_3823056b0db7.renew_rollback\",\"text\",\"cronjob-lock:lease:importer\"]": [
+      "78d48ced-4313-48b6-9620-e453c30e9fa0"
+    ],
+    "[\"mtw_provenance_dislock_3823056b0db7.renew_rollback\",\"text\",\"cronjob-lock:lease:synchronizer\"]": [
+      "291bb441-e57d-49c9-9e5e-59f7cd05c39e"
+    ]
+  },
+  "versionOrderSources": {
+    "[\"mtw_provenance_dislock_3823056b0db7.renew_rollback\",\"text\",\"cronjob-lock:lease:importer\"]": "single-writer",
+    "[\"mtw_provenance_dislock_3823056b0db7.renew_rollback\",\"text\",\"cronjob-lock:lease:synchronizer\"]": "single-writer"
+  },
+  "graph": {
+    "analyzed": true,
+    "components": 1,
+    "cyclicComponents": 0,
+    "cyclicTransactions": 0,
+    "bfsRoots": 0,
+    "edgeBudgetExceeded": false
+  },
+  "coverage": [
+    {
+      "key": "[\"mtw_provenance_dislock_3823056b0db7.renew_rollback\",\"text\",\"cronjob-lock:lease:importer\"]",
+      "committedReads": 1,
+      "committedFinalWrites": 0,
+      "unresolvedReads": 0,
+      "versionOrderSource": "single-writer",
+      "sourceLabel": "仅初始版本"
+    },
+    {
+      "key": "[\"mtw_provenance_dislock_3823056b0db7.renew_rollback\",\"text\",\"cronjob-lock:lease:synchronizer\"]",
+      "committedReads": 0,
+      "committedFinalWrites": 0,
+      "unresolvedReads": 0,
+      "versionOrderSource": "single-writer",
+      "sourceLabel": "仅初始版本"
+    }
+  ],
+  "nextSteps": [],
+  "search": {
+    "status": "not-needed",
+    "reason": "No bounded completion search was required."
+  },
+  "algorithm": "bounded-register-v2.1",
+  "effectiveLimits": {
+    "transactions": 12,
+    "operations": 512,
+    "keys": 128,
+    "attempts": 100000,
+    "operationChecks": 1000000,
+    "cachedStates": 50000
+  },
+  "analysisOptions": {
+    "maxAttempts": 100000,
+    "maxOperationChecks": 1000000,
+    "maxCachedStates": 50000
+  },
+  "metrics": {
+    "attempts": 0,
+    "operationChecks": 0,
+    "cacheHits": 0,
+    "cachedStates": 0,
+    "blockers": []
+  }
+}

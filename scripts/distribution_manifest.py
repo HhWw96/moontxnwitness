@@ -187,6 +187,11 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.add('scripts/v021-compatibility-test.mjs')
         require_tree('fixtures/compat-v021', 'fresh-consumer original published21 capsules')
         portable.update(n for n in public_names if n.startswith('fixtures/compat-v021/'))
+    if tuple(map(int, version.split('.'))) >= (0, 2, 3):
+        require('scripts/v022-compatibility-test.mjs', 'fresh-consumer actual published22 compatibility')
+        portable.add('scripts/v022-compatibility-test.mjs')
+        require_tree('fixtures/compat-v022', 'fresh-consumer original published22 capsules')
+        portable.update(n for n in public_names if n.startswith('fixtures/compat-v022/'))
     # The standalone execution example consumes exact frozen traces and licenses.
     portable.update(n for n in public_names if n.startswith('fixtures/execution-v3/'))
     for name in sorted(source | portable):

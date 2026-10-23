@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.3",
+  "algorithm": "v3-register-1",
+  "status": "inconclusive",
+  "modelDefinition": {
+    "id": "register-serializable-v1",
+    "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+  },
+  "coverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "unsafe_read_source",
+        "message": "An external read depends on an unknown, revoked, aborted or intermediate effect"
+      }
+    ]
+  },
+  "normalized": {
+    "schema": 3,
+    "algorithm": "v3-lifecycle-1",
+    "status": "inconclusive",
+    "coverage": {
+      "complete": false,
+      "gaps": [
+        {
+          "code": "unsafe_read_source",
+          "message": "An external read depends on an unknown, revoked, aborted or intermediate effect"
+        }
+      ]
+    },
+    "observations": [
+      {
+        "kind": "snapshot",
+        "consistent": true,
+        "initial": {
+          "aborted-k0": "aborted-v0-0",
+          "aborted-k1": "aborted-v1-0"
+        },
+        "seq": 1,
+        "time": 0
+      },
+      {
+        "kind": "begin",
+        "tx": "aborted-T0",
+        "connection": "aborted-T0",
+        "seq": 2,
+        "time": 1
+      },
+      {
+        "kind": "begin",
+        "tx": "aborted-T1",
+        "connection": "aborted-T1",
+        "seq": 3,
+        "time": 2
+      },
+      {
+        "kind": "write",
+        "tx": "aborted-T0",
+        "key": "aborted-k0",
+        "version": "aborted-v0-1",
+        "predecessor": "aborted-v0-0",
+        "seq": 4,
+        "time": 3
+      },
+      {
+        "kind": "write",
+        "tx": "aborted-T1",
+        "key": "aborted-k1",
+        "version": "aborted-v1-1",
+        "predecessor": "aborted-v1-0",
+        "seq": 5,
+        "time": 4
+      },
+      {
+        "kind": "read",
+        "tx": "aborted-T1",
+        "key": "aborted-k0",
+        "version": "aborted-v0-1",
+        "seq": 6,
+        "time": 5
+      },
+      {
+        "kind": "read",
+        "tx": "aborted-T0",
+        "key": "aborted-k1",
+        "version": "aborted-v1-1",
+        "seq": 7,
+        "time": 6
+      },
+      {
+        "kind": "rollback_ok",
+        "tx": "aborted-T0",
+        "seq": 8,
+        "time": 7
+      },
+      {
+        "kind": "commit_request",
+        "tx": "aborted-T1",
+        "seq": 9,
+        "time": 8
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "aborted-T1",
+        "seq": 10,
+        "time": 9
+      }
+    ],
+    "effects": [
+      {
+        "seq": 4,
+        "tx": "aborted-T0",
+        "key": "aborted-k0",
+        "version": "aborted-v0-1",
+        "predecessor": "aborted-v0-0",
+        "revertedBy": 8
+      },
+      {
+        "seq": 5,
+        "tx": "aborted-T1",
+        "key": "aborted-k1",
+        "version": "aborted-v1-1",
+        "predecessor": "aborted-v1-0",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "aborted-T0",
+        "connection": "aborted-T0",
+        "status": "aborted",
+        "beginSeq": 2,
+        "endSeq": 8,
+        "events": [
+          2,
+          4,
+          7,
+          8
+        ],
+        "finalWrites": []
+      },
+      {
+        "id": "aborted-T1",
+        "connection": "aborted-T1",
+        "status": "committed",
+        "beginSeq": 3,
+        "endSeq": 10,
+        "events": [
+          3,
+          5,
+          6,
+          9,
+          10
+        ],
+        "finalWrites": [
+          5
+        ]
+      }
+    ],
+    "history": null
+  },
+  "evidence": null,
+  "execution": {
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "metrics": null
+  }
+}

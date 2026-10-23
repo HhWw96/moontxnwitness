@@ -1,0 +1,73 @@
+{
+  "kind": "v023-independent-durability-repair",
+  "sourceBaseComponents": [
+    "273a3deb24c6d02a49b3772541ce9162d5c565d0",
+    "8952886"
+  ],
+  "actualDatabaseExecution": false,
+  "formalPerformanceMeasurement": false,
+  "independentAcceptance": "original failures retained; repaired independent recheck pending",
+  "sourceFiles": {
+    "integrations/python/moontxnwitness_capture/source_sink.py": "ca3bf5d3e2be3386245ba1e60bd69ea98e8b2b3630ea85058a75ac9e7d389eb6",
+    "integrations/python/moontxnwitness_capture/journal_v3.py": "c9ef799e1273cec3691f9ed9990384a5773b80b39fc3a3cbfd55af17a0d87b93",
+    "integrations/python/moontxnwitness_capture/test_source_sink.py": "887d012670de8fe40edd4af72c51fa905ac6b9c9e426d92e1d80f37ec9fd3dc0",
+    "integrations/python/moontxnwitness_capture/test_journal_v3.py": "81210bdb35c13ce97508b63ca123f25850ba7eada931d42fd26ec145e7250652",
+    "experiments/provenance/full_capture_cost.py": "4e862eb5950a9a6af6ac662640c1c1a47d64adde3d1947e3baac714bb816e35c",
+    "experiments/provenance/test_full_capture_cost.py": "511c3ec718eac989683b88c78f129241b82cf967bac0ec0d7fb5479f6a4e7b53",
+    "experiments/provenance/full_capture_cost_protocol.md": "37de5f6e79df8a4089439f6ac5df27cb748f6daaaabece4ba339285763a90418"
+  },
+  "evidence": {
+    "cost-regression-before-fix.log": {
+      "bytes": 5554,
+      "sha256": "c43c7b3a8714ca9536a7a6fd2eec6993ca5030cd548f2bc268e0598b2902ad71"
+    },
+    "cost-regression-fixed.log": {
+      "bytes": 5226,
+      "sha256": "70f4ddde0787ee504b422079cca46852a4b1076439d5ae86c7d7e47899ef9d45"
+    },
+    "original-independent/journal-index-ack.json": {
+      "bytes": 40,
+      "sha256": "89f24936766ec86e89cf5b40e1ee9c98943e91196b3c730338638652088badc3"
+    },
+    "original-independent/journal-index-while-acked.bin": {
+      "bytes": 3,
+      "sha256": "55505b6f8c3dc34a3b804086a88d4beae35b69af0dbc471d8cd780d37569a50b"
+    },
+    "original-independent/postclose-known-refusal.json": {
+      "bytes": 795,
+      "sha256": "08905b6634f76688429bf0b5811b95fc119a3c733ee7ee156d04c0324740e47a"
+    },
+    "original-independent/receipt.json": {
+      "bytes": 5681,
+      "sha256": "d642fcd294bfbf01701d7a6e5a6f4c5af91246a68dc6bb0feff1d86f2a2d2d7a"
+    },
+    "original-independent/sql-failure-comparison.json": {
+      "bytes": 4056,
+      "sha256": "2c9ce4eb45ed8e0af442c990db809b6b722af10b5e1fe0d63d1bfcd4cf1a4b6d"
+    },
+    "regression-before-fix.log": {
+      "bytes": 3272,
+      "sha256": "459f3e8e8922e7545186890d47f3356fbdee4cb6f3d8355295ab3fee11187ee5"
+    },
+    "regression-fixed.log": {
+      "bytes": 15081,
+      "sha256": "95af2d01ef266feec7e8bf6d010c6f7c186921b4e2a8c5d8605ea95abbc9f909"
+    }
+  },
+  "authorRegression": {
+    "sourceAndJournal": {
+      "tests": 87,
+      "passed": 85,
+      "skipped": 2,
+      "failed": 0
+    },
+    "costAndRetention": {
+      "tests": 33,
+      "passed": 32,
+      "skipped": 1,
+      "failed": 0
+    }
+  },
+  "firstFailuresRetained": true,
+  "unrelatedV027SourcesExcluded": true
+}

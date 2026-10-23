@@ -1,0 +1,125 @@
+test_changed_raw_keeps_all_originals (__main__.Tests.test_changed_raw_keeps_all_originals) ... ERROR
+test_duplicate_member_refused (__main__.Tests.test_duplicate_member_refused) ... ERROR
+test_exact_roundtrip_and_default_retains_originals (__main__.Tests.test_exact_roundtrip_and_default_retains_originals) ... ERROR
+test_existing_restore_refused (__main__.Tests.test_existing_restore_refused) ... ERROR
+test_expanded_size_limit_refused (__main__.Tests.test_expanded_size_limit_refused) ... ERROR
+test_failed_receipt_remains_failed_after_restoration (__main__.Tests.test_failed_receipt_remains_failed_after_restoration) ... ERROR
+test_new_unarchived_file_prevents_release (__main__.Tests.test_new_unarchived_file_prevents_release) ... ERROR
+test_refuse_outside_or_noncell_targets (__main__.Tests.test_refuse_outside_or_noncell_targets) ... ok
+test_release_only_after_verified_archive_keeps_pointer (__main__.Tests.test_release_only_after_verified_archive_keeps_pointer) ... ERROR
+test_symlink_refused_when_supported (__main__.Tests.test_symlink_refused_when_supported) ... skipped 'host does not permit symlink creation'
+test_tampered_archive_keeps_raw (__main__.Tests.test_tampered_archive_keeps_raw) ... ERROR
+test_unsafe_zip_path_refused (__main__.Tests.test_unsafe_zip_path_refused) ... ok
+
+======================================================================
+ERROR: test_changed_raw_keeps_all_originals (__main__.Tests.test_changed_raw_keeps_all_originals)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\test_cell_archive.py", line 37, in test_changed_raw_keeps_all_originals
+    pointer=m.archive_cell(self.root,self.cell);(self.cell/'empty').write_bytes(b'changed')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\cell_archive.py", line 108, in archive_cell
+    with temporary.open('rb') as file:os.fsync(file.fileno())
+                                      ^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 9] Bad file descriptor
+
+======================================================================
+ERROR: test_duplicate_member_refused (__main__.Tests.test_duplicate_member_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\test_cell_archive.py", line 56, in test_duplicate_member_refused
+    pointer=m.archive_cell(self.root,self.cell);path=self.root/pointer['archive']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\cell_archive.py", line 108, in archive_cell
+    with temporary.open('rb') as file:os.fsync(file.fileno())
+                                      ^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 9] Bad file descriptor
+
+======================================================================
+ERROR: test_exact_roundtrip_and_default_retains_originals (__main__.Tests.test_exact_roundtrip_and_default_retains_originals)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\test_cell_archive.py", line 22, in test_exact_roundtrip_and_default_retains_originals
+    pointer=m.archive_cell(self.root,self.cell)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\cell_archive.py", line 108, in archive_cell
+    with temporary.open('rb') as file:os.fsync(file.fileno())
+                                      ^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 9] Bad file descriptor
+
+======================================================================
+ERROR: test_existing_restore_refused (__main__.Tests.test_existing_restore_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\test_cell_archive.py", line 48, in test_existing_restore_refused
+    pointer=m.archive_cell(self.root,self.cell)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\cell_archive.py", line 108, in archive_cell
+    with temporary.open('rb') as file:os.fsync(file.fileno())
+                                      ^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 9] Bad file descriptor
+
+======================================================================
+ERROR: test_expanded_size_limit_refused (__main__.Tests.test_expanded_size_limit_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\test_cell_archive.py", line 62, in test_expanded_size_limit_refused
+    pointer=m.archive_cell(self.root,self.cell)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\cell_archive.py", line 108, in archive_cell
+    with temporary.open('rb') as file:os.fsync(file.fileno())
+                                      ^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 9] Bad file descriptor
+
+======================================================================
+ERROR: test_failed_receipt_remains_failed_after_restoration (__main__.Tests.test_failed_receipt_remains_failed_after_restoration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\test_cell_archive.py", line 66, in test_failed_receipt_remains_failed_after_restoration
+    pointer=m.archive_cell(self.root,self.cell)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\cell_archive.py", line 108, in archive_cell
+    with temporary.open('rb') as file:os.fsync(file.fileno())
+                                      ^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 9] Bad file descriptor
+
+======================================================================
+ERROR: test_new_unarchived_file_prevents_release (__main__.Tests.test_new_unarchived_file_prevents_release)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\test_cell_archive.py", line 41, in test_new_unarchived_file_prevents_release
+    pointer=m.archive_cell(self.root,self.cell);(self.cell/'new').write_bytes(b'new')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\cell_archive.py", line 108, in archive_cell
+    with temporary.open('rb') as file:os.fsync(file.fileno())
+                                      ^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 9] Bad file descriptor
+
+======================================================================
+ERROR: test_release_only_after_verified_archive_keeps_pointer (__main__.Tests.test_release_only_after_verified_archive_keeps_pointer)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\test_cell_archive.py", line 28, in test_release_only_after_verified_archive_keeps_pointer
+    pointer=m.archive_cell(self.root,self.cell);m.release_cell(self.root,self.cell,pointer)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\cell_archive.py", line 108, in archive_cell
+    with temporary.open('rb') as file:os.fsync(file.fileno())
+                                      ^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 9] Bad file descriptor
+
+======================================================================
+ERROR: test_tampered_archive_keeps_raw (__main__.Tests.test_tampered_archive_keeps_raw)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\test_cell_archive.py", line 32, in test_tampered_archive_keeps_raw
+    pointer=m.archive_cell(self.root,self.cell);path=self.root/pointer['archive']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\experiments\provenance\cell_archive.py", line 108, in archive_cell
+    with temporary.open('rb') as file:os.fsync(file.fileno())
+                                      ^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 9] Bad file descriptor
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.433s
+
+FAILED (errors=9, skipped=1)

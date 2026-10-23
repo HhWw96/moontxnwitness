@@ -6,7 +6,6 @@ retained. Deleting source-chain records is intentionally not implemented yet.
 """
 from __future__ import annotations
 
-import collections
 import argparse
 import dataclasses
 import hashlib
@@ -24,6 +23,11 @@ import zipfile
 import sys
 import tempfile
 from pathlib import Path
+
+if __package__:
+    from ._durable_policy import CapacityQueue, sync_due, sync_wait, should_sync, flush_pending
+else:  # Preserve the documented standalone verify/export command.
+    from _durable_policy import CapacityQueue, sync_due, sync_wait, should_sync, flush_pending
 
 KINDS = frozenset(("snapshot", "begin", "read", "write", "condition", "savepoint",
                    "rollback_to", "release", "commit_request", "commit_ok",
@@ -304,7 +308,8 @@ class SegmentedJournal:
         self.flush_bytes, self.flush_interval = flush_bytes, float(flush_interval)
         self.max_record_bytes, self.max_total_bytes = max_record_bytes, max_total_bytes
         self._cv, self._append_lock = threading.Condition(threading.RLock()), threading.RLock()
-        self._queue, self._queued_bytes, self._reserved_bytes, self._error = collections.deque(), 0, 0, None
+        self._capacity = CapacityQueue(max_queue_bytes)
+        self._queue, self._error = self._capacity.items, None
         self._closing, self._closed, self._source_closed = False, False, False
         self._invalidated = False
         self._requested_source_closed = False
@@ -315,7 +320,7 @@ class SegmentedJournal:
         self._refs = {"activeTransactions": [], "unreadResults": [], "versionSources": []}
         self._stats = {"acceptedRecords": 0, "durableRecords": 0, "backpressureCount": 0,
                        "backpressureNs": 0, "maxQueueBytes": 0, "fsyncCount": 0, "bytesWritten": 0}
-        self._revision = self._flushed_generation = self._flush_generation = 0
+        self._revision = self._flushed_generation = self._flush_generation = self._flush_target_seq = 0
         self._metadata_dirty, self._pending_bytes = True, 0
         self._file, self._current, self._hash = None, None, None
         self._identities_closed = False
@@ -350,6 +355,16 @@ class SegmentedJournal:
         self._last_sync = time.monotonic()
         self._thread = threading.Thread(target=self._worker, name="mtw-journal-v3", daemon=True)
         self._thread.start()
+
+    # Preserve existing fault-injection surfaces while sharing byte accounting.
+    @property
+    def _queued_bytes(self): return self._capacity.queued_bytes
+    @_queued_bytes.setter
+    def _queued_bytes(self, value): self._capacity.queued_bytes = value
+    @property
+    def _reserved_bytes(self): return self._capacity.reserved_bytes
+    @_reserved_bytes.setter
+    def _reserved_bytes(self, value): self._capacity.reserved_bytes = value
 
     @classmethod
     def reopen(cls, path, *, exclusive_continuation=False, **options):
@@ -401,7 +416,7 @@ class SegmentedJournal:
                     return AppendResult(False, self._durable_seq, gap=gap)
                 # Reserve one bounded record before making a mutable-container
                 # copy/JSON string. Waiting appenders retain no encoded records.
-                while self._queued_bytes + self._reserved_bytes + self.max_record_bytes > self.max_queue_bytes and self._error is None:
+                while not self._capacity.can_reserve(self.max_record_bytes) and self._error is None:
                     if started is None:
                         started = time.monotonic_ns()
                     self._cv.wait()
@@ -412,7 +427,7 @@ class SegmentedJournal:
                 if self._error is not None:
                     return AppendResult(False, self._durable_seq, blocked,
                                         self._gap("journal_write_failed", "Writer IO failed; record was not accepted."))
-                self._reserved_bytes += self.max_record_bytes
+                self._capacity.reserve(self.max_record_bytes)
                 self._stats["maxQueueBytes"] = max(self._stats["maxQueueBytes"], self._queued_bytes + self._reserved_bytes)
             try:
                 copied = _bounded_copy(event, self.max_record_bytes - 1)
@@ -434,10 +449,9 @@ class SegmentedJournal:
                         self._gap("missing_snapshot", "The journal does not begin with a snapshot event.")
                     self._last_seq, self._last_time = copied["seq"], copied["time"]
                     self._accepted_bytes += len(line)
-                    self._queued_bytes += len(line)
                     self._stats["acceptedRecords"] += 1
                     self._source_closed = False
-                    self._queue.append((line, copied["seq"], copied["time"], copied["kind"], copied.get("tx"), copied.get("commitResponse")))
+                    self._capacity.enqueue((line, copied["seq"], copied["time"], copied["kind"], copied.get("tx"), copied.get("commitResponse")), len(line))
                     self._revision += 1
                     self._metadata_dirty = True
                     self._cv.notify_all()
@@ -448,7 +462,7 @@ class SegmentedJournal:
                     return AppendResult(False, self._durable_seq, blocked, gap)
             finally:
                 with self._cv:
-                    self._reserved_bytes -= self.max_record_bytes
+                    self._capacity.release_reservation(self.max_record_bytes)
                     self._cv.notify_all()
 
     @property
@@ -483,6 +497,7 @@ class SegmentedJournal:
         with self._cv:
             self._flush_generation += 1
             generation, target = self._flush_generation, self._last_seq
+            self._flush_target_seq = max(self._flush_target_seq, target)
             self._cv.notify_all()
             while self._error is None and (self._durable_seq < target or self._flushed_generation < generation):
                 if self._closed:
@@ -590,7 +605,12 @@ class SegmentedJournal:
                 raise JournalIOError("Index byte budget exhausted")
         temporary = self.path / (".journal-index-" + self._nonce + ".tmp")
         with temporary.open("wb") as file:
-            file.write(encoded)
+            remaining = memoryview(encoded)
+            while remaining:
+                count = file.write(remaining)
+                if type(count) is not int or not 0 < count <= len(remaining):
+                    raise JournalIOError("Incomplete journal index write")
+                remaining = remaining[count:]
             file.flush()
             os.fsync(file.fileno())
         os.replace(temporary, self.path / INDEX)
@@ -616,13 +636,13 @@ class SegmentedJournal:
             while True:
                 with self._cv:
                     while not self._queue:
-                        explicit = self._flush_generation > self._flushed_generation
-                        due = self._metadata_dirty and time.monotonic() - self._last_sync >= self.flush_interval
+                        explicit = flush_pending(self._flush_generation, self._flushed_generation, self._durable_seq, self._flush_target_seq)
+                        due = sync_due(self._metadata_dirty, self._last_sync, time.monotonic(), self.flush_interval)
                         if self._closing or explicit or due:
                             break
-                        wait = max(0.001, self.flush_interval - (time.monotonic() - self._last_sync)) if self._metadata_dirty else None
+                        wait = sync_wait(self._metadata_dirty, self._last_sync, time.monotonic(), self.flush_interval)
                         self._cv.wait(wait)
-                    item = self._queue.popleft() if self._queue else None
+                    item = self._capacity.pop()
                 if item is not None:
                     line, seq, event_time, kind, tx, response = item
                     if self._current is not None and self._current["bytes"] + len(line) > self.segment_bytes:
@@ -639,7 +659,7 @@ class SegmentedJournal:
                     with self._cv:
                         self._transaction(kind, tx, seq, response)
                         self._written_seq, self._written_time, self._written_count = seq, event_time, self._written_count + 1
-                        self._queued_bytes -= len(line)
+                        self._capacity.complete(len(line))
                         self._stats["bytesWritten"] += len(line)
                         self._pending_bytes += len(line)
                         self._metadata_dirty = True
@@ -647,9 +667,9 @@ class SegmentedJournal:
                 with self._cv:
                     drained = not self._queue
                     closing = self._closing and drained
-                    explicit = self._flush_generation > self._flushed_generation
-                    due = self._metadata_dirty and time.monotonic() - self._last_sync >= self.flush_interval
-                    sync = closing or explicit or due or self._pending_bytes >= self.flush_bytes
+                    explicit = flush_pending(self._flush_generation, self._flushed_generation, self._durable_seq, self._flush_target_seq)
+                    due = sync_due(self._metadata_dirty, self._last_sync, time.monotonic(), self.flush_interval)
+                    sync = should_sync(closing, explicit, self._metadata_dirty, self._pending_bytes, self.flush_bytes, self._last_sync, time.monotonic(), self.flush_interval)
                     if closing:
                         blocked = self._active or self._refs["activeTransactions"] or self._refs["unreadResults"]
                         self._source_closed = self._requested_source_closed and not blocked

@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 2,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.3",
+  "status": "consistent",
+  "model": "serializable",
+  "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+  "complete": true,
+  "stats": {
+    "transactions": 3,
+    "committed": 3,
+    "operations": 4,
+    "dependencies": 3
+  },
+  "findings": [],
+  "edges": [
+    {
+      "from": "tx-1",
+      "to": "tx-2",
+      "kind": "ww",
+      "key": "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"a\"]",
+      "fromOp": 0,
+      "toOp": 0,
+      "fromVersion": "6e90077c-310d-46e5-b41f-ce906e7c27f3",
+      "toVersion": "9f666e70-87fd-4888-8542-8ceb6bbc53d4",
+      "reason": "The asserted per-key version order puts this write before the next write."
+    },
+    {
+      "from": "tx-2",
+      "to": "tx-3",
+      "kind": "ww",
+      "key": "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"a\"]",
+      "fromOp": 0,
+      "toOp": 1,
+      "fromVersion": "9f666e70-87fd-4888-8542-8ceb6bbc53d4",
+      "toVersion": "4c31a1e5-3283-4853-8c1d-1bb4e1a22d89",
+      "reason": "The asserted per-key version order puts this write before the next write."
+    },
+    {
+      "from": "tx-2",
+      "to": "tx-3",
+      "kind": "wr",
+      "key": "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"a\"]",
+      "fromOp": 0,
+      "toOp": 0,
+      "fromVersion": "9f666e70-87fd-4888-8542-8ceb6bbc53d4",
+      "toVersion": "9f666e70-87fd-4888-8542-8ceb6bbc53d4",
+      "reason": "The reader observes the unique final version written by the source transaction."
+    }
+  ],
+  "witness": null,
+  "serialOrder": [
+    "tx-1",
+    "tx-2",
+    "tx-3"
+  ],
+  "versionOrders": {
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"a\"]": [
+      "72d29691-e910-4548-a68d-84bd09018395",
+      "6e90077c-310d-46e5-b41f-ce906e7c27f3",
+      "9f666e70-87fd-4888-8542-8ceb6bbc53d4",
+      "4c31a1e5-3283-4853-8c1d-1bb4e1a22d89"
+    ],
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"b\"]": [
+      "d0d2df56-2c12-4665-aca8-02d1c7e120f4"
+    ],
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"never\"]": [
+      "7d10f1b4-48a9-4b62-a858-b94bb09ec427"
+    ]
+  },
+  "versionOrderSources": {
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"a\"]": "asserted",
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"b\"]": "asserted",
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"never\"]": "asserted"
+  },
+  "graph": {
+    "analyzed": true,
+    "components": 3,
+    "cyclicComponents": 0,
+    "cyclicTransactions": 0,
+    "bfsRoots": 0,
+    "edgeBudgetExceeded": false
+  },
+  "coverage": [
+    {
+      "key": "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"a\"]",
+      "committedReads": 1,
+      "committedFinalWrites": 3,
+      "unresolvedReads": 0,
+      "versionOrderSource": "asserted",
+      "sourceLabel": "采集声明的版本链"
+    },
+    {
+      "key": "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"b\"]",
+      "committedReads": 0,
+      "committedFinalWrites": 0,
+      "unresolvedReads": 0,
+      "versionOrderSource": "asserted",
+      "sourceLabel": "采集声明的版本链"
+    },
+    {
+      "key": "[\"mtw_provenance_presence_0448e17e5b36.presence_rc\",\"text\",\"never\"]",
+      "committedReads": 0,
+      "committedFinalWrites": 0,
+      "unresolvedReads": 0,
+      "versionOrderSource": "asserted",
+      "sourceLabel": "采集声明的版本链"
+    }
+  ],
+  "nextSteps": [],
+  "search": {
+    "status": "not-needed",
+    "reason": "No bounded completion search was required."
+  },
+  "algorithm": "bounded-register-v2.1",
+  "effectiveLimits": {
+    "transactions": 12,
+    "operations": 512,
+    "keys": 128,
+    "attempts": 100000,
+    "operationChecks": 1000000,
+    "cachedStates": 50000
+  },
+  "analysisOptions": {
+    "maxAttempts": 100000,
+    "maxOperationChecks": 1000000,
+    "maxCachedStates": 50000
+  },
+  "metrics": {
+    "attempts": 0,
+    "operationChecks": 0,
+    "cacheHits": 0,
+    "cachedStates": 0,
+    "blockers": []
+  }
+}

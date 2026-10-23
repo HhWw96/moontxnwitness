@@ -144,6 +144,25 @@ class SyncTests(Helpers, unittest.TestCase):
     def setUp(self): self.observers = []
     def tearDown(self): self.finish()
 
+    def test_reused_connection_reclaims_more_than_512_completed_transactions(self):
+        import psycopg
+        observer = self.observer(); raw = Raw(); conn = observer.wrap(raw); cursor = conn.cursor()
+        with mock.patch.object(psycopg, 'Connection', Raw):
+            for _ in range(600):
+                cursor.execute('SELECT 1'); cursor.fetchall(); conn.commit()
+                self.assertFalse(observer._call_events)
+                self.assertFalse(observer._active_call_depths)
+        self.assertEqual(sum(e['kind'] == 'commit_ok' for e in self.events(observer)), 600)
+        self.assertNotIn('call_reference_budget', self.codes(observer))
+
+    def test_close_without_method_end_reclaims_unresolved_transaction_references(self):
+        observer = self.observer(); conn = observer.wrap(Raw())
+        conn.execute('SELECT 1').fetchall()
+        self.assertEqual(len(observer._call_events), 1)
+        conn.close()
+        self.assertFalse(observer._call_events); self.assertFalse(observer._active_call_depths)
+        self.assertTrue(any(e['kind'] == 'disconnect' for e in self.events(observer)))
+
     def test_factory_is_local_and_does_not_save_credentials(self):
         observer = self.observer(); raw = Raw(); calls = []
         def original(*args, **kwargs): calls.append((args, kwargs)); return raw
@@ -424,6 +443,25 @@ class AsyncTests(Helpers, unittest.IsolatedAsyncioTestCase):
         self.assertEqual(raw._exec_command, original); self.assertNotIn('_exec_command', raw.__dict__)
         self.assertTrue(any(e['kind'] == 'commit_ok' for e in self.events(observer)))
 
+    async def test_async_reused_connection_reclaims_600_completed_transactions(self):
+        import psycopg
+        observer = self.observer(); conn = observer.wrap_async(AsyncRaw()); cursor = conn.cursor()
+        with mock.patch.object(psycopg, 'AsyncConnection', AsyncRaw):
+            for _ in range(600):
+                await cursor.execute('SELECT 1'); await cursor.fetchall(); await conn.commit()
+                self.assertFalse(observer._call_events)
+                self.assertFalse(observer._active_call_depths)
+        self.assertEqual(sum(e['kind'] == 'commit_ok' for e in self.events(observer)), 600)
+        self.assertNotIn('call_reference_budget', self.codes(observer))
+
+    async def test_async_close_reclaims_unresolved_transaction_references(self):
+        observer = self.observer(); conn = observer.wrap_async(AsyncRaw())
+        cursor = await conn.execute('SELECT 1'); await cursor.fetchall()
+        self.assertEqual(len(observer._call_events), 1)
+        await conn.close()
+        self.assertFalse(observer._call_events); self.assertFalse(observer._active_call_depths)
+        self.assertTrue(any(e['kind'] == 'disconnect' for e in self.events(observer)))
+
     async def test_async_commit_error_then_idle_rollback_unknown(self):
         observer = self.observer(); raw = AsyncRaw(); conn = observer.wrap_async(raw)
         cursor = await conn.execute('SELECT 1'); await cursor.fetchall()
@@ -484,6 +522,63 @@ class AsyncTests(Helpers, unittest.IsolatedAsyncioTestCase):
         observer.close(); cursor = await conn.execute('SELECT after')
         self.assertEqual(await cursor.fetchall(), [(1,), (2,)])
         self.assertFalse(raw.closed)
+
+
+class CallIntervalTests(Helpers, unittest.TestCase):
+    def setUp(self): self.observers = []
+    def tearDown(self): self.finish()
+
+    def test_paired_native_calls_bind_transaction_and_original_sequences(self):
+        observer = self.observer(); conn = observer.wrap(Raw())
+        conn.execute('SELECT 1').fetchall()
+        with mock.patch.object(capture_v3, '_pinned_connection', return_value=True): conn.commit()
+        calls = [e for e in self.notes(observer) if e['kind'] in ('call-start','call-end')]
+        self.assertEqual(len(calls), 4)
+        for start,end in zip(calls[::2],calls[1::2]):
+            self.assertEqual(start['callId'],end['callId'])
+            self.assertEqual(start['tx'],end['tx']);self.assertEqual(start['connection'],end['connection'])
+            self.assertEqual(start['processMonotonicDomain'],end['processMonotonicDomain'])
+            self.assertLessEqual(int(start['monotonicNs']),int(end['monotonicNs']))
+        commit=calls[-1]
+        self.assertEqual(commit['nativeCommandTag'],'COMMIT')
+        self.assertIn('commit_ok',commit['journalEventSeqs'])
+        statement=next(e for e in self.events(observer) if e['kind']=='statement')
+        self.assertEqual(calls[1]['statementSeq'],statement['seq'])
+
+    def test_idle_without_native_tag_stays_unknown_in_call_evidence(self):
+        observer=self.observer();conn=observer.wrap(Raw())
+        conn.execute('SELECT 1').fetchall();conn.commit()
+        end=next(e for e in self.notes(observer) if e['kind']=='call-end' and e['method']=='commit')
+        self.assertTrue(end['succeeded']);self.assertIsNone(end['nativeCommandTag'])
+        self.assertNotIn('commit_ok',end['journalEventSeqs'])
+
+    def test_derived_interval_source_binds_original_trace_lifecycle_and_index(self):
+        observer=self.observer();conn=observer.wrap(Raw())
+        conn.execute('SELECT 1').fetchall();conn.rollback();observer.close()
+        trace=observer.output/'trace.json';destination=observer.output/'intervals.json'
+        observer.export_diagnostic(trace);observer.export_call_intervals(trace,destination)
+        import hashlib
+        evidence=json.loads(destination.read_text(encoding='utf8'))
+        self.assertEqual(evidence['sourceTraceSha256'],hashlib.sha256(trace.read_bytes()).hexdigest())
+        self.assertEqual(evidence['sourceLifecycleSha256'],hashlib.sha256((observer.output/'lifecycle.jsonl').read_bytes()).hexdigest())
+        self.assertEqual(evidence['sourceJournalIndexSha256'],hashlib.sha256((observer.journal.path/'journal-index.json').read_bytes()).hexdigest())
+        self.assertEqual(evidence['records'],[json.loads(line) for line in (observer.output/'lifecycle.jsonl').read_text(encoding='utf8').splitlines()])
+
+    def test_derived_evidence_refuses_changed_original_trace(self):
+        observer=self.observer();observer.close();trace=observer.output/'trace.json'
+        observer.export_diagnostic(trace);trace.write_bytes(trace.read_bytes()+b' ')
+        with self.assertRaises(ValueError):observer.export_call_intervals(trace,observer.output/'intervals.json')
+
+    def test_derived_evidence_refuses_changed_lifecycle(self):
+        observer=self.observer();observer.close();trace=observer.output/'trace.json'
+        observer.export_diagnostic(trace);lifecycle=observer.output/'lifecycle.jsonl'
+        lifecycle.write_bytes(lifecycle.read_bytes()+b' ')
+        with self.assertRaises(ValueError):observer.export_call_intervals(trace,observer.output/'intervals.json')
+
+    def test_client_context_closed_connection_does_not_commit_again(self):
+        observer=self.observer();raw=Raw();conn=observer.wrap(raw);raw.close()
+        self.assertIsNone(conn.__exit__(None,None,None))
+        self.assertFalse(any(e['kind']=='call-start' and e['method']=='commit' for e in self.notes(observer)))
 
 
 if __name__ == '__main__':

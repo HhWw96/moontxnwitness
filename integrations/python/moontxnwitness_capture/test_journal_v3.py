@@ -333,6 +333,47 @@ class JournalTests(unittest.TestCase):
             writer._write_line(b"abcdefghijklmnopqrstuvwxyz\n")
         self.assertEqual(target.read_bytes(), b"abcdefghijklmnopqrstuvwxyz\n")
 
+    def test_short_index_writes_complete_before_durable_ack(self):
+        writer=self.writer(flush_interval=60);writer.append(snapshot());writer.flush()
+        original=Path.open
+        class ShortIndex:
+            def __init__(self,raw):self.raw=raw
+            def write(self,data):return self.raw.write(data[:3])
+            def __getattr__(self,name):return getattr(self.raw,name)
+            def __enter__(self):return self
+            def __exit__(self,*args):return self.raw.__exit__(*args)
+        def short(path,*args,**kwargs):
+            raw=original(path,*args,**kwargs)
+            return ShortIndex(raw) if path.name.startswith('.journal-index-') and args and args[0]=='wb' else raw
+        with mock.patch.object(Path,'open',short):
+            writer.append(event(2,kind='begin',tx='index-tx',connection='index-connection'))
+            writer.append(event(3,kind='rollback_ok',tx='index-tx'))
+            self.assertEqual(writer.flush(),3)
+            actual=json.loads((self.path/j.INDEX).read_bytes())
+            self.assertEqual(actual['durableSeq'],3)
+            self.assertTrue(writer.close(source_closed=True).complete)
+        self.assertTrue(j.JournalReader(self.path).verify().complete)
+
+    def test_zero_index_write_never_advances_durable_ack(self):
+        writer=self.writer(flush_interval=60);writer.append(snapshot());writer.flush();previous=writer.stats['durableSeq']
+        original=Path.open
+        class ZeroIndex:
+            def __init__(self,raw):self.raw=raw
+            def write(self,data):return 0
+            def __getattr__(self,name):return getattr(self.raw,name)
+            def __enter__(self):return self
+            def __exit__(self,*args):return self.raw.__exit__(*args)
+        def zero(path,*args,**kwargs):
+            raw=original(path,*args,**kwargs)
+            return ZeroIndex(raw) if path.name.startswith('.journal-index-') and args and args[0]=='wb' else raw
+        with mock.patch.object(Path,'open',zero):
+            writer.append(event(2,kind='begin',tx='index-tx',connection='index-connection'))
+            writer.append(event(3,kind='rollback_ok',tx='index-tx'))
+            with self.assertRaises(j.JournalIOError):writer.flush()
+        self.assertEqual(writer.stats['durableSeq'],previous)
+        with self.assertRaises(j.JournalIOError):writer.close(source_closed=True)
+        self.assertFalse(j.JournalReader(self.path).verify().complete)
+
     def test_truncated_segment_invalid(self):
         self.complete()
         p = self.path / "segment-000001.jsonl"

@@ -1,0 +1,134 @@
+{
+  "schema": 3,
+  "algorithm": "v3-lifecycle-1",
+  "status": "ready",
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "observations": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "x": "x0",
+        "y": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "T",
+      "connection": "C"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "savepoint",
+      "tx": "T",
+      "name": "same",
+      "instance": "outer"
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "savepoint",
+      "tx": "T",
+      "name": "same",
+      "instance": "inner"
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "write",
+      "tx": "T",
+      "key": "x",
+      "version": "x1",
+      "predecessor": "x0"
+    },
+    {
+      "seq": 6,
+      "time": 5,
+      "kind": "release",
+      "tx": "T",
+      "instance": "inner"
+    },
+    {
+      "seq": 7,
+      "time": 6,
+      "kind": "rollback_to",
+      "tx": "T",
+      "instance": "outer"
+    },
+    {
+      "seq": 8,
+      "time": 7,
+      "kind": "commit_request",
+      "tx": "T"
+    },
+    {
+      "seq": 9,
+      "time": 8,
+      "kind": "commit_ok",
+      "tx": "T"
+    }
+  ],
+  "effects": [
+    {
+      "seq": 5,
+      "tx": "T",
+      "key": "x",
+      "version": "x1",
+      "predecessor": "x0",
+      "revertedBy": 7
+    }
+  ],
+  "transactions": [
+    {
+      "id": "T",
+      "connection": "C",
+      "status": "committed",
+      "beginSeq": 2,
+      "endSeq": 9,
+      "events": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "finalWrites": []
+    }
+  ],
+  "history": {
+    "schemaVersion": 1,
+    "model": "serializable",
+    "initial": {
+      "x": "x0",
+      "y": "y0"
+    },
+    "versionOrders": {
+      "x": [
+        "x0"
+      ],
+      "y": [
+        "y0"
+      ]
+    },
+    "transactions": [
+      {
+        "id": "T",
+        "status": "committed",
+        "ops": [],
+        "start": null,
+        "end": null
+      }
+    ]
+  }
+}

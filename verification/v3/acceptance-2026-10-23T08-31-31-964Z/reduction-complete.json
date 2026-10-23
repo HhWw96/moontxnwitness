@@ -1,0 +1,632 @@
+{
+  "schemaVersion": 3,
+  "algorithm": "v3-source-checked-single-delete-1",
+  "predicate": "definite register serializability violation with complete capture coverage",
+  "status": "reduced",
+  "maxChecks": 256,
+  "checks": 5,
+  "oneMinimal": true,
+  "removed": [
+    "noise"
+  ],
+  "retainedOriginalSeq": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "reducedCapture": {
+    "traceSchema": 3,
+    "clockDomain": "independent-source-closure-clock",
+    "scope": {
+      "exclusiveWriters": true
+    },
+    "gaps": [],
+    "events": [
+      {
+        "seq": 1,
+        "time": 0,
+        "kind": "snapshot",
+        "initial": {
+          "x": "x0",
+          "y": "y0"
+        },
+        "consistent": true
+      },
+      {
+        "seq": 2,
+        "time": 1,
+        "kind": "begin",
+        "tx": "source",
+        "connection": "source-connection"
+      },
+      {
+        "seq": 3,
+        "time": 2,
+        "kind": "write",
+        "tx": "source",
+        "key": "x",
+        "version": "x1",
+        "predecessor": "x0"
+      },
+      {
+        "seq": 4,
+        "time": 3,
+        "kind": "commit_request",
+        "tx": "source"
+      },
+      {
+        "seq": 5,
+        "time": 4,
+        "kind": "commit_ok",
+        "tx": "source"
+      },
+      {
+        "seq": 6,
+        "time": 9,
+        "kind": "begin",
+        "tx": "A",
+        "connection": "A-connection"
+      },
+      {
+        "seq": 7,
+        "time": 10,
+        "kind": "begin",
+        "tx": "B",
+        "connection": "B-connection"
+      },
+      {
+        "seq": 8,
+        "time": 11,
+        "kind": "read",
+        "tx": "A",
+        "key": "x",
+        "version": "x1"
+      },
+      {
+        "seq": 9,
+        "time": 12,
+        "kind": "read",
+        "tx": "B",
+        "key": "y",
+        "version": "y0"
+      },
+      {
+        "seq": 10,
+        "time": 13,
+        "kind": "write",
+        "tx": "A",
+        "key": "y",
+        "version": "y1",
+        "predecessor": "y0"
+      },
+      {
+        "seq": 11,
+        "time": 14,
+        "kind": "write",
+        "tx": "B",
+        "key": "x",
+        "version": "x2",
+        "predecessor": "x1"
+      },
+      {
+        "seq": 12,
+        "time": 15,
+        "kind": "commit_request",
+        "tx": "A"
+      },
+      {
+        "seq": 13,
+        "time": 16,
+        "kind": "commit_ok",
+        "tx": "A"
+      },
+      {
+        "seq": 14,
+        "time": 17,
+        "kind": "commit_request",
+        "tx": "B"
+      },
+      {
+        "seq": 15,
+        "time": 18,
+        "kind": "commit_ok",
+        "tx": "B"
+      }
+    ]
+  },
+  "report": {
+    "schemaVersion": 3,
+    "tool": "MoonTxnWitness",
+    "version": "0.2.3",
+    "algorithm": "v3-register-1",
+    "status": "violation",
+    "modelDefinition": {
+      "id": "register-serializable-v1",
+      "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+    },
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "normalized": {
+      "schema": 3,
+      "algorithm": "v3-lifecycle-1",
+      "status": "ready",
+      "coverage": {
+        "complete": true,
+        "gaps": []
+      },
+      "observations": [
+        {
+          "seq": 1,
+          "time": 0,
+          "kind": "snapshot",
+          "initial": {
+            "x": "x0",
+            "y": "y0"
+          },
+          "consistent": true
+        },
+        {
+          "seq": 2,
+          "time": 1,
+          "kind": "begin",
+          "tx": "source",
+          "connection": "source-connection"
+        },
+        {
+          "seq": 3,
+          "time": 2,
+          "kind": "write",
+          "tx": "source",
+          "key": "x",
+          "version": "x1",
+          "predecessor": "x0"
+        },
+        {
+          "seq": 4,
+          "time": 3,
+          "kind": "commit_request",
+          "tx": "source"
+        },
+        {
+          "seq": 5,
+          "time": 4,
+          "kind": "commit_ok",
+          "tx": "source"
+        },
+        {
+          "seq": 6,
+          "time": 9,
+          "kind": "begin",
+          "tx": "A",
+          "connection": "A-connection"
+        },
+        {
+          "seq": 7,
+          "time": 10,
+          "kind": "begin",
+          "tx": "B",
+          "connection": "B-connection"
+        },
+        {
+          "seq": 8,
+          "time": 11,
+          "kind": "read",
+          "tx": "A",
+          "key": "x",
+          "version": "x1"
+        },
+        {
+          "seq": 9,
+          "time": 12,
+          "kind": "read",
+          "tx": "B",
+          "key": "y",
+          "version": "y0"
+        },
+        {
+          "seq": 10,
+          "time": 13,
+          "kind": "write",
+          "tx": "A",
+          "key": "y",
+          "version": "y1",
+          "predecessor": "y0"
+        },
+        {
+          "seq": 11,
+          "time": 14,
+          "kind": "write",
+          "tx": "B",
+          "key": "x",
+          "version": "x2",
+          "predecessor": "x1"
+        },
+        {
+          "seq": 12,
+          "time": 15,
+          "kind": "commit_request",
+          "tx": "A"
+        },
+        {
+          "seq": 13,
+          "time": 16,
+          "kind": "commit_ok",
+          "tx": "A"
+        },
+        {
+          "seq": 14,
+          "time": 17,
+          "kind": "commit_request",
+          "tx": "B"
+        },
+        {
+          "seq": 15,
+          "time": 18,
+          "kind": "commit_ok",
+          "tx": "B"
+        }
+      ],
+      "effects": [
+        {
+          "seq": 3,
+          "tx": "source",
+          "key": "x",
+          "version": "x1",
+          "predecessor": "x0",
+          "revertedBy": null
+        },
+        {
+          "seq": 10,
+          "tx": "A",
+          "key": "y",
+          "version": "y1",
+          "predecessor": "y0",
+          "revertedBy": null
+        },
+        {
+          "seq": 11,
+          "tx": "B",
+          "key": "x",
+          "version": "x2",
+          "predecessor": "x1",
+          "revertedBy": null
+        }
+      ],
+      "transactions": [
+        {
+          "id": "source",
+          "connection": "source-connection",
+          "status": "committed",
+          "beginSeq": 2,
+          "endSeq": 5,
+          "events": [
+            2,
+            3,
+            4,
+            5
+          ],
+          "finalWrites": [
+            3
+          ]
+        },
+        {
+          "id": "A",
+          "connection": "A-connection",
+          "status": "committed",
+          "beginSeq": 6,
+          "endSeq": 13,
+          "events": [
+            6,
+            8,
+            10,
+            12,
+            13
+          ],
+          "finalWrites": [
+            10
+          ]
+        },
+        {
+          "id": "B",
+          "connection": "B-connection",
+          "status": "committed",
+          "beginSeq": 7,
+          "endSeq": 15,
+          "events": [
+            7,
+            9,
+            11,
+            14,
+            15
+          ],
+          "finalWrites": [
+            11
+          ]
+        }
+      ],
+      "history": {
+        "schemaVersion": 1,
+        "model": "serializable",
+        "initial": {
+          "x": "x0",
+          "y": "y0"
+        },
+        "versionOrders": {
+          "x": [
+            "x0",
+            "x1",
+            "x2"
+          ],
+          "y": [
+            "y0",
+            "y1"
+          ]
+        },
+        "transactions": [
+          {
+            "id": "source",
+            "status": "committed",
+            "ops": [
+              {
+                "type": "write",
+                "key": "x",
+                "version": "x1"
+              }
+            ],
+            "start": null,
+            "end": null
+          },
+          {
+            "id": "A",
+            "status": "committed",
+            "ops": [
+              {
+                "type": "read",
+                "key": "x",
+                "version": "x1"
+              },
+              {
+                "type": "write",
+                "key": "y",
+                "version": "y1"
+              }
+            ],
+            "start": null,
+            "end": null
+          },
+          {
+            "id": "B",
+            "status": "committed",
+            "ops": [
+              {
+                "type": "read",
+                "key": "y",
+                "version": "y0"
+              },
+              {
+                "type": "write",
+                "key": "x",
+                "version": "x2"
+              }
+            ],
+            "start": null,
+            "end": null
+          }
+        ]
+      }
+    },
+    "evidence": {
+      "schemaVersion": 2,
+      "tool": "MoonTxnWitness",
+      "version": "0.2.3",
+      "status": "violation",
+      "model": "serializable",
+      "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+      "complete": true,
+      "stats": {
+        "transactions": 3,
+        "committed": 3,
+        "operations": 5,
+        "dependencies": 4
+      },
+      "findings": [
+        {
+          "code": "dependency_cycle",
+          "severity": "violation",
+          "message": "The dependency cycle prevents any serial order satisfying these observations and constraints",
+          "transactions": [
+            "A",
+            "B"
+          ],
+          "key": null,
+          "ops": []
+        }
+      ],
+      "edges": [
+        {
+          "from": "source",
+          "to": "B",
+          "kind": "ww",
+          "key": "x",
+          "fromOp": 0,
+          "toOp": 1,
+          "fromVersion": "x1",
+          "toVersion": "x2",
+          "reason": "The asserted per-key version order puts this write before the next write."
+        },
+        {
+          "from": "source",
+          "to": "A",
+          "kind": "wr",
+          "key": "x",
+          "fromOp": 0,
+          "toOp": 0,
+          "fromVersion": "x1",
+          "toVersion": "x1",
+          "reason": "The reader observes the unique final version written by the source transaction."
+        },
+        {
+          "from": "A",
+          "to": "B",
+          "kind": "rw",
+          "key": "x",
+          "fromOp": 0,
+          "toOp": 1,
+          "fromVersion": "x1",
+          "toVersion": "x2",
+          "reason": "The reader observes an earlier version and must precede this later committed write."
+        },
+        {
+          "from": "B",
+          "to": "A",
+          "kind": "rw",
+          "key": "y",
+          "fromOp": 0,
+          "toOp": 1,
+          "fromVersion": "y0",
+          "toVersion": "y1",
+          "reason": "The reader observes an earlier version and must precede this later committed write."
+        }
+      ],
+      "witness": {
+        "kind": "dependency_cycle",
+        "transactions": [
+          "A",
+          "B",
+          "A"
+        ],
+        "edges": [
+          {
+            "from": "A",
+            "to": "B",
+            "kind": "rw",
+            "key": "x",
+            "fromOp": 0,
+            "toOp": 1,
+            "fromVersion": "x1",
+            "toVersion": "x2",
+            "reason": "The reader observes an earlier version and must precede this later committed write."
+          },
+          {
+            "from": "B",
+            "to": "A",
+            "kind": "rw",
+            "key": "y",
+            "fromOp": 0,
+            "toOp": 1,
+            "fromVersion": "y0",
+            "toVersion": "y1",
+            "reason": "The reader observes an earlier version and must precede this later committed write."
+          }
+        ],
+        "minimality": "shortest directed cycle in the constructed graph"
+      },
+      "serialOrder": [],
+      "versionOrders": {
+        "x": [
+          "x0",
+          "x1",
+          "x2"
+        ],
+        "y": [
+          "y0",
+          "y1"
+        ]
+      },
+      "versionOrderSources": {
+        "x": "asserted",
+        "y": "asserted"
+      },
+      "graph": {
+        "analyzed": true,
+        "components": 2,
+        "cyclicComponents": 1,
+        "cyclicTransactions": 2,
+        "bfsRoots": 1,
+        "edgeBudgetExceeded": false
+      },
+      "coverage": [
+        {
+          "key": "x",
+          "committedReads": 1,
+          "committedFinalWrites": 2,
+          "unresolvedReads": 0,
+          "versionOrderSource": "asserted",
+          "sourceLabel": "采集声明的版本链"
+        },
+        {
+          "key": "y",
+          "committedReads": 1,
+          "committedFinalWrites": 1,
+          "unresolvedReads": 0,
+          "versionOrderSource": "asserted",
+          "sourceLabel": "采集声明的版本链"
+        }
+      ],
+      "nextSteps": [
+        "保留原始日志，使用 shrink 缩减反例，并用 capsule 保存可复现证据。"
+      ],
+      "search": {
+        "status": "not-needed",
+        "reason": "No bounded completion search was required."
+      },
+      "algorithm": "bounded-register-v2.1",
+      "effectiveLimits": {
+        "transactions": 12,
+        "operations": 512,
+        "keys": 128,
+        "attempts": 100000,
+        "operationChecks": 1000000,
+        "cachedStates": 50000
+      },
+      "analysisOptions": {
+        "maxAttempts": 100000,
+        "maxOperationChecks": 1000000,
+        "maxCachedStates": 50000
+      },
+      "metrics": {
+        "attempts": 0,
+        "operationChecks": 0,
+        "cacheHits": 0,
+        "cachedStates": 0,
+        "blockers": []
+      }
+    },
+    "execution": {
+      "analysisOptions": {
+        "maxAttempts": 100000,
+        "maxOperationChecks": 1000000,
+        "maxCachedStates": 50000
+      },
+      "effectiveLimits": {
+        "transactions": 12,
+        "operations": 512,
+        "keys": 128,
+        "attempts": 100000,
+        "operationChecks": 1000000,
+        "cachedStates": 50000
+      },
+      "metrics": {
+        "attempts": 0,
+        "operationChecks": 0,
+        "cacheHits": 0,
+        "cachedStates": 0,
+        "blockers": []
+      }
+    }
+  }
+}

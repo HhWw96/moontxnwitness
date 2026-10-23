@@ -95,6 +95,17 @@ def validate_scoped_acceptance(acceptance, manifest):
         assert instrumentation['failures'] == instrumentation['errors'] == instrumentation['skipped'] == 0
         for kind in ('source', 'portable'):
             assert kind + ' standalone automatic instrumentation without optional dependencies and with explicit diagnostic gaps' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 3):
+        original22=summary['publicV022CompatibilityTests']
+        assert original22['passed'] and original22['actualPublishedProducer'] and original22['runtimeVersion']==VERSION
+        assert original22['producerEngineVersion']=='0.2.2' and original22['capsules']==8 and original22['checks']>=100
+        for kind in ('source','portable'):
+            assert kind + ' actual-public-v022 model, execution and invalid-diagnostic capsule compatibility' in package['checks']
+        persistence = summary['groupedPersistenceUnitTests']
+        assert persistence['passed'] and persistence['testsRun'] > 0
+        assert persistence['failures'] == persistence['errors'] == 0
+        for kind in ('source', 'portable'):
+            assert kind + ' standalone grouped source durability and legacy source compatibility' in package['checks']
     tested = json.loads(run(['node', '--input-type=module', '-e',
         "import {verificationFingerprint} from './scripts/verification-fingerprint.mjs'; console.log(JSON.stringify(verificationFingerprint(process.cwd())));" ]))
     assert tested == summary['testedFileSha256'], 'Current executable files differ from tested release'

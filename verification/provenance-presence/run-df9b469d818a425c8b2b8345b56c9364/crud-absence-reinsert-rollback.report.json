@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 2,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.3",
+  "status": "consistent",
+  "model": "serializable",
+  "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+  "complete": true,
+  "stats": {
+    "transactions": 5,
+    "committed": 2,
+    "operations": 19,
+    "dependencies": 2
+  },
+  "findings": [],
+  "edges": [
+    {
+      "from": "tx-1",
+      "to": "tx-3",
+      "kind": "wr",
+      "key": "[\"mtw_provenance_presence_0448e17e5b36.presence_serial\",\"text\",\"a\"]",
+      "fromOp": 7,
+      "toOp": 0,
+      "fromVersion": "156e1d66-d74b-4504-bcf3-1a30eeb5fa0f",
+      "toVersion": "156e1d66-d74b-4504-bcf3-1a30eeb5fa0f",
+      "reason": "The reader observes the unique final version written by the source transaction."
+    },
+    {
+      "from": "tx-1",
+      "to": "tx-3",
+      "kind": "wr",
+      "key": "[\"mtw_provenance_presence_0448e17e5b36.presence_serial\",\"text\",\"b\"]",
+      "fromOp": 11,
+      "toOp": 1,
+      "fromVersion": "7766121b-19a7-4be7-84b2-b3f2b63b3408",
+      "toVersion": "7766121b-19a7-4be7-84b2-b3f2b63b3408",
+      "reason": "The reader observes the unique final version written by the source transaction."
+    }
+  ],
+  "witness": null,
+  "serialOrder": [
+    "tx-1",
+    "tx-3"
+  ],
+  "versionOrders": {
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_serial\",\"text\",\"a\"]": [
+      "0f7b64ff-65c6-4b70-b424-ff164196481d",
+      "156e1d66-d74b-4504-bcf3-1a30eeb5fa0f"
+    ],
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_serial\",\"text\",\"b\"]": [
+      "77ed942a-6feb-4f8a-84d5-958d25a575af",
+      "7766121b-19a7-4be7-84b2-b3f2b63b3408"
+    ],
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_serial\",\"text\",\"never\"]": [
+      "ea7b8e57-7e3c-4bc0-999d-204817e891d9"
+    ]
+  },
+  "versionOrderSources": {
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_serial\",\"text\",\"a\"]": "asserted",
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_serial\",\"text\",\"b\"]": "asserted",
+    "[\"mtw_provenance_presence_0448e17e5b36.presence_serial\",\"text\",\"never\"]": "asserted"
+  },
+  "graph": {
+    "analyzed": true,
+    "components": 2,
+    "cyclicComponents": 0,
+    "cyclicTransactions": 0,
+    "bfsRoots": 0,
+    "edgeBudgetExceeded": false
+  },
+  "coverage": [
+    {
+      "key": "[\"mtw_provenance_presence_0448e17e5b36.presence_serial\",\"text\",\"a\"]",
+      "committedReads": 5,
+      "committedFinalWrites": 1,
+      "unresolvedReads": 0,
+      "versionOrderSource": "asserted",
+      "sourceLabel": "采集声明的版本链"
+    },
+    {
+      "key": "[\"mtw_provenance_presence_0448e17e5b36.presence_serial\",\"text\",\"b\"]",
+      "committedReads": 4,
+      "committedFinalWrites": 1,
+      "unresolvedReads": 0,
+      "versionOrderSource": "asserted",
+      "sourceLabel": "采集声明的版本链"
+    },
+    {
+      "key": "[\"mtw_provenance_presence_0448e17e5b36.presence_serial\",\"text\",\"never\"]",
+      "committedReads": 0,
+      "committedFinalWrites": 0,
+      "unresolvedReads": 0,
+      "versionOrderSource": "asserted",
+      "sourceLabel": "采集声明的版本链"
+    }
+  ],
+  "nextSteps": [],
+  "search": {
+    "status": "not-needed",
+    "reason": "No bounded completion search was required."
+  },
+  "algorithm": "bounded-register-v2.1",
+  "effectiveLimits": {
+    "transactions": 12,
+    "operations": 512,
+    "keys": 128,
+    "attempts": 100000,
+    "operationChecks": 1000000,
+    "cachedStates": 50000
+  },
+  "analysisOptions": {
+    "maxAttempts": 100000,
+    "maxOperationChecks": 1000000,
+    "maxCachedStates": 50000
+  },
+  "metrics": {
+    "attempts": 0,
+    "operationChecks": 0,
+    "cacheHits": 0,
+    "cachedStates": 0,
+    "blockers": []
+  }
+}

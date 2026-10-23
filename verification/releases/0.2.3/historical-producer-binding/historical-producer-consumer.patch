@@ -1,0 +1,32 @@
+--- a/verification/v3/tools/mlflow_execution_audit.py
++++ b/verification/v3/tools/mlflow_execution_audit.py
+@@ -136,9 +136,27 @@
+             assert r['keysEach']==1000 and r['originalBatchSize']==500
+             assert r['runtimeSourceBindings']==r['runtimeSourceBindingsAfter'] and r['runtimeSourceUnchanged']
+             assert not r['threadsStillAlive'] and r['controllerError'] is None
++            # Historical producer identity belongs to its frozen raw snapshot,
++            # while the current build below is the executable consumer. They may
++            # legitimately differ after a collector/storage implementation update.
+             for name,b in r['runtimeSourceBindings'].items():
+-                bind(ROOT/name,b);snapshot=gzip.decompress(bind(d/'source-snapshots'/(Path(name).name+'.gz')))
+-                assert snapshot==(ROOT/name).read_bytes()
++                snapshot_path=d/'source-snapshots'/(Path(name).name+'.gz')
++                snapshot=gzip.decompress(bind(snapshot_path))
++                expected_sha=b if isinstance(b,str) else b['sha256']
++                assert SHA(snapshot)==expected_sha,'Historical producer snapshot hash: '+name
++                if isinstance(b,dict) and 'bytes' in b:
++                    assert len(snapshot)==b['bytes'],'Historical producer snapshot length: '+name
++                receipt.setdefault('historicalProducerBindings',[]).append({
++                    'label':label,'logicalSource':name,'snapshot':snapshot_path.relative_to(ROOT).as_posix(),
++                    'bytes':len(snapshot),'sha256':SHA(snapshot),'matchesOriginalReceipt':True})
++                current=ROOT/name
++                current_raw=bind(current) if current.is_file() else None
++                receipt.setdefault('currentPythonSourceBindings',[]).append({
++                    'label':label,'file':name,'available':current_raw is not None,
++                    'sha256':SHA(current_raw) if current_raw is not None else None,
++                    'matchesHistoricalProducer':current_raw==snapshot if current_raw is not None else False,
++                    'role':'current source inventory only; executable consumer is the separately bound SDK/CLI build'})
++            receipt['producerConsumerBindingPolicy']='historical-frozen-producer/current-executable-consumer-v1'
+             license=bind(upstream/label/'LICENSE.txt');assert b'Apache License' in license and b'Version 2.0' in license
+             for source in r['sourceBindings']:
+                 f=next(f for f in fetch if f['label']==label and f['file']==source['file']);assert f['commit']==commit and commit in f['url']

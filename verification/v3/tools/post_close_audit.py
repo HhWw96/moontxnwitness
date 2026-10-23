@@ -200,6 +200,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     sources = ["integrations/python/moontxnwitness_capture/capture_v3.py",
                "integrations/python/moontxnwitness_capture/journal_v3.py",
+               "integrations/python/moontxnwitness_capture/_durable_policy.py",
                "integrations/python/moontxnwitness_capture/capture.py"]
     before = {name: binding(ROOT / name) for name in sources}
     cases = []
