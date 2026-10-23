@@ -16,6 +16,8 @@ EXCLUDED_NAMES = {'.local-toolchain.json', '.DS_Store'}
 # Preserve complete fixed runs, not just the few trace files used by consumers.
 # Their original receipts/SQL/journals/capsules continue to describe these bytes.
 FIXED_VERIFICATION_ROOTS = {
+    'verification/configured-user-profile/v024-initial': 'configured ORM host: both exact real source packets and retained first failure receipts',
+    'verification/capture-persistence/v023-initial': 'configured ORM host: exact earlier real unknown COMMIT input and collector receipts',
     'verification/experimental-candidates/v021-structured-withdrawn': 'withdrawn candidate source, runtime and test preservation; not a stable performance claim',
     'verification/releases/0.2.0/published-package-review/public-reproduction/downloaded-components/0.2.0/portable/dist': 'public20 exact six-file SDK baseline for reproducible performance',
     'verification/fixtures/v010-comparison': 'twenty pinned common control inputs; same original manifest and bytes',
@@ -192,8 +194,14 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.add('scripts/v022-compatibility-test.mjs')
         require_tree('fixtures/compat-v022', 'fresh-consumer original published22 capsules')
         portable.update(n for n in public_names if n.startswith('fixtures/compat-v022/'))
+    if tuple(map(int, version.split('.'))) >= (0, 2, 4):
+        require('scripts/v023-compatibility-test.mjs', 'fresh-consumer actual published23 compatibility')
+        portable.add('scripts/v023-compatibility-test.mjs')
+        require_tree('fixtures/compat-v023', 'fresh-consumer original published23 capsules')
+        portable.update(n for n in public_names if n.startswith('fixtures/compat-v023/'))
     # The standalone execution example consumes exact frozen traces and licenses.
     portable.update(n for n in public_names if n.startswith('fixtures/execution-v3/'))
+    portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     for name in sorted(source | portable):
         if not (root / name).is_file() or (root / name).is_symlink():
             missing.append({'file': name, 'problem': 'selected item missing or non-regular'})

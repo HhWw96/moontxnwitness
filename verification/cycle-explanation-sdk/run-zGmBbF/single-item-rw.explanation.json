@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "kind": "moontxnwitness-register-cycle-explanation/v1",
+  "algorithm": "verified-register-cycle-v1",
+  "traceTextSha256": "7cf67dc99905f7295be18c9b01ee7b66a7e465ef4a91e4da8a8ee6c386f6202d",
+  "reportTextSha256": "87d355059c687ac78b899782c2f6e7a73f9704908bee090331f18d9b87b2ea50",
+  "verifiedReport": true,
+  "sourceReportVersion": "0.2.4",
+  "sourceStatus": "violation",
+  "sourceCoverageComplete": true,
+  "status": "explained",
+  "reason": "verified-point-cycle",
+  "subtype": "G-single-item",
+  "categoriesSearched": false,
+  "scope": {
+    "witnessOnly": true,
+    "searchesOtherCategoryCycles": false,
+    "acceptsIsolationModels": false,
+    "completeIsolationClassification": false,
+    "classifiesExecutionFailures": false,
+    "authenticatesCaptureSources": false
+  },
+  "witness": {
+    "kind": "dependency_cycle",
+    "transactions": [
+      "single-item-rw-T0",
+      "single-item-rw-T1",
+      "single-item-rw-T0"
+    ],
+    "edges": [
+      {
+        "from": "single-item-rw-T0",
+        "to": "single-item-rw-T1",
+        "kind": "rw",
+        "key": "single-item-rw-k0",
+        "fromOp": 0,
+        "toOp": 0,
+        "fromVersion": "single-item-rw-v0-0",
+        "toVersion": "single-item-rw-v0-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "single-item-rw-T1",
+        "to": "single-item-rw-T0",
+        "kind": "wr",
+        "key": "single-item-rw-k1",
+        "fromOp": 1,
+        "toOp": 1,
+        "fromVersion": "single-item-rw-v1-1",
+        "toVersion": "single-item-rw-v1-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      }
+    ],
+    "minimality": "shortest directed cycle in the constructed graph"
+  },
+  "steps": [
+    {
+      "edgeIndex": 0,
+      "dependency": {
+        "from": "single-item-rw-T0",
+        "to": "single-item-rw-T1",
+        "kind": "rw",
+        "key": "single-item-rw-k0",
+        "fromOp": 0,
+        "toOp": 0,
+        "fromVersion": "single-item-rw-v0-0",
+        "toVersion": "single-item-rw-v0-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      "from": {
+        "transaction": "single-item-rw-T0",
+        "projectedOperation": 0,
+        "operation": {
+          "type": "read",
+          "key": "single-item-rw-k0",
+          "version": "single-item-rw-v0-0"
+        },
+        "matchingOriginalSeqs": [
+          6
+        ]
+      },
+      "to": {
+        "transaction": "single-item-rw-T1",
+        "projectedOperation": 0,
+        "operation": {
+          "type": "write",
+          "key": "single-item-rw-k0",
+          "version": "single-item-rw-v0-1"
+        },
+        "matchingOriginalSeqs": [
+          4
+        ]
+      },
+      "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+      "versionOrderSource": "asserted",
+      "versionOrder": [
+        "single-item-rw-v0-0",
+        "single-item-rw-v0-1"
+      ]
+    },
+    {
+      "edgeIndex": 1,
+      "dependency": {
+        "from": "single-item-rw-T1",
+        "to": "single-item-rw-T0",
+        "kind": "wr",
+        "key": "single-item-rw-k1",
+        "fromOp": 1,
+        "toOp": 1,
+        "fromVersion": "single-item-rw-v1-1",
+        "toVersion": "single-item-rw-v1-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      },
+      "from": {
+        "transaction": "single-item-rw-T1",
+        "projectedOperation": 1,
+        "operation": {
+          "type": "write",
+          "key": "single-item-rw-k1",
+          "version": "single-item-rw-v1-1"
+        },
+        "matchingOriginalSeqs": [
+          5
+        ]
+      },
+      "to": {
+        "transaction": "single-item-rw-T0",
+        "projectedOperation": 1,
+        "operation": {
+          "type": "read",
+          "key": "single-item-rw-k1",
+          "version": "single-item-rw-v1-1"
+        },
+        "matchingOriginalSeqs": [
+          7
+        ]
+      },
+      "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+      "versionOrderSource": "asserted",
+      "versionOrder": [
+        "single-item-rw-v1-0",
+        "single-item-rw-v1-1"
+      ]
+    }
+  ],
+  "rules": {
+    "repository": "jepsen-io/elle",
+    "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+    "file": "src/elle/txn.clj",
+    "definition": "cycle-explainer; ww/wr/item-rw subset only"
+  },
+  "pattern": {
+    "itemAntiDependencies": 1,
+    "adjacentAntiDependenciesIncludingWraparound": false
+  },
+  "categoryCoverage": "Only this existing witness; another anomaly may exist elsewhere in the history."
+}

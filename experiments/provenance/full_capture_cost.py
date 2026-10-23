@@ -9,6 +9,7 @@ import array
 import dataclasses
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -95,11 +96,21 @@ def write_json(path,value):
         json.dump(value,file,indent=2,ensure_ascii=False);file.write('\n')
 
 
+def _begin_warmup(connections_ready,start,shared,seconds,timeout):
+    """Wait for native connections/wrappers, then issue the full warmup window."""
+    connections_ready.wait(timeout=timeout)
+    began=time.monotonic()
+    shared['warmDeadline']=began+seconds
+    start.set()
+    return began
+
+
 def run_cell(config,output,connect):
     spec=WORKLOADS[config['workload']];mode=config['mode']
     schema='mtw_provenance_cost_'+uuid.uuid4().hex[:16]
     table=qualified(schema,'items')
     capture=sources=provenance=None
+    connections_ready=threading.Barrier(spec['connections']+1)
     warm_ready=threading.Barrier(spec['connections']+1)
     start=threading.Event();measure=threading.Event();stop=threading.Event()
     lock=threading.Lock();active=[];results=[]
@@ -110,7 +121,7 @@ def run_cell(config,output,connect):
              'captureScope':'raw automatic diagnostics plus controlled provenance; no complete model/ORM proof',
              'configuration':config,'fixtureSchema':schema,'workloadSpec':spec,'generator':GENERATOR,
              'formalProtocolCompleted':False,'allAttemptsRetained':True}
-    setup=None
+    setup=None;failed=[]
     try:
         setup=connect(autocommit=True)
         receipt.update(actualDatabaseExecution=True,server=setup.execute('SELECT version()').fetchone()[0])
@@ -130,7 +141,6 @@ def run_cell(config,output,connect):
             for key,value in provenance.initial.items():
                 result=sources.append({'kind':'source-batch','phase':'initial','observation':value.as_dict()})
                 if not result.accepted:raise RuntimeError('Initial source budget exhausted')
-        failed=[]
 
         def one(connection,randomizer,worker,ordinal,measured):
             op=operation(randomizer,spec);key=op['key']
@@ -179,6 +189,7 @@ def run_cell(config,output,connect):
             try:
                 raw=connect();connection=capture.wrap(raw) if capture is not None else raw
                 with lock:active.append(raw)
+                connections_ready.wait(timeout=config['drainSeconds'])
                 start.wait()
                 rng=random.Random(config['seed']+1000000+number)
                 ordinal=0
@@ -208,13 +219,16 @@ def run_cell(config,output,connect):
             except BaseException as error:
                 with lock:failed.append({'worker':number,'errorClass':type(error).__name__,'sqlstate':getattr(error,'sqlstate',None)})
                 stop.set()
+                try:connections_ready.abort()
+                except Exception:pass
                 try:warm_ready.abort()
                 except Exception:pass
             finally:
                 thread_result.update(warmupAttempts=warm_attempts,warmupCommits=warm_commits,
                                      warmupFailures=warm_errors,warmupSqlstateCounts=warm_sqlstates)
-                if connection is not None:
-                    try:connection.close()
+                closing_connection=connection if connection is not None else raw
+                if closing_connection is not None:
+                    try:closing_connection.close()
                     except Exception:pass
                 with lock:results.append(thread_result)
 
@@ -254,7 +268,8 @@ def run_cell(config,output,connect):
         monitor_thread=threading.Thread(target=monitor_locks,daemon=True);monitor_thread.start()
         threads=[threading.Thread(target=worker,args=(n,),daemon=True) for n in range(spec['connections'])]
         for thread in threads:thread.start()
-        shared['warmDeadline']=time.monotonic()+config['warmupSeconds'];start.set()
+        receipt['warmupStartMonotonicSeconds']=_begin_warmup(connections_ready,start,shared,config['warmupSeconds'],config['drainSeconds'])
+        receipt['warmupStartedAfterConnectionsReady']=True
         warm_ready.wait(timeout=config['warmupSeconds']+config['drainSeconds'])
         if capture is not None: capture.flush(); sources.flush()
         wal_before=setup.execute('SELECT pg_current_wal_insert_lsn()::text').fetchone()[0]
@@ -351,11 +366,14 @@ def run_cell(config,output,connect):
         return receipt
     except BaseException as error:
         receipt.update(status='failed',formalProtocolCompleted=False,errorClass=type(error).__name__,
+                       protocolFailures=list(failed),
                        sqlstate=getattr(error,'sqlstate',None),frames=[{'file':Path(f.filename).name,'line':f.lineno} for f in traceback.extract_tb(error.__traceback__)])
         return receipt
     finally:
         stop.set();start.set();measure.set();monitor_stop.set()
         if monitor_thread is not None:monitor_thread.join(2)
+        try:connections_ready.abort()
+        except Exception:pass
         try:warm_ready.abort()
         except Exception:pass
         if capture is not None:
@@ -406,7 +424,30 @@ def target_eligibility_reasons(cell):
         if type(counts) is not dict or any(type(v) is not int or v<0 for v in counts.values()):
             reasons.append(field+'_invalid')
         elif any(counts.values()):reasons.append(field+'_nonzero')
+    for field in ('endToEndCommittedTps','allAttemptP95Ns'):
+        value=cell.get(field)
+        if not _finite_nonnegative(value) or value<=0:
+            reasons.append(field+'_unavailable_or_nonpositive')
     return reasons
+
+
+def _finite_nonnegative(value):
+    if type(value) not in (int,float):return False
+    try:return math.isfinite(value) and value>=0
+    except (OverflowError,ValueError):return False
+
+
+def _metric_ratio(value,baseline):
+    if not _finite_nonnegative(value) or not _finite_nonnegative(baseline) or baseline==0:return None
+    result=value/baseline
+    return result if _finite_nonnegative(result) else None
+
+
+def _geometric_metric(values):
+    if not all(_finite_nonnegative(value) for value in values):return None
+    if any(value==0 for value in values):return 0.0
+    try:return math.exp(sum(math.log(value) for value in values)/len(values))
+    except OverflowError:return None
 
 
 def compare(cells):
@@ -420,17 +461,16 @@ def compare(cells):
             if any(v is None or v['status'] not in ('passed','smoke-passed') or v.get('captureBudgetExhausted') for v in values):
                 output[name]={'status':'incomplete','eligibleForTargets':False};break
             a,b,c=values
-            if not a['endToEndCommittedTps'] or not a['allAttemptP95Ns']:raise ValueError('No valid A baseline')
-            pairs.append({'batch':batch,'sourceThroughputBOverA':b['endToEndCommittedTps']/a['endToEndCommittedTps'],
-                          'fullCaptureThroughputCOverA':c['endToEndCommittedTps']/a['endToEndCommittedTps'],
-                          'fullCaptureP95COverA':c['allAttemptP95Ns']/a['allAttemptP95Ns']})
+            pairs.append({'batch':batch,'sourceThroughputBOverA':_metric_ratio(b.get('endToEndCommittedTps'),a.get('endToEndCommittedTps')),
+                          'fullCaptureThroughputCOverA':_metric_ratio(c.get('endToEndCommittedTps'),a.get('endToEndCommittedTps')),
+                          'fullCaptureP95COverA':_metric_ratio(c.get('allAttemptP95Ns'),a.get('allAttemptP95Ns'))})
         else:
-            throughput=math.exp(sum(math.log(x['fullCaptureThroughputCOverA']) for x in pairs)/3)
-            p95=math.exp(sum(math.log(x['fullCaptureP95COverA']) for x in pairs)/3)
+            throughput=_geometric_metric([x['fullCaptureThroughputCOverA'] for x in pairs])
+            p95=_geometric_metric([x['fullCaptureP95COverA'] for x in pairs])
             matching=[x for x in cells if x['configuration']['workload']==name]
             qualification=[{'batch':x['configuration']['batch'],'mode':x['configuration']['mode'],
                             'reasons':target_eligibility_reasons(x)} for x in matching]
-            eligible=not any(x['reasons'] for x in qualification)
+            eligible=not any(x['reasons'] for x in qualification) and throughput is not None and p95 is not None
             output[name]={'status':'complete','pairedBatches':pairs,
                           'fullCaptureThroughputCOverA':throughput,'fullCaptureP95COverA':p95,
                           'cellQualification':qualification,

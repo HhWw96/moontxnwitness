@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.4",
+  "algorithm": "v3-register-1",
+  "status": "inconclusive",
+  "modelDefinition": {
+    "id": "register-serializable-v1",
+    "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+  },
+  "coverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "missing_fixture_chunk",
+        "message": "Known missing observations; do not explain a complete cycle"
+      }
+    ]
+  },
+  "normalized": {
+    "schema": 3,
+    "algorithm": "v3-lifecycle-1",
+    "status": "inconclusive",
+    "coverage": {
+      "complete": false,
+      "gaps": [
+        {
+          "code": "missing_fixture_chunk",
+          "message": "Known missing observations; do not explain a complete cycle"
+        }
+      ]
+    },
+    "observations": [
+      {
+        "kind": "snapshot",
+        "consistent": true,
+        "initial": {
+          "gap-k0": "gap-v0-0",
+          "gap-k1": "gap-v1-0"
+        },
+        "seq": 1,
+        "time": 0
+      },
+      {
+        "kind": "begin",
+        "tx": "gap-T0",
+        "connection": "gap-T0",
+        "seq": 2,
+        "time": 1
+      },
+      {
+        "kind": "begin",
+        "tx": "gap-T1",
+        "connection": "gap-T1",
+        "seq": 3,
+        "time": 2
+      },
+      {
+        "kind": "write",
+        "tx": "gap-T1",
+        "key": "gap-k0",
+        "version": "gap-v0-1",
+        "predecessor": "gap-v0-0",
+        "seq": 4,
+        "time": 3
+      },
+      {
+        "kind": "write",
+        "tx": "gap-T0",
+        "key": "gap-k1",
+        "version": "gap-v1-1",
+        "predecessor": "gap-v1-0",
+        "seq": 5,
+        "time": 4
+      },
+      {
+        "kind": "read",
+        "tx": "gap-T0",
+        "key": "gap-k0",
+        "version": "gap-v0-0",
+        "seq": 6,
+        "time": 5
+      },
+      {
+        "kind": "read",
+        "tx": "gap-T1",
+        "key": "gap-k1",
+        "version": "gap-v1-0",
+        "seq": 7,
+        "time": 6
+      },
+      {
+        "kind": "commit_request",
+        "tx": "gap-T0",
+        "seq": 8,
+        "time": 7
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "gap-T0",
+        "seq": 9,
+        "time": 8
+      },
+      {
+        "kind": "commit_request",
+        "tx": "gap-T1",
+        "seq": 10,
+        "time": 9
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "gap-T1",
+        "seq": 11,
+        "time": 10
+      }
+    ],
+    "effects": [
+      {
+        "seq": 4,
+        "tx": "gap-T1",
+        "key": "gap-k0",
+        "version": "gap-v0-1",
+        "predecessor": "gap-v0-0",
+        "revertedBy": null
+      },
+      {
+        "seq": 5,
+        "tx": "gap-T0",
+        "key": "gap-k1",
+        "version": "gap-v1-1",
+        "predecessor": "gap-v1-0",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "gap-T0",
+        "connection": "gap-T0",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          5,
+          6,
+          8,
+          9
+        ],
+        "finalWrites": [
+          5
+        ]
+      },
+      {
+        "id": "gap-T1",
+        "connection": "gap-T1",
+        "status": "committed",
+        "beginSeq": 3,
+        "endSeq": 11,
+        "events": [
+          3,
+          4,
+          7,
+          10,
+          11
+        ],
+        "finalWrites": [
+          4
+        ]
+      }
+    ],
+    "history": null
+  },
+  "evidence": null,
+  "execution": {
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "metrics": null
+  }
+}

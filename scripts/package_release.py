@@ -35,7 +35,7 @@ current_source = subprocess.check_output([NODE, '--input-type=module', '-e',
 assert current_source == MANIFEST['sourceSha256'], 'MoonBit source changed after the verified build'
 for runtime, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'captureCoreSha256')):
     assert hashlib.sha256((ROOT / 'dist' / runtime).read_bytes()).hexdigest() == MANIFEST[field], 'Compiled runtime changed after build'
-for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'demo.mjs', 'postgres-demo.mjs'):
+for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'demo.mjs', 'postgres-demo.mjs'):
     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
 
 
@@ -154,6 +154,26 @@ for kind in ("portable", "source"):
         assert derived['valid'] and derived['subtype'] == 'G2-item'
         checks.append(kind + ' verified register-cycle SDK and original-capsule derived-explanation round trip')
 
+    if (consumer / 'dist/orm-profile.mjs').is_file():
+        profile_demo = json.loads(run([NODE, 'examples/orm-profile-roundtrip.mjs', '--out-root', str(work)], consumer))
+        assert profile_demo['passed'] and profile_demo['version'] == VERSION
+        assert profile_demo['actualDatabaseExecution'] is False and profile_demo['syntheticAnomalyIsActualDatabaseExecution'] is False
+        assert profile_demo['originalPacketsFromRetainedActualDatabaseRuns'] == 2
+        assert profile_demo['syntheticOriginalTransactions'] == 4 and profile_demo['syntheticReducedTransactions'] == 3
+        assert profile_demo['sourceClosureComplete'] and profile_demo['oneMinimal'] and profile_demo['originalDiagnosticsRemainPartial']
+        assert profile_demo['semanticCandidateChecks'] <= profile_demo['maxSemanticCandidateChecks'] == 256
+        assert profile_demo['candidateAttempts'] == profile_demo['semanticCandidateChecks'] + profile_demo['cachedCandidateLookups']
+        assert profile_demo['verificationPasses']['finalCandidateAnalyses'] == profile_demo['verificationPasses']['finalReportReplays'] == 1
+        directory = (work / profile_demo['outputDirectory']).resolve()
+        assert directory.is_relative_to(work.resolve())
+        for item in profile_demo['files']:
+            path = (directory / item['file']).resolve()
+            assert path.is_relative_to(directory)
+            assert sha256(path) == item['sha256'] and path.stat().st_size == item['bytes']
+        replay = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-orm-profile-v3', str(directory / 'synthetic-closed.capsule.json')], consumer))
+        assert replay['valid'] and replay['report']['result']['reduction']['sourceClosure']['complete']
+        checks.append(kind + ' configured ORM explicit-profile source binding, closed reduction and capsule replay')
+
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 7):
         execution_demo = json.loads(run([NODE, 'examples/execution-roundtrip.mjs', '--out-root', str(work)], consumer))
         assert execution_demo['passed'] and execution_demo['runtimeVersion'] == VERSION
@@ -209,6 +229,12 @@ for kind in ("portable", "source"):
         assert all(item['valid'] and item['engineVersion'] == '0.1.7' for item in previous_execution['cases'])
         checks.append(kind + ' actual-v017 execution-capsule compatibility')
 
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 4):
+        original23 = json.loads(run([NODE, 'scripts/v023-compatibility-test.mjs'], consumer))
+        assert original23['passed'] and original23['runtimeVersion'] == VERSION
+        assert original23['producerEngineVersion'] == '0.2.3' and original23['actualPublishedProducer']
+        assert original23['capsules'] == 8 and original23['checks'] >= 100
+        checks.append(kind + ' actual-public-v023 model, execution and invalid-diagnostic capsule compatibility')
     if tuple(map(int, VERSION.split('.'))) >= (0, 2, 3):
         original22 = json.loads(run([NODE, 'scripts/v022-compatibility-test.mjs'], consumer))
         assert original22['passed'] and original22['runtimeVersion'] == VERSION

@@ -8,6 +8,9 @@ ROOT=Path(__file__).resolve().parents[1]
 SUITES=['integrations/python/moontxnwitness_capture/test_source_sink.py',
         'integrations/python/moontxnwitness_capture/test_sync_watermark.py',
         'experiments/provenance/test_full_capture_cost.py',
+        'experiments/provenance/test_formal_harness_fix.py',
+        'experiments/provenance/test_formal_startup_failure.py',
+        'experiments/provenance/test_formal_workflow_contexts.py',
         'experiments/provenance/test_cell_archive.py']
 def bindings():
     files=[Path(__file__),*(ROOT/'integrations/python/moontxnwitness_capture').glob('*.py'),

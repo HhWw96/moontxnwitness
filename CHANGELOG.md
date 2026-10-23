@@ -1,7 +1,14 @@
+# 0.2.4 — 2026-10-23
+
+- Add an opt-in fixed base-user profile that collects original SQL, delivered results and version sources, then validates the full window in MoonBit before analysis.
+- Add explicit ORM-profile SDK/CLI analysis, source-closed reduction and byte-bound replay capsules; generic diagnostics retain their coverage gaps.
+- Preserve authentic public v0.2.3 capsules and the original driver-contract, core and host regression expectations.
+- Make full capture cost measurements handle failed/zero-throughput cells, synchronize workload startup and retain bounded cleanup. Performance results remain separate from this harness correction.
+
 # 0.2.3 — 2026-10-23
 
 - Add bounded group synchronization for event journals and optional provenance sources, with queue backpressure, durable watermarks and streaming source verification. Legacy source synchronization remains unchanged.
-- Release completed connection/call bookkeeping while retaining original observations on disk. Export source-closed windows without deleting original sources.
+- Release completed connection/call bookkeeping while retaining original observations on disk. Export complete sealed journals with their sources, without deleting original records.
 - Reject incomplete index writes and retain post-close refusal state even when a disk-full error prevents writing the invalidation marker.
 - Add preregistered A/B/C cost and lossless evidence-retention tools; failed SQL, gaps and exhausted budgets remain ineligible for performance target claims. Actual measured results are recorded separately.
 - Preserve released replay engines through v0.2.2 and retain original failure records and independent review findings.

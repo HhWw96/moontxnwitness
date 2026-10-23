@@ -1,0 +1,156 @@
+{
+  "schema": 1,
+  "kind": "independent-v024-adversarial-second",
+  "passed": false,
+  "candidateBuild": {
+    "version": "0.2.0",
+    "toolchain": {
+      "compiler": "v0.10.14+7d59c7ec9",
+      "moon": "moon 0.1.20260920"
+    },
+    "sourceSha256": "bd5c915fd6a0ee3640592b152f5e14bdd233afde1129e9d0164379043056e945",
+    "coreSha256": "7c80e561dbfccaf1098d7eff00b37f5059e6b9eea4279c828aeb95e9aa42c280",
+    "captureCoreSha256": "f329221ab929288dfcce15586c3082b4d185f101c581ed25972020b72955c617"
+  },
+  "originalEnvelopeSha256": "0c6d8c2ffc50808912278e031cd8ceb7b9b1981259a5d2e960b45365d9347d2c",
+  "runnerSha256": "2ff4f3fd1e54bcde51eda10fead1a55b32d56a6fa32c44c53062b483bbbdb055",
+  "actualDatabaseExecutionHere": false,
+  "formalPerformanceMeasurement": false,
+  "cases": [
+    {
+      "name": "18-scope-explicitly-not-exclusive",
+      "expectedAccepted": false,
+      "actualAccepted": false,
+      "passed": true,
+      "status": "inconclusive",
+      "reason": [
+        {
+          "code": "orm_profile_not_proven",
+          "message": "Failure(src/orm_sql_v3.mbt:24:5-24:18@HhWw96/moontxnwitness FAILED: ORM source mismatch: All original sourceSchema2 controls and effects independently verify)"
+        }
+      ],
+      "why": "An explicit non-exclusive writer window cannot be rewritten as a complete exclusive projection.",
+      "inputSha256": "82ba34f5f14dc979748b12054a0b3041bd57ae04f33a502ff1ffacaadcce6fa3",
+      "outputSha256": "3c092dacd0a3ead219bd2ca6b84d321bf87f7fc1e679e7f0da14bf93512383bf"
+    },
+    {
+      "name": "19-unmapped-execute-with-existing-tx",
+      "expectedAccepted": false,
+      "actualAccepted": true,
+      "passed": false,
+      "status": "consistent",
+      "reason": [],
+      "why": "A successful SQL call cannot be presumed a savepoint merely because no statement reference was supplied.",
+      "inputSha256": "58684e956e6549d8d64c9ecf314a5242b532ee4f9952e3a1b8c16c3b6ac51db0",
+      "outputSha256": "08f1e658d39b57a3ebc9de265c98ba6bff9001327aa6f30d3681984cf649e41d"
+    },
+    {
+      "name": "20-extra-duplicate-source-fact",
+      "expectedAccepted": false,
+      "actualAccepted": false,
+      "passed": true,
+      "status": "inconclusive",
+      "reason": [
+        {
+          "code": "orm_profile_not_proven",
+          "message": "Failure(src/orm_sql_v3.mbt:24:5-24:18@HhWw96/moontxnwitness FAILED: ORM source mismatch: All original sourceSchema2 controls and effects independently verify)"
+        }
+      ],
+      "why": "Every proven fact must be unique; duplicate raw source records cannot reuse the same SQL result.",
+      "inputSha256": "7a3aae5123870b9aeabf3f4f280e5659c3350f14ff8432644985e929341bd02f",
+      "outputSha256": "0f966650d62bf16cdfed04577b7fa4b84f7405d5c1bcbb3532080c11637dde23"
+    },
+    {
+      "name": "21-missing-source-batch",
+      "expectedAccepted": false,
+      "actualAccepted": false,
+      "passed": true,
+      "status": "inconclusive",
+      "reason": [
+        {
+          "code": "orm_profile_not_proven",
+          "message": "Failure(src/orm_sql_v3.mbt:24:5-24:18@HhWw96/moontxnwitness FAILED: ORM source mismatch: All original sourceSchema2 controls and effects independently verify)"
+        }
+      ],
+      "why": "Removing a source batch cannot leave a complete original statement/rows projection.",
+      "inputSha256": "ae7a1cea2592770bd9b1db1407088ff3b33d1008d34cf5324f757a747afa946b",
+      "outputSha256": "6f0541ca9b5990167c9d69114e54332ac6c73ee19a033a520aef43fb32854d82"
+    },
+    {
+      "name": "22-commit-response-after-call-end",
+      "expectedAccepted": false,
+      "actualAccepted": false,
+      "passed": true,
+      "status": "inconclusive",
+      "reason": [
+        {
+          "code": "orm_profile_not_proven",
+          "message": "Failure(src/orm_profile_v3.mbt:502:25-502:71@HhWw96/moontxnwitness FAILED: COMMIT lacks an actual native response)"
+        }
+      ],
+      "why": "Native response must occur inside the actual matching commit call.",
+      "inputSha256": "b9d7e52905bef80d7f5c20f7b653fe1640c7a62652699509d999790cc0a4a6db",
+      "outputSha256": "a93c9aef44f68b07976d9812531abef02c3ddd239e019ce9562a95d896f379a6"
+    },
+    {
+      "name": "23-lifecycle-monotonic-contradiction",
+      "expectedAccepted": false,
+      "actualAccepted": true,
+      "passed": false,
+      "status": "consistent",
+      "reason": [],
+      "why": "Opening time after all recorded work conflicts with a complete ordered capture window.",
+      "inputSha256": "4901101af256e20e9fb58ed7425bb50b14a204ac81afa7cc3ee46b6df73bb9e8",
+      "outputSha256": "9731bcc0f4c6b258ab4f9578cb7f6e412fb4cab043d450694fc05868360e9eed"
+    },
+    {
+      "name": "24-pool-close-during-live-transaction",
+      "expectedAccepted": false,
+      "actualAccepted": true,
+      "passed": false,
+      "status": "consistent",
+      "reason": [],
+      "why": "An explicitly closed active connection contradicts a later original COMMIT success for that connection.",
+      "inputSha256": "f187f83eac85d423ade9703f532fb43b1dd6479c5864e46c5cbefb0ba02f99b8",
+      "outputSha256": "2ad7e27554480767e3d974a65dc57a406cfa1300ad8779b5f1d65228316a371a"
+    },
+    {
+      "name": "25-unknown-sidecar-event",
+      "expectedAccepted": false,
+      "actualAccepted": true,
+      "passed": false,
+      "status": "consistent",
+      "reason": [],
+      "why": "Unrecognized actual source/lifecycle activity is not evidence that coverage is complete.",
+      "inputSha256": "012444843370892e3b7a006039c3ea3091895aaa91ae05438f0086ccc395593c",
+      "outputSha256": "49bf5e58ea0b2d141299b99f1b9c7fd03e3dcabab596ec43be7a23e67974f33d"
+    },
+    {
+      "name": "26-source-zero-native-ntuples",
+      "expectedAccepted": false,
+      "actualAccepted": false,
+      "passed": true,
+      "status": "inconclusive",
+      "reason": [
+        {
+          "code": "orm_profile_not_proven",
+          "message": "Failure(src/orm_sql_v3.mbt:24:5-24:18@HhWw96/moontxnwitness FAILED: ORM source mismatch: All original sourceSchema2 controls and effects independently verify)"
+        }
+      ],
+      "why": "No native returned row contradicts delivered result.",
+      "inputSha256": "2fe2aa725dee7361f3410e8c731a15cab5ae1cfad106617cfa5dbb5ac20490d0",
+      "outputSha256": "9698acec681aeab536fca4e01e6029a4a0020f374d617d708f8b9abf2855cd9a"
+    }
+  ],
+  "firstFailedExpectation": {
+    "name": "19-unmapped-execute-with-existing-tx",
+    "expectedAccepted": false,
+    "actualAccepted": true,
+    "passed": false,
+    "status": "consistent",
+    "reason": [],
+    "why": "A successful SQL call cannot be presumed a savepoint merely because no statement reference was supplied.",
+    "inputSha256": "58684e956e6549d8d64c9ecf314a5242b532ee4f9952e3a1b8c16c3b6ac51db0",
+    "outputSha256": "08f1e658d39b57a3ebc9de265c98ba6bff9001327aa6f30d3681984cf649e41d"
+  }
+}

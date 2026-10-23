@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 import { run_json, run_options_json, verify_certificate_json, shrink_json, shrink_options_json, compare_models_json, version } from './core.mjs';
 import { makeCapsule, replayCapsule, makeCapsuleV3, replayCapsuleV3 } from './evidence.mjs';
 import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFailuresV3, inspectOrmSourceV3 } from './sdk.mjs';
+import { analyzeOrmProfileV3, reduceOrmProfileV3, verifyOrmProfileV3,
+  makeOrmProfileCapsuleV3, makeOrmProfileReductionCapsuleV3, replayOrmProfileCapsuleV3 } from './orm-profile.mjs';
 
 const help = `MoonTxnWitness v${version()}
 用法：
@@ -21,6 +23,10 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs replay-v3 CAPSULE.json
   node dist/moontxnwitness.mjs failures-v3 TRACE3.json [--output FAILURES.json]
   node dist/moontxnwitness.mjs inspect-orm-source-v3 TRACE3.json SOURCE2.jsonl [--output SOURCES.json]
+  node dist/moontxnwitness.mjs orm-profile-v3 PROFILE_SOURCE.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs shrink-orm-profile-v3 PROFILE_SOURCE.json [--options OPTIONS.json] [--max-checks N] [--output REDUCTION.json] [--history MINI.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs replay-orm-profile-v3 CAPSULE.json [--output REPLAY.json]
+  node dist/moontxnwitness.mjs verify-orm-profile-v3 PROFILE_SOURCE.json REPORT.json [--options OPTIONS.json] [--output VERIFIED.json]
   ingest-v3/check-v3/reduce-v3 可选 --sql-proof dislock-f9946f0-sql-proof-1 核验固定 SQL 来源；默认保留原 v3 规则。
   check 也支持 --capsule FILE 导出含日志、报告和 SHA-256 的自包含复现包。
   check 支持 --profile balanced 使用 12 事务搜索和 v2 证据；默认 compat 保留旧接口行为。
@@ -33,6 +39,9 @@ ingest-presence 为实验入口，校验固定键普通表的存在性与版本�
 退出码：0 符合所选模型；1 确定异常；2 输入/执行/证据无效；3 无法判定。
 failures-v3 的退出码 0 仅表示诊断输入有效；即使记录了故障也为 0，不表示无故障、采集完整或模型符合。
 inspect-orm-source-v3 为固定 FastAPI Users SQLAlchemy 7.0.0/PG18 来源诊断；0 仅表示局部来源证明成功，完整历史仍无法判定；2 表示局部证明失败。
+orm-profile-v3 是显式安装来源并完整观察engine借还窗口的base-user点CRUD入口；原通用诊断缺口保留，不代表任意ORM/SQL。
+profile限制：来源包64MiB、4原文分别8/16/8/2MiB、选项4KiB、报告64MiB、胶囊128MiB；精确搜索12事务/512操作/128键，候选语义复验最多256次，缓存查找/尝试总数分列。
+profile只对证明完整的原始派生事实做事务删除；无法证明/预算不足保留无法判定。profile重放退出0只表示当前算法逐项重算相符，无法判定事实保持。
 结果只针对提供的唯一版本读写历史及版本顺序约束。不会连接数据库或上传数据。
 `;
 
@@ -114,6 +123,35 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (['orm-profile-v3','shrink-orm-profile-v3','replay-orm-profile-v3','verify-orm-profile-v3'].includes(args[0])) {
+    const command=args[0];
+    const allowed=command==='replay-orm-profile-v3'?['--output']:command==='verify-orm-profile-v3'?['--options','--output']:command==='shrink-orm-profile-v3'?['--options','--max-checks','--output','--history','--capsule']:['--options','--output','--capsule'];
+    const {paths,options}=localArgs(args.slice(1),allowed,command==='verify-orm-profile-v3'?2:1);
+    const inputs=[...paths,...(options['--options']?[options['--options']]:[])];
+    if(inputs.filter(path=>path==='-').length>1)throw new Error('多个输入不能同时使用标准输入');
+    const source=readBounded(paths[0],command==='replay-orm-profile-v3'?128*1024*1024:64*1024*1024);
+    let requested=options['--options']===undefined?{}:JSON.parse(readBounded(options['--options'],4096));
+    if(options['--max-checks']!==undefined){
+      if(!/^(0|[1-9][0-9]*)$/.test(options['--max-checks'])||Number(options['--max-checks'])>256)throw new Error('max-checks 必须为 0..256 整数');
+      if(requested===null||Array.isArray(requested)||typeof requested!=='object')throw new Error('缩减选项必须是对象');
+      if(Object.hasOwn(requested,'maxChecks'))throw new Error('不能重复指定maxChecks');
+      requested={...requested,maxChecks:Number(options['--max-checks'])};
+    }
+    let result;const companions=[];
+    if(command==='replay-orm-profile-v3')result=replayOrmProfileCapsuleV3(source);
+    else if(command==='verify-orm-profile-v3')result=verifyOrmProfileV3(source,readBounded(paths[1],64*1024*1024),options['--options']===undefined?undefined:requested);
+    else if(options['--capsule']){
+      const capsule=command==='orm-profile-v3'?makeOrmProfileCapsuleV3(source,requested):makeOrmProfileReductionCapsuleV3(source,requested);
+      result=JSON.parse(JSON.parse(capsule).reportText);companions.push([options['--capsule'],capsule]);
+    }else result=command==='orm-profile-v3'?analyzeOrmProfileV3(source,requested):reduceOrmProfileV3(source,requested);
+    if(options['--history']){
+      const history=result.result?.reduction?.reducedHistory;
+      if(!history||result.result?.finalReplay?.valid!==true)throw new Error('没有经来源核验和最终重放确认的缩减历史可导出');
+      companions.push([options['--history'],JSON.stringify(history,null,2)+'\n']);
+    }
+    if(Buffer.byteLength(JSON.stringify(result,null,2)+'\n','utf8')>128*1024*1024)throw new Error('profile输出超过128MiB');
+    emitJSON(result,options['--output'],inputs,companions);
+    process.exitCode='valid' in result?(result.valid?0:2):['consistent','reduced','unchanged'].includes(result.status)?0:result.status==='violation'?1:result.status==='invalid'?2:3;
   } else if (args[0] === 'inspect-orm-source-v3') {
     const {paths,options} = localArgs(args.slice(1),['--output'],2);
     if (paths[0] === '-' && paths[1] === '-') throw new Error('两个输入不能同时使用标准输入');

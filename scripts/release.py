@@ -114,6 +114,17 @@ def validate_scoped_acceptance(acceptance, manifest):
     assert source == manifest['sourceSha256'] and summary['buildManifest'] == manifest
     for name, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'captureCoreSha256')):
         assert sha256(ROOT / 'dist' / name) == manifest[field], 'Runtime differs from tested build'
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 4):
+        original23 = summary['publicV023CompatibilityTests']
+        assert original23['passed'] and original23['actualPublishedProducer'] and original23['runtimeVersion'] == VERSION
+        assert original23['producerEngineVersion'] == '0.2.3' and original23['capsules'] == 8 and original23['checks'] >= 100
+        configured = summary['configuredOrmProfileHostTests']
+        assert configured['passed'] and configured['checks'] >= 50
+        driver = summary['configuredOrmProfileDriverTests']
+        assert driver['passed'] and driver['testsRun'] == 18
+        for kind in ('source', 'portable'):
+            assert kind + ' actual-public-v023 model, execution and invalid-diagnostic capsule compatibility' in package['checks']
+            assert kind + ' configured ORM explicit-profile source binding, closed reduction and capsule replay' in package['checks']
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names
     for item in package['archives']:

@@ -60,6 +60,8 @@ class DistributionTests(unittest.TestCase):
         put('integrations/python/moontxnwitness_capture/capture.py', '# fixture\n')
         put('docs/usage.md', 'fixture\n')
         put('examples/input.json', {})
+        put('examples/orm-profile-roundtrip.mjs', '// offline configured-profile consumer\n')
+        put('fixtures/orm-profile-v3/synthetic-nonrepeatable-first/profile-source.json', {'explicitlySynthetic': True})
         cls.run_git('init', '--quiet')
         cls.run_git('add', '.')
         # Fixed public baseline fixtures may live below an intentionally ignored dist/.
@@ -71,6 +73,7 @@ class DistributionTests(unittest.TestCase):
         cls.public = set(cls.run_git('ls-files', '-z').split('\0')) - {''}
         put('dist/core.mjs', 'export const actualCore = true;\n')
         put('dist/capture-core.mjs', 'export const actualCaptureCore = true;\n')
+        put('dist/orm-profile.mjs', 'export const analyzeOrmProfileV3 = true;\n')
         cls.tested = {'cmd/sdk.mjs': 'fixture', 'dist/core.mjs': 'fixture'}
         cls.selection = inventory.select_distribution_files(cls.root, cls.public, cls.tested, '0.1.2')
         for name in ('verification/private.json', 'verification/private.log', 'cmd/private.log',
@@ -106,6 +109,13 @@ class DistributionTests(unittest.TestCase):
     def test_all_relation_archive_bytes_remain(self):
         for kind in ('source', 'portable'):
             self.assertIn('verification/relation-v3/original.zip', self.selection[kind])
+    def test_configured_profile_module_example_and_source_packets_remain(self):
+        self.assertIn('dist/orm-profile.mjs',self.selection['portable'])
+        for kind in ('source','portable'):
+            self.assertIn('examples/orm-profile-roundtrip.mjs',self.selection[kind])
+            self.assertIn('fixtures/orm-profile-v3/synthetic-nonrepeatable-first/profile-source.json',self.selection[kind])
+            self.assertIn('verification/configured-user-profile/v024-initial/fixture.json',self.selection[kind])
+            self.assertIn('verification/capture-persistence/v023-initial/fixture.json',self.selection[kind])
 
     def test_actual_presence_and_capture_run_closures_remain(self):
         for kind in ('source', 'portable'):

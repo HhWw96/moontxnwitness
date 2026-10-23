@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "kind": "moontxnwitness-register-cycle-explanation/v1",
+  "algorithm": "verified-register-cycle-v1",
+  "traceTextSha256": "f99c0b7fbdd5ebf76881cbeaed811f16da7cc85f2c3e9d03a59a9e74a1ced2cf",
+  "reportTextSha256": "b61d1cbe7427699738ee7cc80859ad5c6291cc44ab1f2a2e4146b8c0e6470dc2",
+  "verifiedReport": true,
+  "sourceReportVersion": "0.2.4",
+  "sourceStatus": "violation",
+  "sourceCoverageComplete": true,
+  "status": "explained",
+  "reason": "verified-point-cycle",
+  "subtype": "G2-item",
+  "categoriesSearched": false,
+  "scope": {
+    "witnessOnly": true,
+    "searchesOtherCategoryCycles": false,
+    "acceptsIsolationModels": false,
+    "completeIsolationClassification": false,
+    "classifiesExecutionFailures": false,
+    "authenticatesCaptureSources": false
+  },
+  "witness": {
+    "kind": "dependency_cycle",
+    "transactions": [
+      "adjacent-item-rw-T0",
+      "adjacent-item-rw-T1",
+      "adjacent-item-rw-T0"
+    ],
+    "edges": [
+      {
+        "from": "adjacent-item-rw-T0",
+        "to": "adjacent-item-rw-T1",
+        "kind": "rw",
+        "key": "adjacent-item-rw-k0",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "adjacent-item-rw-v0-0",
+        "toVersion": "adjacent-item-rw-v0-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "adjacent-item-rw-T1",
+        "to": "adjacent-item-rw-T0",
+        "kind": "rw",
+        "key": "adjacent-item-rw-k1",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "adjacent-item-rw-v1-0",
+        "toVersion": "adjacent-item-rw-v1-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      }
+    ],
+    "minimality": "shortest directed cycle in the constructed graph"
+  },
+  "steps": [
+    {
+      "edgeIndex": 0,
+      "dependency": {
+        "from": "adjacent-item-rw-T0",
+        "to": "adjacent-item-rw-T1",
+        "kind": "rw",
+        "key": "adjacent-item-rw-k0",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "adjacent-item-rw-v0-0",
+        "toVersion": "adjacent-item-rw-v0-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      "from": {
+        "transaction": "adjacent-item-rw-T0",
+        "projectedOperation": 1,
+        "operation": {
+          "type": "read",
+          "key": "adjacent-item-rw-k0",
+          "version": "adjacent-item-rw-v0-0"
+        },
+        "matchingOriginalSeqs": [
+          6
+        ]
+      },
+      "to": {
+        "transaction": "adjacent-item-rw-T1",
+        "projectedOperation": 0,
+        "operation": {
+          "type": "write",
+          "key": "adjacent-item-rw-k0",
+          "version": "adjacent-item-rw-v0-1"
+        },
+        "matchingOriginalSeqs": [
+          4
+        ]
+      },
+      "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+      "versionOrderSource": "asserted",
+      "versionOrder": [
+        "adjacent-item-rw-v0-0",
+        "adjacent-item-rw-v0-1"
+      ]
+    },
+    {
+      "edgeIndex": 1,
+      "dependency": {
+        "from": "adjacent-item-rw-T1",
+        "to": "adjacent-item-rw-T0",
+        "kind": "rw",
+        "key": "adjacent-item-rw-k1",
+        "fromOp": 1,
+        "toOp": 0,
+        "fromVersion": "adjacent-item-rw-v1-0",
+        "toVersion": "adjacent-item-rw-v1-1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      "from": {
+        "transaction": "adjacent-item-rw-T1",
+        "projectedOperation": 1,
+        "operation": {
+          "type": "read",
+          "key": "adjacent-item-rw-k1",
+          "version": "adjacent-item-rw-v1-0"
+        },
+        "matchingOriginalSeqs": [
+          7
+        ]
+      },
+      "to": {
+        "transaction": "adjacent-item-rw-T0",
+        "projectedOperation": 0,
+        "operation": {
+          "type": "write",
+          "key": "adjacent-item-rw-k1",
+          "version": "adjacent-item-rw-v1-1"
+        },
+        "matchingOriginalSeqs": [
+          5
+        ]
+      },
+      "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+      "versionOrderSource": "asserted",
+      "versionOrder": [
+        "adjacent-item-rw-v1-0",
+        "adjacent-item-rw-v1-1"
+      ]
+    }
+  ],
+  "rules": {
+    "repository": "jepsen-io/elle",
+    "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+    "file": "src/elle/txn.clj",
+    "definition": "cycle-explainer; ww/wr/item-rw subset only"
+  },
+  "pattern": {
+    "itemAntiDependencies": 2,
+    "adjacentAntiDependenciesIncludingWraparound": true
+  },
+  "categoryCoverage": "Only this existing witness; another anomaly may exist elsewhere in the history."
+}

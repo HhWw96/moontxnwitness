@@ -1,0 +1,27 @@
+test_actual_first_failed_workflow_rejects_runner_context_in_job_env (__main__.Tests.test_actual_first_failed_workflow_rejects_runner_context_in_job_env) ... ok
+test_current_job_env_only_uses_allowed_contexts (__main__.Tests.test_current_job_env_only_uses_allowed_contexts) ... FAIL
+test_scratch_paths_are_configured_by_shell_in_first_step (__main__.Tests.test_scratch_paths_are_configured_by_shell_in_first_step) ... FAIL
+test_validator_also_rejects_step_only_contexts (__main__.Tests.test_validator_also_rejects_step_only_contexts) ... ok
+
+======================================================================
+FAIL: test_current_job_env_only_uses_allowed_contexts (__main__.Tests.test_current_job_env_only_uses_allowed_contexts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-formal-harness-fix-20261023\experiments\provenance\test_formal_workflow_contexts.py", line 13, in test_current_job_env_only_uses_allowed_contexts
+    used,env=contexts((ROOT/'.github/workflows/full-capture-cost.yml').read_text(encoding='utf8'));self.assertFalse(used-JOB_ENV_ALLOWED);self.assertNotIn('MTW_PG_CONNECTION_FILE:',env);self.assertNotIn('MTW_JOURNAL_TEST_ROOT:',env)
+                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'runner'} is not false
+
+======================================================================
+FAIL: test_scratch_paths_are_configured_by_shell_in_first_step (__main__.Tests.test_scratch_paths_are_configured_by_shell_in_first_step)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-formal-harness-fix-20261023\experiments\provenance\test_formal_workflow_contexts.py", line 15, in test_scratch_paths_are_configured_by_shell_in_first_step
+    text=(ROOT/'.github/workflows/full-capture-cost.yml').read_text(encoding='utf8');steps=text.split('    steps:\n',1)[1];first=steps.split('      - ',2)[1];self.assertIn('Configure runner-local scratch paths',first);self.assertIn('MTW_PG_CONNECTION_FILE=$RUNNER_TEMP/mtw-cost-connection.json',first);self.assertIn('MTW_JOURNAL_TEST_ROOT=$RUNNER_TEMP/mtw-cost-units',first);self.assertEqual(first.count('>> "$GITHUB_ENV"'),2)
+                                                                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'Configure runner-local scratch paths' not found in 'uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1\n        timeout-minutes: 5\n        with:\n          ref: ${{ inputs.source_sha }}\n'
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.010s
+
+FAILED (failures=2)
