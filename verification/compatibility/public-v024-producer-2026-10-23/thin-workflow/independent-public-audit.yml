@@ -1,0 +1,57 @@
+name: Independently produce authentic public v024 compatibility
+on:
+  workflow_dispatch:
+    inputs:
+      expected_public_source:
+        description: Exact already-public v024 tag commit
+        required: true
+        type: string
+        default: d583cb4f3cb1c4da4cc63e2ce255cc8834b08e2a
+permissions:
+  contents: read
+jobs:
+  produce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      EXPECTED_PUBLIC_SOURCE: ${{ inputs.expected_public_source }}
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Download anonymous public24 and generate unchanged producer evidence once
+        run: python -I -B scripts/run-v024-public-producer-ci.py
+      - name: Retain original public ZIP downloads and all first transport failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: actual-public024-original-downloads
+          compression-level: 0
+          if-no-files-found: error
+          path: artifacts/public024-compat/downloads/
+      - name: Retain small original producer, exact runtime and all77 checks
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: actual-public024-producer
+          compression-level: 6
+          if-no-files-found: error
+          path: |
+            artifacts/public024-compat/provider/
+            artifacts/public024-compat/fixtures/
+            artifacts/public024-compat/checks/receipt.json
+            artifacts/public024-compat/checks/only-two-original-modules/
+            artifacts/public024-compat/*.json
+            artifacts/public024-compat/*.log
+            scripts/prepare-v024-public-provider.py
+            scripts/generate-v024-compatibility.mjs
+            scripts/v024-public-compatibility-test.mjs
+            scripts/run-v024-public-producer-ci.py
+            ci/v024-publication.json

@@ -1,0 +1,363 @@
+{
+  "format": "moontxnwitness-v024-provider/v1",
+  "actualPublishedProducer": true,
+  "authorDistRead": false,
+  "originMode": "verified-anonymous-public-download",
+  "sourceCommit": "d583cb4f3cb1c4da4cc63e2ce255cc8834b08e2a",
+  "expectedSourceCommit": "d583cb4f3cb1c4da4cc63e2ce255cc8834b08e2a",
+  "publicPackage": {
+    "name": "MoonTxnWitness-v0.2.4-portable.zip",
+    "url": "https://github.com/HhWw96/moontxnwitness/releases/download/v0.2.4/MoonTxnWitness-v0.2.4-portable.zip",
+    "bytes": 58112576,
+    "sha256": "c0d0d959eba873ade12aec3362697a0ed04f708864d7914a78810134863bd597",
+    "anonymousDownload": true
+  },
+  "registryPackage": {
+    "download": "https://download.mooncakes.io/user/HhWw96/moontxnwitness/0.2.4.zip",
+    "sha256": "086b18a90b58a6643e1170566ae966721cc23de7609e408f347235a371e253f3",
+    "bytes": 263512
+  },
+  "publicationReceiptSha256": "d44458f86deca8c656ca29b9d28d731b70199a9e88044ba285541ef9d788f400",
+  "publicationValidationPassed": true,
+  "version": "0.2.4",
+  "runtimeDirectory": "runtime",
+  "packageDirectory": "package",
+  "minimalOrmReplayFiles": [
+    "core.mjs",
+    "orm-profile.mjs"
+  ],
+  "fullSdkEsmFiles": [
+    "capture-core.mjs",
+    "core.mjs",
+    "evidence.mjs",
+    "orm-profile.mjs",
+    "sdk.mjs"
+  ],
+  "runtime": {
+    "core.mjs": {
+      "bytes": 1999536,
+      "sha256": "f3fd4449f08c17801be3bd25d9f8b6326cf2d4abcffbe5c6ded694784262bccc"
+    },
+    "capture-core.mjs": {
+      "bytes": 1573493,
+      "sha256": "080108ad56d2cc7918deabd33751e8a15e4d933b4ef8bc23f9e9705dac8dbe50"
+    },
+    "sdk.mjs": {
+      "bytes": 22890,
+      "sha256": "8da54ea24f06ff4480854021fe510cebc69f5af0bcdba41d7f3bac717f3fe993"
+    },
+    "evidence.mjs": {
+      "bytes": 3492,
+      "sha256": "7a9d500fd1c631562a21d4bb988b416e69c24ac6c26d340c8cccb723f95c6e5a"
+    },
+    "orm-profile.mjs": {
+      "bytes": 20613,
+      "sha256": "5bce5ee4e6dbd09c104c8b479a1daa7f298a18d6e6413de0ff3aed0d3d5870e9"
+    },
+    "build-manifest.json": {
+      "bytes": 378,
+      "sha256": "4f8d4ca5bb700a1c0c4104c3fb86a608793c9faf2c93817fa8bd53b563336830"
+    },
+    "THIRD_PARTY_NOTICES.txt": {
+      "bytes": 19257,
+      "sha256": "c3d6460407ea782578f14179db1e62c3ae7b34ddedde382cc17b09674ad9d197"
+    },
+    "LICENSE": {
+      "bytes": 11336,
+      "sha256": "e39843689d22ace75c378708aa941609969d68fceb94716c5997c7591ce620d9"
+    }
+  },
+  "buildManifest": {
+    "version": "0.2.4",
+    "toolchain": {
+      "compiler": "v0.10.14+7d59c7ec9",
+      "moon": "moon 0.1.20260920"
+    },
+    "sourceSha256": "f0c65aa485da67b6fb9b5064b25e7e5c0d53fb0a8a68e0d8bc9df6c5b61feb54",
+    "coreSha256": "f3fd4449f08c17801be3bd25d9f8b6326cf2d4abcffbe5c6ded694784262bccc",
+    "captureCoreSha256": "080108ad56d2cc7918deabd33751e8a15e4d933b4ef8bc23f9e9705dac8dbe50"
+  },
+  "commonCases": [
+    {
+      "name": "register",
+      "type": "v3",
+      "inputPath": "fixtures/compat-v023/register.trace.json",
+      "expectedStatus": "violation",
+      "originalInputUnchanged": true
+    },
+    {
+      "name": "list",
+      "type": "v3",
+      "inputPath": "fixtures/compat-v023/list.trace.json",
+      "expectedStatus": "violation",
+      "originalInputUnchanged": true
+    },
+    {
+      "name": "relation",
+      "type": "v3",
+      "inputPath": "fixtures/compat-v023/relation.trace.json",
+      "expectedStatus": "violation",
+      "originalInputUnchanged": true
+    },
+    {
+      "name": "register-v1",
+      "type": "v1",
+      "inputPath": "fixtures/compat-v023/register-v1.history.json",
+      "expectedStatus": "violation",
+      "originalInputUnchanged": true
+    },
+    {
+      "name": "register-v2",
+      "type": "v2",
+      "inputPath": "fixtures/compat-v023/register-v2.history.json",
+      "expectedStatus": "violation",
+      "originalInputUnchanged": true
+    },
+    {
+      "name": "unknown-commit",
+      "type": "execution",
+      "inputPath": "fixtures/compat-v023/unknown-commit.trace.json",
+      "expectedStatus": "valid-diagnostic",
+      "originalInputUnchanged": true
+    },
+    {
+      "name": "invalid-list-lifecycle",
+      "type": "v3",
+      "inputPath": "fixtures/compat-v023/invalid-list-lifecycle.trace.json",
+      "expectedStatus": "invalid",
+      "originalInputUnchanged": true
+    },
+    {
+      "name": "inconclusive-register",
+      "type": "v3",
+      "inputPath": "fixtures/compat-v023/inconclusive-register.trace.json",
+      "expectedStatus": "inconclusive",
+      "originalInputUnchanged": true
+    }
+  ],
+  "actualOrmCases": [
+    {
+      "name": "orm-actual-1",
+      "inputPath": "verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/profile-source.json",
+      "originalObservedSource": true,
+      "databaseExecutedHere": false
+    },
+    {
+      "name": "orm-actual-2",
+      "inputPath": "verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/profile-source.json",
+      "originalObservedSource": true,
+      "databaseExecutedHere": false
+    }
+  ],
+  "syntheticProfilePath": "fixtures/orm-profile-v3/synthetic-nonrepeatable-first/profile-source.json",
+  "lostCommitDirectory": "verification/capture-persistence/v023-initial/postgres-cases/lost-commit-sync/",
+  "databaseExecutedHere": false,
+  "compilerExecutedHere": false,
+  "headerRewriting": false,
+  "bindings": {
+    "runtime/core.mjs": {
+      "bytes": 1999536,
+      "sha256": "f3fd4449f08c17801be3bd25d9f8b6326cf2d4abcffbe5c6ded694784262bccc"
+    },
+    "runtime/capture-core.mjs": {
+      "bytes": 1573493,
+      "sha256": "080108ad56d2cc7918deabd33751e8a15e4d933b4ef8bc23f9e9705dac8dbe50"
+    },
+    "runtime/sdk.mjs": {
+      "bytes": 22890,
+      "sha256": "8da54ea24f06ff4480854021fe510cebc69f5af0bcdba41d7f3bac717f3fe993"
+    },
+    "runtime/evidence.mjs": {
+      "bytes": 3492,
+      "sha256": "7a9d500fd1c631562a21d4bb988b416e69c24ac6c26d340c8cccb723f95c6e5a"
+    },
+    "runtime/orm-profile.mjs": {
+      "bytes": 20613,
+      "sha256": "5bce5ee4e6dbd09c104c8b479a1daa7f298a18d6e6413de0ff3aed0d3d5870e9"
+    },
+    "runtime/build-manifest.json": {
+      "bytes": 378,
+      "sha256": "4f8d4ca5bb700a1c0c4104c3fb86a608793c9faf2c93817fa8bd53b563336830"
+    },
+    "runtime/THIRD_PARTY_NOTICES.txt": {
+      "bytes": 19257,
+      "sha256": "c3d6460407ea782578f14179db1e62c3ae7b34ddedde382cc17b09674ad9d197"
+    },
+    "runtime/LICENSE": {
+      "bytes": 11336,
+      "sha256": "e39843689d22ace75c378708aa941609969d68fceb94716c5997c7591ce620d9"
+    },
+    "package/fixtures/compat-v023/manifest.json": {
+      "bytes": 10177,
+      "sha256": "f4fdfdd0bf4b1ea77a887ac59e31d8467d58b4c710a7698cf48f557464b72693"
+    },
+    "package/fixtures/compat-v023/register.trace.json": {
+      "bytes": 1464,
+      "sha256": "25c809b21e52c1ca8c18637feb1bf63ee52b779345c303c06e3227ff5f957e37"
+    },
+    "package/fixtures/compat-v023/list.trace.json": {
+      "bytes": 2316,
+      "sha256": "66336149ca2c63784ef8d9ed8c964adddd04ee4a0fdc68b892cacf21e965cf4d"
+    },
+    "package/fixtures/compat-v023/relation.trace.json": {
+      "bytes": 4065,
+      "sha256": "b1fa2ab516627d8d13a2e5a7deb0f6b05ca57edc5d50ee17d902bbc5b1958706"
+    },
+    "package/fixtures/compat-v023/register-v1.history.json": {
+      "bytes": 418,
+      "sha256": "35033736727b7a3558ae340ec6e0081a8ee2c8145df0e998cd380e81bb586f8e"
+    },
+    "package/fixtures/compat-v023/register-v2.history.json": {
+      "bytes": 418,
+      "sha256": "35033736727b7a3558ae340ec6e0081a8ee2c8145df0e998cd380e81bb586f8e"
+    },
+    "package/fixtures/compat-v023/unknown-commit.trace.json": {
+      "bytes": 757,
+      "sha256": "42777fa88c5f4425513d2d0f85101542703e0f5d61f90820234074153ff9c935"
+    },
+    "package/fixtures/compat-v023/invalid-list-lifecycle.trace.json": {
+      "bytes": 2310,
+      "sha256": "d6d13ba743ebd4cf9752d967af637b09f599b80ec58f3269a1920462087bd9bd"
+    },
+    "package/fixtures/compat-v023/inconclusive-register.trace.json": {
+      "bytes": 757,
+      "sha256": "42777fa88c5f4425513d2d0f85101542703e0f5d61f90820234074153ff9c935"
+    },
+    "package/verification/releases/0.2.4/acceptance.json": {
+      "bytes": 13492,
+      "sha256": "567d74ac542937cffef9683b9971db21434d28200ad674600cc7e14fd7e22b02"
+    },
+    "package/verification/releases/0.2.4/database-with-models.json": {
+      "bytes": 214874,
+      "sha256": "9045bff2aabeb3521adb9dcbf8e810f0e39c458abd0e697ff9f525872f4039cc"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/receipt.json": {
+      "bytes": 4648,
+      "sha256": "a03b513985e46406b004716d49ee81aac5b051d9060d9db30baf7f45226fc7d5"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/profile/capture/instrumentation.json": {
+      "bytes": 1086,
+      "sha256": "3102ee2af9dfcb67e21d4b80fe162a3f9e853b07a1aaee0f5813d8cb0849d55f"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/profile/capture/journal/journal-index.json": {
+      "bytes": 1264,
+      "sha256": "c94c5f2380ab4a5156ac27ce2f042918739b3d40db0eec2a85d31faf050fe2fe"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/profile/capture/journal/segment-000001.jsonl": {
+      "bytes": 15916,
+      "sha256": "85e49288fef9e769e942cda1a432181026e12f165f679dd0fa58e41b4ae035b5"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/profile/capture/journal/transactions.sqlite3": {
+      "bytes": 8192,
+      "sha256": "b809e24cb3d159da2e8f651fc3f0c837a2b31b47436c8ef2d3e1c0fd4d1e48bc"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/profile/capture/lifecycle.jsonl": {
+      "bytes": 17850,
+      "sha256": "6b70368b629f080336cce7edeed9a1eea4f2ff8ac5a10ee8357d1b5e9072f32c"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/profile/capture/trace.json": {
+      "bytes": 16438,
+      "sha256": "e8bb50cbac28b12fa8993c8f8eb74c22d23d483c0ad1dcfa850ead274c3f9e42"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/profile/initial-relation.json": {
+      "bytes": 2385,
+      "sha256": "59d38c55f00746ba29d40aa75e993276c2fa8749802bf7127ee54561aaa97ae6"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/profile/sources.jsonl": {
+      "bytes": 290831,
+      "sha256": "1c98f39715cffaae78fd3dad518bd9eed01704b699773fb27fd5b756f4f7ef5a"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/profile/sources.jsonl.index.json": {
+      "bytes": 626,
+      "sha256": "3d194c0be91e59bcf4a549d46081ceef6ff83df61a6c31fdfed1586fa36a3f31"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/profile-source.json": {
+      "bytes": 363816,
+      "sha256": "23ef0196596d7490937db0bca1badcf4b1728fa8bfe8fbca7573679e8c313e3d"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/suite/receipt.json": {
+      "bytes": 1722,
+      "sha256": "f63f6cb11d86b5e9a05c1d602ed414b4f8b176bd96c6e50cc531ad370b31c9c8"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-1/wrapper-receipt.json": {
+      "bytes": 6015,
+      "sha256": "18e5ebc9268c5bc55112d4d9d25b893418cf4fb6fecc4441bd453d40bea3a685"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/profile/capture/instrumentation.json": {
+      "bytes": 1086,
+      "sha256": "47baf31d052ff22bd29ced8182bc9a74b56b7a1e1f97302c9cb361bd4fff87f6"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/profile/capture/journal/journal-index.json": {
+      "bytes": 1264,
+      "sha256": "5eed914ffa76b7d3aea4e7cbf860cf535c88ed2fff1b07a578c09c898d351166"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/profile/capture/journal/segment-000001.jsonl": {
+      "bytes": 15916,
+      "sha256": "3208aa08d98cd4b806d887bc1d2772aeb78f2986198fd8280aa7ad84fbd2e82a"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/profile/capture/journal/transactions.sqlite3": {
+      "bytes": 8192,
+      "sha256": "36642a7d63159c25f160bbd7115120342a26d4431f0187c2a68d0e58144254ca"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/profile/capture/lifecycle.jsonl": {
+      "bytes": 17850,
+      "sha256": "627dbde60596a38faaac5aa712ca11ec81879d20a910084633a59ec1d4e3702d"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/profile/capture/trace.json": {
+      "bytes": 16438,
+      "sha256": "fa677728181f17f9cef3e8ef2078ea7c1b4f79986d3719bc9dd2cfec76721624"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/profile/initial-relation.json": {
+      "bytes": 2385,
+      "sha256": "59d38c55f00746ba29d40aa75e993276c2fa8749802bf7127ee54561aaa97ae6"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/profile/sources.jsonl": {
+      "bytes": 290952,
+      "sha256": "3ae873a3a9b96bb1cdde7014b64895c4a7d55b8a386caa9314fefb029ee83daa"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/profile/sources.jsonl.index.json": {
+      "bytes": 626,
+      "sha256": "987952979c85c7ef246e108a9624f42736f552d9578b323e9236c5fee03c45c2"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/profile-source.json": {
+      "bytes": 363937,
+      "sha256": "01e9c4ca21730636469f734813bd71c0ad714fe0d7026670d4bd036c7d72d65a"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/suite/receipt.json": {
+      "bytes": 1722,
+      "sha256": "e057b1437c597c6cb8b35957153519593348e21818933a85af3d7545b38b3bd5"
+    },
+    "package/verification/configured-user-profile/v024-current-20261023T104628Z-56e0d817/producer-2/wrapper-receipt.json": {
+      "bytes": 6015,
+      "sha256": "18e5ebc9268c5bc55112d4d9d25b893418cf4fb6fecc4441bd453d40bea3a685"
+    },
+    "package/fixtures/orm-profile-v3/synthetic-nonrepeatable-first/manifest.json": {
+      "bytes": 1511,
+      "sha256": "fc3fd94919e0c0b3b8e146fd657dd4d765dbe9cc736cb33819048402a303fa93"
+    },
+    "package/fixtures/orm-profile-v3/synthetic-nonrepeatable-first/profile-source.json": {
+      "bytes": 363877,
+      "sha256": "87ebdc04b470008276db280eaa1938c52dc0f76166bb8fe5ff36ea2a0af7dbb4"
+    },
+    "package/fixtures/orm-profile-v3/synthetic-nonrepeatable-first/segment-000001.jsonl": {
+      "bytes": 15914,
+      "sha256": "dbb07a3a692665c072d919df478c1064eb664a5b949f08edc768e75d4e5f0127"
+    },
+    "package/verification/capture-persistence/v023-initial/postgres-cases/lost-commit-sync/trace.json": {
+      "bytes": 1790,
+      "sha256": "a9b063049dac005290043c9bdf03b58ccef199a03cbcb0e94dfa76cc068b4ac8"
+    },
+    "package/verification/capture-persistence/v023-initial/postgres-cases/lost-commit-sync/lifecycle.jsonl": {
+      "bytes": 3286,
+      "sha256": "bf69783b6d792b47abf0cd6daa30171078852c91f630ab053b152e4c82fad3c0"
+    },
+    "package/verification/capture-persistence/v023-initial/postgres-cases/lost-commit-sync/journal-index.json": {
+      "bytes": 1705,
+      "sha256": "ac73b61a006f7f92d1c5796031e070d5b5e4d35a8cc46eadd48947d9134d724a"
+    },
+    "origin/publication.json": {
+      "bytes": 3517,
+      "sha256": "d44458f86deca8c656ca29b9d28d731b70199a9e88044ba285541ef9d788f400"
+    }
+  }
+}

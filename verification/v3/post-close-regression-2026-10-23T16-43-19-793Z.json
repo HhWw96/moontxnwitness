@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "audit": "independent observed post-close activity audit",
+  "createdAt": "2026-10-23T16:43:19.655728+00:00",
+  "actualDatabaseExecution": false,
+  "productionModified": false,
+  "sourceBindings": {
+    "integrations/python/moontxnwitness_capture/capture_v3.py": {
+      "sha256": "a16e5ea07f2887de3fb8b0692496cd9511f8d8d5c4ff8fd36de696ee5bf3cfcb",
+      "bytes": 35843
+    },
+    "integrations/python/moontxnwitness_capture/journal_v3.py": {
+      "sha256": "4699cf660f3d75cdf925d76bb2aac9614989b51add39c3056722846a3a343efe",
+      "bytes": 64989
+    },
+    "integrations/python/moontxnwitness_capture/_durable_policy.py": {
+      "sha256": "218e126ead59780fa86eb271090ad33eb15b801b282a2fb01148150b33995ec0",
+      "bytes": 2100
+    },
+    "integrations/python/moontxnwitness_capture/capture.py": {
+      "sha256": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e",
+      "bytes": 56812
+    }
+  },
+  "sourceUnchangedDuringRun": true,
+  "auditImplementation": {
+    "sha256": "9b92bd9ef9052b68136674e60ca850b2dc8eeaa6608f992e7758482073d4dbe1",
+    "bytes": 10191
+  },
+  "cases": [
+    {
+      "mode": "wrapper-execute",
+      "passed": true,
+      "checks": {
+        "originalWindowComplete": true,
+        "businessRowsPreserved": true,
+        "businessCommitReturnPreserved": true,
+        "actualSecondBusinessExecution": true,
+        "sealedEvidenceBytesUnchanged": true,
+        "instanceExportRefused": true,
+        "noInstanceExportPublished": true,
+        "freshReaderNotComplete": true,
+        "readerExportRefused": true,
+        "readerArchiveRefused": true,
+        "readerIterationRefused": true,
+        "reopenRefused": true
+      },
+      "receipt": "wrapper-execute/case-receipt.json",
+      "sha256": "b8f24ac7a3b89a0d27259c69a79eec2fa08065ae125bb388e33a8ec588df61c8",
+      "bytes": 3124
+    },
+    {
+      "mode": "facade-connect",
+      "passed": true,
+      "checks": {
+        "originalWindowComplete": true,
+        "businessConnectionIdentityPreserved": true,
+        "businessRowsPreserved": true,
+        "businessCommitReturnPreserved": true,
+        "sealedEvidenceBytesUnchanged": true,
+        "instanceExportRefused": true,
+        "noInstanceExportPublished": true,
+        "freshReaderNotComplete": true,
+        "readerExportRefused": true,
+        "readerArchiveRefused": true,
+        "readerIterationRefused": true,
+        "reopenRefused": true
+      },
+      "receipt": "facade-connect/case-receipt.json",
+      "sha256": "7801fcafa2b125b2d22327be29158f6db3f75a3df770fbdacdb2a58f7041cda1",
+      "bytes": 3259
+    },
+    {
+      "mode": "journal-append",
+      "passed": true,
+      "checks": {
+        "originalWindowComplete": true,
+        "appendRejected": true,
+        "sealedEvidenceBytesUnchanged": true,
+        "instanceExportRefused": true,
+        "noInstanceExportPublished": true,
+        "freshReaderNotComplete": true,
+        "readerExportRefused": true,
+        "readerArchiveRefused": true,
+        "readerIterationRefused": true,
+        "reopenRefused": true
+      },
+      "receipt": "journal-append/case-receipt.json",
+      "sha256": "f80a328f1cdd896fb3ee4c95aaa6837cd5972bd937ed577c7ebfa866dfb4af14",
+      "bytes": 2883
+    },
+    {
+      "mode": "marker-io-outage",
+      "passed": true,
+      "checks": {
+        "originalWindowComplete": true,
+        "businessRowsPreserved": true,
+        "businessCommitReturnPreserved": true,
+        "actualSecondBusinessExecution": true,
+        "outageActuallyInterceptedWrite": true,
+        "sealedEvidenceBytesUnchanged": true,
+        "instanceExportRefused": true,
+        "noInstanceExportPublished": true
+      },
+      "receipt": "marker-io-outage/case-receipt.json",
+      "sha256": "70981f268399bef2ed855540410881cceb948ea6e267fc86ca195d8abc8d9170",
+      "bytes": 2842
+    }
+  ],
+  "passed": true,
+  "scope": "Independent minimal synchronous fake driver with actual journal filesystem IO; not a database or application consistency verdict."
+}

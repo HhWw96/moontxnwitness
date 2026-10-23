@@ -164,6 +164,52 @@ class DistributionTests(unittest.TestCase):
         self.assertIn('artifacts/MoonTxnWitness-v0.1.2-source.zip', self.staged)
         self.assertNotIn('artifacts/MoonTxnWitness-v0.1.1-source.zip', self.staged)
 
+    def test_public24_lazy_and_original_producer_closure_is_selected(self):
+        additions = {
+            'cmd/legacy/v024/manifest.json': '{}',
+            'cmd/legacy/v024/core.cjs': '// immutable test placeholder; never executed\n',
+            'cmd/legacy/v024/orm-profile.cjs': '// immutable test placeholder; never executed\n',
+            'cmd/legacy/v024/core.mjs': '// original test placeholder; never executed\n',
+            'cmd/legacy/v024/orm-profile.mjs': '// original test placeholder; never executed\n',
+            'fixtures/compat-v024/manifest.json': '{}',
+            'fixtures/compat-v024/producer-runtime/core.mjs': '// original test placeholder\n',
+            'verification/compatibility/public-v024-producer-2026-10-23/freeze-manifest.json': '{}',
+            'scripts/compat-v024-test.mjs': '// offline test placeholder; never executed\n',
+        }
+        for name, value in additions.items():
+            target = self.root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(value, encoding='utf8')
+        for name in ('core.cjs', 'orm-profile.cjs'):
+            target = self.root / 'dist/legacy/v024' / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text('// immutable test placeholder; never executed\n', encoding='utf8')
+        public = self.public | set(additions)
+        tested = {**self.tested, 'cmd/legacy/v024/core.cjs': 'fixture',
+                  'cmd/legacy/v024/orm-profile.cjs': 'fixture'}
+        selection = inventory.select_distribution_files(self.root, public, tested, '0.1.2')
+        inventory.assert_complete(selection)
+        for name in ('core.cjs', 'orm-profile.cjs'):
+            self.assertIn('cmd/legacy/v024/' + name, selection['source'])
+            self.assertIn('dist/legacy/v024/' + name, selection['portable'])
+        for name in ('fixtures/compat-v024/manifest.json',
+                     'fixtures/compat-v024/producer-runtime/core.mjs',
+                     'verification/compatibility/public-v024-producer-2026-10-23/freeze-manifest.json'):
+            for kind in ('source', 'portable'):
+                self.assertIn(name, selection[kind])
+        self.assertIn('scripts/compat-v024-test.mjs', selection['portable'])
+        missing = inventory.select_distribution_files(self.root,
+            public - {'cmd/legacy/v024/core.cjs'}, tested, '0.1.2')
+        with self.assertRaises(AssertionError):
+            inventory.assert_complete(missing)
+
+    def test_v025_cannot_omit_public24_compatibility_inputs(self):
+        selection = inventory.select_distribution_files(self.root, self.public, self.tested, '0.2.5')
+        names = {item['file'] for item in selection['missingInputs']}
+        self.assertIn('cmd/legacy/v024/', names)
+        self.assertIn('fixtures/compat-v024/', names)
+        self.assertIn('verification/compatibility/public-v024-producer-2026-10-23/', names)
+
     def test_ci_reuse_is_refused(self):
         with patch.dict(os.environ, {'GITHUB_ACTIONS': 'true'}), self.assertRaises(FileExistsError):
             ci.stage(self.root)

@@ -39,6 +39,10 @@ for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mj
     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
 
 
+assert (ROOT/'cmd/legacy-v024.mjs').read_bytes() == (ROOT/'dist/legacy-v024.mjs').read_bytes(), 'Frozen ORM dispatch changed after build'
+subprocess.check_call([NODE,'--input-type=module','-e',
+    "import{verifyFrozenLegacyV024}from'./scripts/legacy-v024-runtime.mjs';verifyFrozenLegacyV024(process.cwd());verifyFrozenLegacyV024(process.cwd(),process.cwd()+'/dist/legacy/v024');"],cwd=ROOT)
+
 def archive(files, path):
     home_paths = private_home_paths(
         str(Path.home()), github_actions=os.environ.get('GITHUB_ACTIONS') == 'true',
@@ -105,6 +109,9 @@ for kind in ("portable", "source"):
         checks.append(f"source fresh JS core tests: {test_count} passed")
     assert run([NODE, "dist/moontxnwitness.mjs", "--version"], consumer).strip() == VERSION
     checks.append(kind + " version")
+    public024 = json.loads(run([NODE,'scripts/compat-v024-test.mjs',str(consumer/'dist'),str(consumer/'fixtures/compat-v024'),str(work/('public024-'+kind))],consumer))
+    assert public024['passed'] and public024['currentRuntimeVersion'] == VERSION and public024['checks'] == 107
+    checks.append(kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay')
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 4):
         demonstration = json.loads(run([NODE, 'examples/list-roundtrip.mjs', '--out-root', str(work)], consumer))
         assert demonstration['passed'] and demonstration['version'] == VERSION

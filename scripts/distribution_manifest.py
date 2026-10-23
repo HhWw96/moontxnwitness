@@ -106,6 +106,13 @@ def select_distribution_files(root, public_names, tested_files, version):
     for name, reason in FIXED_VERIFICATION_FILES.items():
         require(name, reason)
 
+    public024_compatibility = (tuple(map(int, version.split('.'))) >= (0, 2, 5)
+                               or 'cmd/legacy/v024/manifest.json' in public_names)
+    if public024_compatibility:
+        require_tree('cmd/legacy/v024', 'exact public24 original and derived synchronous ORM replay dependency closure')
+        require_tree('fixtures/compat-v024', 'immutable actual public24 producer expectations and original five-module provenance')
+        require_tree('verification/compatibility/public-v024-producer-2026-10-23', 'anonymous public24 download and producer evidence')
+
     relation_manifest = root / 'fixtures/relation-v3/manifest.json'
     if relation_manifest.is_file():
         for archive in json.loads(relation_manifest.read_text(encoding='utf8'))['historyArchives']:
@@ -201,6 +208,9 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.update(n for n in public_names if n.startswith('fixtures/compat-v023/'))
     # The standalone execution example consumes exact frozen traces and licenses.
     portable.update(n for n in public_names if n.startswith('fixtures/execution-v3/'))
+    if public024_compatibility:
+        portable.update(n for n in public_names if n.startswith('fixtures/compat-v024/'))
+        portable.add('scripts/compat-v024-test.mjs')
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     for name in sorted(source | portable):

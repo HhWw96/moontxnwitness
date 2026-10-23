@@ -24,7 +24,7 @@ const receipt={schema:1,kind:'configured-orm-profile-host-tests',passed:false,ac
 const check=(name,fn)=>{try{fn();receipt.checks.push({name,passed:true});}catch(error){receipt.checks.push({name,passed:false,error:error.message});}};
 try{
   const sdk=await import(pathToFileURL(resolve(runtime,'sdk.mjs')).href);
-  const bound=['core.mjs','capture-core.mjs','build-manifest.json','sdk.mjs','evidence.mjs','orm-profile.mjs','moontxnwitness.mjs'];
+  const bound=['core.mjs','capture-core.mjs','build-manifest.json','sdk.mjs','evidence.mjs','orm-profile.mjs','legacy-v024.mjs','moontxnwitness.mjs'];
   receipt.runtime=Object.fromEntries(bound.map(name=>[name,hash(readFileSync(resolve(runtime,name)))]));
   const build=JSON.parse(readFileSync(resolve(runtime,'build-manifest.json'),'utf8'));
   receipt.build=build;
@@ -198,12 +198,14 @@ try{
   const traced=resolve(output,'zero-budget-call-control');mkdirSync(traced);
   copyFileSync(resolve(runtime,'core.mjs'),resolve(traced,'real-core.mjs'));
   copyFileSync(resolve(runtime,'orm-profile.mjs'),resolve(traced,'orm-profile.mjs'));
+  copyFileSync(resolve(runtime,'legacy-v024.mjs'),resolve(traced,'legacy-v024.mjs'));
   writeFileSync(resolve(traced,'core.mjs'),"import * as real from './real-core.mjs';\nexport const calls=[];\nexport const version=real.version;\n"+
     ['orm_profile_source_v3_json','shrink_options_json','analyze_options_json','replay_report_json'].map(name=>`export function ${name}(...args){calls.push('${name}');return real.${name}(...args);}\n`).join(''),{flag:'wx'});
   const tracedSdk=await import(pathToFileURL(resolve(traced,'orm-profile.mjs')).href);
   const tracedCalls=await import(pathToFileURL(resolve(traced,'core.mjs')).href);
   check('zero-budget-invokes-only-real-core-input-promotion-at-host-boundary',()=>{
     assert.equal(hash(readFileSync(resolve(traced,'real-core.mjs'))),receipt.runtime['core.mjs']);
+    assert.equal(hash(readFileSync(resolve(traced,'legacy-v024.mjs'))),receipt.runtime['legacy-v024.mjs']);
     assert.equal(tracedSdk.reduceOrmProfileV3(synthetic,{maxChecks:0}).status,'budget');
     assert.deepEqual(tracedCalls.calls,['orm_profile_source_v3_json']);
     save('zero-budget-host-call-control.json',{scope:'Scoped dispatch tracing to byte-identical real compiled core; no fake semantic output',calls:tracedCalls.calls,realCoreSha256:receipt.runtime['core.mjs']});

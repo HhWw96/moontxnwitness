@@ -5,6 +5,7 @@ import { root, runMoon } from './moon.mjs';
 import { createHash } from 'node:crypto';
 import { sourceFingerprint } from './build-fingerprint.mjs';
 import {spawnSync} from 'node:child_process';
+import {copyFrozenLegacyV024} from './legacy-v024-runtime.mjs';
 
 runMoon(['build', '--target', 'js', '--release', '--deny-warn', '--jobs', '1']);
 const output = resolve(root, 'dist');
@@ -12,6 +13,8 @@ mkdirSync(output, { recursive: true });
 copyFileSync(resolve(root, '_build/js/release/build/bridge/bridge.js'), resolve(output, 'core.mjs'));
 copyFileSync(resolve(root, '_build/js/release/build/capture_bridge/capture_bridge.js'), resolve(output, 'capture-core.mjs'));
 for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'classification.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
+copyFileSync(resolve(root,'cmd/legacy-v024.mjs'),resolve(output,'legacy-v024.mjs'));
+copyFrozenLegacyV024(root,output);
 const core = await import(pathToFileURL(resolve(output, 'core.mjs')).href + `?build=${Date.now()}`);
 const packageVersion = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
 const sourceVersion = readFileSync(resolve(root, 'moon.mod'), 'utf8').match(/^version\s*=\s*"([^"]+)"/m)?.[1];

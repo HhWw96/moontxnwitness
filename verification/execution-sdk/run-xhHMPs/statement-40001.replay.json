@@ -1,0 +1,67 @@
+{
+  "valid": true,
+  "status": "recomputed-observations",
+  "engineVersion": "0.2.5",
+  "traceSha256": "f68bafc9ced09eab77689e4937bacb29a4b87ddef77133ba1d0b78fdd67fa327",
+  "diagnosticSha256": "38b98055627a8b12a106d850bd01b42ae5f18e9825b389efe7e391b6a58d4961",
+  "diagnostic": {
+    "schemaVersion": 3,
+    "algorithm": "v3-observed-failures-1",
+    "valid": true,
+    "status": "observations",
+    "scope": "Recorded execution failures; not an isolation-level conclusion",
+    "modelViolationClaim": false,
+    "databaseAuthenticityVerified": false,
+    "certifiesFailureAbsence": false,
+    "captureStatus": "inconclusive",
+    "captureCoverage": {
+      "complete": false,
+      "gaps": [
+        {
+          "code": "unmapped_statement",
+          "message": "Raw SQL has no verified versioned statement mapping"
+        },
+        {
+          "code": "incomplete_rows",
+          "message": "A statement result was not exhausted"
+        }
+      ]
+    },
+    "transactionOutcomes": [
+      {
+        "id": "A",
+        "connection": "c",
+        "status": "aborted",
+        "beginSeq": 2,
+        "endSeq": 5,
+        "events": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "finalWrites": []
+      }
+    ],
+    "observedFaultCount": 1,
+    "faults": [
+      {
+        "seq": 4,
+        "tx": "A",
+        "statement": 3,
+        "kind": "serialization_abort",
+        "sqlstate": "40001",
+        "driverClass": "NativeError",
+        "origin": "rows.error"
+      }
+    ]
+  },
+  "scope": {
+    "diagnosticRecomputationOnly": true,
+    "actualDatabaseExecution": false,
+    "databaseAuthenticityVerified": false,
+    "certifiesFailureAbsence": false,
+    "modelViolationClaim": false,
+    "completeApplicationIntegration": false
+  }
+}

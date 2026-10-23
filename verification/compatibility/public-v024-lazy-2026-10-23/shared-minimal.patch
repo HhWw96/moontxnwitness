@@ -1,0 +1,201 @@
+diff --git a/.gitattributes b/.gitattributes
+index 2f002e7..9be3d63 100644
+--- a/.gitattributes
++++ b/.gitattributes
+@@ -66,3 +66,8 @@ verification/experimental-candidates/v024-compatibility-preparation-2026-10-23/*
+ 
+ verification/experimental-candidates/v024-compatibility-source-pin-2026-10-23/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+ verification/experimental-candidates/v024-compatibility-source-pin-2026-10-23/**/*.log -text -whitespace
++
++# Original public24 expectations and lazy module wrappers are content addressed.
++fixtures/compat-v024/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
++cmd/legacy/v024/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
++verification/compatibility/public-v024-producer-2026-10-23/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+diff --git a/cmd/orm-profile.mjs b/cmd/orm-profile.mjs
+index e8f5a2d..cd0d24e 100644
+--- a/cmd/orm-profile.mjs
++++ b/cmd/orm-profile.mjs
+@@ -2,6 +2,8 @@
+ import {createHash} from 'node:crypto';
+ import {orm_profile_source_v3_json, shrink_options_json, analyze_options_json, replay_report_json, version} from './core.mjs';
+ 
++import {getLegacyOrmV024} from './legacy-v024.mjs';
++
+ const PROFILE='fastapi-users-sqlalchemy-7.0.0-pg18/1';
+ const ALGORITHM='orm-profile-host-1';
+ const SOURCE_ALGORITHM='v3-orm-profile-source-promotion-1';
+@@ -231,6 +233,7 @@ export function verifyOrmProfileV3(envelope,supplied,options){
+   const reject=reason=>({valid:false,reason,scope:scope()});
+   try{
+     const text=bounded(supplied,BUDGETS.reportUtf8Bytes,'profile report');const parsed=JSON.parse(text);
++    if(parsed?.format==='moontxnwitness-orm-profile-report/v1'&&parsed.engineVersion==='0.2.4'&&version()!=='0.2.4')return getLegacyOrmV024().verifyOrmProfileV3(envelope,supplied,options);
+     if(parsed?.format!=='moontxnwitness-orm-profile-report/v1'||parsed.engineVersion!==version()||parsed.algorithm!==ALGORITHM||parsed.sourceAlgorithm!==SOURCE_ALGORITHM||typeof parsed.requestOptionsText!=='string')return reject('unsupported-profile-report-header');
+     const requested=options??JSON.parse(parsed.requestOptionsText);
+     const expected=recompute(parsed.operation,envelope,requested);
+@@ -261,6 +264,7 @@ export function replayOrmProfileCapsuleV3(text){
+   try{
+     if(typeof text!=='string')return reject('profile-capsule-must-be-text');
+     bounded(text,BUDGETS.capsuleUtf8Bytes,'profile capsule');const value=JSON.parse(text);
++    if(value?.format==='moontxnwitness-orm-profile/v1'&&value.engineVersion==='0.2.4'&&version()!=='0.2.4')return getLegacyOrmV024().replayOrmProfileCapsuleV3(text);
+     if(value?.format!=='moontxnwitness-orm-profile/v1'||value.schemaVersion!==1||value.tool!=='MoonTxnWitness'||
+        value.engineVersion!==version()||value.algorithm!==ALGORITHM||value.sourceAlgorithm!==SOURCE_ALGORITHM||
+        value.profile!==PROFILE||!['analyze','reduce'].includes(value.operation)||typeof value.envelopeText!=='string'||
+diff --git a/cmd/sdk.mjs b/cmd/sdk.mjs
+index a47305c..4b1161f 100644
+--- a/cmd/sdk.mjs
++++ b/cmd/sdk.mjs
+@@ -364,7 +364,7 @@ const executionBudgetsV3 = () => ({
+ // A future release may add only individually reviewed released engine/algorithm
+ // pairs here. No wildcard version migration or rewriting of diagnostic fields.
+ const executionEngineSupportedV3 = recorded => recorded === version() ||
+-  (version() === '0.2.0' && (recorded === '0.1.7' || recorded === '0.1.8'));
++  (version() === '0.2.0' && (recorded === '0.1.7' || recorded === '0.1.8')) || recorded === '0.2.4';
+ const executionScopeV3 = () => ({
+   diagnosticRecomputationOnly: true,
+   actualDatabaseExecution: false,
+diff --git a/scripts/build.mjs b/scripts/build.mjs
+index 3411288..a644a5e 100644
+--- a/scripts/build.mjs
++++ b/scripts/build.mjs
+@@ -5,6 +5,7 @@ import { root, runMoon } from './moon.mjs';
+ import { createHash } from 'node:crypto';
+ import { sourceFingerprint } from './build-fingerprint.mjs';
+ import {spawnSync} from 'node:child_process';
++import {copyFrozenLegacyV024} from './legacy-v024-runtime.mjs';
+ 
+ runMoon(['build', '--target', 'js', '--release', '--deny-warn', '--jobs', '1']);
+ const output = resolve(root, 'dist');
+@@ -12,6 +13,8 @@ mkdirSync(output, { recursive: true });
+ copyFileSync(resolve(root, '_build/js/release/build/bridge/bridge.js'), resolve(output, 'core.mjs'));
+ copyFileSync(resolve(root, '_build/js/release/build/capture_bridge/capture_bridge.js'), resolve(output, 'capture-core.mjs'));
+ for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
++copyFileSync(resolve(root,'cmd/legacy-v024.mjs'),resolve(output,'legacy-v024.mjs'));
++copyFrozenLegacyV024(root,output);
+ const core = await import(pathToFileURL(resolve(output, 'core.mjs')).href + `?build=${Date.now()}`);
+ const packageVersion = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
+ const sourceVersion = readFileSync(resolve(root, 'moon.mod'), 'utf8').match(/^version\s*=\s*"([^"]+)"/m)?.[1];
+diff --git a/scripts/distribution_manifest.py b/scripts/distribution_manifest.py
+index b0cad2c..b1503f3 100644
+--- a/scripts/distribution_manifest.py
++++ b/scripts/distribution_manifest.py
+@@ -101,6 +101,13 @@ def select_distribution_files(root, public_names, tested_files, version):
+     for name, reason in FIXED_VERIFICATION_FILES.items():
+         require(name, reason)
+ 
++    public024_compatibility = (tuple(map(int, version.split('.'))) >= (0, 2, 5)
++                               or 'cmd/legacy/v024/manifest.json' in public_names)
++    if public024_compatibility:
++        require_tree('cmd/legacy/v024', 'exact public24 original and derived synchronous ORM replay dependency closure')
++        require_tree('fixtures/compat-v024', 'immutable actual public24 producer expectations and original five-module provenance')
++        require_tree('verification/compatibility/public-v024-producer-2026-10-23', 'anonymous public24 download and producer evidence')
++
+     relation_manifest = root / 'fixtures/relation-v3/manifest.json'
+     if relation_manifest.is_file():
+         for archive in json.loads(relation_manifest.read_text(encoding='utf8'))['historyArchives']:
+@@ -173,6 +180,9 @@ def select_distribution_files(root, public_names, tested_files, version):
+     portable.update(n for n in required if n.startswith(('verification/', 'dist/')))
+     # The standalone execution example consumes exact frozen traces and licenses.
+     portable.update(n for n in public_names if n.startswith('fixtures/execution-v3/'))
++    if public024_compatibility:
++        portable.update(n for n in public_names if n.startswith('fixtures/compat-v024/'))
++        portable.add('scripts/compat-v024-test.mjs')
+     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
+     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
+     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))
+diff --git a/scripts/package_release.py b/scripts/package_release.py
+index 0d80033..ce34d6a 100644
+--- a/scripts/package_release.py
++++ b/scripts/package_release.py
+@@ -39,6 +39,10 @@ for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mj
+     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
+ 
+ 
++assert (ROOT/'cmd/legacy-v024.mjs').read_bytes() == (ROOT/'dist/legacy-v024.mjs').read_bytes(), 'Frozen ORM dispatch changed after build'
++subprocess.check_call([NODE,'--input-type=module','-e',
++    "import{verifyFrozenLegacyV024}from'./scripts/legacy-v024-runtime.mjs';verifyFrozenLegacyV024(process.cwd());verifyFrozenLegacyV024(process.cwd(),process.cwd()+'/dist/legacy/v024');"],cwd=ROOT)
++
+ def archive(files, path):
+     home_paths = private_home_paths(
+         str(Path.home()), github_actions=os.environ.get('GITHUB_ACTIONS') == 'true',
+@@ -104,7 +108,10 @@ for kind in ("portable", "source"):
+         assert f"Total tests: {test_count}, passed: {test_count}, failed: 0." in core_tests
+         checks.append(f"source fresh JS core tests: {test_count} passed")
+     assert run([NODE, "dist/moontxnwitness.mjs", "--version"], consumer).strip() == VERSION
+-    checks.append(kind + " version")
++    checks.append(kind + " version")
++    public024 = json.loads(run([NODE,'scripts/compat-v024-test.mjs',str(consumer/'dist'),str(consumer/'fixtures/compat-v024'),str(work/('public024-'+kind))],consumer))
++    assert public024['passed'] and public024['currentRuntimeVersion'] == VERSION and public024['checks'] == 107
++    checks.append(kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay')
+     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 4):
+         demonstration = json.loads(run([NODE, 'examples/list-roundtrip.mjs', '--out-root', str(work)], consumer))
+         assert demonstration['passed'] and demonstration['version'] == VERSION
+diff --git a/scripts/test_distribution.py b/scripts/test_distribution.py
+index 5109c56..0d617a9 100644
+--- a/scripts/test_distribution.py
++++ b/scripts/test_distribution.py
+@@ -169,6 +169,52 @@ class DistributionTests(unittest.TestCase):
+         self.assertIn('artifacts/MoonTxnWitness-v0.1.2-source.zip', self.staged)
+         self.assertNotIn('artifacts/MoonTxnWitness-v0.1.1-source.zip', self.staged)
+ 
++    def test_public24_lazy_and_original_producer_closure_is_selected(self):
++        additions = {
++            'cmd/legacy/v024/manifest.json': '{}',
++            'cmd/legacy/v024/core.cjs': '// immutable test placeholder; never executed\n',
++            'cmd/legacy/v024/orm-profile.cjs': '// immutable test placeholder; never executed\n',
++            'cmd/legacy/v024/core.mjs': '// original test placeholder; never executed\n',
++            'cmd/legacy/v024/orm-profile.mjs': '// original test placeholder; never executed\n',
++            'fixtures/compat-v024/manifest.json': '{}',
++            'fixtures/compat-v024/producer-runtime/core.mjs': '// original test placeholder\n',
++            'verification/compatibility/public-v024-producer-2026-10-23/freeze-manifest.json': '{}',
++            'scripts/compat-v024-test.mjs': '// offline test placeholder; never executed\n',
++        }
++        for name, value in additions.items():
++            target = self.root / name
++            target.parent.mkdir(parents=True, exist_ok=True)
++            target.write_text(value, encoding='utf8')
++        for name in ('core.cjs', 'orm-profile.cjs'):
++            target = self.root / 'dist/legacy/v024' / name
++            target.parent.mkdir(parents=True, exist_ok=True)
++            target.write_text('// immutable test placeholder; never executed\n', encoding='utf8')
++        public = self.public | set(additions)
++        tested = {**self.tested, 'cmd/legacy/v024/core.cjs': 'fixture',
++                  'cmd/legacy/v024/orm-profile.cjs': 'fixture'}
++        selection = inventory.select_distribution_files(self.root, public, tested, '0.1.2')
++        inventory.assert_complete(selection)
++        for name in ('core.cjs', 'orm-profile.cjs'):
++            self.assertIn('cmd/legacy/v024/' + name, selection['source'])
++            self.assertIn('dist/legacy/v024/' + name, selection['portable'])
++        for name in ('fixtures/compat-v024/manifest.json',
++                     'fixtures/compat-v024/producer-runtime/core.mjs',
++                     'verification/compatibility/public-v024-producer-2026-10-23/freeze-manifest.json'):
++            for kind in ('source', 'portable'):
++                self.assertIn(name, selection[kind])
++        self.assertIn('scripts/compat-v024-test.mjs', selection['portable'])
++        missing = inventory.select_distribution_files(self.root,
++            public - {'cmd/legacy/v024/core.cjs'}, tested, '0.1.2')
++        with self.assertRaises(AssertionError):
++            inventory.assert_complete(missing)
++
++    def test_v025_cannot_omit_public24_compatibility_inputs(self):
++        selection = inventory.select_distribution_files(self.root, self.public, self.tested, '0.2.5')
++        names = {item['file'] for item in selection['missingInputs']}
++        self.assertIn('cmd/legacy/v024/', names)
++        self.assertIn('fixtures/compat-v024/', names)
++        self.assertIn('verification/compatibility/public-v024-producer-2026-10-23/', names)
++
+     def test_ci_reuse_is_refused(self):
+         with patch.dict(os.environ, {'GITHUB_ACTIONS': 'true'}), self.assertRaises(FileExistsError):
+             ci.stage(self.root)
+diff --git a/scripts/verification-fingerprint.mjs b/scripts/verification-fingerprint.mjs
+index dbcb465..ce07bf1 100644
+--- a/scripts/verification-fingerprint.mjs
++++ b/scripts/verification-fingerprint.mjs
+@@ -11,7 +11,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
+       if(entry.name==='__pycache__')continue;
+       const name=folder+'/'+entry.name;
+       if(entry.isDirectory())visit(name,bindAll);
+-      else if(bindAll || /\.(?:mbt|mjs|py|json|jsonl|clj|sqlite3|(?:tar|py)\.gz)$/.test(name) || entry.name==='moon.pkg' || entry.name==='requirements.txt')names.push(name);
++      else if(bindAll || /\.(?:mbt|mjs|cjs|py|json|jsonl|clj|sqlite3|(?:tar|py)\.gz)$/.test(name) || entry.name==='moon.pkg' || entry.name==='requirements.txt')names.push(name);
+     }
+   }
+   for(const folder of ['cmd','src','scripts','integrations','experiments','fixtures',...(includeDist?['dist']:[])])visit(folder);

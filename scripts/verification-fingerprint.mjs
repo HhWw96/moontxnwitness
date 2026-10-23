@@ -11,7 +11,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
       if(entry.name==='__pycache__')continue;
       const name=folder+'/'+entry.name;
       if(entry.isDirectory())visit(name,bindAll);
-      else if(bindAll || /\.(?:mbt|mjs|py|json|jsonl|clj|sqlite3|(?:tar|py)\.gz)$/.test(name) || entry.name==='moon.pkg' || entry.name==='requirements.txt')names.push(name);
+      else if(bindAll || /\.(?:mbt|mjs|cjs|py|json|jsonl|clj|sqlite3|(?:tar|py)\.gz)$/.test(name) || entry.name==='moon.pkg' || entry.name==='requirements.txt')names.push(name);
     }
   }
   for(const folder of ['cmd','src','scripts','integrations','experiments','fixtures',...(includeDist?['dist']:[])])visit(folder);

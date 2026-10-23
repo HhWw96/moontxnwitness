@@ -125,6 +125,19 @@ def validate_scoped_acceptance(acceptance, manifest):
         for kind in ('source', 'portable'):
             assert kind + ' actual-public-v023 model, execution and invalid-diagnostic capsule compatibility' in package['checks']
             assert kind + ' configured ORM explicit-profile source binding, closed reduction and capsule replay' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 5):
+        categories = summary['categoryClassificationHostTests']
+        assert categories['passed'] and categories['version'] == VERSION and categories['checks'] >= 60
+        assert categories['coreSha256'] == manifest['coreSha256']
+        assert categories['hostSha256'] == sha256(ROOT / 'dist/classification.mjs')
+        original24 = summary['publicV024CompatibilityTests']
+        assert original24['passed'] and original24['currentRuntimeVersion'] == VERSION
+        assert original24['checks'] >= 107 and original24['originalProducerFamilies'] == 15
+        assert original24['expectedRegenerated'] is False
+        assert original24['normalAnalysisLegacyModulesLoaded'] == 0 and original24['oldOrmLegacyModulesLoaded'] == 2
+        for kind in ('source', 'portable'):
+            assert kind + ' category-specific source-closed reduction and exact classification capsule replay' in package['checks']
+            assert kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay' in package['checks']
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names
     for item in package['archives']:

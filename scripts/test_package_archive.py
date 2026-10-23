@@ -65,6 +65,14 @@ class ArchiveTests(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, 'Local path found'):
                 write_archive(root, ['boundary.json'], root / 'rejected.zip', 'fixture', [private])
 
+    def test_commonjs_private_path_across_chunk_boundary_is_rejected(self):
+        with tempfile.TemporaryDirectory(prefix='mtw-zip-cjs-private-') as temporary:
+            root = Path(temporary)
+            private = 'private-home-sentinel'
+            (root / 'legacy.cjs').write_bytes(b'x' * (CHUNK_BYTES - 7) + private.encode() + b'end')
+            with self.assertRaisesRegex(AssertionError, 'Local path found'):
+                write_archive(root, ['legacy.cjs'], root / 'rejected.zip', 'fixture', [private])
+
     def test_deterministic_content_independent_of_mtime_and_input_order(self):
         with tempfile.TemporaryDirectory(prefix='mtw-zip-fixed-') as temporary:
             root = Path(temporary)

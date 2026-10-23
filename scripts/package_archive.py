@@ -21,7 +21,7 @@ def write_archive(root, files, path, prefix, private_values):
     with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED,
                          compresslevel=9) as output:
         for relative in sorted(files):
-            scan = relative.endswith(('.mjs', '.json', '.mbt', '.md', '.mbti', '.txt'))
+            scan = relative.endswith(('.mjs', '.cjs', '.json', '.mbt', '.md', '.mbti', '.txt'))
             info = zipfile.ZipInfo(prefix + '/' + relative, date_time=(2026, 10, 10, 0, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED
             # Python 3.12's explicit ZipInfo streaming path uses this field.

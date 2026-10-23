@@ -2,6 +2,8 @@
 import {createHash} from 'node:crypto';
 import {orm_profile_source_v3_json, shrink_options_json, analyze_options_json, replay_report_json, version} from './core.mjs';
 
+import {getLegacyOrmV024} from './legacy-v024.mjs';
+
 const PROFILE='fastapi-users-sqlalchemy-7.0.0-pg18/1';
 const ALGORITHM='orm-profile-host-1';
 const SOURCE_ALGORITHM='v3-orm-profile-source-promotion-1';
@@ -231,6 +233,7 @@ export function verifyOrmProfileV3(envelope,supplied,options){
   const reject=reason=>({valid:false,reason,scope:scope()});
   try{
     const text=bounded(supplied,BUDGETS.reportUtf8Bytes,'profile report');const parsed=JSON.parse(text);
+    if(parsed?.format==='moontxnwitness-orm-profile-report/v1'&&parsed.engineVersion==='0.2.4'&&version()!=='0.2.4')return getLegacyOrmV024().verifyOrmProfileV3(envelope,supplied,options);
     if(parsed?.format!=='moontxnwitness-orm-profile-report/v1'||parsed.engineVersion!==version()||parsed.algorithm!==ALGORITHM||parsed.sourceAlgorithm!==SOURCE_ALGORITHM||typeof parsed.requestOptionsText!=='string')return reject('unsupported-profile-report-header');
     const requested=options??JSON.parse(parsed.requestOptionsText);
     const expected=recompute(parsed.operation,envelope,requested);
@@ -261,6 +264,7 @@ export function replayOrmProfileCapsuleV3(text){
   try{
     if(typeof text!=='string')return reject('profile-capsule-must-be-text');
     bounded(text,BUDGETS.capsuleUtf8Bytes,'profile capsule');const value=JSON.parse(text);
+    if(value?.format==='moontxnwitness-orm-profile/v1'&&value.engineVersion==='0.2.4'&&version()!=='0.2.4')return getLegacyOrmV024().replayOrmProfileCapsuleV3(text);
     if(value?.format!=='moontxnwitness-orm-profile/v1'||value.schemaVersion!==1||value.tool!=='MoonTxnWitness'||
        value.engineVersion!==version()||value.algorithm!==ALGORITHM||value.sourceAlgorithm!==SOURCE_ALGORITHM||
        value.profile!==PROFILE||!['analyze','reduce'].includes(value.operation)||typeof value.envelopeText!=='string'||
