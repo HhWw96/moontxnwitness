@@ -113,6 +113,30 @@ def select_distribution_files(root, public_names, tested_files, version):
         require_tree('fixtures/compat-v024', 'immutable actual public24 producer expectations and original five-module provenance')
         require_tree('verification/compatibility/public-v024-producer-2026-10-23', 'anonymous public24 download and producer evidence')
 
+    public025_compatibility = (tuple(map(int, version.split('.'))) >= (0, 2, 6)
+                               or 'cmd/legacy/v025/manifest.json' in public_names)
+    if public025_compatibility:
+        require_tree('cmd/legacy/v025', 'exact genuine public25 ESM and licence closure for fixed historical worker')
+        for name in ('manifest.json', 'core.mjs', 'orm-profile.mjs', 'classification.mjs',
+                     'legacy-v024.mjs', 'build-manifest.json', 'LICENSE',
+                     'THIRD_PARTY_NOTICES.txt', 'origin.json'):
+            require('cmd/legacy/v025/' + name, 'mandatory fixed public25 replay and licence bytes')
+        runtime_manifest = root / 'cmd/legacy/v025/manifest.json'
+        if runtime_manifest.is_file():
+            try:
+                runtime_files = json.loads(runtime_manifest.read_text(encoding='utf8')).get('files', {})
+                for name in runtime_files:
+                    require('cmd/legacy/v025/' + safe_name(name), 'every bound historical25 manifest member')
+            except (ValueError, TypeError, AttributeError):
+                missing.append({'file': 'cmd/legacy/v025/manifest.json',
+                                'problem': 'invalid historical runtime file inventory'})
+        require_tree('fixtures/compat-v025', 'immutable genuine public25 producer reports/capsules and runtime provenance')
+        require_tree('verification/compatibility/public-v025-producer-2026-10-24', 'original anonymous public25 producer transport and provenance')
+        for name in ('cmd/legacy-v025.mjs', 'cmd/legacy-v025-runtime.mjs',
+                     'cmd/legacy-v025-worker.mjs', 'cmd/legacy-v025-binding.mjs',
+                     'scripts/legacy-v025-runtime.mjs', 'scripts/compat-v025-test.mjs'):
+            require(name, 'fixed public25 replay dispatch and fresh-consumer exact compatibility')
+
     relation_manifest = root / 'fixtures/relation-v3/manifest.json'
     if relation_manifest.is_file():
         for archive in json.loads(relation_manifest.read_text(encoding='utf8'))['historyArchives']:
@@ -211,8 +235,12 @@ def select_distribution_files(root, public_names, tested_files, version):
     if public024_compatibility:
         portable.update(n for n in public_names if n.startswith('fixtures/compat-v024/'))
         portable.add('scripts/compat-v024-test.mjs')
+    if public025_compatibility:
+        portable.update(n for n in public_names if n.startswith('fixtures/compat-v025/'))
+        portable.add('scripts/compat-v025-test.mjs')
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
+    portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))
     for name in sorted(source | portable):
         if not (root / name).is_file() or (root / name).is_symlink():
             missing.append({'file': name, 'problem': 'selected item missing or non-regular'})

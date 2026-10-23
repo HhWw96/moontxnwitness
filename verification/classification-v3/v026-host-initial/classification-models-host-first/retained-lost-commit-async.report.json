@@ -1,0 +1,478 @@
+{
+  "format": "moontxnwitness-isolation-model-report/v1",
+  "schemaVersion": 1,
+  "tool": "MoonTxnWitness",
+  "algorithm": "isolation-model-host-1",
+  "coreAlgorithm": "v3-isolation-model-1",
+  "engine": {
+    "version": "0.2.0",
+    "coreSha256": "89986b1939d12c3e8d3e93a129bb1a876f4e1bdc2012b8e19aec91671e271f64",
+    "hostSha256": "4a020480157ad71c2afb16a3dcdcb254908ed2968eeaa29341a4bcff4778e6db"
+  },
+  "status": "inconclusive",
+  "requestOptionsText": "{}",
+  "coreOptionsText": "{\"models\":[\"adya-pl-1-v1\",\"adya-pl-2-v1\",\"adya-pl-2.99-v1\",\"elle-generalized-si-v1\",\"adya-pl-3-v1\",\"strict-pl-ss-v1\"]}",
+  "originalSourceText": "{\n  \"format\": \"moontxnwitness-classification-source/v1\",\n  \"traceText\": \"{\\\"traceSchema\\\":3,\\\"clockDomain\\\":\\\"mtw-v3-8f00dc2594094a85b4c042cdf933553f\\\",\\\"scope\\\":{\\\"exclusiveWriters\\\":false},\\\"sqlProfiles\\\":[],\\\"gaps\\\":[{\\\"code\\\":\\\"initialization_unproven\\\",\\\"message\\\":\\\"The initial database snapshot has not been established as consistent.\\\"},{\\\"code\\\":\\\"diagnostic_instrumentation_only\\\",\\\"message\\\":\\\"No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage.\\\"},{\\\"code\\\":\\\"orm_sql_unmapped\\\",\\\"message\\\":\\\"Actual ORM DBAPI SQL has no independently validated fixed provenance profile.\\\"},{\\\"code\\\":\\\"commit_unknown\\\",\\\"message\\\":\\\"An async transaction outcome is unresolved; later idle rollback does not resolve it.\\\"},{\\\"code\\\":\\\"transaction_outcome_unknown\\\",\\\"message\\\":\\\"A connection disappeared while its transaction outcome was unresolved.\\\"},{\\\"code\\\":\\\"source_references_active\\\",\\\"message\\\":\\\"Active transactions or unread results still refer to retained evidence.\\\"},{\\\"code\\\":\\\"source_unsealed\\\",\\\"message\\\":\\\"Journal and explicit source window have not both been sealed.\\\"},{\\\"code\\\":\\\"diagnostic_only\\\",\\\"message\\\":\\\"This export is incomplete diagnostic evidence, not a complete analysis input.\\\"}],\\\"events\\\":[{\\\"consistent\\\":false,\\\"initial\\\":{},\\\"kind\\\":\\\"snapshot\\\",\\\"seq\\\":1,\\\"time\\\":16000000},{\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"kind\\\":\\\"begin\\\",\\\"seq\\\":2,\\\"time\\\":78000000,\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":3,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"mtw_instrumentation_f18486a47e6e4a8a\\\\\\\".\\\\\\\"lost_commit_async\\\\\\\" VALUES(3,'committed-with-lost-ack')\\\",\\\"time\\\":78000000,\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":4,\\\"statement\\\":3,\\\"time\\\":94000000,\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\"},{\\\"kind\\\":\\\"commit_request\\\",\\\"seq\\\":5,\\\"time\\\":94000000,\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\"},{\\\"kind\\\":\\\"disconnect\\\",\\\"seq\\\":6,\\\"time\\\":94000000,\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\"}]}\\n\",\n  \"intervalEvidenceText\": \"{\\\"format\\\":\\\"moontxnwitness-client-intervals/v1\\\",\\\"sourceTraceSha256\\\":\\\"2cb193fe8312002736463ebbbc3533d0f0f7265dad045ee3a93c84e8ab363f58\\\",\\\"sourceLifecycleSha256\\\":\\\"906cc8b915951ed9e6ee7193c951ce9153fd11dc5015a38022c5b245de604936\\\",\\\"sourceJournalIndexSha256\\\":\\\"3f24b52b4e95d5b5788ee3f079f200d707babfb5cb114a6f24baa3d2b55bdb3e\\\",\\\"records\\\":[{\\\"seq\\\":1,\\\"kind\\\":\\\"header\\\",\\\"format\\\":\\\"moontxnwitness-instrumentation/v1\\\",\\\"diagnosticOnly\\\":true,\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\"},{\\\"seq\\\":2,\\\"kind\\\":\\\"connect\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890593000000\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"asynchronous\\\":true},{\\\"seq\\\":3,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890593000000\\\",\\\"callId\\\":\\\"call-ba4264de2d6b4de2a120e4c17b682410\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}},{\\\"seq\\\":4,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890609000000\\\",\\\"callId\\\":\\\"call-ba4264de2d6b4de2a120e4c17b682410\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":3,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}},{\\\"seq\\\":5,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890609000000\\\",\\\"callId\\\":\\\"call-47452295fc5b48d1a6ccdf3a96c5e7fe\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}},{\\\"seq\\\":6,\\\"kind\\\":\\\"commit-error\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890609000000\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"errorClass\\\":\\\"OperationalError\\\",\\\"sqlstate\\\":null},{\\\"seq\\\":7,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890609000000\\\",\\\"callId\\\":\\\"call-47452295fc5b48d1a6ccdf3a96c5e7fe\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\",\\\"succeeded\\\":false,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2,\\\"commit_request\\\":5,\\\"disconnect\\\":6},\\\"nativeCommandTag\\\":null},{\\\"seq\\\":8,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890625000000\\\",\\\"callId\\\":\\\"call-2d18219e5d2e450d93522c20adc9634b\\\",\\\"method\\\":\\\"rollback\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":null,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{}},{\\\"seq\\\":9,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890625000000\\\",\\\"callId\\\":\\\"call-2d18219e5d2e450d93522c20adc9634b\\\",\\\"method\\\":\\\"rollback\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":null,\\\"succeeded\\\":false,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{}},{\\\"seq\\\":10,\\\"kind\\\":\\\"connection-close\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890640000000\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\"},{\\\"seq\\\":11,\\\"kind\\\":\\\"instrumentation-detached\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890640000000\\\",\\\"borrowedConnections\\\":0},{\\\"seq\\\":12,\\\"kind\\\":\\\"seal\\\",\\\"prefixSha256\\\":\\\"d8836347367dba4a98785e8a87bc910b74a8ef05c5d4387931eaad9fd28df904\\\",\\\"records\\\":11}]}\\n\",\n  \"lifecycleText\": \"{\\\"seq\\\":1,\\\"kind\\\":\\\"header\\\",\\\"format\\\":\\\"moontxnwitness-instrumentation/v1\\\",\\\"diagnosticOnly\\\":true,\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\"}\\n{\\\"seq\\\":2,\\\"kind\\\":\\\"connect\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890593000000\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"asynchronous\\\":true}\\n{\\\"seq\\\":3,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890593000000\\\",\\\"callId\\\":\\\"call-ba4264de2d6b4de2a120e4c17b682410\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":4,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890609000000\\\",\\\"callId\\\":\\\"call-ba4264de2d6b4de2a120e4c17b682410\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":3,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":5,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890609000000\\\",\\\"callId\\\":\\\"call-47452295fc5b48d1a6ccdf3a96c5e7fe\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":6,\\\"kind\\\":\\\"commit-error\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890609000000\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"errorClass\\\":\\\"OperationalError\\\",\\\"sqlstate\\\":null}\\n{\\\"seq\\\":7,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890609000000\\\",\\\"callId\\\":\\\"call-47452295fc5b48d1a6ccdf3a96c5e7fe\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\",\\\"succeeded\\\":false,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2,\\\"commit_request\\\":5,\\\"disconnect\\\":6},\\\"nativeCommandTag\\\":null}\\n{\\\"seq\\\":8,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890625000000\\\",\\\"callId\\\":\\\"call-2d18219e5d2e450d93522c20adc9634b\\\",\\\"method\\\":\\\"rollback\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":null,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{}}\\n{\\\"seq\\\":9,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890625000000\\\",\\\"callId\\\":\\\"call-2d18219e5d2e450d93522c20adc9634b\\\",\\\"method\\\":\\\"rollback\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\",\\\"tx\\\":null,\\\"succeeded\\\":false,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{}}\\n{\\\"seq\\\":10,\\\"kind\\\":\\\"connection-close\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890640000000\\\",\\\"connection\\\":\\\"orm-connection-f936b954dd2d4af192bf545e6464a595\\\"}\\n{\\\"seq\\\":11,\\\"kind\\\":\\\"instrumentation-detached\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96890640000000\\\",\\\"borrowedConnections\\\":0}\\n{\\\"seq\\\":12,\\\"kind\\\":\\\"seal\\\",\\\"prefixSha256\\\":\\\"d8836347367dba4a98785e8a87bc910b74a8ef05c5d4387931eaad9fd28df904\\\",\\\"records\\\":11}\\n\",\n  \"journalIndexText\": \"{\\\"activeTransactions\\\":[\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\"],\\\"closed\\\":true,\\\"commitRequests\\\":[\\\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\\\"],\\\"directorySync\\\":\\\"not-available-in-Windows-stdlib\\\",\\\"durableSeq\\\":6,\\\"eventCount\\\":6,\\\"gaps\\\":[{\\\"code\\\":\\\"initialization_unproven\\\",\\\"message\\\":\\\"The initial database snapshot has not been established as consistent.\\\"},{\\\"code\\\":\\\"diagnostic_instrumentation_only\\\",\\\"message\\\":\\\"No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage.\\\"},{\\\"code\\\":\\\"orm_sql_unmapped\\\",\\\"message\\\":\\\"Actual ORM DBAPI SQL has no independently validated fixed provenance profile.\\\"},{\\\"code\\\":\\\"commit_unknown\\\",\\\"message\\\":\\\"An async transaction outcome is unresolved; later idle rollback does not resolve it.\\\"},{\\\"code\\\":\\\"transaction_outcome_unknown\\\",\\\"message\\\":\\\"A connection disappeared while its transaction outcome was unresolved.\\\"}],\\\"indexSchema\\\":1,\\\"indexSha256\\\":\\\"2ce9a0de117eafb9dea9cc88007437c8a5142ab9591ad94a126d396a6b1fe7c7\\\",\\\"lastTime\\\":94000000,\\\"limits\\\":{\\\"flushBytes\\\":262144,\\\"flushIntervalSeconds\\\":0.1,\\\"queueBytes\\\":4194304,\\\"recordBytes\\\":524288,\\\"segmentBytes\\\":16777216,\\\"totalBytes\\\":1073741824},\\\"references\\\":{\\\"activeTransactions\\\":[],\\\"unreadResults\\\":[],\\\"versionSources\\\":[]},\\\"retention\\\":{\\\"deletionImplemented\\\":false,\\\"policy\\\":\\\"retain all source/version-chain records\\\"},\\\"segments\\\":[{\\\"bytes\\\":773,\\\"eventCount\\\":6,\\\"firstSeq\\\":1,\\\"lastSeq\\\":6,\\\"name\\\":\\\"segment-000001.jsonl\\\",\\\"sha256\\\":\\\"9726954f0a9a4e2efd27c6ea6b64a85329cb2ffc2bd14c2699c3f6866225281c\\\"}],\\\"sourceClosed\\\":false,\\\"stats\\\":{\\\"acceptedRecords\\\":6,\\\"backpressureCount\\\":0,\\\"backpressureNs\\\":0,\\\"bytesWritten\\\":773,\\\"durableRecords\\\":6,\\\"fsyncCount\\\":3,\\\"maxQueueBytes\\\":524439},\\\"traceSchema\\\":3,\\\"transactionIndex\\\":{\\\"authoritative\\\":false,\\\"durableThroughSeq\\\":6,\\\"entries\\\":1,\\\"journalMode\\\":\\\"DELETE\\\",\\\"name\\\":\\\"transactions.sqlite3\\\",\\\"synchronous\\\":\\\"FULL\\\"}}\\n\"\n}\n",
+  "sourceBindings": {
+    "sourceSha256": "7f504158bf69184af536c60cdb622a578e725cc32af3a77108515b9063498d90",
+    "traceSha256": "2cb193fe8312002736463ebbbc3533d0f0f7265dad045ee3a93c84e8ab363f58",
+    "intervalEvidenceSha256": "27a45bb5a67aecef45e090a18dc9f102bf73705c49ffefcd3c6597c3421f85f4",
+    "lifecycleSha256": "906cc8b915951ed9e6ee7193c951ce9153fd11dc5015a38022c5b245de604936",
+    "journalIndexSha256": "3f24b52b4e95d5b5788ee3f079f200d707babfb5cb114a6f24baa3d2b55bdb3e"
+  },
+  "budgets": {
+    "sourceUtf8Bytes": 33554432,
+    "rawTraceUtf8Bytes": 8388608,
+    "sourceComponentUtf8Bytes": 8388608,
+    "optionsUtf8Bytes": 8192,
+    "coreReportUtf8Bytes": 33554432,
+    "reportUtf8Bytes": 100663296,
+    "capsuleUtf8Bytes": 201326592,
+    "registerTransactions": 128,
+    "registerOperations": 4096,
+    "listCommittedTransactions": 6,
+    "listOperations": 128,
+    "edges": 50000,
+    "statesPerRule": 100000,
+    "edgeChecksPerRule": 1000000
+  },
+  "scope": {
+    "modelDefinitions": [
+      "adya-pl-1-v1",
+      "adya-pl-2-v1",
+      "adya-pl-2.99-v1",
+      "elle-generalized-si-v1",
+      "adya-pl-3-v1",
+      "strict-pl-ss-v1"
+    ],
+    "supportedDataModels": [
+      "point-register-v1",
+      "append-list-v1"
+    ],
+    "relationModelClassificationSupported": false,
+    "modelPreservingReductionSupported": false,
+    "categoryReducerUnchanged": true,
+    "listGraphProfile": "one append per transaction per key, complete captured order, no savepoints",
+    "strictRequiresExplicitClientIntervals": true,
+    "traceTimeInfersRealTime": false,
+    "beginInfersSnapshot": false,
+    "clientEvidenceAuthenticatesCollector": false,
+    "journalSegmentPayloadsRehashed": false,
+    "actualDatabaseExecution": false,
+    "databaseWideCertification": false,
+    "oldAnalyzeAndCapsulesUnchanged": true
+  },
+  "result": {
+    "schemaVersion": 3,
+    "tool": "MoonTxnWitness",
+    "version": "0.2.0",
+    "kind": "isolation-model-classification",
+    "algorithm": "v3-isolation-model-1",
+    "dataModel": "point-register-v1",
+    "status": "inconclusive",
+    "acceptsIsolationModels": true,
+    "sourceTraceText": "{\"traceSchema\":3,\"clockDomain\":\"mtw-v3-8f00dc2594094a85b4c042cdf933553f\",\"scope\":{\"exclusiveWriters\":false},\"sqlProfiles\":[],\"gaps\":[{\"code\":\"initialization_unproven\",\"message\":\"The initial database snapshot has not been established as consistent.\"},{\"code\":\"diagnostic_instrumentation_only\",\"message\":\"No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage.\"},{\"code\":\"orm_sql_unmapped\",\"message\":\"Actual ORM DBAPI SQL has no independently validated fixed provenance profile.\"},{\"code\":\"commit_unknown\",\"message\":\"An async transaction outcome is unresolved; later idle rollback does not resolve it.\"},{\"code\":\"transaction_outcome_unknown\",\"message\":\"A connection disappeared while its transaction outcome was unresolved.\"},{\"code\":\"source_references_active\",\"message\":\"Active transactions or unread results still refer to retained evidence.\"},{\"code\":\"source_unsealed\",\"message\":\"Journal and explicit source window have not both been sealed.\"},{\"code\":\"diagnostic_only\",\"message\":\"This export is incomplete diagnostic evidence, not a complete analysis input.\"}],\"events\":[{\"consistent\":false,\"initial\":{},\"kind\":\"snapshot\",\"seq\":1,\"time\":16000000},{\"connection\":\"orm-connection-f936b954dd2d4af192bf545e6464a595\",\"kind\":\"begin\",\"seq\":2,\"time\":78000000,\"tx\":\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":3,\"sql\":\"INSERT INTO \\\"mtw_instrumentation_f18486a47e6e4a8a\\\".\\\"lost_commit_async\\\" VALUES(3,'committed-with-lost-ack')\",\"time\":78000000,\"tx\":\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[],\"seq\":4,\"statement\":3,\"time\":94000000,\"tx\":\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\"},{\"kind\":\"commit_request\",\"seq\":5,\"time\":94000000,\"tx\":\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\"},{\"kind\":\"disconnect\",\"seq\":6,\"time\":94000000,\"tx\":\"orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e\"}]}\n",
+    "normalized": {
+      "schema": 3,
+      "algorithm": "v3-lifecycle-1",
+      "status": "inconclusive",
+      "coverage": {
+        "complete": false,
+        "gaps": [
+          {
+            "code": "writer_scope_unproven",
+            "message": "Other writers have not been excluded"
+          },
+          {
+            "code": "initialization_unproven",
+            "message": "The initial database snapshot has not been established as consistent."
+          },
+          {
+            "code": "diagnostic_instrumentation_only",
+            "message": "No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage."
+          },
+          {
+            "code": "orm_sql_unmapped",
+            "message": "Actual ORM DBAPI SQL has no independently validated fixed provenance profile."
+          },
+          {
+            "code": "commit_unknown",
+            "message": "An async transaction outcome is unresolved; later idle rollback does not resolve it."
+          },
+          {
+            "code": "transaction_outcome_unknown",
+            "message": "A connection disappeared while its transaction outcome was unresolved."
+          },
+          {
+            "code": "source_references_active",
+            "message": "Active transactions or unread results still refer to retained evidence."
+          },
+          {
+            "code": "source_unsealed",
+            "message": "Journal and explicit source window have not both been sealed."
+          },
+          {
+            "code": "diagnostic_only",
+            "message": "This export is incomplete diagnostic evidence, not a complete analysis input."
+          },
+          {
+            "code": "inconsistent_snapshot",
+            "message": "Initial state is not a consistent captured snapshot"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unknown_commit",
+            "message": "The original transaction outcome has not been confirmed"
+          }
+        ]
+      },
+      "observations": [
+        {
+          "consistent": false,
+          "initial": {},
+          "kind": "snapshot",
+          "seq": 1,
+          "time": 16000000
+        },
+        {
+          "connection": "orm-connection-f936b954dd2d4af192bf545e6464a595",
+          "kind": "begin",
+          "seq": 2,
+          "time": 78000000,
+          "tx": "orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 3,
+          "sql": "INSERT INTO \"mtw_instrumentation_f18486a47e6e4a8a\".\"lost_commit_async\" VALUES(3,'committed-with-lost-ack')",
+          "time": 78000000,
+          "tx": "orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [],
+          "seq": 4,
+          "statement": 3,
+          "time": 94000000,
+          "tx": "orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e"
+        },
+        {
+          "kind": "commit_request",
+          "seq": 5,
+          "time": 94000000,
+          "tx": "orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e"
+        },
+        {
+          "kind": "disconnect",
+          "seq": 6,
+          "time": 94000000,
+          "tx": "orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e"
+        }
+      ],
+      "effects": [],
+      "transactions": [
+        {
+          "id": "orm-tx-5e186f9b65d3427e8c5f5d65e1e6b16e",
+          "connection": "orm-connection-f936b954dd2d4af192bf545e6464a595",
+          "status": "unknown",
+          "beginSeq": 2,
+          "endSeq": 6,
+          "events": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "finalWrites": []
+        }
+      ],
+      "history": null
+    },
+    "dependencies": [],
+    "realTimeDependencies": [],
+    "dependencyGraphComplete": false,
+    "validityGaps": [],
+    "rules": {
+      "G1a": {
+        "status": "unknown",
+        "reason": "capture-coverage-incomplete",
+        "evidence": null
+      },
+      "G1b": {
+        "status": "unknown",
+        "reason": "capture-coverage-incomplete",
+        "evidence": null
+      },
+      "INT": {
+        "status": "unknown",
+        "reason": "capture-coverage-incomplete",
+        "evidence": null
+      },
+      "G0": {
+        "status": "unknown",
+        "reason": "capture-coverage-or-required-version-order-incomplete",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0
+      },
+      "G1c": {
+        "status": "unknown",
+        "reason": "capture-coverage-or-required-version-order-incomplete",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0
+      },
+      "G2-item": {
+        "status": "unknown",
+        "reason": "capture-coverage-or-required-version-order-incomplete",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0
+      },
+      "G-nonadjacent": {
+        "status": "unknown",
+        "reason": "capture-coverage-or-required-version-order-incomplete",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0
+      },
+      "SSG1c": {
+        "status": "unknown",
+        "reason": "missing-unconfirmed-or-unsealed-client-intervals",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0,
+        "definition": "a WW/WR/RT cycle containing a proven RT edge"
+      },
+      "SSG2-item": {
+        "status": "unknown",
+        "reason": "missing-unconfirmed-or-unsealed-client-intervals",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0,
+        "definition": "a WW/WR/item-RW/RT cycle containing item RW; ordinary G2-item is included"
+      }
+    },
+    "models": {
+      "adya-pl-1-v1": {
+        "definition": "adya-pl-1-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "G0"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "not-required-by-this-profile",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "G0"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      },
+      "adya-pl-2-v1": {
+        "definition": "adya-pl-2-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "not-required-by-this-profile",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      },
+      "adya-pl-2.99-v1": {
+        "definition": "adya-pl-2.99-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "not-required-by-this-profile",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      },
+      "elle-generalized-si-v1": {
+        "definition": "elle-generalized-si-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "INT",
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G-nonadjacent"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "not-required-by-this-profile",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "INT",
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G-nonadjacent"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      },
+      "adya-pl-3-v1": {
+        "definition": "adya-pl-3-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "unknown",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      },
+      "strict-pl-ss-v1": {
+        "definition": "strict-pl-ss-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item",
+          "SSG1c",
+          "SSG2-item"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "unknown",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item",
+          "SSG1c",
+          "SSG2-item"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      }
+    },
+    "impliedAnomalies": [],
+    "intervalEvidence": {
+      "format": "moontxnwitness-client-intervals/v1",
+      "sourceIntervalEvidenceSha256": "27a45bb5a67aecef45e090a18dc9f102bf73705c49ffefcd3c6597c3421f85f4",
+      "sourceTraceSha256": "2cb193fe8312002736463ebbbc3533d0f0f7265dad045ee3a93c84e8ab363f58",
+      "sourceLifecycleSha256": "906cc8b915951ed9e6ee7193c951ce9153fd11dc5015a38022c5b245de604936",
+      "sourceJournalIndexSha256": "3f24b52b4e95d5b5788ee3f079f200d707babfb5cb114a6f24baa3d2b55bdb3e",
+      "traceBytesBound": true,
+      "lifecycleBytesBound": true,
+      "journalIndexBytesBound": true,
+      "journalSegmentPayloadsRecomputed": false,
+      "intervals": [],
+      "scope": "Explicit DBAPI call boundaries and original source byte bindings; no server snapshot inference or collector authenticity certification"
+    },
+    "scope": "versioned register or the declared single-append list graph profile; model refutations and required checks are separate; source hashes do not authenticate the collector",
+    "execution": {
+      "classificationOptions": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ],
+        "maxStates": 100000,
+        "maxEdgeChecks": 1000000,
+        "normalizationOptions": {}
+      },
+      "limits": {
+        "registerTransactions": 128,
+        "registerOperations": 4096,
+        "listCommittedTransactions": 6,
+        "listOperations": 128,
+        "edges": 50000,
+        "statesPerRule": 100000,
+        "edgeChecksPerRule": 1000000
+      },
+      "versionOrderCompletion": false
+    }
+  },
+  "coreReportReplay": {
+    "valid": true,
+    "scope": "every category, source observation, dependency, exact original trace text, budget and counter is recomputed; not database authentication",
+    "reason": "Classification reproduced"
+  },
+  "verificationPasses": {
+    "coreClassification": 1,
+    "coreReportVerification": 1
+  }
+}

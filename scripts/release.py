@@ -138,6 +138,25 @@ def validate_scoped_acceptance(acceptance, manifest):
         for kind in ('source', 'portable'):
             assert kind + ' category-specific source-closed reduction and exact classification capsule replay' in package['checks']
             assert kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 6):
+        models = summary['modelClassificationHostTests']
+        assert models['passed'] and models['version'] == VERSION and models['checks'] >= 62
+        assert models['coreSha256'] == manifest['coreSha256']
+        assert models['hostSha256'] == sha256(ROOT / 'dist/classification-models.mjs')
+        assert models['sourceManifestSha256'] == sha256(ROOT / 'fixtures/classification-models-v3/manifest.json')
+        assert models['newDatabaseExecution'] is False and models['syntheticStrictEvidence'] is True
+        original25 = summary['publicV025CompatibilityTests']
+        assert original25['passed'] and original25['currentRuntimeVersion'] == VERSION
+        assert original25['checkCount'] == 173 and original25['originalProducerFamilies'] == 21
+        assert original25['normalAnalysisHistoricalWorkersStarted'] == 0
+        assert original25['inProcessObservedHistoricalWorkerLaunches'] == 143
+        assert original25['expectedRegenerated'] is False
+        assert original25['originalFixtureManifestSha256'] == sha256(ROOT / 'fixtures/compat-v025/manifest.json')
+        protocol = summary['historicalWorkerProtocolTests']
+        assert protocol['passed'] and protocol['checks'] == 23 and protocol['frameworkOnly'] is True
+        for kind in ('source', 'portable'):
+            assert kind + ' explicit model definitions, raw sidecar bindings, applicability gaps and exact model capsule replay' in package['checks']
+            assert kind + ' actual public25 21-family ESM worker exact compatibility and tamper controls' in package['checks']
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names
     for item in package['archives']:

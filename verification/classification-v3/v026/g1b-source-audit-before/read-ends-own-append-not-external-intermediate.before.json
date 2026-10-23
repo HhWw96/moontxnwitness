@@ -1,0 +1,452 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.0",
+  "kind": "isolation-model-classification",
+  "algorithm": "v3-isolation-model-1",
+  "dataModel": "append-list-v1",
+  "status": "refuted",
+  "acceptsIsolationModels": true,
+  "sourceTraceText": "{\"traceSchema\":3,\"clockDomain\":\"independent-v026-addon\",\"scope\":{\"exclusiveWriters\":true},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"x\":[],\"y\":[]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"W\",\"connection\":\"w\",\"seq\":2,\"time\":1},{\"kind\":\"begin\",\"tx\":\"R\",\"connection\":\"r\",\"seq\":3,\"time\":2},{\"kind\":\"append\",\"tx\":\"W\",\"key\":\"x\",\"id\":\"a\",\"value\":\"same\",\"seq\":4,\"time\":3},{\"kind\":\"append\",\"tx\":\"R\",\"key\":\"x\",\"id\":\"c\",\"value\":\"same\",\"seq\":5,\"time\":4},{\"kind\":\"list_read\",\"tx\":\"R\",\"key\":\"x\",\"items\":[{\"id\":\"a\",\"value\":\"same\"},{\"id\":\"c\",\"value\":\"same\"}],\"seq\":6,\"time\":5},{\"kind\":\"append\",\"tx\":\"W\",\"key\":\"x\",\"id\":\"b\",\"value\":\"same\",\"seq\":7,\"time\":6},{\"kind\":\"commit_request\",\"tx\":\"W\",\"seq\":8,\"time\":7},{\"kind\":\"commit_ok\",\"tx\":\"W\",\"seq\":9,\"time\":8},{\"kind\":\"commit_request\",\"tx\":\"R\",\"seq\":10,\"time\":9},{\"kind\":\"commit_ok\",\"tx\":\"R\",\"seq\":11,\"time\":10}],\"gaps\":[],\"dataModel\":\"append-list-v1\"}\r\n",
+  "normalized": {
+    "schema": 3,
+    "dataModel": "append-list-v1",
+    "algorithm": "v3-list-lifecycle-1",
+    "status": "ready",
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "observations": [
+      {
+        "kind": "snapshot",
+        "initial": {
+          "x": [],
+          "y": []
+        },
+        "consistent": true,
+        "seq": 1,
+        "time": 0
+      },
+      {
+        "kind": "begin",
+        "tx": "W",
+        "connection": "w",
+        "seq": 2,
+        "time": 1
+      },
+      {
+        "kind": "begin",
+        "tx": "R",
+        "connection": "r",
+        "seq": 3,
+        "time": 2
+      },
+      {
+        "kind": "append",
+        "tx": "W",
+        "key": "x",
+        "id": "a",
+        "value": "same",
+        "seq": 4,
+        "time": 3
+      },
+      {
+        "kind": "append",
+        "tx": "R",
+        "key": "x",
+        "id": "c",
+        "value": "same",
+        "seq": 5,
+        "time": 4
+      },
+      {
+        "kind": "list_read",
+        "tx": "R",
+        "key": "x",
+        "items": [
+          {
+            "id": "a",
+            "value": "same"
+          },
+          {
+            "id": "c",
+            "value": "same"
+          }
+        ],
+        "seq": 6,
+        "time": 5
+      },
+      {
+        "kind": "append",
+        "tx": "W",
+        "key": "x",
+        "id": "b",
+        "value": "same",
+        "seq": 7,
+        "time": 6
+      },
+      {
+        "kind": "commit_request",
+        "tx": "W",
+        "seq": 8,
+        "time": 7
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "W",
+        "seq": 9,
+        "time": 8
+      },
+      {
+        "kind": "commit_request",
+        "tx": "R",
+        "seq": 10,
+        "time": 9
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "R",
+        "seq": 11,
+        "time": 10
+      }
+    ],
+    "effects": [
+      {
+        "seq": 4,
+        "tx": "W",
+        "key": "x",
+        "id": "a",
+        "value": "same",
+        "revertedBy": null
+      },
+      {
+        "seq": 5,
+        "tx": "R",
+        "key": "x",
+        "id": "c",
+        "value": "same",
+        "revertedBy": null
+      },
+      {
+        "seq": 7,
+        "tx": "W",
+        "key": "x",
+        "id": "b",
+        "value": "same",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "W",
+        "connection": "w",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          4,
+          7,
+          8,
+          9
+        ],
+        "finalWrites": [
+          4,
+          7
+        ]
+      },
+      {
+        "id": "R",
+        "connection": "r",
+        "status": "committed",
+        "beginSeq": 3,
+        "endSeq": 11,
+        "events": [
+          3,
+          5,
+          6,
+          10,
+          11
+        ],
+        "finalWrites": [
+          5
+        ]
+      }
+    ],
+    "history": null
+  },
+  "dependencies": [],
+  "realTimeDependencies": [],
+  "dependencyGraphComplete": false,
+  "validityGaps": [],
+  "rules": {
+    "G1a": {
+      "status": "checked-compatible",
+      "reason": "complete-source-check",
+      "evidence": null
+    },
+    "G1b": {
+      "status": "refuted",
+      "reason": "external-list-read-observes-only-an-intermediate-append-prefix",
+      "evidence": {
+        "tx": "R",
+        "writer": "W",
+        "readSeq": 6,
+        "writerFinalAppendIds": [
+          "a",
+          "b"
+        ],
+        "observedIds": [
+          "a",
+          "c"
+        ]
+      }
+    },
+    "INT": {
+      "status": "checked-compatible",
+      "reason": "complete-source-check",
+      "evidence": null
+    },
+    "G0": {
+      "status": "unknown",
+      "reason": "list-classification-multiple-appends-per-transaction-key-not-supported",
+      "evidence": null,
+      "states": 0,
+      "edgeChecks": 0
+    },
+    "G1c": {
+      "status": "unknown",
+      "reason": "list-classification-multiple-appends-per-transaction-key-not-supported",
+      "evidence": null,
+      "states": 0,
+      "edgeChecks": 0
+    },
+    "G2-item": {
+      "status": "unknown",
+      "reason": "list-classification-multiple-appends-per-transaction-key-not-supported",
+      "evidence": null,
+      "states": 0,
+      "edgeChecks": 0
+    },
+    "G-nonadjacent": {
+      "status": "unknown",
+      "reason": "list-classification-multiple-appends-per-transaction-key-not-supported",
+      "evidence": null,
+      "states": 0,
+      "edgeChecks": 0
+    },
+    "SSG1c": {
+      "status": "unknown",
+      "reason": "explicit-client-call-interval-evidence-required",
+      "evidence": null,
+      "states": 0,
+      "edgeChecks": 0,
+      "definition": "a WW/WR/RT cycle containing a proven RT edge"
+    },
+    "SSG2-item": {
+      "status": "unknown",
+      "reason": "explicit-client-call-interval-evidence-required",
+      "evidence": null,
+      "states": 0,
+      "edgeChecks": 0,
+      "definition": "a WW/WR/item-RW/RT cycle containing item RW; ordinary G2-item is included"
+    }
+  },
+  "models": {
+    "adya-pl-1-v1": {
+      "definition": "adya-pl-1-v1",
+      "status": "inconclusive",
+      "graphStatus": "inconclusive",
+      "requiredRules": [
+        "G0"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "not-required-by-this-profile",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [],
+      "incompleteRules": [
+        "G0"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    },
+    "adya-pl-2-v1": {
+      "definition": "adya-pl-2-v1",
+      "status": "refuted",
+      "graphStatus": "refuted",
+      "requiredRules": [
+        "G0",
+        "G1a",
+        "G1b",
+        "G1c"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "not-required-by-this-profile",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [
+        "G1b"
+      ],
+      "incompleteRules": [
+        "G0",
+        "G1c"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    },
+    "adya-pl-2.99-v1": {
+      "definition": "adya-pl-2.99-v1",
+      "status": "refuted",
+      "graphStatus": "refuted",
+      "requiredRules": [
+        "G0",
+        "G1a",
+        "G1b",
+        "G1c",
+        "G2-item"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "not-required-by-this-profile",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [
+        "G1b"
+      ],
+      "incompleteRules": [
+        "G0",
+        "G1c",
+        "G2-item"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    },
+    "elle-generalized-si-v1": {
+      "definition": "elle-generalized-si-v1",
+      "status": "refuted",
+      "graphStatus": "refuted",
+      "requiredRules": [
+        "INT",
+        "G0",
+        "G1a",
+        "G1b",
+        "G1c",
+        "G-nonadjacent"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "not-required-by-this-profile",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [
+        "G1b"
+      ],
+      "incompleteRules": [
+        "G0",
+        "G1c",
+        "G-nonadjacent"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    },
+    "adya-pl-3-v1": {
+      "definition": "adya-pl-3-v1",
+      "status": "refuted",
+      "graphStatus": "refuted",
+      "requiredRules": [
+        "G0",
+        "G1a",
+        "G1b",
+        "G1c",
+        "G2-item"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "satisfied",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [
+        "G1b"
+      ],
+      "incompleteRules": [
+        "G0",
+        "G1c",
+        "G2-item"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    },
+    "strict-pl-ss-v1": {
+      "definition": "strict-pl-ss-v1",
+      "status": "refuted",
+      "graphStatus": "refuted",
+      "requiredRules": [
+        "G0",
+        "G1a",
+        "G1b",
+        "G1c",
+        "G2-item",
+        "SSG1c",
+        "SSG2-item"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "satisfied",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [
+        "G1b"
+      ],
+      "incompleteRules": [
+        "G0",
+        "G1c",
+        "G2-item",
+        "SSG1c",
+        "SSG2-item"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    }
+  },
+  "impliedAnomalies": [
+    "G1b",
+    "G1"
+  ],
+  "intervalEvidence": null,
+  "scope": "versioned register or the declared single-append list graph profile; model refutations and required checks are separate; source hashes do not authenticate the collector",
+  "execution": {
+    "classificationOptions": {
+      "models": [
+        "adya-pl-1-v1",
+        "adya-pl-2-v1",
+        "adya-pl-2.99-v1",
+        "elle-generalized-si-v1",
+        "adya-pl-3-v1",
+        "strict-pl-ss-v1"
+      ],
+      "maxStates": 100000,
+      "maxEdgeChecks": 1000000,
+      "normalizationOptions": {}
+    },
+    "limits": {
+      "registerTransactions": 128,
+      "registerOperations": 4096,
+      "listCommittedTransactions": 6,
+      "listOperations": 128,
+      "edges": 50000,
+      "statesPerRule": 100000,
+      "edgeChecksPerRule": 1000000
+    },
+    "versionOrderCompletion": false
+  }
+}

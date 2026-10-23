@@ -1,0 +1,19 @@
+{
+  "format": "moontxnwitness-execution/v1",
+  "schemaVersion": 1,
+  "tool": "MoonTxnWitness",
+  "engineVersion": "0.2.6",
+  "diagnosticAlgorithm": "v3-observed-failures-1",
+  "budgets": {
+    "traceUtf8Bytes": 8388608,
+    "diagnosticUtf8Bytes": 33554432,
+    "capsuleUtf8Bytes": 33554432,
+    "normalizedJsonCodeUnits": 33554432,
+    "normalizationPolicy": "normalize_capture_v3_json/defaults",
+    "modelSearch": false
+  },
+  "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"statement\",\"tx\":\"A\",\"sql\":\"UPDATE stock SET qty=qty-1 WHERE id=%s\",\"parameters\":[\"原参数\"],\"seq\":3,\"time\":2},{\"kind\":\"rows\",\"tx\":\"A\",\"statement\":3,\"rows\":[],\"complete\":false,\"error\":{\"class\":\"NativeError\",\"sqlstate\":\"40P01\"},\"seq\":4,\"time\":3},{\"kind\":\"rollback_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}]}",
+  "traceSha256": "9fd55d232e2aac9ecbdf29df6b73cd7a4472a0e97e414dcd24e97b140ffa1269",
+  "diagnosticText": "{\"schemaVersion\":3,\"algorithm\":\"v3-observed-failures-1\",\"valid\":true,\"status\":\"observations\",\"scope\":\"Recorded execution failures; not an isolation-level conclusion\",\"modelViolationClaim\":false,\"databaseAuthenticityVerified\":false,\"certifiesFailureAbsence\":false,\"captureStatus\":\"inconclusive\",\"captureCoverage\":{\"complete\":false,\"gaps\":[{\"code\":\"unmapped_statement\",\"message\":\"Raw SQL has no verified versioned statement mapping\"},{\"code\":\"incomplete_rows\",\"message\":\"A statement result was not exhausted\"}]},\"transactionOutcomes\":[{\"id\":\"A\",\"connection\":\"c\",\"status\":\"aborted\",\"beginSeq\":2,\"endSeq\":5,\"events\":[2,3,4,5],\"finalWrites\":[]}],\"observedFaultCount\":1,\"faults\":[{\"seq\":4,\"tx\":\"A\",\"statement\":3,\"kind\":\"deadlock\",\"sqlstate\":\"40P01\",\"driverClass\":\"NativeError\",\"origin\":\"rows.error\"}]}",
+  "diagnosticSha256": "a58728d289cab1a4bf028f866986f805010bcf662ccef0dee9c2a3420548ecd3"
+}

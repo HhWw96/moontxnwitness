@@ -1,0 +1,62 @@
+test_gate_is_independent_v026_condition (__main__.Public25PackageGateTests.test_gate_is_independent_v026_condition) ... FAIL
+test_public25_release_does_not_require_future_compatibility (__main__.Public25PackageGateTests.test_public25_release_does_not_require_future_compatibility) ... ERROR
+test_source_and_portable_use_distinct_exclusive_directories (__main__.Public25PackageGateTests.test_source_and_portable_use_distinct_exclusive_directories) ... ERROR
+test_wrong_actual_check_count_is_refused (__main__.Public25PackageGateTests.test_wrong_actual_check_count_is_refused) ... ok
+
+======================================================================
+ERROR: test_public25_release_does_not_require_future_compatibility (__main__.Public25PackageGateTests.test_public25_release_does_not_require_future_compatibility)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-public025-dispatcher-20261024-a\repo\scripts\test_public025_package_gate.py", line 62, in test_public25_release_does_not_require_future_compatibility
+    calls, checks = self.execute('0.2.5', ['source', 'portable'])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexScratch\MoonTxnWitness-public025-dispatcher-20261024-a\repo\scripts\test_public025_package_gate.py", line 53, in execute
+    exec(compile(node, '<isolated-public25-package-gate>', 'exec'), env)
+  File "<isolated-public25-package-gate>", line 273, in <module>
+  File "D:\CodexScratch\MoonTxnWitness-public025-dispatcher-20261024-a\repo\scripts\test_public025_package_gate.py", line 41, in run
+    target.mkdir()  # Same exclusive contract as the actual JS runner.
+    ^^^^^^^^^^^^^^
+  File "D:\Border\python\Lib\pathlib.py", line 1311, in mkdir
+    os.mkdir(self, mode)
+FileExistsError: [WinError 183] ���ļ��Ѵ���ʱ���޷��������ļ���: 'D:\\CodexScratch\\MoonTxnWitness-public025-dispatcher-20261024-a\\repo\\artifacts\\public25-package-gate-tests\\run-8hr76yu9\\public25-compatibility'
+
+======================================================================
+ERROR: test_source_and_portable_use_distinct_exclusive_directories (__main__.Public25PackageGateTests.test_source_and_portable_use_distinct_exclusive_directories)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-public025-dispatcher-20261024-a\repo\scripts\test_public025_package_gate.py", line 67, in test_source_and_portable_use_distinct_exclusive_directories
+    calls, checks = self.execute('0.2.6', ['source', 'portable'])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexScratch\MoonTxnWitness-public025-dispatcher-20261024-a\repo\scripts\test_public025_package_gate.py", line 53, in execute
+    exec(compile(node, '<isolated-public25-package-gate>', 'exec'), env)
+  File "<isolated-public25-package-gate>", line 273, in <module>
+  File "D:\CodexScratch\MoonTxnWitness-public025-dispatcher-20261024-a\repo\scripts\test_public025_package_gate.py", line 41, in run
+    target.mkdir()  # Same exclusive contract as the actual JS runner.
+    ^^^^^^^^^^^^^^
+  File "D:\Border\python\Lib\pathlib.py", line 1311, in mkdir
+    os.mkdir(self, mode)
+FileExistsError: [WinError 183] ���ļ��Ѵ���ʱ���޷��������ļ���: 'D:\\CodexScratch\\MoonTxnWitness-public025-dispatcher-20261024-a\\repo\\artifacts\\public25-package-gate-tests\\run-z1_vxq33\\public25-compatibility'
+
+======================================================================
+FAIL: test_gate_is_independent_v026_condition (__main__.Public25PackageGateTests.test_gate_is_independent_v026_condition)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\CodexScratch\MoonTxnWitness-public025-dispatcher-20261024-a\repo\scripts\test_public025_package_gate.py", line 58, in test_gate_is_independent_v026_condition
+    self.assertEqual(ast.literal_eval(original.test.comparators[0]), (0, 2, 6))
+AssertionError: Tuples differ: (0, 2, 4) != (0, 2, 6)
+
+First differing element 2:
+4
+6
+
+- (0, 2, 4)
+?        ^
+
++ (0, 2, 6)
+?        ^
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.174s
+
+FAILED (failures=1, errors=2)

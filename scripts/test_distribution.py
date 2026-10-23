@@ -62,6 +62,8 @@ class DistributionTests(unittest.TestCase):
         put('examples/input.json', {})
         put('examples/orm-profile-roundtrip.mjs', '// offline configured-profile consumer\n')
         put('examples/classification-roundtrip.mjs', '// offline category source consumer\n')
+        put('examples/classification-models-roundtrip.mjs', '// offline explicit model consumer\n')
+        put('fixtures/classification-models-v3/list-skew.json', {'syntheticInputs': True})
         put('fixtures/classification-v3/source-closed-noisy-g2.json', {'syntheticInputs': True})
         put('fixtures/orm-profile-v3/synthetic-nonrepeatable-first/profile-source.json', {'explicitlySynthetic': True})
         cls.run_git('init', '--quiet')
@@ -77,6 +79,7 @@ class DistributionTests(unittest.TestCase):
         put('dist/capture-core.mjs', 'export const actualCaptureCore = true;\n')
         put('dist/orm-profile.mjs', 'export const analyzeOrmProfileV3 = true;\n')
         put('dist/classification.mjs', 'export const classifyV3 = true;\n')
+        put('dist/classification-models.mjs', 'export const classifyModelsV3 = true;\n')
         cls.tested = {'cmd/sdk.mjs': 'fixture', 'dist/core.mjs': 'fixture'}
         cls.selection = inventory.select_distribution_files(cls.root, cls.public, cls.tested, '0.1.2')
         for name in ('verification/private.json', 'verification/private.log', 'cmd/private.log',
@@ -125,6 +128,12 @@ class DistributionTests(unittest.TestCase):
         for kind in ('source','portable'):
             self.assertIn('examples/classification-roundtrip.mjs',self.selection[kind])
             self.assertIn('fixtures/classification-v3/source-closed-noisy-g2.json',self.selection[kind])
+
+    def test_model_classification_runtime_example_and_source_remain(self):
+        self.assertIn('dist/classification-models.mjs',self.selection['portable'])
+        for kind in ('source','portable'):
+            self.assertIn('examples/classification-models-roundtrip.mjs',self.selection[kind])
+            self.assertIn('fixtures/classification-models-v3/list-skew.json',self.selection[kind])
 
     def test_actual_presence_and_capture_run_closures_remain(self):
         for kind in ('source', 'portable'):
@@ -209,6 +218,47 @@ class DistributionTests(unittest.TestCase):
         self.assertIn('cmd/legacy/v024/', names)
         self.assertIn('fixtures/compat-v024/', names)
         self.assertIn('verification/compatibility/public-v024-producer-2026-10-23/', names)
+
+    def test_public25_exact_worker_and_original_producer_closure_is_selected(self):
+        additions = {name: '// synthetic inventory placeholder; never executed\n' for name in (
+            'cmd/legacy/v025/core.mjs', 'cmd/legacy/v025/orm-profile.mjs',
+            'cmd/legacy/v025/classification.mjs', 'cmd/legacy/v025/LICENSE',
+            'cmd/legacy/v025/legacy-v024.mjs', 'cmd/legacy/v025/build-manifest.json',
+            'cmd/legacy/v025/THIRD_PARTY_NOTICES.txt', 'cmd/legacy/v025/origin.json',
+            'cmd/legacy/v025/manifest.json', 'fixtures/compat-v025/manifest.json',
+            'fixtures/compat-v025/producer-runtime/core.mjs',
+            'cmd/legacy-v025.mjs', 'cmd/legacy-v025-runtime.mjs',
+            'cmd/legacy-v025-worker.mjs', 'cmd/legacy-v025-binding.mjs',
+            'scripts/legacy-v025-runtime.mjs', 'scripts/compat-v025-test.mjs',
+            'verification/compatibility/public-v025-producer-2026-10-24/receipt.json')}
+        additions['cmd/legacy/v025/manifest.json'] = '{}'
+        for name, value in additions.items():
+            target = self.root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(value, encoding='utf8')
+        for name in ('core.mjs', 'orm-profile.mjs', 'classification.mjs', 'LICENSE', 'manifest.json'):
+            target = self.root / 'dist/legacy/v025' / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text('// synthetic inventory placeholder; never executed\n', encoding='utf8')
+        public = self.public | set(additions)
+        selection = inventory.select_distribution_files(self.root, public, self.tested, '0.1.2')
+        inventory.assert_complete(selection)
+        for name in ('core.mjs', 'orm-profile.mjs', 'classification.mjs', 'LICENSE', 'manifest.json'):
+            self.assertIn('cmd/legacy/v025/' + name, selection['source'])
+            self.assertIn('dist/legacy/v025/' + name, selection['portable'])
+        self.assertIn('fixtures/compat-v025/producer-runtime/core.mjs', selection['portable'])
+        self.assertIn('scripts/compat-v025-test.mjs', selection['portable'])
+        broken = inventory.select_distribution_files(self.root,
+            public - {'cmd/legacy/v025/LICENSE'}, self.tested, '0.1.2')
+        with self.assertRaises(AssertionError):
+            inventory.assert_complete(broken)
+
+    def test_v026_cannot_omit_actual_public25_inputs(self):
+        selection = inventory.select_distribution_files(self.root, self.public, self.tested, '0.2.6')
+        names = {item['file'] for item in selection['missingInputs']}
+        self.assertIn('cmd/legacy/v025/', names)
+        self.assertIn('fixtures/compat-v025/', names)
+        self.assertIn('scripts/compat-v025-test.mjs', names)
 
     def test_ci_reuse_is_refused(self):
         with patch.dict(os.environ, {'GITHUB_ACTIONS': 'true'}), self.assertRaises(FileExistsError):

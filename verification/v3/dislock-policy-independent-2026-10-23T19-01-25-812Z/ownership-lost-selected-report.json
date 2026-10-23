@@ -1,0 +1,1596 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.6",
+  "algorithm": "v3-register-sql-1",
+  "status": "inconclusive",
+  "modelDefinition": {
+    "id": "register-serializable-v1",
+    "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+  },
+  "coverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "dislock_sql_proof_gap",
+        "message": "Failure(src/dislock_sql_v3.mbt:43:5-43:18@HhWw96/moontxnwitness FAILED: Zero-row SQL lacks a complete same-statement predicate source)"
+      },
+      {
+        "code": "unverified_sql_profile",
+        "message": "Installation metadata and source ledgers are retained but not yet independently proved by this algorithm"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unverified_sql_mapping",
+        "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unverified_sql_mapping",
+        "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+      },
+      {
+        "code": "unverified_sql_mapping",
+        "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+      },
+      {
+        "code": "unsupported_condition",
+        "message": "Condition semantics are retained but not proved by the lifecycle projection"
+      },
+      {
+        "code": "unverified_sql_mapping",
+        "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+      },
+      {
+        "code": "unverified_sql_mapping",
+        "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+      },
+      {
+        "code": "unsupported_condition",
+        "message": "Condition semantics are retained but not proved by the lifecycle projection"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unverified_sql_mapping",
+        "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+      },
+      {
+        "code": "unverified_sql_mapping",
+        "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+      },
+      {
+        "code": "unsupported_condition",
+        "message": "Condition semantics are retained but not proved by the lifecycle projection"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unverified_sql_mapping",
+        "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+      },
+      {
+        "code": "unsupported_condition",
+        "message": "Condition semantics are retained but not proved by the lifecycle projection"
+      }
+    ]
+  },
+  "normalized": {
+    "schema": 3,
+    "algorithm": "v3-lifecycle-sql-1",
+    "status": "inconclusive",
+    "coverage": {
+      "complete": false,
+      "gaps": [
+        {
+          "code": "dislock_sql_proof_gap",
+          "message": "Failure(src/dislock_sql_v3.mbt:43:5-43:18@HhWw96/moontxnwitness FAILED: Zero-row SQL lacks a complete same-statement predicate source)"
+        },
+        {
+          "code": "unverified_sql_profile",
+          "message": "Installation metadata and source ledgers are retained but not yet independently proved by this algorithm"
+        },
+        {
+          "code": "unmapped_statement",
+          "message": "Raw SQL has no verified versioned statement mapping"
+        },
+        {
+          "code": "unverified_sql_mapping",
+          "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+        },
+        {
+          "code": "unmapped_statement",
+          "message": "Raw SQL has no verified versioned statement mapping"
+        },
+        {
+          "code": "unmapped_statement",
+          "message": "Raw SQL has no verified versioned statement mapping"
+        },
+        {
+          "code": "unverified_sql_mapping",
+          "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+        },
+        {
+          "code": "unverified_sql_mapping",
+          "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+        },
+        {
+          "code": "unsupported_condition",
+          "message": "Condition semantics are retained but not proved by the lifecycle projection"
+        },
+        {
+          "code": "unverified_sql_mapping",
+          "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+        },
+        {
+          "code": "unverified_sql_mapping",
+          "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+        },
+        {
+          "code": "unsupported_condition",
+          "message": "Condition semantics are retained but not proved by the lifecycle projection"
+        },
+        {
+          "code": "unmapped_statement",
+          "message": "Raw SQL has no verified versioned statement mapping"
+        },
+        {
+          "code": "unverified_sql_mapping",
+          "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+        },
+        {
+          "code": "unverified_sql_mapping",
+          "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+        },
+        {
+          "code": "unsupported_condition",
+          "message": "Condition semantics are retained but not proved by the lifecycle projection"
+        },
+        {
+          "code": "unmapped_statement",
+          "message": "Raw SQL has no verified versioned statement mapping"
+        },
+        {
+          "code": "unverified_sql_mapping",
+          "message": "A transport-bound SQL fact still requires independently validated SQL, results and source evidence"
+        },
+        {
+          "code": "unsupported_condition",
+          "message": "Condition semantics are retained but not proved by the lifecycle projection"
+        }
+      ]
+    },
+    "observations": [
+      {
+        "consistent": true,
+        "initial": {
+          "cronjob-lock:lease:fixture-ownership-lost": "f3f3dd2e-a60b-4fdd-a9db-87e5ce03f8f5",
+          "cronjob-lock:schedule:fixture-ownership-lost": "90b204a7-41f4-4c42-8a7e-2b78e1fb1cd8"
+        },
+        "kind": "snapshot",
+        "seq": 1,
+        "time": 32000000
+      },
+      {
+        "connection": "connection-605d55f1e049444392db7dc0705e92cb",
+        "kind": "begin",
+        "seq": 2,
+        "time": 141000000,
+        "tx": "transaction-257e62c3da4a4776965cadc3ed7d73bf"
+      },
+      {
+        "executedSql": "\n        INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\" (key, value, expire_at)\n        VALUES (%s, %s, NOW() + (%s * INTERVAL '1 second'))\n        ON CONFLICT (key) DO UPDATE\n        SET value = EXCLUDED.value,\n            expire_at = EXCLUDED.expire_at\n        WHERE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\".expire_at <= NOW()\n        RETURNING key, expire_at,OLD.\"_mtw_v3_version\"::text,NEW.\"_mtw_v3_version\"::text,OLD.value,OLD.expire_at,NOW(),\"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_predecessor\"(NEW.\"_mtw_v3_version\"::text),CASE WHEN OLD.key IS NULL THEN 'INSERT' ELSE 'UPDATE' END;\n        ",
+        "kind": "statement",
+        "mappingId": "dislock.acquire-run/1",
+        "parameters": [
+          "cronjob-lock:lease:fixture-ownership-lost",
+          "owner-original",
+          5
+        ],
+        "seq": 3,
+        "sql": "\n        INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\" (key, value, expire_at)\n        VALUES (%s, %s, NOW() + (%s * INTERVAL '1 second'))\n        ON CONFLICT (key) DO UPDATE\n        SET value = EXCLUDED.value,\n            expire_at = EXCLUDED.expire_at\n        WHERE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\".expire_at <= NOW()\n        RETURNING key, expire_at;\n        ",
+        "time": 141000000,
+        "tx": "transaction-257e62c3da4a4776965cadc3ed7d73bf"
+      },
+      {
+        "columns": [
+          {
+            "name": "key",
+            "typeCode": 25
+          },
+          {
+            "name": "expire_at",
+            "typeCode": 1184
+          }
+        ],
+        "complete": true,
+        "kind": "rows",
+        "rows": [
+          [
+            "cronjob-lock:lease:fixture-ownership-lost",
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:26.012035+08:00"
+            }
+          ]
+        ],
+        "seq": 4,
+        "serverRows": [
+          [
+            "cronjob-lock:lease:fixture-ownership-lost",
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:26.012035+08:00"
+            },
+            null,
+            "8d53c8fb-bc02-41d1-9d3c-01f6959dd12f",
+            null,
+            null,
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:21.012035+08:00"
+            },
+            "f3f3dd2e-a60b-4fdd-a9db-87e5ce03f8f5",
+            "INSERT"
+          ]
+        ],
+        "statement": 3,
+        "time": 172000000,
+        "tx": "transaction-257e62c3da4a4776965cadc3ed7d73bf"
+      },
+      {
+        "evidence": {
+          "action": "INSERT",
+          "serverRow": 0
+        },
+        "key": "cronjob-lock:lease:fixture-ownership-lost",
+        "kind": "write",
+        "mappingId": "dislock.acquire-run/1",
+        "predecessor": "f3f3dd2e-a60b-4fdd-a9db-87e5ce03f8f5",
+        "seq": 5,
+        "statement": 3,
+        "time": 172000000,
+        "tx": "transaction-257e62c3da4a4776965cadc3ed7d73bf",
+        "version": "8d53c8fb-bc02-41d1-9d3c-01f6959dd12f"
+      },
+      {
+        "kind": "commit_request",
+        "seq": 6,
+        "time": 172000000,
+        "tx": "transaction-257e62c3da4a4776965cadc3ed7d73bf"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 7,
+        "time": 172000000,
+        "tx": "transaction-257e62c3da4a4776965cadc3ed7d73bf"
+      },
+      {
+        "connection": "connection-696bd7521b7341f98d68a16a3c34693d",
+        "kind": "begin",
+        "seq": 8,
+        "time": 360000000,
+        "tx": "transaction-b75873859c504cb4a9eccaa3e7ffedf9"
+      },
+      {
+        "executedSql": "\n        UPDATE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at,OLD.\"_mtw_v3_version\"::text,NEW.\"_mtw_v3_version\"::text,OLD.value,OLD.expire_at,NOW();\n        ",
+        "kind": "statement",
+        "mappingId": "dislock.renew/1",
+        "parameters": [
+          5,
+          "cronjob-lock:lease:fixture-ownership-lost",
+          "owner-original"
+        ],
+        "seq": 9,
+        "sql": "\n        UPDATE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at;\n        ",
+        "time": 360000000,
+        "tx": "transaction-b75873859c504cb4a9eccaa3e7ffedf9"
+      },
+      {
+        "connection": "connection-c58b3d151699479aa5f73d1c6cd81b84",
+        "kind": "begin",
+        "seq": 10,
+        "time": 375000000,
+        "tx": "transaction-5b28231be731430fa34efeeba11ccbef"
+      },
+      {
+        "executedSql": "\n        UPDATE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\"\n        SET expire_at = NOW()\n        WHERE key = %s\n          AND value = %s\n        RETURNING key,OLD.\"_mtw_v3_version\"::text,NEW.\"_mtw_v3_version\"::text,OLD.value,OLD.expire_at,NOW();\n        ",
+        "kind": "statement",
+        "mappingId": "dislock.expire/1",
+        "parameters": [
+          "cronjob-lock:lease:fixture-ownership-lost",
+          "owner-original"
+        ],
+        "seq": 11,
+        "sql": "\n        UPDATE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\"\n        SET expire_at = NOW()\n        WHERE key = %s\n          AND value = %s\n        RETURNING key;\n        ",
+        "time": 375000000,
+        "tx": "transaction-5b28231be731430fa34efeeba11ccbef"
+      },
+      {
+        "columns": [
+          {
+            "name": "expire_at",
+            "typeCode": 1184
+          }
+        ],
+        "complete": true,
+        "kind": "rows",
+        "rows": [
+          [
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:26.222313+08:00"
+            }
+          ]
+        ],
+        "seq": 12,
+        "serverRows": [
+          [
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:26.222313+08:00"
+            },
+            "8d53c8fb-bc02-41d1-9d3c-01f6959dd12f",
+            "6040e4f8-72ea-4c57-9576-bfbff540d7ae",
+            "owner-original",
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:26.012035+08:00"
+            },
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:21.222313+08:00"
+            }
+          ]
+        ],
+        "statement": 9,
+        "time": 375000000,
+        "tx": "transaction-b75873859c504cb4a9eccaa3e7ffedf9"
+      },
+      {
+        "evidence": {
+          "action": "UPDATE",
+          "serverRow": 0
+        },
+        "key": "cronjob-lock:lease:fixture-ownership-lost",
+        "kind": "write",
+        "mappingId": "dislock.renew/1",
+        "predecessor": "8d53c8fb-bc02-41d1-9d3c-01f6959dd12f",
+        "seq": 13,
+        "statement": 9,
+        "time": 375000000,
+        "tx": "transaction-b75873859c504cb4a9eccaa3e7ffedf9",
+        "version": "6040e4f8-72ea-4c57-9576-bfbff540d7ae"
+      },
+      {
+        "evidence": {
+          "action": "UPDATE",
+          "key": "cronjob-lock:lease:fixture-ownership-lost",
+          "newToken": "6040e4f8-72ea-4c57-9576-bfbff540d7ae",
+          "oldExpireAt": {
+            "captureType": "datetime",
+            "value": "2026-10-21 11:41:26.012035+08:00"
+          },
+          "oldOwner": "owner-original",
+          "oldToken": "8d53c8fb-bc02-41d1-9d3c-01f6959dd12f",
+          "owner": "owner-original",
+          "serverNow": {
+            "captureType": "datetime",
+            "value": "2026-10-21 11:41:21.222313+08:00"
+          },
+          "serverRow": 0
+        },
+        "kind": "condition",
+        "mappingId": "dislock.renew/1",
+        "matched": true,
+        "predicate": "owner-equals",
+        "seq": 14,
+        "sourceVersion": "8d53c8fb-bc02-41d1-9d3c-01f6959dd12f",
+        "statement": 9,
+        "time": 375000000,
+        "tx": "transaction-b75873859c504cb4a9eccaa3e7ffedf9"
+      },
+      {
+        "kind": "commit_request",
+        "seq": 15,
+        "time": 375000000,
+        "tx": "transaction-b75873859c504cb4a9eccaa3e7ffedf9"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 16,
+        "time": 375000000,
+        "tx": "transaction-b75873859c504cb4a9eccaa3e7ffedf9"
+      },
+      {
+        "columns": [
+          {
+            "name": "key",
+            "typeCode": 25
+          }
+        ],
+        "complete": true,
+        "kind": "rows",
+        "rows": [
+          [
+            "cronjob-lock:lease:fixture-ownership-lost"
+          ]
+        ],
+        "seq": 17,
+        "serverRows": [
+          [
+            "cronjob-lock:lease:fixture-ownership-lost",
+            "6040e4f8-72ea-4c57-9576-bfbff540d7ae",
+            "7b3afdf4-17bd-432a-9f37-fc64391ba4a7",
+            "owner-original",
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:26.222313+08:00"
+            },
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:21.238929+08:00"
+            }
+          ]
+        ],
+        "statement": 11,
+        "time": 391000000,
+        "tx": "transaction-5b28231be731430fa34efeeba11ccbef"
+      },
+      {
+        "evidence": {
+          "action": "UPDATE",
+          "serverRow": 0
+        },
+        "key": "cronjob-lock:lease:fixture-ownership-lost",
+        "kind": "write",
+        "mappingId": "dislock.expire/1",
+        "predecessor": "6040e4f8-72ea-4c57-9576-bfbff540d7ae",
+        "seq": 18,
+        "statement": 11,
+        "time": 391000000,
+        "tx": "transaction-5b28231be731430fa34efeeba11ccbef",
+        "version": "7b3afdf4-17bd-432a-9f37-fc64391ba4a7"
+      },
+      {
+        "evidence": {
+          "action": "UPDATE",
+          "key": "cronjob-lock:lease:fixture-ownership-lost",
+          "newToken": "7b3afdf4-17bd-432a-9f37-fc64391ba4a7",
+          "oldExpireAt": {
+            "captureType": "datetime",
+            "value": "2026-10-21 11:41:26.222313+08:00"
+          },
+          "oldOwner": "owner-original",
+          "oldToken": "6040e4f8-72ea-4c57-9576-bfbff540d7ae",
+          "owner": "owner-original",
+          "serverNow": {
+            "captureType": "datetime",
+            "value": "2026-10-21 11:41:21.238929+08:00"
+          },
+          "serverRow": 0
+        },
+        "kind": "condition",
+        "mappingId": "dislock.expire/1",
+        "matched": true,
+        "predicate": "owner-equals",
+        "seq": 19,
+        "sourceVersion": "6040e4f8-72ea-4c57-9576-bfbff540d7ae",
+        "statement": 11,
+        "time": 391000000,
+        "tx": "transaction-5b28231be731430fa34efeeba11ccbef"
+      },
+      {
+        "kind": "commit_request",
+        "seq": 20,
+        "time": 391000000,
+        "tx": "transaction-5b28231be731430fa34efeeba11ccbef"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 21,
+        "time": 407000000,
+        "tx": "transaction-5b28231be731430fa34efeeba11ccbef"
+      },
+      {
+        "connection": "connection-c58b3d151699479aa5f73d1c6cd81b84",
+        "kind": "begin",
+        "seq": 22,
+        "time": 407000000,
+        "tx": "transaction-ac853ce152464ae09701d86ed977fcc0"
+      },
+      {
+        "executedSql": "\n        INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\" (key, value, expire_at)\n        VALUES (%s, %s, NOW() + (%s * INTERVAL '1 second'))\n        ON CONFLICT (key) DO UPDATE\n        SET value = EXCLUDED.value,\n            expire_at = EXCLUDED.expire_at\n        WHERE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\".expire_at <= NOW()\n        RETURNING key, expire_at,OLD.\"_mtw_v3_version\"::text,NEW.\"_mtw_v3_version\"::text,OLD.value,OLD.expire_at,NOW(),\"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_predecessor\"(NEW.\"_mtw_v3_version\"::text),CASE WHEN OLD.key IS NULL THEN 'INSERT' ELSE 'UPDATE' END;\n        ",
+        "kind": "statement",
+        "mappingId": "dislock.acquire-run/1",
+        "parameters": [
+          "cronjob-lock:lease:fixture-ownership-lost",
+          "owner-other",
+          5
+        ],
+        "seq": 23,
+        "sql": "\n        INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\" (key, value, expire_at)\n        VALUES (%s, %s, NOW() + (%s * INTERVAL '1 second'))\n        ON CONFLICT (key) DO UPDATE\n        SET value = EXCLUDED.value,\n            expire_at = EXCLUDED.expire_at\n        WHERE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\".expire_at <= NOW()\n        RETURNING key, expire_at;\n        ",
+        "time": 407000000,
+        "tx": "transaction-ac853ce152464ae09701d86ed977fcc0"
+      },
+      {
+        "columns": [
+          {
+            "name": "key",
+            "typeCode": 25
+          },
+          {
+            "name": "expire_at",
+            "typeCode": 1184
+          }
+        ],
+        "complete": true,
+        "kind": "rows",
+        "rows": [
+          [
+            "cronjob-lock:lease:fixture-ownership-lost",
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:26.271459+08:00"
+            }
+          ]
+        ],
+        "seq": 24,
+        "serverRows": [
+          [
+            "cronjob-lock:lease:fixture-ownership-lost",
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:26.271459+08:00"
+            },
+            "7b3afdf4-17bd-432a-9f37-fc64391ba4a7",
+            "b7be6d7b-bb1e-4e1a-934a-2996116b0e22",
+            "owner-original",
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:21.238929+08:00"
+            },
+            {
+              "captureType": "datetime",
+              "value": "2026-10-21 11:41:21.271459+08:00"
+            },
+            "7b3afdf4-17bd-432a-9f37-fc64391ba4a7",
+            "UPDATE"
+          ]
+        ],
+        "statement": 23,
+        "time": 407000000,
+        "tx": "transaction-ac853ce152464ae09701d86ed977fcc0"
+      },
+      {
+        "evidence": {
+          "action": "UPDATE",
+          "serverRow": 0
+        },
+        "key": "cronjob-lock:lease:fixture-ownership-lost",
+        "kind": "write",
+        "mappingId": "dislock.acquire-run/1",
+        "predecessor": "7b3afdf4-17bd-432a-9f37-fc64391ba4a7",
+        "seq": 25,
+        "statement": 23,
+        "time": 407000000,
+        "tx": "transaction-ac853ce152464ae09701d86ed977fcc0",
+        "version": "b7be6d7b-bb1e-4e1a-934a-2996116b0e22"
+      },
+      {
+        "evidence": {
+          "action": "UPDATE",
+          "key": "cronjob-lock:lease:fixture-ownership-lost",
+          "newToken": "b7be6d7b-bb1e-4e1a-934a-2996116b0e22",
+          "oldExpireAt": {
+            "captureType": "datetime",
+            "value": "2026-10-21 11:41:21.238929+08:00"
+          },
+          "oldOwner": "owner-original",
+          "oldToken": "7b3afdf4-17bd-432a-9f37-fc64391ba4a7",
+          "owner": "owner-other",
+          "serverNow": {
+            "captureType": "datetime",
+            "value": "2026-10-21 11:41:21.271459+08:00"
+          },
+          "serverRow": 0
+        },
+        "kind": "condition",
+        "mappingId": "dislock.acquire-run/1",
+        "matched": true,
+        "predicate": "lease-expired",
+        "seq": 26,
+        "sourceVersion": "7b3afdf4-17bd-432a-9f37-fc64391ba4a7",
+        "statement": 23,
+        "time": 407000000,
+        "tx": "transaction-ac853ce152464ae09701d86ed977fcc0"
+      },
+      {
+        "kind": "commit_request",
+        "seq": 27,
+        "time": 407000000,
+        "tx": "transaction-ac853ce152464ae09701d86ed977fcc0"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 28,
+        "time": 407000000,
+        "tx": "transaction-ac853ce152464ae09701d86ed977fcc0"
+      },
+      {
+        "connection": "connection-696bd7521b7341f98d68a16a3c34693d",
+        "kind": "begin",
+        "seq": 29,
+        "time": 485000000,
+        "tx": "transaction-8f0f47b1504544dbbda546941031db48"
+      },
+      {
+        "executedSql": "\n        UPDATE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at,OLD.\"_mtw_v3_version\"::text,NEW.\"_mtw_v3_version\"::text,OLD.value,OLD.expire_at,NOW();\n        ",
+        "kind": "statement",
+        "mappingId": "dislock.renew/1",
+        "parameters": [
+          5,
+          "cronjob-lock:lease:fixture-ownership-lost",
+          "owner-original"
+        ],
+        "seq": 30,
+        "sql": "\n        UPDATE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"key_value\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at;\n        ",
+        "time": 485000000,
+        "tx": "transaction-8f0f47b1504544dbbda546941031db48"
+      },
+      {
+        "columns": [
+          {
+            "name": "expire_at",
+            "typeCode": 1184
+          }
+        ],
+        "complete": true,
+        "kind": "rows",
+        "rows": [],
+        "seq": 31,
+        "serverRows": [],
+        "statement": 30,
+        "time": 500000000,
+        "tx": "transaction-8f0f47b1504544dbbda546941031db48"
+      },
+      {
+        "evidence": {
+          "key": "cronjob-lock:lease:fixture-ownership-lost",
+          "owner": "owner-original",
+          "sourceUnavailable": true
+        },
+        "kind": "condition",
+        "mappingId": "dislock.renew/1",
+        "matched": false,
+        "predicate": "owner-equals",
+        "seq": 32,
+        "statement": 30,
+        "time": 500000000,
+        "tx": "transaction-8f0f47b1504544dbbda546941031db48"
+      },
+      {
+        "kind": "commit_request",
+        "seq": 33,
+        "time": 500000000,
+        "tx": "transaction-8f0f47b1504544dbbda546941031db48"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 34,
+        "time": 500000000,
+        "tx": "transaction-8f0f47b1504544dbbda546941031db48"
+      }
+    ],
+    "effects": [
+      {
+        "seq": 5,
+        "tx": "transaction-257e62c3da4a4776965cadc3ed7d73bf",
+        "key": "cronjob-lock:lease:fixture-ownership-lost",
+        "version": "8d53c8fb-bc02-41d1-9d3c-01f6959dd12f",
+        "predecessor": "f3f3dd2e-a60b-4fdd-a9db-87e5ce03f8f5",
+        "revertedBy": null
+      },
+      {
+        "seq": 13,
+        "tx": "transaction-b75873859c504cb4a9eccaa3e7ffedf9",
+        "key": "cronjob-lock:lease:fixture-ownership-lost",
+        "version": "6040e4f8-72ea-4c57-9576-bfbff540d7ae",
+        "predecessor": "8d53c8fb-bc02-41d1-9d3c-01f6959dd12f",
+        "revertedBy": null
+      },
+      {
+        "seq": 18,
+        "tx": "transaction-5b28231be731430fa34efeeba11ccbef",
+        "key": "cronjob-lock:lease:fixture-ownership-lost",
+        "version": "7b3afdf4-17bd-432a-9f37-fc64391ba4a7",
+        "predecessor": "6040e4f8-72ea-4c57-9576-bfbff540d7ae",
+        "revertedBy": null
+      },
+      {
+        "seq": 25,
+        "tx": "transaction-ac853ce152464ae09701d86ed977fcc0",
+        "key": "cronjob-lock:lease:fixture-ownership-lost",
+        "version": "b7be6d7b-bb1e-4e1a-934a-2996116b0e22",
+        "predecessor": "7b3afdf4-17bd-432a-9f37-fc64391ba4a7",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "transaction-257e62c3da4a4776965cadc3ed7d73bf",
+        "connection": "connection-605d55f1e049444392db7dc0705e92cb",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 7,
+        "events": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "finalWrites": [
+          5
+        ]
+      },
+      {
+        "id": "transaction-b75873859c504cb4a9eccaa3e7ffedf9",
+        "connection": "connection-696bd7521b7341f98d68a16a3c34693d",
+        "status": "committed",
+        "beginSeq": 8,
+        "endSeq": 16,
+        "events": [
+          8,
+          9,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "finalWrites": [
+          13
+        ]
+      },
+      {
+        "id": "transaction-5b28231be731430fa34efeeba11ccbef",
+        "connection": "connection-c58b3d151699479aa5f73d1c6cd81b84",
+        "status": "committed",
+        "beginSeq": 10,
+        "endSeq": 21,
+        "events": [
+          10,
+          11,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "finalWrites": [
+          18
+        ]
+      },
+      {
+        "id": "transaction-ac853ce152464ae09701d86ed977fcc0",
+        "connection": "connection-c58b3d151699479aa5f73d1c6cd81b84",
+        "status": "committed",
+        "beginSeq": 22,
+        "endSeq": 28,
+        "events": [
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "finalWrites": [
+          25
+        ]
+      },
+      {
+        "id": "transaction-8f0f47b1504544dbbda546941031db48",
+        "connection": "connection-696bd7521b7341f98d68a16a3c34693d",
+        "status": "committed",
+        "beginSeq": 29,
+        "endSeq": 34,
+        "events": [
+          29,
+          30,
+          31,
+          32,
+          33,
+          34
+        ],
+        "finalWrites": []
+      }
+    ],
+    "history": null,
+    "sqlProof": {
+      "policy": "dislock-f9946f0-sql-proof-1",
+      "verifiedStatements": [],
+      "verifiedFacts": [],
+      "verifiedProfiles": [],
+      "gaps": [
+        {
+          "code": "dislock_sql_proof_gap",
+          "message": "Failure(src/dislock_sql_v3.mbt:43:5-43:18@HhWw96/moontxnwitness FAILED: Zero-row SQL lacks a complete same-statement predicate source)"
+        }
+      ],
+      "profileEvidence": [
+        {
+          "effectLedger": [
+            {
+              "action": "UPDATE",
+              "expireAt": {
+                "captureType": "datetime",
+                "value": "2026-10-21 11:41:26.222313+08:00"
+              },
+              "key": "cronjob-lock:lease:fixture-ownership-lost",
+              "owner": "owner-original",
+              "predecessor": "8d53c8fb-bc02-41d1-9d3c-01f6959dd12f",
+              "version": "6040e4f8-72ea-4c57-9576-bfbff540d7ae"
+            },
+            {
+              "action": "UPDATE",
+              "expireAt": {
+                "captureType": "datetime",
+                "value": "2026-10-21 11:41:21.238929+08:00"
+              },
+              "key": "cronjob-lock:lease:fixture-ownership-lost",
+              "owner": "owner-original",
+              "predecessor": "6040e4f8-72ea-4c57-9576-bfbff540d7ae",
+              "version": "7b3afdf4-17bd-432a-9f37-fc64391ba4a7"
+            },
+            {
+              "action": "INSERT",
+              "expireAt": {
+                "captureType": "datetime",
+                "value": "2026-10-21 11:41:26.012035+08:00"
+              },
+              "key": "cronjob-lock:lease:fixture-ownership-lost",
+              "owner": "owner-original",
+              "predecessor": "f3f3dd2e-a60b-4fdd-a9db-87e5ce03f8f5",
+              "version": "8d53c8fb-bc02-41d1-9d3c-01f6959dd12f"
+            },
+            {
+              "action": "UPDATE",
+              "expireAt": {
+                "captureType": "datetime",
+                "value": "2026-10-21 11:41:26.271459+08:00"
+              },
+              "key": "cronjob-lock:lease:fixture-ownership-lost",
+              "owner": "owner-other",
+              "predecessor": "7b3afdf4-17bd-432a-9f37-fc64391ba4a7",
+              "version": "b7be6d7b-bb1e-4e1a-934a-2996116b0e22"
+            }
+          ],
+          "initialState": [
+            {
+              "expireAt": null,
+              "key": "cronjob-lock:lease:fixture-ownership-lost",
+              "owner": null,
+              "present": false,
+              "version": "f3f3dd2e-a60b-4fdd-a9db-87e5ce03f8f5"
+            },
+            {
+              "expireAt": null,
+              "key": "cronjob-lock:schedule:fixture-ownership-lost",
+              "owner": null,
+              "present": false,
+              "version": "90b204a7-41f4-4c42-8a7e-2b78e1fb1cd8"
+            }
+          ],
+          "knownKeys": [
+            "cronjob-lock:lease:fixture-ownership-lost",
+            "cronjob-lock:schedule:fixture-ownership-lost"
+          ],
+          "metadata": {
+            "after": {
+              "argumentsHex": "",
+              "enabled": "O",
+              "functionCatalog": [
+                "mtw_provenance_dislock_v3_67dcf57e90_3",
+                "_mtw_v3_after",
+                "\n\nDECLARE previous uuid; candidate_key text; candidate_action text; changed integer;\nBEGIN\n  SELECT predecessor,key,action INTO STRICT previous,candidate_key,candidate_action\n    FROM \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_candidates\" WHERE token=NEW.\"_mtw_v3_version\";\n  IF candidate_key IS DISTINCT FROM NEW.key OR candidate_action<>TG_OP THEN\n    RAISE EXCEPTION 'dislock v3 candidate does not match actual effect';\n  END IF;\n  UPDATE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_state\" SET token=NEW.\"_mtw_v3_version\",present=true WHERE key=NEW.key AND token=previous;\n  GET DIAGNOSTICS changed=ROW_COUNT;\n  IF changed<>1 THEN RAISE EXCEPTION 'dislock v3 actual effect source mismatch'; END IF;\n  INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_effects\"(token,key,predecessor,action,owner,expire_at)\n    VALUES(NEW.\"_mtw_v3_version\",NEW.key,previous,TG_OP,NEW.value,NEW.expire_at);\n  RETURN NEW;\nEND\n\n",
+                false,
+                "v",
+                [
+                  "search_path=pg_catalog"
+                ],
+                0,
+                "trigger",
+                "plpgsql"
+              ],
+              "functionOid": 16636,
+              "source": "\n\nDECLARE previous uuid; candidate_key text; candidate_action text; changed integer;\nBEGIN\n  SELECT predecessor,key,action INTO STRICT previous,candidate_key,candidate_action\n    FROM \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_candidates\" WHERE token=NEW.\"_mtw_v3_version\";\n  IF candidate_key IS DISTINCT FROM NEW.key OR candidate_action<>TG_OP THEN\n    RAISE EXCEPTION 'dislock v3 candidate does not match actual effect';\n  END IF;\n  UPDATE \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_state\" SET token=NEW.\"_mtw_v3_version\",present=true WHERE key=NEW.key AND token=previous;\n  GET DIAGNOSTICS changed=ROW_COUNT;\n  IF changed<>1 THEN RAISE EXCEPTION 'dislock v3 actual effect source mismatch'; END IF;\n  INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_effects\"(token,key,predecessor,action,owner,expire_at)\n    VALUES(NEW.\"_mtw_v3_version\",NEW.key,previous,TG_OP,NEW.value,NEW.expire_at);\n  RETURN NEW;\nEND\n\n",
+              "sourceSha256": "96ea50cd41da3139b282290cc7b3e7db058ef3810e2849cea2d945cf76f43f08",
+              "triggerDefinition": "CREATE TRIGGER _mtw_v3_after AFTER INSERT OR UPDATE ON mtw_provenance_dislock_v3_67dcf57e90_3.key_value FOR EACH ROW EXECUTE FUNCTION mtw_provenance_dislock_v3_67dcf57e90_3._mtw_v3_after()",
+              "triggerOid": 16639,
+              "triggerType": 21
+            },
+            "before": {
+              "argumentsHex": "",
+              "enabled": "O",
+              "functionCatalog": [
+                "mtw_provenance_dislock_v3_67dcf57e90_3",
+                "_mtw_v3_before",
+                "\n\nDECLARE previous uuid; was_present boolean;\nBEGIN\n  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'dislock v3 profile does not support DELETE'; END IF;\n  IF NEW.key IS NULL OR NEW.value IS NULL OR NEW.expire_at IS NULL THEN RETURN NEW; END IF;\n  IF TG_OP='UPDATE' AND NEW.key IS DISTINCT FROM OLD.key THEN RAISE EXCEPTION 'dislock v3 key mutation unsupported'; END IF;\n  SELECT token,present INTO previous,was_present FROM \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_state\" WHERE key=NEW.key FOR UPDATE;\n  IF NOT FOUND THEN RAISE EXCEPTION 'dislock v3 key outside declared domain'; END IF;\n  IF TG_OP='UPDATE' AND (NOT was_present OR previous IS DISTINCT FROM OLD.\"_mtw_v3_version\") THEN\n    RAISE EXCEPTION 'dislock v3 predecessor state mismatch';\n  END IF;\n  NEW.\"_mtw_v3_version\":=pg_catalog.gen_random_uuid();\n  INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_candidates\"(token,key,predecessor,action,owner,expire_at)\n    VALUES(NEW.\"_mtw_v3_version\",NEW.key,previous,TG_OP,NEW.value,NEW.expire_at);\n  RETURN NEW;\nEND\n\n",
+                false,
+                "v",
+                [
+                  "search_path=pg_catalog"
+                ],
+                0,
+                "trigger",
+                "plpgsql"
+              ],
+              "functionOid": 16635,
+              "source": "\n\nDECLARE previous uuid; was_present boolean;\nBEGIN\n  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'dislock v3 profile does not support DELETE'; END IF;\n  IF NEW.key IS NULL OR NEW.value IS NULL OR NEW.expire_at IS NULL THEN RETURN NEW; END IF;\n  IF TG_OP='UPDATE' AND NEW.key IS DISTINCT FROM OLD.key THEN RAISE EXCEPTION 'dislock v3 key mutation unsupported'; END IF;\n  SELECT token,present INTO previous,was_present FROM \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_state\" WHERE key=NEW.key FOR UPDATE;\n  IF NOT FOUND THEN RAISE EXCEPTION 'dislock v3 key outside declared domain'; END IF;\n  IF TG_OP='UPDATE' AND (NOT was_present OR previous IS DISTINCT FROM OLD.\"_mtw_v3_version\") THEN\n    RAISE EXCEPTION 'dislock v3 predecessor state mismatch';\n  END IF;\n  NEW.\"_mtw_v3_version\":=pg_catalog.gen_random_uuid();\n  INSERT INTO \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_candidates\"(token,key,predecessor,action,owner,expire_at)\n    VALUES(NEW.\"_mtw_v3_version\",NEW.key,previous,TG_OP,NEW.value,NEW.expire_at);\n  RETURN NEW;\nEND\n\n",
+              "sourceSha256": "c3c0605ba11f57449e46736f6113550f38592fe5546d12851e785efeade78c37",
+              "triggerDefinition": "CREATE TRIGGER _mtw_v3_before BEFORE INSERT OR DELETE OR UPDATE ON mtw_provenance_dislock_v3_67dcf57e90_3.key_value FOR EACH ROW EXECUTE FUNCTION mtw_provenance_dislock_v3_67dcf57e90_3._mtw_v3_before()",
+              "triggerOid": 16638,
+              "triggerType": 31
+            },
+            "catalog": {
+              "business": {
+                "columns": [
+                  [
+                    "key",
+                    "text",
+                    true,
+                    "",
+                    ""
+                  ],
+                  [
+                    "value",
+                    "text",
+                    true,
+                    "",
+                    ""
+                  ],
+                  [
+                    "expire_at",
+                    "timestamp with time zone",
+                    true,
+                    "",
+                    ""
+                  ],
+                  [
+                    "_mtw_v3_version",
+                    "uuid",
+                    true,
+                    "",
+                    ""
+                  ]
+                ],
+                "constraints": [
+                  [
+                    "n",
+                    [
+                      1
+                    ],
+                    true,
+                    true,
+                    false,
+                    false
+                  ],
+                  [
+                    "n",
+                    [
+                      2
+                    ],
+                    true,
+                    true,
+                    false,
+                    false
+                  ],
+                  [
+                    "n",
+                    [
+                      3
+                    ],
+                    true,
+                    true,
+                    false,
+                    false
+                  ],
+                  [
+                    "n",
+                    [
+                      4
+                    ],
+                    true,
+                    true,
+                    false,
+                    false
+                  ],
+                  [
+                    "p",
+                    [
+                      1
+                    ],
+                    true,
+                    true,
+                    false,
+                    false
+                  ]
+                ],
+                "indexCount": 1,
+                "relation": [
+                  16577,
+                  "r",
+                  false,
+                  false,
+                  "p"
+                ],
+                "unsafeEffects": {
+                  "checkConstraints": 0,
+                  "customIndexOperators": 0,
+                  "customTypes": 0,
+                  "exclusionConstraints": 0,
+                  "expressionIndexes": 0,
+                  "foreignKeys": 0,
+                  "generatedColumns": 0,
+                  "inheritance": 0,
+                  "nonBtreeIndexes": 0,
+                  "nondeterministicCollations": 0,
+                  "nondeterministicIndexCollations": 0,
+                  "partialIndexes": 0,
+                  "rewriteRules": 0
+                },
+                "userTriggerOids": [
+                  16638,
+                  16639
+                ]
+              },
+              "owned": {
+                "candidates": {
+                  "columns": [
+                    [
+                      "token",
+                      "uuid",
+                      true
+                    ],
+                    [
+                      "key",
+                      "text",
+                      true
+                    ],
+                    [
+                      "predecessor",
+                      "uuid",
+                      true
+                    ],
+                    [
+                      "action",
+                      "text",
+                      true
+                    ],
+                    [
+                      "owner",
+                      "text",
+                      true
+                    ],
+                    [
+                      "expire_at",
+                      "timestamp with time zone",
+                      true
+                    ]
+                  ],
+                  "constraints": [
+                    [
+                      "n",
+                      [
+                        1
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        2
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        3
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        4
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        5
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        6
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "p",
+                      [
+                        1
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ]
+                  ],
+                  "indexCount": 1,
+                  "relation": [
+                    16606,
+                    "r",
+                    false,
+                    false,
+                    "p"
+                  ],
+                  "unsafeEffects": {
+                    "checkConstraints": 0,
+                    "customIndexOperators": 0,
+                    "customTypes": 0,
+                    "exclusionConstraints": 0,
+                    "expressionIndexes": 0,
+                    "foreignKeys": 0,
+                    "generatedColumns": 0,
+                    "inheritance": 0,
+                    "nonBtreeIndexes": 0,
+                    "nondeterministicCollations": 0,
+                    "nondeterministicIndexCollations": 0,
+                    "partialIndexes": 0,
+                    "rewriteRules": 0
+                  },
+                  "userTriggerOids": []
+                },
+                "effects": {
+                  "columns": [
+                    [
+                      "token",
+                      "uuid",
+                      true
+                    ],
+                    [
+                      "key",
+                      "text",
+                      true
+                    ],
+                    [
+                      "predecessor",
+                      "uuid",
+                      true
+                    ],
+                    [
+                      "action",
+                      "text",
+                      true
+                    ],
+                    [
+                      "owner",
+                      "text",
+                      true
+                    ],
+                    [
+                      "expire_at",
+                      "timestamp with time zone",
+                      true
+                    ]
+                  ],
+                  "constraints": [
+                    [
+                      "n",
+                      [
+                        1
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        2
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        3
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        4
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        5
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        6
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "p",
+                      [
+                        1
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "u",
+                      [
+                        3
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ]
+                  ],
+                  "indexCount": 2,
+                  "relation": [
+                    16619,
+                    "r",
+                    false,
+                    false,
+                    "p"
+                  ],
+                  "unsafeEffects": {
+                    "checkConstraints": 0,
+                    "customIndexOperators": 0,
+                    "customTypes": 0,
+                    "exclusionConstraints": 0,
+                    "expressionIndexes": 0,
+                    "foreignKeys": 0,
+                    "generatedColumns": 0,
+                    "inheritance": 0,
+                    "nonBtreeIndexes": 0,
+                    "nondeterministicCollations": 0,
+                    "nondeterministicIndexCollations": 0,
+                    "partialIndexes": 0,
+                    "rewriteRules": 0
+                  },
+                  "userTriggerOids": []
+                },
+                "installation": {
+                  "columns": [
+                    [
+                      "nonce",
+                      "uuid",
+                      true
+                    ],
+                    [
+                      "table_oid",
+                      "oid",
+                      true
+                    ]
+                  ],
+                  "constraints": [
+                    [
+                      "n",
+                      [
+                        1
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        2
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "p",
+                      [
+                        1
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ]
+                  ],
+                  "indexCount": 1,
+                  "relation": [
+                    16587,
+                    "r",
+                    false,
+                    false,
+                    "p"
+                  ],
+                  "unsafeEffects": {
+                    "checkConstraints": 0,
+                    "customIndexOperators": 0,
+                    "customTypes": 0,
+                    "exclusionConstraints": 0,
+                    "expressionIndexes": 0,
+                    "foreignKeys": 0,
+                    "generatedColumns": 0,
+                    "inheritance": 0,
+                    "nonBtreeIndexes": 0,
+                    "nondeterministicCollations": 0,
+                    "nondeterministicIndexCollations": 0,
+                    "partialIndexes": 0,
+                    "rewriteRules": 0
+                  },
+                  "userTriggerOids": []
+                },
+                "state": {
+                  "columns": [
+                    [
+                      "key",
+                      "text",
+                      true
+                    ],
+                    [
+                      "token",
+                      "uuid",
+                      true
+                    ],
+                    [
+                      "present",
+                      "boolean",
+                      true
+                    ]
+                  ],
+                  "constraints": [
+                    [
+                      "n",
+                      [
+                        1
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        2
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "n",
+                      [
+                        3
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "p",
+                      [
+                        1
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ],
+                    [
+                      "u",
+                      [
+                        2
+                      ],
+                      true,
+                      true,
+                      false,
+                      false
+                    ]
+                  ],
+                  "indexCount": 2,
+                  "relation": [
+                    16594,
+                    "r",
+                    false,
+                    false,
+                    "p"
+                  ],
+                  "unsafeEffects": {
+                    "checkConstraints": 0,
+                    "customIndexOperators": 0,
+                    "customTypes": 0,
+                    "exclusionConstraints": 0,
+                    "expressionIndexes": 0,
+                    "foreignKeys": 0,
+                    "generatedColumns": 0,
+                    "inheritance": 0,
+                    "nonBtreeIndexes": 0,
+                    "nondeterministicCollations": 0,
+                    "nondeterministicIndexCollations": 0,
+                    "partialIndexes": 0,
+                    "rewriteRules": 0
+                  },
+                  "userTriggerOids": []
+                }
+              }
+            },
+            "initializationWindow": [
+              {
+                "commandTag": "BEGIN",
+                "kind": "begin"
+              },
+              {
+                "commandTag": "LOCK TABLE",
+                "kind": "lock",
+                "mode": "ACCESS EXCLUSIVE",
+                "tableOid": 16577
+              },
+              {
+                "kind": "catalog",
+                "tableOid": 16577
+              },
+              {
+                "kind": "snapshot",
+                "rows": [
+                  {
+                    "expireAt": null,
+                    "key": "cronjob-lock:lease:fixture-ownership-lost",
+                    "owner": null,
+                    "present": false,
+                    "version": "f3f3dd2e-a60b-4fdd-a9db-87e5ce03f8f5"
+                  },
+                  {
+                    "expireAt": null,
+                    "key": "cronjob-lock:schedule:fixture-ownership-lost",
+                    "owner": null,
+                    "present": false,
+                    "version": "90b204a7-41f4-4c42-8a7e-2b78e1fb1cd8"
+                  }
+                ]
+              },
+              {
+                "commandTag": "COMMIT",
+                "kind": "commit"
+              }
+            ],
+            "installationDdlSha256": "56efdb7fedf21f7b076ef4053d691c77a927e3177b172a61526b9a0b1cc1f060",
+            "installationNonce": "d7525392-b663-48e9-8387-dde900d4751e",
+            "marker": {
+              "nonce": "d7525392-b663-48e9-8387-dde900d4751e",
+              "tableOid": 16577
+            },
+            "predecessor": {
+              "functionCatalog": [
+                "mtw_provenance_dislock_v3_67dcf57e90_3",
+                "_mtw_v3_predecessor",
+                "\n\nDECLARE previous text; matches integer;\nBEGIN\n  SELECT pg_catalog.count(*)::integer,pg_catalog.min(predecessor::text)\n    INTO matches,previous FROM \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_candidates\" WHERE token=p_token::uuid;\n  IF matches<>1 THEN RAISE EXCEPTION 'dislock v3 unique immutable candidate missing'; END IF;\n  RETURN previous;\nEND\n\n",
+                false,
+                "v",
+                [
+                  "search_path=pg_catalog"
+                ],
+                1,
+                "text",
+                "plpgsql"
+              ],
+              "functionOid": 16637,
+              "source": "\n\nDECLARE previous text; matches integer;\nBEGIN\n  SELECT pg_catalog.count(*)::integer,pg_catalog.min(predecessor::text)\n    INTO matches,previous FROM \"mtw_provenance_dislock_v3_67dcf57e90_3\".\"_mtw_v3_candidates\" WHERE token=p_token::uuid;\n  IF matches<>1 THEN RAISE EXCEPTION 'dislock v3 unique immutable candidate missing'; END IF;\n  RETURN previous;\nEND\n\n",
+              "sourceSha256": "ed64eeef2bb55089b6719614d91c058fc723f4504923a96db12d4086cef3789c"
+            },
+            "serverVersion": 180006,
+            "tableOid": 16577,
+            "versionColumn": "_mtw_v3_version"
+          },
+          "profile": "dislock-f9946f0-v3/1",
+          "schema": "mtw_provenance_dislock_v3_67dcf57e90_3",
+          "table": "key_value"
+        }
+      ],
+      "scope": "Semantic validation of supplied SQL and source observations; no database authenticity or unobserved-writer claim"
+    }
+  },
+  "evidence": null,
+  "execution": {
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000,
+      "sqlProof": "dislock-f9946f0-sql-proof-1"
+    },
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "metrics": null
+  }
+}

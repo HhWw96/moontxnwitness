@@ -1,0 +1,7 @@
+# Explicit model host development evidence
+
+The first host run passed all 62 new SDK/CLI, source-byte, pre-recorded list-evidence and tamper checks. Four unmodified earlier real PostgreSQL collector packets retain inconclusive model/strict results and all their original source/initialization/SQL/COMMIT gaps. These checks rerun no database. Nine original list G1b inputs and the existing expectation plan were copied as raw JSON facts only; no previous v026 private-home diagnostic log was imported.
+
+Strict JS checking, info and one development build passed. The classification* selection executed 51 inherited tests with zero failures; all four original WBtest files remain byte-identical to their frozen repaired sources. The existing 60 category host assertions also stayed byte-identical and passed under the new core. Fourteen distribution unit tests and the new offline model capsule example passed. The example uses synthetic intervals and cannot establish collector authenticity or actual database model acceptance.
+
+The runtime is exactly the development core/wrappers used, bound by SHA256. Relation model classification and model-preserving reduction are explicitly unavailable. Source/portable closure is wired but no complete release archive consumer, cross-target suite, independent acceptance or formal performance run was executed by this host slice. The parent release must perform its applicable checks and generate release-version artifacts.

@@ -1,0 +1,3517 @@
+{
+  "kind": "independently-defined-v026-pre-execution-expectations",
+  "definition": "Only valid raw reads may support direct and graph witnesses; INT is an SI rule and PL3 applicability precondition, not a new PL3 prohibited phenomenon. Graph oracle enumerates all simple typed cycles including cyclic wrap and parallel edges.",
+  "cases": [
+    {
+      "id": "prefix-omitted-initial-prefix",
+      "source": "cases/prefix-omitted-initial-prefix.source.json",
+      "sourceSha256": "15ea1f460dd5813c850a10766145b1249c9612c168222ee6baf31f3ce61b17c5",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "dependencies",
+          "mode": "eq",
+          "expected": []
+        },
+        {
+          "path": "validityGaps",
+          "mode": "length_gt",
+          "expected": 0
+        },
+        {
+          "path": "rules.G2-item.status",
+          "mode": "eq",
+          "expected": "unknown"
+        },
+        {
+          "path": "rules.G-nonadjacent.status",
+          "mode": "eq",
+          "expected": "unknown"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "prefix-reordered-initial-prefix",
+      "source": "cases/prefix-reordered-initial-prefix.source.json",
+      "sourceSha256": "0c5ad5fd22cedd97b289147af35c2706e3a35c0554f0c69fee63746110aa02c5",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "dependencies",
+          "mode": "eq",
+          "expected": []
+        },
+        {
+          "path": "validityGaps",
+          "mode": "length_gt",
+          "expected": 0
+        },
+        {
+          "path": "rules.G2-item.status",
+          "mode": "eq",
+          "expected": "unknown"
+        },
+        {
+          "path": "rules.G-nonadjacent.status",
+          "mode": "eq",
+          "expected": "unknown"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "prefix-valid-initial-prefix-control",
+      "source": "cases/prefix-valid-initial-prefix-control.source.json",
+      "sourceSha256": "1df249dd51583ccbf0b976ac3cb069a6c086b7342187ab821a0b75b7a93a5ffa",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G2-item.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "rules.G-nonadjacent.status",
+          "mode": "eq",
+          "expected": "checked-compatible"
+        },
+        {
+          "path": "models.elle-generalized-si-v1.status",
+          "mode": "eq",
+          "expected": "checked-compatible"
+        },
+        {
+          "path": "models.adya-pl-3-v1.status",
+          "mode": "eq",
+          "expected": "refuted"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "register-aborted-x",
+      "source": "cases/register-aborted-x.source.json",
+      "sourceSha256": "4b57e5dcc77b216de82a9564e9abd9886373d04517b853ea761c3f5be4dbafb5",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1a.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.adya-pl-2-v1.status",
+          "mode": "eq",
+          "expected": "refuted"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "register-aborted-budget-zero",
+      "source": "cases/register-aborted-budget-zero.source.json",
+      "sourceSha256": "4b57e5dcc77b216de82a9564e9abd9886373d04517b853ea761c3f5be4dbafb5",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ],
+        "maxStates": 0,
+        "maxEdgeChecks": 0
+      },
+      "assertions": [
+        {
+          "path": "rules.G1a.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.adya-pl-2-v1.status",
+          "mode": "eq",
+          "expected": "refuted"
+        }
+      ]
+    },
+    {
+      "id": "register-aborted-y",
+      "source": "cases/register-aborted-y.source.json",
+      "sourceSha256": "31ceb47e4d5fd74db28612a65ff9601ee15d5069998cf1dd3875ffbc95d1b66a",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1a.status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        }
+      ],
+      "verify": false
+    },
+    {
+      "id": "register-intermediate-x",
+      "source": "cases/register-intermediate-x.source.json",
+      "sourceSha256": "63152cd7429dff4bea0b3eec3c7d7a4110e3f61f77a60bcb265a04e52cbb0617",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1b.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.adya-pl-2-v1.status",
+          "mode": "eq",
+          "expected": "refuted"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "register-intermediate-budget-zero",
+      "source": "cases/register-intermediate-budget-zero.source.json",
+      "sourceSha256": "63152cd7429dff4bea0b3eec3c7d7a4110e3f61f77a60bcb265a04e52cbb0617",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ],
+        "maxStates": 0,
+        "maxEdgeChecks": 0
+      },
+      "assertions": [
+        {
+          "path": "rules.G1b.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.adya-pl-2-v1.status",
+          "mode": "eq",
+          "expected": "refuted"
+        }
+      ]
+    },
+    {
+      "id": "register-intermediate-y",
+      "source": "cases/register-intermediate-y.source.json",
+      "sourceSha256": "ff657f2bb63e9bc2c52c6664be476d023692ba449999db9b7958642d9edf475d",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1b.status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        }
+      ],
+      "verify": false
+    },
+    {
+      "id": "register-own-overlay",
+      "source": "cases/register-own-overlay.source.json",
+      "sourceSha256": "80d56594f410e58f76d91a7d4917a30f8029236a3ea3007d2eb2d686b3dba0c9",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.INT.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.adya-pl-2-v1.status",
+          "mode": "eq",
+          "expected": "checked-compatible"
+        },
+        {
+          "path": "models.elle-generalized-si-v1.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.adya-pl-3-v1.status",
+          "mode": "eq",
+          "expected": "inconclusive"
+        },
+        {
+          "path": "models.adya-pl-3-v1.internalValidity.status",
+          "mode": "eq",
+          "expected": "not-satisfied"
+        },
+        {
+          "path": "models.adya-pl-3-v1.requiredRules",
+          "mode": "not_contains",
+          "expected": "INT"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "list-own-append-omission",
+      "source": "cases/list-own-append-omission.source.json",
+      "sourceSha256": "77308bb88dce6de41ae554495b7cb7d9ec68a148f695464a4210ab44e6c02329",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.INT.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.elle-generalized-si-v1.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.adya-pl-3-v1.status",
+          "mode": "eq",
+          "expected": "inconclusive"
+        },
+        {
+          "path": "models.adya-pl-3-v1.requiredRules",
+          "mode": "not_contains",
+          "expected": "INT"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "list-external-commit-a",
+      "source": "cases/list-external-commit-a.source.json",
+      "sourceSha256": "cf3137c9bd9c52dc588db629a1e7860619bd3945471343e932d72e3eb6509f15",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1b.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.adya-pl-2-v1.status",
+          "mode": "eq",
+          "expected": "refuted"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "list-external-commit-ab",
+      "source": "cases/list-external-commit-ab.source.json",
+      "sourceSha256": "dafa79d12467e0c426a03816d77346926c5ba086dcc38bb80c54a1d15be89ee7",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1b.status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "list-external-commit-b",
+      "source": "cases/list-external-commit-b.source.json",
+      "sourceSha256": "1289896845b7d9e06878ff48e9ac93e88f5355c2d6dbc2cdce9e0dbbecb01725",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1a.status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "rules.G1b.status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "rules.G1a.status",
+          "mode": "not_eq",
+          "expected": "checked-compatible"
+        },
+        {
+          "path": "rules.G1b.status",
+          "mode": "not_eq",
+          "expected": "checked-compatible"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "list-external-commit-ba",
+      "source": "cases/list-external-commit-ba.source.json",
+      "sourceSha256": "bd6213c86ae9636fbfafbfb92a507f44d40025c2d296191710e38f8b5d3012e4",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1a.status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "rules.G1b.status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "rules.G1a.status",
+          "mode": "not_eq",
+          "expected": "checked-compatible"
+        },
+        {
+          "path": "rules.G1b.status",
+          "mode": "not_eq",
+          "expected": "checked-compatible"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "list-external-abort-a",
+      "source": "cases/list-external-abort-a.source.json",
+      "sourceSha256": "f483ec0ddd3faa381fafa05091139298889bbdb9f16f2cd9bd4f6dd0febc8b27",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1a.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.adya-pl-2-v1.status",
+          "mode": "eq",
+          "expected": "refuted"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "list-external-abort-ab",
+      "source": "cases/list-external-abort-ab.source.json",
+      "sourceSha256": "1ec86d8aced16ef7f1ed7d6ab28677590bcedde2aad232cf064931f325b43cbb",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1a.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.adya-pl-2-v1.status",
+          "mode": "eq",
+          "expected": "refuted"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "list-external-abort-b",
+      "source": "cases/list-external-abort-b.source.json",
+      "sourceSha256": "cd0dbab0d3f0e39b6895f6fe08303dc424f2a2d67d83bbf80744436cc47f50a4",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1a.status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "rules.G1b.status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "rules.G1a.status",
+          "mode": "not_eq",
+          "expected": "checked-compatible"
+        },
+        {
+          "path": "rules.G1b.status",
+          "mode": "not_eq",
+          "expected": "checked-compatible"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "list-external-abort-ba",
+      "source": "cases/list-external-abort-ba.source.json",
+      "sourceSha256": "79514a0edaf8d13de6370c1dd9b02ec8703ecce1ada034c59fb8aa2768a0b834",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [
+        {
+          "path": "rules.G1a.status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "rules.G1b.status",
+          "mode": "not_eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "rules.G1a.status",
+          "mode": "not_eq",
+          "expected": "checked-compatible"
+        },
+        {
+          "path": "rules.G1b.status",
+          "mode": "not_eq",
+          "expected": "checked-compatible"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "list-reliable-abort-plus-invalid-initial",
+      "source": "cases/list-reliable-abort-plus-invalid-initial.source.json",
+      "sourceSha256": "dd8d0e5de1708bb3238641314231822c25cfaa13326dc05f622378beeca6cc42",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ],
+        "maxStates": 0,
+        "maxEdgeChecks": 0
+      },
+      "assertions": [
+        {
+          "path": "rules.G1a.status",
+          "mode": "eq",
+          "expected": "refuted"
+        },
+        {
+          "path": "models.adya-pl-2-v1.status",
+          "mode": "eq",
+          "expected": "refuted"
+        }
+      ],
+      "verify": true
+    },
+    {
+      "id": "graph-wrap-adjacent",
+      "source": "cases/graph-wrap-adjacent.source.json",
+      "sourceSha256": "79dedc0085859cd08ce98e5c16b222ca9b0ea49cce33690b9361ce613f5140c6",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-single-rw",
+      "source": "cases/graph-single-rw.source.json",
+      "sourceSha256": "b16f68382a7d2a1047b802f35214f20471fb747dea0f7ff37b370778e32c8e96",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k2"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-separated-rw",
+      "source": "cases/graph-separated-rw.source.json",
+      "sourceSha256": "a4026f815121a081e05a6d88495cfba639b9fb3d72cd158778eba611be90e8a9",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "wr",
+            "key": "k3"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-adjacent-rw",
+      "source": "cases/graph-adjacent-rw.source.json",
+      "sourceSha256": "e0513dcae03d9125abcb82a8282674b3de3eff74eb58a5d2a626367481500329",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "wr",
+            "key": "k3"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-multiedge-hidden",
+      "source": "cases/graph-multiedge-hidden.source.json",
+      "sourceSha256": "aa772db1004a244335f8eafef7b1060b644bb55468645d3d8c8749299ae693ed",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k4"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-00",
+      "source": "cases/graph-seeded-00.source.json",
+      "sourceSha256": "5704bb34c7b8d10b6e6e645443c4594bbef64bb6f530abb46929c142742ef968",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "wr",
+            "key": "k7"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-01",
+      "source": "cases/graph-seeded-01.source.json",
+      "sourceSha256": "2155bd7a118b7f7be87cb39b7a198fc125e7a59e702ee1cfb1edab8ee883c9cd",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "wr",
+            "key": "k5"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-02",
+      "source": "cases/graph-seeded-02.source.json",
+      "sourceSha256": "9828628475ebef0bb56431d4a6bd08a1c7d93f5093508dfe41fe6d0d4f79e62f",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "wr",
+            "key": "k6"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-03",
+      "source": "cases/graph-seeded-03.source.json",
+      "sourceSha256": "b6c4cca7a057b3732352deb599a7357f28059bad70d2a4116494e9df4d48b3e8",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k6"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-04",
+      "source": "cases/graph-seeded-04.source.json",
+      "sourceSha256": "cf2a633b2c5e06c6912110684156838dd761dc9899cf6dc03b8ed4240e49ee75",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k3"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-05",
+      "source": "cases/graph-seeded-05.source.json",
+      "sourceSha256": "5467cefba895251002b35fe1b194d58654a1656d0cf240b8527383574af9859b",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "wr",
+            "key": "k7"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-06",
+      "source": "cases/graph-seeded-06.source.json",
+      "sourceSha256": "bdce701c0f942240e692fb252ecc14d7f94c3c129ff3398320fda135a129e46c",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k7"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-07",
+      "source": "cases/graph-seeded-07.source.json",
+      "sourceSha256": "200e958d797866d2a9620f1c2be7ec803906458aa6fc8ceab53e2570bfa44641",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k6"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-08",
+      "source": "cases/graph-seeded-08.source.json",
+      "sourceSha256": "6704e91f72a5f053461ac3c99f4ced4538333dd2c1398dc545f59e14e2f7e918",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k7"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-09",
+      "source": "cases/graph-seeded-09.source.json",
+      "sourceSha256": "c613c3c67d9df43245c596464144fe75f3d2e310a3564532892bc9f86dbc1e3b",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-10",
+      "source": "cases/graph-seeded-10.source.json",
+      "sourceSha256": "f53c7a5b34acb94fa90db0063c258ab4ee61eada0c1f9e99971a932b8161e223",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "wr",
+            "key": "k7"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-11",
+      "source": "cases/graph-seeded-11.source.json",
+      "sourceSha256": "bac124d7381720ecc75a8868cf1083482eedf0421ba5a07708b05beca0b5a3b2",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k5"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-12",
+      "source": "cases/graph-seeded-12.source.json",
+      "sourceSha256": "d667f4e70b4fc4187478fc3491b112d9febeed3b40edbb85b22d1272e5105311",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k7"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-13",
+      "source": "cases/graph-seeded-13.source.json",
+      "sourceSha256": "2b948661239634dd7c1303a405f65fb3a19d09f444cdd8e7da7da126c925e3d8",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k7"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k8"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-14",
+      "source": "cases/graph-seeded-14.source.json",
+      "sourceSha256": "c7f5f8b547016d47cd8e74d92cfb250d46694291914fab86258c6fe78f340d68",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k6"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-15",
+      "source": "cases/graph-seeded-15.source.json",
+      "sourceSha256": "25731e1f0b9558647421f4b6fb27d8ca10f8a33d74a6c95bc1b3a09683e8f955",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k4"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-16",
+      "source": "cases/graph-seeded-16.source.json",
+      "sourceSha256": "8d5923a460b63935ee754cb90206f8a20e3bd5de118734131fac3bf1e9ae1ad9",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k6"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-17",
+      "source": "cases/graph-seeded-17.source.json",
+      "sourceSha256": "1075590f5e8b67c154ac79008acc820a616cfb6b4a96a9dd4e2c4d56f8e889da",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k3"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-18",
+      "source": "cases/graph-seeded-18.source.json",
+      "sourceSha256": "b575d59c5d543a9d4de44698a7c23dcd08e76aaff169226f7a365fbdbe8a193a",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "wr",
+            "key": "k5"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-19",
+      "source": "cases/graph-seeded-19.source.json",
+      "sourceSha256": "c99a4e087b5a94ad6499bfea8e031c2bbb64b4ed03550b1e070f1cdbbdcd13af",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k5"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k7"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-20",
+      "source": "cases/graph-seeded-20.source.json",
+      "sourceSha256": "1ab4d6e7e0f7d3347ebb8388d4dc1f3f780ca128d50ed0b98f0abedbc2a19e0f",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k5"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-21",
+      "source": "cases/graph-seeded-21.source.json",
+      "sourceSha256": "23d3b15cec49eafb704ddcdc83ad37cefbdc92e7051bdf81066d5b8519130941",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k6"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-22",
+      "source": "cases/graph-seeded-22.source.json",
+      "sourceSha256": "21dbdc9b4cada5fbc6c9284f1786ae004fa13cd14af9748baab1f9993abccf37",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "wr",
+            "key": "k4"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-23",
+      "source": "cases/graph-seeded-23.source.json",
+      "sourceSha256": "f39c56ead2069e55fc43d40d6e6822b6e51ed19384acb7bb29fb8e8114df839e",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 3,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k5"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-24",
+      "source": "cases/graph-seeded-24.source.json",
+      "sourceSha256": "094055e8f3ec1cf227bb5546df23a1934067b950e0585419a2baecd814d28cd6",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k5"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "rw",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k7"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "wr",
+            "key": "k8"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "rw",
+            "key": "k9"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "rw",
+            "key": "k10"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "wr",
+            "key": "k11"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-25",
+      "source": "cases/graph-seeded-25.source.json",
+      "sourceSha256": "8f203ec2b6050c470712d07bb3f180275ae7291fc8d5c2ba0844dc1e83c1874e",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k6"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "rw",
+            "key": "k7"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "wr",
+            "key": "k8"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k9"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k10"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "rw",
+            "key": "k11"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "wr",
+            "key": "k12"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "wr",
+            "key": "k13"
+          },
+          {
+            "from": "3",
+            "to": "1",
+            "kind": "wr",
+            "key": "k14"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "rw",
+            "key": "k15"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "wr",
+            "key": "k16"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-26",
+      "source": "cases/graph-seeded-26.source.json",
+      "sourceSha256": "807c856c4682ac347c55ee5abbab43f5e8ad33914e8eedfe612ab68381c6a62c",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k6"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "wr",
+            "key": "k7"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k8"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "rw",
+            "key": "k9"
+          },
+          {
+            "from": "3",
+            "to": "1",
+            "kind": "wr",
+            "key": "k10"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "wr",
+            "key": "k11"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-27",
+      "source": "cases/graph-seeded-27.source.json",
+      "sourceSha256": "9419ea71e0312b3af428d8c421d6b1b60fc4e6080f7ee3d8292fc424e5395fdf",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "wr",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k7"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "rw",
+            "key": "k8"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "wr",
+            "key": "k9"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "rw",
+            "key": "k10"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "wr",
+            "key": "k11"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-28",
+      "source": "cases/graph-seeded-28.source.json",
+      "sourceSha256": "3bb50f9f29ba6384f8d43c485f2e536d7a990e6db080d16fb2134ad2c40be37c",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "wr",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k7"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k8"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k9"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "wr",
+            "key": "k10"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "rw",
+            "key": "k11"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "rw",
+            "key": "k12"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "wr",
+            "key": "k13"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "rw",
+            "key": "k14"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-29",
+      "source": "cases/graph-seeded-29.source.json",
+      "sourceSha256": "8520eb69c9dcfab1fd211ac971eef5ffde18e6b9f67b2b02dd9105a0a426a0c2",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "rw",
+            "key": "k7"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "wr",
+            "key": "k8"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "wr",
+            "key": "k9"
+          },
+          {
+            "from": "3",
+            "to": "1",
+            "kind": "rw",
+            "key": "k10"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-30",
+      "source": "cases/graph-seeded-30.source.json",
+      "sourceSha256": "acdbe94daf10c4c7db7089123aefc6e41db9a9eae8578a83abc28fcc9ea18cce",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k0"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "wr",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "3",
+            "to": "1",
+            "kind": "wr",
+            "key": "k6"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "wr",
+            "key": "k7"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-31",
+      "source": "cases/graph-seeded-31.source.json",
+      "sourceSha256": "001a8af4b5e11610b765957256d5eb18798306b434d103fd42c97b52c52c4950",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k7"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "wr",
+            "key": "k8"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-32",
+      "source": "cases/graph-seeded-32.source.json",
+      "sourceSha256": "f443a4331a8bedc7cdef13b4f99f71c85252964a0f50da1ae6494127fcfe38e2",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k6"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "rw",
+            "key": "k7"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k8"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k9"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "wr",
+            "key": "k10"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "rw",
+            "key": "k11"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "wr",
+            "key": "k12"
+          },
+          {
+            "from": "3",
+            "to": "1",
+            "kind": "rw",
+            "key": "k13"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "rw",
+            "key": "k14"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-33",
+      "source": "cases/graph-seeded-33.source.json",
+      "sourceSha256": "6d6ae072be8820a2957eeb37eaf959718f84e7c217a0c1d0789a82f3c421edc8",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "wr",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "wr",
+            "key": "k5"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "rw",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k7"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "rw",
+            "key": "k8"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "wr",
+            "key": "k9"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "rw",
+            "key": "k10"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "wr",
+            "key": "k11"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "rw",
+            "key": "k12"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-34",
+      "source": "cases/graph-seeded-34.source.json",
+      "sourceSha256": "47641cabf2b7199948955161410cdda91ae7b606a86d8152243c47bdb1a54530",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k4"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "wr",
+            "key": "k6"
+          },
+          {
+            "from": "3",
+            "to": "1",
+            "kind": "rw",
+            "key": "k7"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "wr",
+            "key": "k8"
+          }
+        ]
+      },
+      "verify": true
+    },
+    {
+      "id": "graph-seeded-35",
+      "source": "cases/graph-seeded-35.source.json",
+      "sourceSha256": "0209908e54f8bc798b86b9fb93faa28b92e630c38a6dffeebe687590eb2d8421",
+      "options": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ]
+      },
+      "assertions": [],
+      "graphOracle": {
+        "nodeCount": 4,
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "rw",
+            "key": "k0"
+          },
+          {
+            "from": "0",
+            "to": "1",
+            "kind": "wr",
+            "key": "k1"
+          },
+          {
+            "from": "0",
+            "to": "2",
+            "kind": "rw",
+            "key": "k2"
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "kind": "rw",
+            "key": "k3"
+          },
+          {
+            "from": "1",
+            "to": "0",
+            "kind": "rw",
+            "key": "k4"
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "kind": "rw",
+            "key": "k5"
+          },
+          {
+            "from": "1",
+            "to": "3",
+            "kind": "rw",
+            "key": "k6"
+          },
+          {
+            "from": "2",
+            "to": "0",
+            "kind": "wr",
+            "key": "k7"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "kind": "rw",
+            "key": "k8"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "kind": "wr",
+            "key": "k9"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "rw",
+            "key": "k10"
+          },
+          {
+            "from": "3",
+            "to": "0",
+            "kind": "wr",
+            "key": "k11"
+          },
+          {
+            "from": "3",
+            "to": "1",
+            "kind": "rw",
+            "key": "k12"
+          },
+          {
+            "from": "3",
+            "to": "1",
+            "kind": "wr",
+            "key": "k13"
+          },
+          {
+            "from": "3",
+            "to": "2",
+            "kind": "rw",
+            "key": "k14"
+          }
+        ]
+      },
+      "verify": true
+    }
+  ]
+}

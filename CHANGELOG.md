@@ -1,3 +1,13 @@
+# 0.2.6 — 2026-10-24
+
+- Add explicit six-definition model checks for versioned point registers and the bounded single-append list graph profile, with separate per-rule results and applicability gaps.
+- Add raw observation checks for G1a, G1b and internal validity, dedicated nonadjacent-antidependency search, and source-bound real-time checks for the strict definition.
+- Preserve reliable model refutations when another search exhausts its budget. Record the actual proof and its implication without changing the incomplete rule or its counters.
+- Keep relation model classification, mixed-model transactions and model-preserving reduction outside this version's supported scope. Existing category reduction remains available.
+
+- Replay twenty-one authentic public v0.2.5 producer families through a fixed, integrity-checked historical worker; ordinary current analysis starts no worker.
+- Publish current full SDK and new six-model cost measurements, including failed timing controls. No target-level speedup or RSS decrease is claimed; see [measured results](docs/performance-v0.2.6.md).
+
 # 0.2.5 — 2026-10-24
 
 - Search G0, G1c and G2-item independently, retaining complete dependency evidence and explicit per-category budgets. Existing shortest-cycle analysis keeps its original definition.

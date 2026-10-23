@@ -6,6 +6,8 @@ import { makeCapsule, replayCapsule, makeCapsuleV3, replayCapsuleV3 } from './ev
 import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFailuresV3, inspectOrmSourceV3 } from './sdk.mjs';
 import { analyzeOrmProfileV3, reduceOrmProfileV3, verifyOrmProfileV3,
   makeOrmProfileCapsuleV3, makeOrmProfileReductionCapsuleV3, replayOrmProfileCapsuleV3 } from './orm-profile.mjs';
+import { classifyModelsV3, verifyModelsClassificationV3, makeModelsClassificationCapsuleV3,
+  replayModelsClassificationCapsuleV3 } from './classification-models.mjs';
 import { classifyV3, reduceClassificationV3, verifyClassificationV3, makeClassificationCapsuleV3,
   makeClassificationReductionCapsuleV3, replayClassificationCapsuleV3 } from './classification.mjs';
 
@@ -29,6 +31,9 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs shrink-orm-profile-v3 PROFILE_SOURCE.json [--options OPTIONS.json] [--max-checks N] [--output REDUCTION.json] [--history MINI.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs replay-orm-profile-v3 CAPSULE.json [--output REPLAY.json]
   node dist/moontxnwitness.mjs verify-orm-profile-v3 PROFILE_SOURCE.json REPORT.json [--options OPTIONS.json] [--output VERIFIED.json]
+  node dist/moontxnwitness.mjs classify-models-v3 TRACE_OR_BOUND_SOURCE.json [--options MODELS.json] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs verify-models-classification-v3 SOURCE.json REPORT.json [--options MODELS.json] [--output VERIFIED.json]
+  node dist/moontxnwitness.mjs replay-models-classification-v3 CAPSULE.json [--output REPLAY.json]
   node dist/moontxnwitness.mjs classify-v3 TRACE3.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs shrink-classification-v3 TRACE3.json --category G0|G1c|G2-item [--max-checks N] [--options REDUCTION_OPTIONS.json] [--output REPORT.json] [--capture MINI.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs verify-classification-v3 TRACE3.json REPORT.json [--options OPTIONS.json] [--output VERIFIED.json]
@@ -51,6 +56,8 @@ profile只对证明完整的原始派生事实做事务删除；无法证明/预
 classify-v3 只检查点寄存器的指定依赖环类别；checked-compatible不代表符合完整隔离模型。分类缩减固定原类别并重验来源，预算不足不宣称单最小。
 分类限制：原记录8MiB、分类选项4KiB/缩减选项8KiB、核心报告32MiB、host报告64MiB、胶囊128MiB；128事务/4096操作/5万边，每类10万状态/100万边检查，256次候选检查。最终核验开销另列，不受候选次数限制。
 分类退出码：1为已证伪类别（含完成缩减）；0为所选类别检查相容或重放一致；3为未知/不支持/预算不足；重放一致不将未知变为符合模型。
+classify-models-v3 显式检查六个冻结模型定义；只支持所声明点寄存器/单追加列表范围，关系模型与模型保持缩减未支持。无完整来源、内部有效性、实时证据或预算时保持无法判定。
+模型入口限制：原trace8MiB、严格来源包32MiB且每原文8MiB、选项8KiB、核心报告32MiB、host报告96MiB、胶囊192MiB。严格模型不会从事件time或BEGIN推断实时顺序/快照。
 结果只针对提供的唯一版本读写历史及版本顺序约束。不会连接数据库或上传数据。
 `;
 
@@ -132,6 +139,24 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (['classify-models-v3','verify-models-classification-v3','replay-models-classification-v3'].includes(args[0])) {
+    const command=args[0],allowed=command==='replay-models-classification-v3'?['--output']:
+      command==='verify-models-classification-v3'?['--options','--output']:['--options','--output','--capsule'];
+    const {paths,options}=localArgs(args.slice(1),allowed,command==='verify-models-classification-v3'?2:1);
+    const inputs=[...paths,...(options['--options']?[options['--options']]:[])];
+    if(inputs.filter(path=>path==='-').length>1)throw new Error('多个输入不能同时使用标准输入');
+    const source=readBounded(paths[0],command==='replay-models-classification-v3'?192*1024*1024:32*1024*1024);
+    const requested=options['--options']===undefined?{}:JSON.parse(readBounded(options['--options'],8192));
+    let result;const companions=[];
+    if(command==='replay-models-classification-v3')result=replayModelsClassificationCapsuleV3(source);
+    else if(command==='verify-models-classification-v3')result=verifyModelsClassificationV3(source,readBounded(paths[1],96*1024*1024),options['--options']===undefined?undefined:requested);
+    else if(options['--capsule']){
+      const capsule=makeModelsClassificationCapsuleV3(source,requested);
+      result=JSON.parse(JSON.parse(capsule).reportText);companions.push([options['--capsule'],capsule]);
+    }else result=classifyModelsV3(source,requested);
+    if(Buffer.byteLength(JSON.stringify(result,null,2)+'\n','utf8')>192*1024*1024)throw new Error('model classification输出超过192MiB');
+    emitJSON(result,options['--output'],inputs,companions);
+    process.exitCode='valid' in result?(result.valid?0:2):result.status==='checked-compatible'?0:result.status==='refuted'?1:result.status==='invalid'?2:3;
   } else if (['classify-v3','shrink-classification-v3','verify-classification-v3','replay-classification-v3'].includes(args[0])) {
     const command=args[0];
     const allowed=command==='replay-classification-v3'?['--output']:command==='verify-classification-v3'?['--options','--output']:

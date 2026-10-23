@@ -35,7 +35,7 @@ current_source = subprocess.check_output([NODE, '--input-type=module', '-e',
 assert current_source == MANIFEST['sourceSha256'], 'MoonBit source changed after the verified build'
 for runtime, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'captureCoreSha256')):
     assert hashlib.sha256((ROOT / 'dist' / runtime).read_bytes()).hexdigest() == MANIFEST[field], 'Compiled runtime changed after build'
-for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'classification.mjs', 'demo.mjs', 'postgres-demo.mjs'):
+for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'demo.mjs', 'postgres-demo.mjs'):
     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
 
 
@@ -181,6 +181,22 @@ for kind in ("portable", "source"):
         assert replay['valid'] and replay['report']['result']['reduction']['sourceClosure']['complete']
         checks.append(kind + ' configured ORM explicit-profile source binding, closed reduction and capsule replay')
 
+    if (consumer / 'dist/classification-models.mjs').is_file():
+        model_demo = json.loads(run([NODE, 'examples/classification-models-roundtrip.mjs', '--out-root', str(work)], consumer))
+        assert model_demo['passed'] and model_demo['version'] == VERSION
+        assert model_demo['syntheticInputs'] and model_demo['actualDatabaseExecution'] is False
+        assert model_demo['relationModelClassificationSupported'] is False and model_demo['modelPreservingReductionSupported'] is False
+        assert model_demo['generalizedSI'] == 'checked-compatible' and model_demo['serial'] == 'refuted'
+        assert model_demo['strictWithoutIntervals'] == 'inconclusive' and model_demo['strictBoundSynthetic'] == 'checked-compatible'
+        directory = (work / model_demo['outputDirectory']).resolve()
+        assert directory.is_relative_to(work.resolve())
+        for item in model_demo['files']:
+            path = (directory / item['file']).resolve()
+            assert path.is_relative_to(directory) and sha256(path) == item['sha256'] and path.stat().st_size == item['bytes']
+        replay = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-models-classification-v3', str(directory / 'bound-synthetic.capsule.json')], consumer))
+        assert replay['valid'] and replay['report']['result']['models']['strict-pl-ss-v1']['status'] == 'checked-compatible'
+        checks.append(kind + ' explicit model definitions, raw sidecar bindings, applicability gaps and exact model capsule replay')
+
     if (consumer / 'dist/classification.mjs').is_file():
         classification_demo = json.loads(run([NODE, 'examples/classification-roundtrip.mjs', '--out-root', str(work)], consumer))
         assert classification_demo['passed'] and classification_demo['version'] == VERSION
@@ -252,6 +268,16 @@ for kind in ("portable", "source"):
         assert previous_execution['producerEngineVersion'] == '0.1.7' and len(previous_execution['cases']) == 2
         assert all(item['valid'] and item['engineVersion'] == '0.1.7' for item in previous_execution['cases'])
         checks.append(kind + ' actual-v017 execution-capsule compatibility')
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 6):
+        original25 = json.loads(run([NODE, 'scripts/compat-v025-test.mjs', 'dist',
+                                     'fixtures/compat-v025', str(work / ('public25-' + kind))], consumer))
+        assert original25['passed'] and original25['currentRuntimeVersion'] == VERSION
+        assert original25['checks'] == 173 and original25['originalProducerFamilies'] == 21
+        assert original25['normalAnalysisHistoricalWorkersStarted'] == 0
+        assert original25['inProcessObservedHistoricalWorkerLaunches'] == 143
+        assert original25['expectedRegenerated'] is False
+        checks.append(kind + ' actual public25 21-family ESM worker exact compatibility and tamper controls')
 
     if tuple(map(int, VERSION.split('.'))) >= (0, 2, 4):
         original23 = json.loads(run([NODE, 'scripts/v023-compatibility-test.mjs'], consumer))

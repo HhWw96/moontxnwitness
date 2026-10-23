@@ -118,7 +118,8 @@ fn classification_v3_seed(kind : Dependency, category : String) -> Bool {
   match category {
     "G0" => kind == WW
     "G1c" => kind == WW || kind == WR
-    "G2-item" => kind == RW
+    "G2-item" | "SSG2-item" => kind == RW
+    "SSG1c" => kind == RT
     _ => false
   }
 }
@@ -129,6 +130,8 @@ fn classification_v3_allowed(kind : Dependency, category : String) -> Bool {
     "G0" => kind == WW
     "G1c" => kind == WW || kind == WR
     "G2-item" => kind == WW || kind == WR || kind == RW
+    "SSG1c" => kind == WW || kind == WR || kind == RT
+    "SSG2-item" => true
     _ => false
   }
 }
@@ -494,9 +497,18 @@ fn classification_v3_diagnostic(
 }
 
 ///|
-pub fn classify_v3_json(text : String, options_text : String) -> String {
+fn classification_v3_dispatch_json(
+  text : String,
+  options_text : String,
+  allow_models : Bool,
+) -> String {
   try {
-    let report = classification_v3_analysis(text, options_text)
+    let report = if allow_models &&
+      classification_models_v3_requested(text, options_text) {
+      classification_models_v3_analysis(text, options_text)
+    } else {
+      classification_v3_analysis(text, options_text)
+    }
     let encoded = report.stringify(indent=2)
     if orm_utf8_size(encoded) > 33554432 {
       classification_v3_diagnostic(
@@ -512,6 +524,11 @@ pub fn classify_v3_json(text : String, options_text : String) -> String {
 }
 
 ///|
+pub fn classify_v3_json(text : String, options_text : String) -> String {
+  classification_v3_dispatch_json(text, options_text, true)
+}
+
+///|
 pub fn verify_classification_v3_json(
   text : String,
   report_text : String,
@@ -522,8 +539,19 @@ pub fn verify_classification_v3_json(
     }
     let supplied = guarded_json(report_text, limit=33554432)
     let fields = object_fields(supplied, "classification report")
-    if fields.get("version") != Some(version().to_json()) ||
-      fields.get("algorithm") != Some("v3-register-category-1".to_json()) {
+    let category_algorithm = fields.get("algorithm") ==
+      Some("v3-register-category-1".to_json())
+    // Released 0.2.5 only defined register categories. Its options, including
+    // rejected model options, must never dispatch into newer model semantics.
+    let released_category = fields.get("version") == Some("0.2.5".to_json()) &&
+      category_algorithm
+    let current_engine = fields.get("version") == Some(version().to_json())
+    if !released_category &&
+      !(current_engine &&
+      (
+        category_algorithm ||
+        fields.get("algorithm") == Some("v3-isolation-model-1".to_json())
+      )) {
       fail("Unsupported classification engine or algorithm")
     }
     let execution = object_fields(
@@ -538,7 +566,14 @@ pub fn verify_classification_v3_json(
           _ => fail("Classification options text must be a string")
         }
     }
-    let expected = guarded_json(classify_v3_json(text, options), limit=33554432)
+    let expected = guarded_json(
+      classification_v3_dispatch_json(text, options, !released_category),
+      limit=33554432,
+    )
+    if released_category {
+      // Normalized facts are unversioned; every other field is compared exactly.
+      object_fields_unchecked_v3(expected)["version"] = "0.2.5".to_json()
+    }
     let valid = supplied == expected
     (
       {

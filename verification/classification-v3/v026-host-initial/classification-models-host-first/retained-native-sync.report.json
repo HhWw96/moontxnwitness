@@ -1,0 +1,860 @@
+{
+  "format": "moontxnwitness-isolation-model-report/v1",
+  "schemaVersion": 1,
+  "tool": "MoonTxnWitness",
+  "algorithm": "isolation-model-host-1",
+  "coreAlgorithm": "v3-isolation-model-1",
+  "engine": {
+    "version": "0.2.0",
+    "coreSha256": "89986b1939d12c3e8d3e93a129bb1a876f4e1bdc2012b8e19aec91671e271f64",
+    "hostSha256": "4a020480157ad71c2afb16a3dcdcb254908ed2968eeaa29341a4bcff4778e6db"
+  },
+  "status": "inconclusive",
+  "requestOptionsText": "{}",
+  "coreOptionsText": "{\"models\":[\"adya-pl-1-v1\",\"adya-pl-2-v1\",\"adya-pl-2.99-v1\",\"elle-generalized-si-v1\",\"adya-pl-3-v1\",\"strict-pl-ss-v1\"]}",
+  "originalSourceText": "{\n  \"format\": \"moontxnwitness-classification-source/v1\",\n  \"traceText\": \"{\\\"traceSchema\\\":3,\\\"clockDomain\\\":\\\"mtw-v3-87b3f7c088274191a59f143eacfdf6f8\\\",\\\"scope\\\":{\\\"exclusiveWriters\\\":false},\\\"sqlProfiles\\\":[],\\\"gaps\\\":[{\\\"code\\\":\\\"initialization_unproven\\\",\\\"message\\\":\\\"The initial database snapshot has not been established as consistent.\\\"},{\\\"code\\\":\\\"diagnostic_instrumentation_only\\\",\\\"message\\\":\\\"No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage.\\\"},{\\\"code\\\":\\\"statement_failed\\\",\\\"message\\\":\\\"A business statement raised its original driver exception.\\\"},{\\\"code\\\":\\\"source_unsealed\\\",\\\"message\\\":\\\"Journal and explicit source window have not both been sealed.\\\"},{\\\"code\\\":\\\"diagnostic_only\\\",\\\"message\\\":\\\"This export is incomplete diagnostic evidence, not a complete analysis input.\\\"}],\\\"events\\\":[{\\\"consistent\\\":false,\\\"initial\\\":{},\\\"kind\\\":\\\"snapshot\\\",\\\"seq\\\":1,\\\"time\\\":15000000},{\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"kind\\\":\\\"begin\\\",\\\"seq\\\":2,\\\"time\\\":203000000,\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":3,\\\"sql\\\":\\\"SELECT id,value FROM \\\\\\\"mtw_instrumentation_f18486a47e6e4a8a\\\\\\\".\\\\\\\"native_sync\\\\\\\" ORDER BY id\\\",\\\"time\\\":203000000,\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\"},{\\\"complete\\\":false,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[[1,\\\"one\\\"]],\\\"seq\\\":4,\\\"statement\\\":3,\\\"time\\\":218000000,\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[[2,\\\"two\\\"]],\\\"seq\\\":5,\\\"statement\\\":3,\\\"time\\\":218000000,\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"seq\\\":6,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"mtw_instrumentation_f18486a47e6e4a8a\\\\\\\".\\\\\\\"native_sync\\\\\\\" VALUES(%s,%s)\\\",\\\"time\\\":218000000,\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":7,\\\"statement\\\":6,\\\"time\\\":218000000,\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\"},{\\\"kind\\\":\\\"commit_request\\\",\\\"seq\\\":8,\\\"time\\\":218000000,\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\"},{\\\"kind\\\":\\\"commit_ok\\\",\\\"seq\\\":9,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\"},{\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"kind\\\":\\\"begin\\\",\\\"seq\\\":10,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":11,\\\"sql\\\":\\\"SAVEPOINT same\\\",\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":12,\\\"statement\\\":11,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"instance\\\":\\\"savepoint-d64360fc5a824fb492375a06ee565db0\\\",\\\"kind\\\":\\\"savepoint\\\",\\\"name\\\":\\\"same\\\",\\\"seq\\\":13,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":14,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"mtw_instrumentation_f18486a47e6e4a8a\\\\\\\".\\\\\\\"native_sync\\\\\\\" VALUES(5,'outer')\\\",\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":15,\\\"statement\\\":14,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":16,\\\"sql\\\":\\\"SAVEPOINT same\\\",\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":17,\\\"statement\\\":16,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"instance\\\":\\\"savepoint-401a13f229484e56bb42dfc90566e912\\\",\\\"kind\\\":\\\"savepoint\\\",\\\"name\\\":\\\"same\\\",\\\"seq\\\":18,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":19,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"mtw_instrumentation_f18486a47e6e4a8a\\\\\\\".\\\\\\\"native_sync\\\\\\\" VALUES(6,'inner')\\\",\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":20,\\\"statement\\\":19,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":21,\\\"sql\\\":\\\"ROLLBACK TO same\\\",\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":22,\\\"statement\\\":21,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"instance\\\":\\\"savepoint-401a13f229484e56bb42dfc90566e912\\\",\\\"kind\\\":\\\"rollback_to\\\",\\\"seq\\\":23,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":24,\\\"sql\\\":\\\"RELEASE same\\\",\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":25,\\\"statement\\\":24,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"instance\\\":\\\"savepoint-401a13f229484e56bb42dfc90566e912\\\",\\\"kind\\\":\\\"release\\\",\\\"seq\\\":26,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":27,\\\"sql\\\":\\\"ROLLBACK TO same\\\",\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":28,\\\"statement\\\":27,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"instance\\\":\\\"savepoint-d64360fc5a824fb492375a06ee565db0\\\",\\\"kind\\\":\\\"rollback_to\\\",\\\"seq\\\":29,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":30,\\\"sql\\\":\\\"RELEASE same\\\",\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":31,\\\"statement\\\":30,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"instance\\\":\\\"savepoint-d64360fc5a824fb492375a06ee565db0\\\",\\\"kind\\\":\\\"release\\\",\\\"seq\\\":32,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":33,\\\"sql\\\":\\\"SELECT id FROM \\\\\\\"mtw_instrumentation_f18486a47e6e4a8a\\\\\\\".\\\\\\\"native_sync\\\\\\\" WHERE id>=5\\\",\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":34,\\\"statement\\\":33,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"kind\\\":\\\"commit_request\\\",\\\"seq\\\":35,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"kind\\\":\\\"commit_ok\\\",\\\"seq\\\":36,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\"},{\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"kind\\\":\\\"begin\\\",\\\"seq\\\":37,\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\"},{\\\"kind\\\":\\\"statement\\\",\\\"parameters\\\":null,\\\"seq\\\":38,\\\"sql\\\":\\\"SELECT 1/0\\\",\\\"time\\\":234000000,\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\"},{\\\"complete\\\":false,\\\"error\\\":{\\\"class\\\":\\\"DivisionByZero\\\",\\\"sqlstate\\\":\\\"22012\\\"},\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[],\\\"seq\\\":39,\\\"statement\\\":38,\\\"time\\\":250000000,\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\"},{\\\"kind\\\":\\\"commit_request\\\",\\\"seq\\\":40,\\\"time\\\":250000000,\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\"},{\\\"commitResponse\\\":{\\\"commandTag\\\":\\\"ROLLBACK\\\",\\\"request\\\":40},\\\"kind\\\":\\\"rollback_ok\\\",\\\"seq\\\":41,\\\"time\\\":250000000,\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\"}]}\\n\",\n  \"intervalEvidenceText\": \"{\\\"format\\\":\\\"moontxnwitness-client-intervals/v1\\\",\\\"sourceTraceSha256\\\":\\\"e6d2fbffa1336c1ded8f3eea329b33d587bf1b346028d487e3db81ffabcb11e5\\\",\\\"sourceLifecycleSha256\\\":\\\"3a6f9dfbe75fb63962fd90f892f058f5aa1c8aeb070577f348384a5da6902a37\\\",\\\"sourceJournalIndexSha256\\\":\\\"38972f8afb47b0fe6d02035d0ae40ee429fd1137744fc0e0940ee99c09ae3d16\\\",\\\"records\\\":[{\\\"seq\\\":1,\\\"kind\\\":\\\"header\\\",\\\"format\\\":\\\"moontxnwitness-instrumentation/v1\\\",\\\"diagnosticOnly\\\":true,\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\"},{\\\"seq\\\":2,\\\"kind\\\":\\\"connect\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888031000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"asynchronous\\\":false},{\\\"seq\\\":3,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888031000000\\\",\\\"callId\\\":\\\"call-0ecc8c3c6bd44184be23d94a3a38eda0\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}},{\\\"seq\\\":4,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888031000000\\\",\\\"callId\\\":\\\"call-0ecc8c3c6bd44184be23d94a3a38eda0\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":3,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}},{\\\"seq\\\":5,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"callId\\\":\\\"call-c26fab4c9af14c2abc4fe845e0b08491\\\",\\\"method\\\":\\\"executemany\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}},{\\\"seq\\\":6,\\\"kind\\\":\\\"executemany-begin\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"statement\\\":6},{\\\"seq\\\":7,\\\"kind\\\":\\\"executemany-parameters\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"statement\\\":6,\\\"ordinal\\\":1,\\\"parameters\\\":[3,\\\"three\\\"]},{\\\"seq\\\":8,\\\"kind\\\":\\\"executemany-parameters\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"statement\\\":6,\\\"ordinal\\\":2,\\\"parameters\\\":[4,\\\"four\\\"]},{\\\"seq\\\":9,\\\"kind\\\":\\\"executemany-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"statement\\\":6,\\\"consumedParameters\\\":2,\\\"successful\\\":true},{\\\"seq\\\":10,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"callId\\\":\\\"call-c26fab4c9af14c2abc4fe845e0b08491\\\",\\\"method\\\":\\\"executemany\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":6,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}},{\\\"seq\\\":11,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"callId\\\":\\\"call-f5fd8e947ddf4b4997985d143c0cfaba\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}},{\\\"seq\\\":12,\\\"kind\\\":\\\"commit-response\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"request\\\":8,\\\"commandTag\\\":\\\"COMMIT\\\",\\\"transactionStatus\\\":0},{\\\"seq\\\":13,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-f5fd8e947ddf4b4997985d143c0cfaba\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2,\\\"commit_request\\\":8,\\\"commit_ok\\\":9},\\\"nativeCommandTag\\\":\\\"COMMIT\\\"},{\\\"seq\\\":14,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-c6fd2ceb21ea4340aff87a3fbf114574\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":15,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-c6fd2ceb21ea4340aff87a3fbf114574\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":11,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":16,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-fa5087b0f316469c942b4566d5f77dbc\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":17,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-fa5087b0f316469c942b4566d5f77dbc\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":14,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":18,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-5699b8c7c5714dd5b2708efc70a52d0f\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":19,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-5699b8c7c5714dd5b2708efc70a52d0f\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":16,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":20,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-fcc38386a1484f1182e1b551bf5ba191\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":21,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-fcc38386a1484f1182e1b551bf5ba191\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":19,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":22,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-a934d8dd68ad417e8fac43278cd48d4b\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":23,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-a934d8dd68ad417e8fac43278cd48d4b\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":21,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":24,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-681a7d28d00c46f09860a64c0f4699fa\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":25,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-681a7d28d00c46f09860a64c0f4699fa\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":24,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":26,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-c81dae5214ba48c6936773b903b45ae4\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":27,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-c81dae5214ba48c6936773b903b45ae4\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":27,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":28,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-0aba8ab5ae774bea9296da982fca83d7\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":29,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-0aba8ab5ae774bea9296da982fca83d7\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":30,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":30,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-1caaaeaa32e64bfe9a6dc42a70b94355\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":31,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-1caaaeaa32e64bfe9a6dc42a70b94355\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":33,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":32,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-4f01b87d8c804f8da99081877a609336\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}},{\\\"seq\\\":33,\\\"kind\\\":\\\"commit-response\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"request\\\":35,\\\"commandTag\\\":\\\"COMMIT\\\",\\\"transactionStatus\\\":0},{\\\"seq\\\":34,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-4f01b87d8c804f8da99081877a609336\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10,\\\"commit_request\\\":35,\\\"commit_ok\\\":36},\\\"nativeCommandTag\\\":\\\"COMMIT\\\"},{\\\"seq\\\":35,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-c635e9db86804d3796996f6724688798\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":37}},{\\\"seq\\\":36,\\\"kind\\\":\\\"driver-error\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888078000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"statement\\\":38,\\\"phase\\\":\\\"execute\\\",\\\"errorClass\\\":\\\"DivisionByZero\\\",\\\"sqlstate\\\":\\\"22012\\\"},{\\\"seq\\\":37,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888078000000\\\",\\\"callId\\\":\\\"call-c635e9db86804d3796996f6724688798\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\",\\\"succeeded\\\":false,\\\"statementSeq\\\":38,\\\"journalEventSeqs\\\":{\\\"begin\\\":37}},{\\\"seq\\\":38,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888078000000\\\",\\\"callId\\\":\\\"call-f901d8180f2f431ab2cd4042940c7599\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":37}},{\\\"seq\\\":39,\\\"kind\\\":\\\"commit-response\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888078000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"request\\\":40,\\\"commandTag\\\":\\\"ROLLBACK\\\",\\\"transactionStatus\\\":0},{\\\"seq\\\":40,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888078000000\\\",\\\"callId\\\":\\\"call-f901d8180f2f431ab2cd4042940c7599\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":37,\\\"commit_request\\\":40,\\\"rollback_ok\\\":41},\\\"nativeCommandTag\\\":\\\"ROLLBACK\\\"},{\\\"seq\\\":41,\\\"kind\\\":\\\"connection-close\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888093000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\"},{\\\"seq\\\":42,\\\"kind\\\":\\\"instrumentation-detached\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888093000000\\\",\\\"borrowedConnections\\\":0},{\\\"seq\\\":43,\\\"kind\\\":\\\"seal\\\",\\\"prefixSha256\\\":\\\"27cca53e3f44e49c5af1699f3bdf5bd33065f2c9ecfdcd1bab24988d3fcf09d4\\\",\\\"records\\\":42}]}\\n\",\n  \"lifecycleText\": \"{\\\"seq\\\":1,\\\"kind\\\":\\\"header\\\",\\\"format\\\":\\\"moontxnwitness-instrumentation/v1\\\",\\\"diagnosticOnly\\\":true,\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\"}\\n{\\\"seq\\\":2,\\\"kind\\\":\\\"connect\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888031000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"asynchronous\\\":false}\\n{\\\"seq\\\":3,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888031000000\\\",\\\"callId\\\":\\\"call-0ecc8c3c6bd44184be23d94a3a38eda0\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":4,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888031000000\\\",\\\"callId\\\":\\\"call-0ecc8c3c6bd44184be23d94a3a38eda0\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":3,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":5,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"callId\\\":\\\"call-c26fab4c9af14c2abc4fe845e0b08491\\\",\\\"method\\\":\\\"executemany\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":6,\\\"kind\\\":\\\"executemany-begin\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"statement\\\":6}\\n{\\\"seq\\\":7,\\\"kind\\\":\\\"executemany-parameters\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"statement\\\":6,\\\"ordinal\\\":1,\\\"parameters\\\":[3,\\\"three\\\"]}\\n{\\\"seq\\\":8,\\\"kind\\\":\\\"executemany-parameters\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"statement\\\":6,\\\"ordinal\\\":2,\\\"parameters\\\":[4,\\\"four\\\"]}\\n{\\\"seq\\\":9,\\\"kind\\\":\\\"executemany-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"statement\\\":6,\\\"consumedParameters\\\":2,\\\"successful\\\":true}\\n{\\\"seq\\\":10,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"callId\\\":\\\"call-c26fab4c9af14c2abc4fe845e0b08491\\\",\\\"method\\\":\\\"executemany\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":6,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":11,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888046000000\\\",\\\"callId\\\":\\\"call-f5fd8e947ddf4b4997985d143c0cfaba\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":12,\\\"kind\\\":\\\"commit-response\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"request\\\":8,\\\"commandTag\\\":\\\"COMMIT\\\",\\\"transactionStatus\\\":0}\\n{\\\"seq\\\":13,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-f5fd8e947ddf4b4997985d143c0cfaba\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-a7b2848bffcd41aea622f88d05b27643\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2,\\\"commit_request\\\":8,\\\"commit_ok\\\":9},\\\"nativeCommandTag\\\":\\\"COMMIT\\\"}\\n{\\\"seq\\\":14,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-c6fd2ceb21ea4340aff87a3fbf114574\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":15,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-c6fd2ceb21ea4340aff87a3fbf114574\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":11,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":16,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-fa5087b0f316469c942b4566d5f77dbc\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":17,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-fa5087b0f316469c942b4566d5f77dbc\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":14,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":18,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-5699b8c7c5714dd5b2708efc70a52d0f\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":19,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-5699b8c7c5714dd5b2708efc70a52d0f\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":16,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":20,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-fcc38386a1484f1182e1b551bf5ba191\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":21,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-fcc38386a1484f1182e1b551bf5ba191\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":19,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":22,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-a934d8dd68ad417e8fac43278cd48d4b\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":23,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-a934d8dd68ad417e8fac43278cd48d4b\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":21,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":24,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-681a7d28d00c46f09860a64c0f4699fa\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":25,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-681a7d28d00c46f09860a64c0f4699fa\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":24,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":26,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-c81dae5214ba48c6936773b903b45ae4\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":27,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-c81dae5214ba48c6936773b903b45ae4\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":27,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":28,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-0aba8ab5ae774bea9296da982fca83d7\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":29,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-0aba8ab5ae774bea9296da982fca83d7\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":30,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":30,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-1caaaeaa32e64bfe9a6dc42a70b94355\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":31,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-1caaaeaa32e64bfe9a6dc42a70b94355\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":33,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":32,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-4f01b87d8c804f8da99081877a609336\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10}}\\n{\\\"seq\\\":33,\\\"kind\\\":\\\"commit-response\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"request\\\":35,\\\"commandTag\\\":\\\"COMMIT\\\",\\\"transactionStatus\\\":0}\\n{\\\"seq\\\":34,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-4f01b87d8c804f8da99081877a609336\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":10,\\\"commit_request\\\":35,\\\"commit_ok\\\":36},\\\"nativeCommandTag\\\":\\\"COMMIT\\\"}\\n{\\\"seq\\\":35,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888062000000\\\",\\\"callId\\\":\\\"call-c635e9db86804d3796996f6724688798\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":37}}\\n{\\\"seq\\\":36,\\\"kind\\\":\\\"driver-error\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888078000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"statement\\\":38,\\\"phase\\\":\\\"execute\\\",\\\"errorClass\\\":\\\"DivisionByZero\\\",\\\"sqlstate\\\":\\\"22012\\\"}\\n{\\\"seq\\\":37,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888078000000\\\",\\\"callId\\\":\\\"call-c635e9db86804d3796996f6724688798\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\",\\\"succeeded\\\":false,\\\"statementSeq\\\":38,\\\"journalEventSeqs\\\":{\\\"begin\\\":37}}\\n{\\\"seq\\\":38,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888078000000\\\",\\\"callId\\\":\\\"call-f901d8180f2f431ab2cd4042940c7599\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":37}}\\n{\\\"seq\\\":39,\\\"kind\\\":\\\"commit-response\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888078000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"request\\\":40,\\\"commandTag\\\":\\\"ROLLBACK\\\",\\\"transactionStatus\\\":0}\\n{\\\"seq\\\":40,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888078000000\\\",\\\"callId\\\":\\\"call-f901d8180f2f431ab2cd4042940c7599\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\",\\\"tx\\\":\\\"transaction-63347197e31947f8b96715a00c06afb3\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":37,\\\"commit_request\\\":40,\\\"rollback_ok\\\":41},\\\"nativeCommandTag\\\":\\\"ROLLBACK\\\"}\\n{\\\"seq\\\":41,\\\"kind\\\":\\\"connection-close\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888093000000\\\",\\\"connection\\\":\\\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\\\"}\\n{\\\"seq\\\":42,\\\"kind\\\":\\\"instrumentation-detached\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-e5973a7e71e64793871cc46e9d9d80c4\\\",\\\"monotonicNs\\\":\\\"96888093000000\\\",\\\"borrowedConnections\\\":0}\\n{\\\"seq\\\":43,\\\"kind\\\":\\\"seal\\\",\\\"prefixSha256\\\":\\\"27cca53e3f44e49c5af1699f3bdf5bd33065f2c9ecfdcd1bab24988d3fcf09d4\\\",\\\"records\\\":42}\\n\",\n  \"journalIndexText\": \"{\\\"activeTransactions\\\":[],\\\"closed\\\":true,\\\"commitRequests\\\":[],\\\"directorySync\\\":\\\"not-available-in-Windows-stdlib\\\",\\\"durableSeq\\\":41,\\\"eventCount\\\":41,\\\"gaps\\\":[{\\\"code\\\":\\\"initialization_unproven\\\",\\\"message\\\":\\\"The initial database snapshot has not been established as consistent.\\\"},{\\\"code\\\":\\\"diagnostic_instrumentation_only\\\",\\\"message\\\":\\\"No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage.\\\"},{\\\"code\\\":\\\"statement_failed\\\",\\\"message\\\":\\\"A business statement raised its original driver exception.\\\"}],\\\"indexSchema\\\":1,\\\"indexSha256\\\":\\\"e9d5f65836a8e3c0354a7b267c85558b981c24de6e94a85b603dbcfc6d134e41\\\",\\\"lastTime\\\":250000000,\\\"limits\\\":{\\\"flushBytes\\\":262144,\\\"flushIntervalSeconds\\\":0.1,\\\"queueBytes\\\":4194304,\\\"recordBytes\\\":524288,\\\"segmentBytes\\\":16777216,\\\"totalBytes\\\":1073741824},\\\"references\\\":{\\\"activeTransactions\\\":[],\\\"unreadResults\\\":[],\\\"versionSources\\\":[]},\\\"retention\\\":{\\\"deletionImplemented\\\":false,\\\"policy\\\":\\\"retain all source/version-chain records\\\"},\\\"segments\\\":[{\\\"bytes\\\":5995,\\\"eventCount\\\":41,\\\"firstSeq\\\":1,\\\"lastSeq\\\":41,\\\"name\\\":\\\"segment-000001.jsonl\\\",\\\"sha256\\\":\\\"4ae87e194d69cc60ea3a8cecf095d1765c9cf06fc56fc96a12d3d7f126956d7c\\\"}],\\\"sourceClosed\\\":false,\\\"stats\\\":{\\\"acceptedRecords\\\":41,\\\"backpressureCount\\\":0,\\\"backpressureNs\\\":0,\\\"bytesWritten\\\":5995,\\\"durableRecords\\\":41,\\\"fsyncCount\\\":4,\\\"maxQueueBytes\\\":524732},\\\"traceSchema\\\":3,\\\"transactionIndex\\\":{\\\"authoritative\\\":false,\\\"durableThroughSeq\\\":41,\\\"entries\\\":3,\\\"journalMode\\\":\\\"DELETE\\\",\\\"name\\\":\\\"transactions.sqlite3\\\",\\\"synchronous\\\":\\\"FULL\\\"}}\\n\"\n}\n",
+  "sourceBindings": {
+    "sourceSha256": "06947658250719a23fe3931371c6c56568e68c44751872abcec08130136ec60e",
+    "traceSha256": "e6d2fbffa1336c1ded8f3eea329b33d587bf1b346028d487e3db81ffabcb11e5",
+    "intervalEvidenceSha256": "b009c13ad732a31e5de802a8689a350c77c77b32c4b491230519fa55c3d1e98d",
+    "lifecycleSha256": "3a6f9dfbe75fb63962fd90f892f058f5aa1c8aeb070577f348384a5da6902a37",
+    "journalIndexSha256": "38972f8afb47b0fe6d02035d0ae40ee429fd1137744fc0e0940ee99c09ae3d16"
+  },
+  "budgets": {
+    "sourceUtf8Bytes": 33554432,
+    "rawTraceUtf8Bytes": 8388608,
+    "sourceComponentUtf8Bytes": 8388608,
+    "optionsUtf8Bytes": 8192,
+    "coreReportUtf8Bytes": 33554432,
+    "reportUtf8Bytes": 100663296,
+    "capsuleUtf8Bytes": 201326592,
+    "registerTransactions": 128,
+    "registerOperations": 4096,
+    "listCommittedTransactions": 6,
+    "listOperations": 128,
+    "edges": 50000,
+    "statesPerRule": 100000,
+    "edgeChecksPerRule": 1000000
+  },
+  "scope": {
+    "modelDefinitions": [
+      "adya-pl-1-v1",
+      "adya-pl-2-v1",
+      "adya-pl-2.99-v1",
+      "elle-generalized-si-v1",
+      "adya-pl-3-v1",
+      "strict-pl-ss-v1"
+    ],
+    "supportedDataModels": [
+      "point-register-v1",
+      "append-list-v1"
+    ],
+    "relationModelClassificationSupported": false,
+    "modelPreservingReductionSupported": false,
+    "categoryReducerUnchanged": true,
+    "listGraphProfile": "one append per transaction per key, complete captured order, no savepoints",
+    "strictRequiresExplicitClientIntervals": true,
+    "traceTimeInfersRealTime": false,
+    "beginInfersSnapshot": false,
+    "clientEvidenceAuthenticatesCollector": false,
+    "journalSegmentPayloadsRehashed": false,
+    "actualDatabaseExecution": false,
+    "databaseWideCertification": false,
+    "oldAnalyzeAndCapsulesUnchanged": true
+  },
+  "result": {
+    "schemaVersion": 3,
+    "tool": "MoonTxnWitness",
+    "version": "0.2.0",
+    "kind": "isolation-model-classification",
+    "algorithm": "v3-isolation-model-1",
+    "dataModel": "point-register-v1",
+    "status": "inconclusive",
+    "acceptsIsolationModels": true,
+    "sourceTraceText": "{\"traceSchema\":3,\"clockDomain\":\"mtw-v3-87b3f7c088274191a59f143eacfdf6f8\",\"scope\":{\"exclusiveWriters\":false},\"sqlProfiles\":[],\"gaps\":[{\"code\":\"initialization_unproven\",\"message\":\"The initial database snapshot has not been established as consistent.\"},{\"code\":\"diagnostic_instrumentation_only\",\"message\":\"No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage.\"},{\"code\":\"statement_failed\",\"message\":\"A business statement raised its original driver exception.\"},{\"code\":\"source_unsealed\",\"message\":\"Journal and explicit source window have not both been sealed.\"},{\"code\":\"diagnostic_only\",\"message\":\"This export is incomplete diagnostic evidence, not a complete analysis input.\"}],\"events\":[{\"consistent\":false,\"initial\":{},\"kind\":\"snapshot\",\"seq\":1,\"time\":15000000},{\"connection\":\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\",\"kind\":\"begin\",\"seq\":2,\"time\":203000000,\"tx\":\"transaction-a7b2848bffcd41aea622f88d05b27643\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":3,\"sql\":\"SELECT id,value FROM \\\"mtw_instrumentation_f18486a47e6e4a8a\\\".\\\"native_sync\\\" ORDER BY id\",\"time\":203000000,\"tx\":\"transaction-a7b2848bffcd41aea622f88d05b27643\"},{\"complete\":false,\"kind\":\"rows\",\"rows\":[[1,\"one\"]],\"seq\":4,\"statement\":3,\"time\":218000000,\"tx\":\"transaction-a7b2848bffcd41aea622f88d05b27643\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[[2,\"two\"]],\"seq\":5,\"statement\":3,\"time\":218000000,\"tx\":\"transaction-a7b2848bffcd41aea622f88d05b27643\"},{\"kind\":\"statement\",\"seq\":6,\"sql\":\"INSERT INTO \\\"mtw_instrumentation_f18486a47e6e4a8a\\\".\\\"native_sync\\\" VALUES(%s,%s)\",\"time\":218000000,\"tx\":\"transaction-a7b2848bffcd41aea622f88d05b27643\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[],\"seq\":7,\"statement\":6,\"time\":218000000,\"tx\":\"transaction-a7b2848bffcd41aea622f88d05b27643\"},{\"kind\":\"commit_request\",\"seq\":8,\"time\":218000000,\"tx\":\"transaction-a7b2848bffcd41aea622f88d05b27643\"},{\"kind\":\"commit_ok\",\"seq\":9,\"time\":234000000,\"tx\":\"transaction-a7b2848bffcd41aea622f88d05b27643\"},{\"connection\":\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\",\"kind\":\"begin\",\"seq\":10,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":11,\"sql\":\"SAVEPOINT same\",\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[],\"seq\":12,\"statement\":11,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"instance\":\"savepoint-d64360fc5a824fb492375a06ee565db0\",\"kind\":\"savepoint\",\"name\":\"same\",\"seq\":13,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":14,\"sql\":\"INSERT INTO \\\"mtw_instrumentation_f18486a47e6e4a8a\\\".\\\"native_sync\\\" VALUES(5,'outer')\",\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[],\"seq\":15,\"statement\":14,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":16,\"sql\":\"SAVEPOINT same\",\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[],\"seq\":17,\"statement\":16,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"instance\":\"savepoint-401a13f229484e56bb42dfc90566e912\",\"kind\":\"savepoint\",\"name\":\"same\",\"seq\":18,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":19,\"sql\":\"INSERT INTO \\\"mtw_instrumentation_f18486a47e6e4a8a\\\".\\\"native_sync\\\" VALUES(6,'inner')\",\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[],\"seq\":20,\"statement\":19,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":21,\"sql\":\"ROLLBACK TO same\",\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[],\"seq\":22,\"statement\":21,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"instance\":\"savepoint-401a13f229484e56bb42dfc90566e912\",\"kind\":\"rollback_to\",\"seq\":23,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":24,\"sql\":\"RELEASE same\",\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[],\"seq\":25,\"statement\":24,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"instance\":\"savepoint-401a13f229484e56bb42dfc90566e912\",\"kind\":\"release\",\"seq\":26,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":27,\"sql\":\"ROLLBACK TO same\",\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[],\"seq\":28,\"statement\":27,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"instance\":\"savepoint-d64360fc5a824fb492375a06ee565db0\",\"kind\":\"rollback_to\",\"seq\":29,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":30,\"sql\":\"RELEASE same\",\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[],\"seq\":31,\"statement\":30,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"instance\":\"savepoint-d64360fc5a824fb492375a06ee565db0\",\"kind\":\"release\",\"seq\":32,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":33,\"sql\":\"SELECT id FROM \\\"mtw_instrumentation_f18486a47e6e4a8a\\\".\\\"native_sync\\\" WHERE id>=5\",\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"complete\":true,\"kind\":\"rows\",\"rows\":[],\"seq\":34,\"statement\":33,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"kind\":\"commit_request\",\"seq\":35,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"kind\":\"commit_ok\",\"seq\":36,\"time\":234000000,\"tx\":\"transaction-0dd6c89ea5a049b0b38d68fcf9461a05\"},{\"connection\":\"connection-1d1bdb479fbd41359d04ba9c98fc9f23\",\"kind\":\"begin\",\"seq\":37,\"time\":234000000,\"tx\":\"transaction-63347197e31947f8b96715a00c06afb3\"},{\"kind\":\"statement\",\"parameters\":null,\"seq\":38,\"sql\":\"SELECT 1/0\",\"time\":234000000,\"tx\":\"transaction-63347197e31947f8b96715a00c06afb3\"},{\"complete\":false,\"error\":{\"class\":\"DivisionByZero\",\"sqlstate\":\"22012\"},\"kind\":\"rows\",\"rows\":[],\"seq\":39,\"statement\":38,\"time\":250000000,\"tx\":\"transaction-63347197e31947f8b96715a00c06afb3\"},{\"kind\":\"commit_request\",\"seq\":40,\"time\":250000000,\"tx\":\"transaction-63347197e31947f8b96715a00c06afb3\"},{\"commitResponse\":{\"commandTag\":\"ROLLBACK\",\"request\":40},\"kind\":\"rollback_ok\",\"seq\":41,\"time\":250000000,\"tx\":\"transaction-63347197e31947f8b96715a00c06afb3\"}]}\n",
+    "normalized": {
+      "schema": 3,
+      "algorithm": "v3-lifecycle-2",
+      "status": "inconclusive",
+      "coverage": {
+        "complete": false,
+        "gaps": [
+          {
+            "code": "writer_scope_unproven",
+            "message": "Other writers have not been excluded"
+          },
+          {
+            "code": "initialization_unproven",
+            "message": "The initial database snapshot has not been established as consistent."
+          },
+          {
+            "code": "diagnostic_instrumentation_only",
+            "message": "No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage."
+          },
+          {
+            "code": "statement_failed",
+            "message": "A business statement raised its original driver exception."
+          },
+          {
+            "code": "source_unsealed",
+            "message": "Journal and explicit source window have not both been sealed."
+          },
+          {
+            "code": "diagnostic_only",
+            "message": "This export is incomplete diagnostic evidence, not a complete analysis input."
+          },
+          {
+            "code": "inconsistent_snapshot",
+            "message": "Initial state is not a consistent captured snapshot"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "incomplete_rows",
+            "message": "A statement result was not exhausted"
+          }
+        ]
+      },
+      "observations": [
+        {
+          "consistent": false,
+          "initial": {},
+          "kind": "snapshot",
+          "seq": 1,
+          "time": 15000000
+        },
+        {
+          "connection": "connection-1d1bdb479fbd41359d04ba9c98fc9f23",
+          "kind": "begin",
+          "seq": 2,
+          "time": 203000000,
+          "tx": "transaction-a7b2848bffcd41aea622f88d05b27643"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 3,
+          "sql": "SELECT id,value FROM \"mtw_instrumentation_f18486a47e6e4a8a\".\"native_sync\" ORDER BY id",
+          "time": 203000000,
+          "tx": "transaction-a7b2848bffcd41aea622f88d05b27643"
+        },
+        {
+          "complete": false,
+          "kind": "rows",
+          "rows": [
+            [
+              1,
+              "one"
+            ]
+          ],
+          "seq": 4,
+          "statement": 3,
+          "time": 218000000,
+          "tx": "transaction-a7b2848bffcd41aea622f88d05b27643"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [
+            [
+              2,
+              "two"
+            ]
+          ],
+          "seq": 5,
+          "statement": 3,
+          "time": 218000000,
+          "tx": "transaction-a7b2848bffcd41aea622f88d05b27643"
+        },
+        {
+          "kind": "statement",
+          "seq": 6,
+          "sql": "INSERT INTO \"mtw_instrumentation_f18486a47e6e4a8a\".\"native_sync\" VALUES(%s,%s)",
+          "time": 218000000,
+          "tx": "transaction-a7b2848bffcd41aea622f88d05b27643"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [],
+          "seq": 7,
+          "statement": 6,
+          "time": 218000000,
+          "tx": "transaction-a7b2848bffcd41aea622f88d05b27643"
+        },
+        {
+          "kind": "commit_request",
+          "seq": 8,
+          "time": 218000000,
+          "tx": "transaction-a7b2848bffcd41aea622f88d05b27643"
+        },
+        {
+          "kind": "commit_ok",
+          "seq": 9,
+          "time": 234000000,
+          "tx": "transaction-a7b2848bffcd41aea622f88d05b27643"
+        },
+        {
+          "connection": "connection-1d1bdb479fbd41359d04ba9c98fc9f23",
+          "kind": "begin",
+          "seq": 10,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 11,
+          "sql": "SAVEPOINT same",
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [],
+          "seq": 12,
+          "statement": 11,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "instance": "savepoint-d64360fc5a824fb492375a06ee565db0",
+          "kind": "savepoint",
+          "name": "same",
+          "seq": 13,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 14,
+          "sql": "INSERT INTO \"mtw_instrumentation_f18486a47e6e4a8a\".\"native_sync\" VALUES(5,'outer')",
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [],
+          "seq": 15,
+          "statement": 14,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 16,
+          "sql": "SAVEPOINT same",
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [],
+          "seq": 17,
+          "statement": 16,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "instance": "savepoint-401a13f229484e56bb42dfc90566e912",
+          "kind": "savepoint",
+          "name": "same",
+          "seq": 18,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 19,
+          "sql": "INSERT INTO \"mtw_instrumentation_f18486a47e6e4a8a\".\"native_sync\" VALUES(6,'inner')",
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [],
+          "seq": 20,
+          "statement": 19,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 21,
+          "sql": "ROLLBACK TO same",
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [],
+          "seq": 22,
+          "statement": 21,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "instance": "savepoint-401a13f229484e56bb42dfc90566e912",
+          "kind": "rollback_to",
+          "seq": 23,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 24,
+          "sql": "RELEASE same",
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [],
+          "seq": 25,
+          "statement": 24,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "instance": "savepoint-401a13f229484e56bb42dfc90566e912",
+          "kind": "release",
+          "seq": 26,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 27,
+          "sql": "ROLLBACK TO same",
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [],
+          "seq": 28,
+          "statement": 27,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "instance": "savepoint-d64360fc5a824fb492375a06ee565db0",
+          "kind": "rollback_to",
+          "seq": 29,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 30,
+          "sql": "RELEASE same",
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [],
+          "seq": 31,
+          "statement": 30,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "instance": "savepoint-d64360fc5a824fb492375a06ee565db0",
+          "kind": "release",
+          "seq": 32,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 33,
+          "sql": "SELECT id FROM \"mtw_instrumentation_f18486a47e6e4a8a\".\"native_sync\" WHERE id>=5",
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "complete": true,
+          "kind": "rows",
+          "rows": [],
+          "seq": 34,
+          "statement": 33,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "kind": "commit_request",
+          "seq": 35,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "kind": "commit_ok",
+          "seq": 36,
+          "time": 234000000,
+          "tx": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05"
+        },
+        {
+          "connection": "connection-1d1bdb479fbd41359d04ba9c98fc9f23",
+          "kind": "begin",
+          "seq": 37,
+          "time": 234000000,
+          "tx": "transaction-63347197e31947f8b96715a00c06afb3"
+        },
+        {
+          "kind": "statement",
+          "parameters": null,
+          "seq": 38,
+          "sql": "SELECT 1/0",
+          "time": 234000000,
+          "tx": "transaction-63347197e31947f8b96715a00c06afb3"
+        },
+        {
+          "complete": false,
+          "error": {
+            "class": "DivisionByZero",
+            "sqlstate": "22012"
+          },
+          "kind": "rows",
+          "rows": [],
+          "seq": 39,
+          "statement": 38,
+          "time": 250000000,
+          "tx": "transaction-63347197e31947f8b96715a00c06afb3"
+        },
+        {
+          "kind": "commit_request",
+          "seq": 40,
+          "time": 250000000,
+          "tx": "transaction-63347197e31947f8b96715a00c06afb3"
+        },
+        {
+          "commitResponse": {
+            "commandTag": "ROLLBACK",
+            "request": 40
+          },
+          "kind": "rollback_ok",
+          "seq": 41,
+          "time": 250000000,
+          "tx": "transaction-63347197e31947f8b96715a00c06afb3"
+        }
+      ],
+      "effects": [],
+      "transactions": [
+        {
+          "id": "transaction-a7b2848bffcd41aea622f88d05b27643",
+          "connection": "connection-1d1bdb479fbd41359d04ba9c98fc9f23",
+          "status": "committed",
+          "beginSeq": 2,
+          "endSeq": 9,
+          "events": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "finalWrites": []
+        },
+        {
+          "id": "transaction-0dd6c89ea5a049b0b38d68fcf9461a05",
+          "connection": "connection-1d1bdb479fbd41359d04ba9c98fc9f23",
+          "status": "committed",
+          "beginSeq": 10,
+          "endSeq": 36,
+          "events": [
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36
+          ],
+          "finalWrites": []
+        },
+        {
+          "id": "transaction-63347197e31947f8b96715a00c06afb3",
+          "connection": "connection-1d1bdb479fbd41359d04ba9c98fc9f23",
+          "status": "aborted",
+          "beginSeq": 37,
+          "endSeq": 41,
+          "events": [
+            37,
+            38,
+            39,
+            40,
+            41
+          ],
+          "finalWrites": []
+        }
+      ],
+      "history": null
+    },
+    "dependencies": [],
+    "realTimeDependencies": [],
+    "dependencyGraphComplete": false,
+    "validityGaps": [],
+    "rules": {
+      "G1a": {
+        "status": "unknown",
+        "reason": "capture-coverage-incomplete",
+        "evidence": null
+      },
+      "G1b": {
+        "status": "unknown",
+        "reason": "capture-coverage-incomplete",
+        "evidence": null
+      },
+      "INT": {
+        "status": "unknown",
+        "reason": "capture-coverage-incomplete",
+        "evidence": null
+      },
+      "G0": {
+        "status": "unknown",
+        "reason": "capture-coverage-or-required-version-order-incomplete",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0
+      },
+      "G1c": {
+        "status": "unknown",
+        "reason": "capture-coverage-or-required-version-order-incomplete",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0
+      },
+      "G2-item": {
+        "status": "unknown",
+        "reason": "capture-coverage-or-required-version-order-incomplete",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0
+      },
+      "G-nonadjacent": {
+        "status": "unknown",
+        "reason": "capture-coverage-or-required-version-order-incomplete",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0
+      },
+      "SSG1c": {
+        "status": "unknown",
+        "reason": "missing-unconfirmed-or-unsealed-client-intervals",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0,
+        "definition": "a WW/WR/RT cycle containing a proven RT edge"
+      },
+      "SSG2-item": {
+        "status": "unknown",
+        "reason": "missing-unconfirmed-or-unsealed-client-intervals",
+        "evidence": null,
+        "states": 0,
+        "edgeChecks": 0,
+        "definition": "a WW/WR/item-RW/RT cycle containing item RW; ordinary G2-item is included"
+      }
+    },
+    "models": {
+      "adya-pl-1-v1": {
+        "definition": "adya-pl-1-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "G0"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "not-required-by-this-profile",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "G0"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      },
+      "adya-pl-2-v1": {
+        "definition": "adya-pl-2-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "not-required-by-this-profile",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      },
+      "adya-pl-2.99-v1": {
+        "definition": "adya-pl-2.99-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "not-required-by-this-profile",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      },
+      "elle-generalized-si-v1": {
+        "definition": "elle-generalized-si-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "INT",
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G-nonadjacent"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "not-required-by-this-profile",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "INT",
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G-nonadjacent"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      },
+      "adya-pl-3-v1": {
+        "definition": "adya-pl-3-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "unknown",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      },
+      "strict-pl-ss-v1": {
+        "definition": "strict-pl-ss-v1",
+        "status": "inconclusive",
+        "graphStatus": "inconclusive",
+        "requiredRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item",
+          "SSG1c",
+          "SSG2-item"
+        ],
+        "internalValidity": {
+          "role": "applicability-precondition-for-operational-serial-checks",
+          "status": "unknown",
+          "rule": "INT",
+          "evidence": null
+        },
+        "refutedBy": [],
+        "incompleteRules": [
+          "G0",
+          "G1a",
+          "G1b",
+          "G1c",
+          "G2-item",
+          "SSG1c",
+          "SSG2-item"
+        ],
+        "unsupportedRules": [],
+        "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+      }
+    },
+    "impliedAnomalies": [],
+    "intervalEvidence": {
+      "format": "moontxnwitness-client-intervals/v1",
+      "sourceIntervalEvidenceSha256": "b009c13ad732a31e5de802a8689a350c77c77b32c4b491230519fa55c3d1e98d",
+      "sourceTraceSha256": "e6d2fbffa1336c1ded8f3eea329b33d587bf1b346028d487e3db81ffabcb11e5",
+      "sourceLifecycleSha256": "3a6f9dfbe75fb63962fd90f892f058f5aa1c8aeb070577f348384a5da6902a37",
+      "sourceJournalIndexSha256": "38972f8afb47b0fe6d02035d0ae40ee429fd1137744fc0e0940ee99c09ae3d16",
+      "traceBytesBound": true,
+      "lifecycleBytesBound": true,
+      "journalIndexBytesBound": true,
+      "journalSegmentPayloadsRecomputed": false,
+      "intervals": [],
+      "scope": "Explicit DBAPI call boundaries and original source byte bindings; no server snapshot inference or collector authenticity certification"
+    },
+    "scope": "versioned register or the declared single-append list graph profile; model refutations and required checks are separate; source hashes do not authenticate the collector",
+    "execution": {
+      "classificationOptions": {
+        "models": [
+          "adya-pl-1-v1",
+          "adya-pl-2-v1",
+          "adya-pl-2.99-v1",
+          "elle-generalized-si-v1",
+          "adya-pl-3-v1",
+          "strict-pl-ss-v1"
+        ],
+        "maxStates": 100000,
+        "maxEdgeChecks": 1000000,
+        "normalizationOptions": {}
+      },
+      "limits": {
+        "registerTransactions": 128,
+        "registerOperations": 4096,
+        "listCommittedTransactions": 6,
+        "listOperations": 128,
+        "edges": 50000,
+        "statesPerRule": 100000,
+        "edgeChecksPerRule": 1000000
+      },
+      "versionOrderCompletion": false
+    }
+  },
+  "coreReportReplay": {
+    "valid": true,
+    "scope": "every category, source observation, dependency, exact original trace text, budget and counter is recomputed; not database authentication",
+    "reason": "Classification reproduced"
+  },
+  "verificationPasses": {
+    "coreClassification": 1,
+    "coreReportVerification": 1
+  }
+}

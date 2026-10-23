@@ -1,0 +1,54 @@
+{
+  "kind": "independent-v026-addon-first-assessment",
+  "originalReceiptSha256": "5e7c639e05a7937f9bc5646deace5dfb65360c235f73daf73b797addcfb5d00f",
+  "originalReceiptUnchanged": true,
+  "cases": 10,
+  "checks": 31,
+  "passedCases": 6,
+  "failedCases": 4,
+  "confirmedProductFindings": [
+    {
+      "case": "interleaved-read-ends-other-final-append",
+      "finding": "G1b is refuted from mere presence of an external non-final append before a different final observed append. This is not an identified direct read of the intermediate write version. Preserve any separately proved G1a.",
+      "reportSha256": "3bc175ad208036e29e610119aee63c2a7fa1c0ff9ee7405d4a3d0cb3bbd172c4",
+      "verificationSha256": "f113c71fcdf0b3e17bfa64a36690c05b5727fee919e380899be48e84a59777b3"
+    },
+    {
+      "case": "read-ends-own-append-not-external-intermediate",
+      "finding": "G1b is refuted from mere presence of an external non-final append before a different final observed append. This is not an identified direct read of the intermediate write version. Preserve any separately proved G1a.",
+      "reportSha256": "b0c7dd2fdad47ff36e285651dfd898b475db3bd78db7357fc74c8dd3db246358",
+      "verificationSha256": "f113c71fcdf0b3e17bfa64a36690c05b5727fee919e380899be48e84a59777b3"
+    },
+    {
+      "case": "dirty-final-source-keeps-G1a-without-false-G1b",
+      "finding": "G1b is refuted from mere presence of an external non-final append before a different final observed append. This is not an identified direct read of the intermediate write version. Preserve any separately proved G1a.",
+      "reportSha256": "9dc7c31644a53b35a5027890e2f8fe4259f0de5b05cb37d868aa4be279f7353d",
+      "verificationSha256": "f113c71fcdf0b3e17bfa64a36690c05b5727fee919e380899be48e84a59777b3"
+    }
+  ],
+  "confirmedAuditToolIssue": {
+    "case": "G0-WW-cycle-implication-closure",
+    "problem": "The frozen generic runner splits dot paths; it incorrectly treats the model key adya-pl-2.99-v1 as two path components. The product response contains that literal key and its status is refuted.",
+    "actualExactKeyStatus": "refuted",
+    "allSixActualStatuses": {
+      "adya-pl-1-v1": "refuted",
+      "adya-pl-2-v1": "refuted",
+      "adya-pl-2.99-v1": "refuted",
+      "elle-generalized-si-v1": "refuted",
+      "adya-pl-3-v1": "refuted",
+      "strict-pl-ss-v1": "refuted"
+    },
+    "expectationNotRewritten": true
+  },
+  "sourceSemantics": "G1b identifies the read version via the final observed list element under append semantics. Containing another writer intermediate element in an earlier prefix may indicate derived propagation/intermediate-update, but does not itself establish the declared direct G1b phenomenon.",
+  "fixedDefinitionIdsChanged": false,
+  "newDatasetDoesNotReplaceOriginal61": true,
+  "unexecuted": [
+    "Repaired runtime check",
+    "Actual database",
+    "Cross-target Moon regression",
+    "Actual Elle invocation",
+    "Formal performance",
+    "Public package installation"
+  ]
+}

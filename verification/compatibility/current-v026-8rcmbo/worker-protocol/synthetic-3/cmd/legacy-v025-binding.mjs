@@ -1,0 +1,1 @@
+export const PUBLIC_V025=Object.freeze({"version":"0.2.5","sourceCommit":"6b3434b19fc080bc9a3a9518950021061d2849dd","manifestSha256":"7155ea478470804d390e8e696a30cf78f19d75fecd216ca24fd83979648d6b65","workerSha256":"c631e160638c1cf9c6bef4f253763196003b265102d9e7d8a5750b936598ef93"});

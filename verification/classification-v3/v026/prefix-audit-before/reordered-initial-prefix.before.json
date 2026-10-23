@@ -1,0 +1,564 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.0",
+  "kind": "isolation-model-classification",
+  "algorithm": "v3-isolation-model-1",
+  "dataModel": "append-list-v1",
+  "status": "refuted",
+  "acceptsIsolationModels": true,
+  "sourceTraceText": "{\"traceSchema\":3,\"dataModel\":\"append-list-v1\",\"clockDomain\":\"v3-test\",\"scope\":{\"exclusiveWriters\":true},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"x\":[{\"id\":\"ix\",\"value\":\"initial-x\"},{\"id\":\"ix2\",\"value\":\"initial-x2\"}],\"y\":[{\"id\":\"iy\",\"value\":\"initial-y\"},{\"id\":\"iy2\",\"value\":\"initial-y2\"}]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"a\",\"seq\":2,\"time\":1},{\"kind\":\"begin\",\"tx\":\"B\",\"connection\":\"b\",\"seq\":3,\"time\":2},{\"kind\":\"list_read\",\"tx\":\"A\",\"key\":\"y\",\"items\":[{\"id\":\"iy2\",\"value\":\"initial-y2\"},{\"id\":\"iy\",\"value\":\"initial-y\"}],\"seq\":4,\"time\":3},{\"kind\":\"list_read\",\"tx\":\"B\",\"key\":\"x\",\"items\":[{\"id\":\"ix2\",\"value\":\"initial-x2\"},{\"id\":\"ix\",\"value\":\"initial-x\"}],\"seq\":5,\"time\":4},{\"kind\":\"append\",\"tx\":\"A\",\"key\":\"x\",\"id\":\"a\",\"value\":\"same\",\"seq\":6,\"time\":5},{\"kind\":\"append\",\"tx\":\"B\",\"key\":\"y\",\"id\":\"b\",\"value\":\"same\",\"seq\":7,\"time\":6},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":8,\"time\":7},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":9,\"time\":8},{\"kind\":\"commit_request\",\"tx\":\"B\",\"seq\":10,\"time\":9},{\"kind\":\"commit_ok\",\"tx\":\"B\",\"seq\":11,\"time\":10}],\"gaps\":[]}\n",
+  "normalized": {
+    "schema": 3,
+    "dataModel": "append-list-v1",
+    "algorithm": "v3-list-lifecycle-1",
+    "status": "ready",
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "observations": [
+      {
+        "kind": "snapshot",
+        "initial": {
+          "x": [
+            {
+              "id": "ix",
+              "value": "initial-x"
+            },
+            {
+              "id": "ix2",
+              "value": "initial-x2"
+            }
+          ],
+          "y": [
+            {
+              "id": "iy",
+              "value": "initial-y"
+            },
+            {
+              "id": "iy2",
+              "value": "initial-y2"
+            }
+          ]
+        },
+        "consistent": true,
+        "seq": 1,
+        "time": 0
+      },
+      {
+        "kind": "begin",
+        "tx": "A",
+        "connection": "a",
+        "seq": 2,
+        "time": 1
+      },
+      {
+        "kind": "begin",
+        "tx": "B",
+        "connection": "b",
+        "seq": 3,
+        "time": 2
+      },
+      {
+        "kind": "list_read",
+        "tx": "A",
+        "key": "y",
+        "items": [
+          {
+            "id": "iy2",
+            "value": "initial-y2"
+          },
+          {
+            "id": "iy",
+            "value": "initial-y"
+          }
+        ],
+        "seq": 4,
+        "time": 3
+      },
+      {
+        "kind": "list_read",
+        "tx": "B",
+        "key": "x",
+        "items": [
+          {
+            "id": "ix2",
+            "value": "initial-x2"
+          },
+          {
+            "id": "ix",
+            "value": "initial-x"
+          }
+        ],
+        "seq": 5,
+        "time": 4
+      },
+      {
+        "kind": "append",
+        "tx": "A",
+        "key": "x",
+        "id": "a",
+        "value": "same",
+        "seq": 6,
+        "time": 5
+      },
+      {
+        "kind": "append",
+        "tx": "B",
+        "key": "y",
+        "id": "b",
+        "value": "same",
+        "seq": 7,
+        "time": 6
+      },
+      {
+        "kind": "commit_request",
+        "tx": "A",
+        "seq": 8,
+        "time": 7
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "A",
+        "seq": 9,
+        "time": 8
+      },
+      {
+        "kind": "commit_request",
+        "tx": "B",
+        "seq": 10,
+        "time": 9
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "B",
+        "seq": 11,
+        "time": 10
+      }
+    ],
+    "effects": [
+      {
+        "seq": 6,
+        "tx": "A",
+        "key": "x",
+        "id": "a",
+        "value": "same",
+        "revertedBy": null
+      },
+      {
+        "seq": 7,
+        "tx": "B",
+        "key": "y",
+        "id": "b",
+        "value": "same",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "A",
+        "connection": "a",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          4,
+          6,
+          8,
+          9
+        ],
+        "finalWrites": [
+          6
+        ]
+      },
+      {
+        "id": "B",
+        "connection": "b",
+        "status": "committed",
+        "beginSeq": 3,
+        "endSeq": 11,
+        "events": [
+          3,
+          5,
+          7,
+          10,
+          11
+        ],
+        "finalWrites": [
+          7
+        ]
+      }
+    ],
+    "history": null
+  },
+  "dependencies": [
+    {
+      "from": "A",
+      "to": "B",
+      "kind": "rw",
+      "key": "y",
+      "fromOp": null,
+      "toOp": null,
+      "fromVersion": "list-read-4",
+      "toVersion": "b",
+      "reason": "The complete list read omits this committed append identity"
+    },
+    {
+      "from": "B",
+      "to": "A",
+      "kind": "rw",
+      "key": "x",
+      "fromOp": null,
+      "toOp": null,
+      "fromVersion": "list-read-5",
+      "toVersion": "a",
+      "reason": "The complete list read omits this committed append identity"
+    }
+  ],
+  "realTimeDependencies": [],
+  "dependencyGraphComplete": false,
+  "rules": {
+    "G1a": {
+      "status": "checked-compatible",
+      "reason": "complete-source-check",
+      "evidence": null
+    },
+    "G1b": {
+      "status": "checked-compatible",
+      "reason": "complete-source-check",
+      "evidence": null
+    },
+    "INT": {
+      "status": "checked-compatible",
+      "reason": "complete-source-check",
+      "evidence": null
+    },
+    "G0": {
+      "status": "unknown",
+      "reason": "list-required-order-or-read-prefix-incomplete",
+      "evidence": null,
+      "states": 0,
+      "edgeChecks": 2
+    },
+    "G1c": {
+      "status": "unknown",
+      "reason": "list-required-order-or-read-prefix-incomplete",
+      "evidence": null,
+      "states": 0,
+      "edgeChecks": 2
+    },
+    "G2-item": {
+      "status": "refuted",
+      "reason": "list-required-order-or-read-prefix-incomplete",
+      "evidence": {
+        "kind": "source-checked-list-dependency-cycle",
+        "edges": [
+          {
+            "edge": {
+              "from": "A",
+              "to": "B",
+              "kind": "rw",
+              "key": "y",
+              "fromOp": null,
+              "toOp": null,
+              "fromVersion": "list-read-4",
+              "toVersion": "b",
+              "reason": "The complete list read omits this committed append identity"
+            },
+            "sources": [
+              {
+                "readSeq": 4,
+                "appendSeq": 7,
+                "itemId": "b"
+              }
+            ]
+          },
+          {
+            "edge": {
+              "from": "B",
+              "to": "A",
+              "kind": "rw",
+              "key": "x",
+              "fromOp": null,
+              "toOp": null,
+              "fromVersion": "list-read-5",
+              "toVersion": "a",
+              "reason": "The complete list read omits this committed append identity"
+            },
+            "sources": [
+              {
+                "readSeq": 5,
+                "appendSeq": 6,
+                "itemId": "a"
+              }
+            ]
+          }
+        ],
+        "minimality": "simple cycle for the requested category; no shortest claim",
+        "sourceScope": "explicit complete list observations and unique append identities; not SQL authenticity"
+      },
+      "states": 1,
+      "edgeChecks": 2
+    },
+    "G-nonadjacent": {
+      "status": "unknown",
+      "reason": "list-required-order-or-read-prefix-incomplete",
+      "evidence": null,
+      "states": 2,
+      "edgeChecks": 4
+    },
+    "SSG1c": {
+      "status": "unknown",
+      "reason": "explicit-client-call-interval-evidence-required",
+      "evidence": null,
+      "states": 0,
+      "edgeChecks": 2,
+      "definition": "a WW/WR/RT cycle containing a proven RT edge"
+    },
+    "SSG2-item": {
+      "status": "refuted",
+      "reason": "explicit-client-call-interval-evidence-required",
+      "evidence": {
+        "kind": "source-checked-list-dependency-cycle",
+        "edges": [
+          {
+            "edge": {
+              "from": "A",
+              "to": "B",
+              "kind": "rw",
+              "key": "y",
+              "fromOp": null,
+              "toOp": null,
+              "fromVersion": "list-read-4",
+              "toVersion": "b",
+              "reason": "The complete list read omits this committed append identity"
+            },
+            "sources": [
+              {
+                "readSeq": 4,
+                "appendSeq": 7,
+                "itemId": "b"
+              }
+            ]
+          },
+          {
+            "edge": {
+              "from": "B",
+              "to": "A",
+              "kind": "rw",
+              "key": "x",
+              "fromOp": null,
+              "toOp": null,
+              "fromVersion": "list-read-5",
+              "toVersion": "a",
+              "reason": "The complete list read omits this committed append identity"
+            },
+            "sources": [
+              {
+                "readSeq": 5,
+                "appendSeq": 6,
+                "itemId": "a"
+              }
+            ]
+          }
+        ],
+        "minimality": "simple cycle for the requested category; no shortest claim",
+        "sourceScope": "explicit complete list observations and unique append identities; not SQL authenticity"
+      },
+      "states": 1,
+      "edgeChecks": 2,
+      "definition": "a WW/WR/item-RW/RT cycle containing item RW; ordinary G2-item is included"
+    }
+  },
+  "models": {
+    "adya-pl-1-v1": {
+      "definition": "adya-pl-1-v1",
+      "status": "inconclusive",
+      "graphStatus": "inconclusive",
+      "requiredRules": [
+        "G0"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "not-required-by-this-profile",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [],
+      "incompleteRules": [
+        "G0"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    },
+    "adya-pl-2-v1": {
+      "definition": "adya-pl-2-v1",
+      "status": "inconclusive",
+      "graphStatus": "inconclusive",
+      "requiredRules": [
+        "G0",
+        "G1a",
+        "G1b",
+        "G1c"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "not-required-by-this-profile",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [],
+      "incompleteRules": [
+        "G0",
+        "G1c"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    },
+    "adya-pl-2.99-v1": {
+      "definition": "adya-pl-2.99-v1",
+      "status": "refuted",
+      "graphStatus": "refuted",
+      "requiredRules": [
+        "G0",
+        "G1a",
+        "G1b",
+        "G1c",
+        "G2-item"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "not-required-by-this-profile",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [
+        "G2-item"
+      ],
+      "incompleteRules": [
+        "G0",
+        "G1c"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    },
+    "elle-generalized-si-v1": {
+      "definition": "elle-generalized-si-v1",
+      "status": "inconclusive",
+      "graphStatus": "inconclusive",
+      "requiredRules": [
+        "INT",
+        "G0",
+        "G1a",
+        "G1b",
+        "G1c",
+        "G-nonadjacent"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "not-required-by-this-profile",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [],
+      "incompleteRules": [
+        "G0",
+        "G1c",
+        "G-nonadjacent"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    },
+    "adya-pl-3-v1": {
+      "definition": "adya-pl-3-v1",
+      "status": "refuted",
+      "graphStatus": "refuted",
+      "requiredRules": [
+        "G0",
+        "G1a",
+        "G1b",
+        "G1c",
+        "G2-item"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "satisfied",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [
+        "G2-item"
+      ],
+      "incompleteRules": [
+        "G0",
+        "G1c"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    },
+    "strict-pl-ss-v1": {
+      "definition": "strict-pl-ss-v1",
+      "status": "refuted",
+      "graphStatus": "refuted",
+      "requiredRules": [
+        "G0",
+        "G1a",
+        "G1b",
+        "G1c",
+        "G2-item",
+        "SSG1c",
+        "SSG2-item"
+      ],
+      "internalValidity": {
+        "role": "applicability-precondition-for-operational-serial-checks",
+        "status": "satisfied",
+        "rule": "INT",
+        "evidence": null
+      },
+      "refutedBy": [
+        "G2-item",
+        "SSG2-item"
+      ],
+      "incompleteRules": [
+        "G0",
+        "G1c",
+        "SSG1c"
+      ],
+      "unsupportedRules": [],
+      "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification"
+    }
+  },
+  "impliedAnomalies": [
+    "G2-item",
+    "G2"
+  ],
+  "intervalEvidence": null,
+  "scope": "versioned register or the declared single-append list graph profile; model refutations and required checks are separate; source hashes do not authenticate the collector",
+  "execution": {
+    "classificationOptions": {
+      "models": [
+        "adya-pl-1-v1",
+        "adya-pl-2-v1",
+        "adya-pl-2.99-v1",
+        "elle-generalized-si-v1",
+        "adya-pl-3-v1",
+        "strict-pl-ss-v1"
+      ],
+      "maxStates": 100000,
+      "maxEdgeChecks": 1000000,
+      "normalizationOptions": {}
+    },
+    "limits": {
+      "registerTransactions": 128,
+      "registerOperations": 4096,
+      "listCommittedTransactions": 6,
+      "listOperations": 128,
+      "edges": 50000,
+      "statesPerRule": 100000,
+      "edgeChecksPerRule": 1000000
+    },
+    "versionOrderCompletion": false
+  }
+}

@@ -1,0 +1,236 @@
+{
+  "schema": 1,
+  "kind": "author-v026-G1b-repair-verification",
+  "status": "author-passed-independent-review-pending",
+  "baseCommit": "d18b711cf70b2531e371cf5f346c1eec42b09ed3",
+  "original42Tests": {
+    "unchanged": true,
+    "files": {
+      "src/classification_v3_wbtest.mbt": {
+        "sha256": "916d0953e4e2e25859ef0e13a7b1db93552245386faf193e74ed9cbf4fea18c6",
+        "unchangedFromD18": true
+      },
+      "src/classification_models_v3_wbtest.mbt": {
+        "sha256": "27f4429892105528e706b078d0dd085658112529e5ad20282c1b55442f60e119",
+        "unchangedFromD18": true
+      },
+      "src/classification_models_audit_v3_wbtest.mbt": {
+        "sha256": "36d814f478686dfcb9c72496ece4add832572fae99300ac5e344d2adcb37bb23",
+        "unchangedFromD18": true
+      }
+    }
+  },
+  "newTests": 10,
+  "strictJsCheckPassed": true,
+  "targetedTests": {
+    "total": 52,
+    "passed": 52,
+    "failed": 0
+  },
+  "firstCompilerFailure": "strict-check-first.log (reserved local parameter final); preserved original new source and changed only the parameter name to read_final",
+  "build": {
+    "version": "0.2.0",
+    "toolchain": {
+      "compiler": "v0.10.14+7d59c7ec9",
+      "moon": "moon 0.1.20260920"
+    },
+    "sourceSha256": "912d228d5bb62dd35ae8d9f3705a6968b7d93349dad5ea8303d025513c740f8e",
+    "coreSha256": "ab4ede9ac40313a139900e168636b81bf39e5865474080c3390def46733526ae",
+    "captureCoreSha256": "74ef83b93acdf3843913e309f5e788a6042f4682d6e4701ac0cf0068a6650a53"
+  },
+  "actualDatabaseExecution": false,
+  "formalPerformance": false,
+  "rawReplay": {
+    "kind": "author-post-fix-G1b-semantic-regression",
+    "passed": true,
+    "preservesIndependentExpectations": true,
+    "build": {
+      "version": "0.2.0",
+      "toolchain": {
+        "compiler": "v0.10.14+7d59c7ec9",
+        "moon": "moon 0.1.20260920"
+      },
+      "sourceSha256": "912d228d5bb62dd35ae8d9f3705a6968b7d93349dad5ea8303d025513c740f8e",
+      "coreSha256": "ab4ede9ac40313a139900e168636b81bf39e5865474080c3390def46733526ae",
+      "captureCoreSha256": "74ef83b93acdf3843913e309f5e788a6042f4682d6e4701ac0cf0068a6650a53"
+    },
+    "frozenPlanSha256": "bb5ea6faafdfb166778001e725bcefd6aea888a27d86c8906a769cd0c19ec5ee",
+    "semanticDecisionSha256": "825b60bd6ec19eea7e14b79f7308064976d0bb8ef7204be763bcb6f6f83d4098",
+    "actualDatabaseExecution": false,
+    "formalPerformance": false,
+    "results": [
+      {
+        "id": "interleaved-read-ends-other-final-append",
+        "expected": {
+          "g1b": "not-refuted",
+          "g1aRefuted": false,
+          "validityGap": false
+        },
+        "passed": true,
+        "sourceSha256": "ada02e309edb2ee7dee833f3df99e2a64ac12aecdba84cfa9752b30cd6e7d606",
+        "beforeSha256": "3bc175ad208036e29e610119aee63c2a7fa1c0ff9ee7405d4a3d0cb3bbd172c4",
+        "afterSha256": "8778e11001986274152d45074461e551f656851a6c0e45057503872bec8a46e9",
+        "selfVerified": true,
+        "g1a": "checked-compatible",
+        "g1b": "checked-compatible",
+        "int": "checked-compatible",
+        "validityGaps": 0,
+        "specificG1bLastItem": null,
+        "specificG1aSource": null
+      },
+      {
+        "id": "read-ends-own-append-not-external-intermediate",
+        "expected": {
+          "g1b": "not-refuted",
+          "g1aRefuted": false,
+          "validityGap": false
+        },
+        "passed": true,
+        "sourceSha256": "7d8f468e60a34b5ae23b5840bf743a65d1ce6d71e26e4c91af2a9ea594fa0b0b",
+        "beforeSha256": "b0c7dd2fdad47ff36e285651dfd898b475db3bd78db7357fc74c8dd3db246358",
+        "afterSha256": "70aa3449deccbb2c16c78cbf9bcd9f978592324381dc953b67b1200eef6ff782",
+        "selfVerified": true,
+        "g1a": "checked-compatible",
+        "g1b": "checked-compatible",
+        "int": "checked-compatible",
+        "validityGaps": 0,
+        "specificG1bLastItem": null,
+        "specificG1aSource": null
+      },
+      {
+        "id": "dirty-final-source-keeps-G1a-without-false-G1b",
+        "expected": {
+          "g1b": "not-refuted",
+          "g1aRefuted": true,
+          "validityGap": false
+        },
+        "passed": true,
+        "sourceSha256": "4f041bbd708598881e6445a313043440600f1be460a977510903d144fba00916",
+        "beforeSha256": "9dc7c31644a53b35a5027890e2f8fe4259f0de5b05cb37d868aa4be279f7353d",
+        "afterSha256": "dad3563c30352dd8bec9b37bb344ee02d7b15c2c8ba58c11e225cba6308b5c8b",
+        "selfVerified": true,
+        "g1a": "refuted",
+        "g1b": "unknown",
+        "int": "checked-compatible",
+        "validityGaps": 0,
+        "specificG1bLastItem": null,
+        "specificG1aSource": "c"
+      },
+      {
+        "id": "intermediate-last-append-positive-control",
+        "expected": {
+          "g1b": "refuted",
+          "g1aRefuted": false,
+          "validityGap": false
+        },
+        "passed": true,
+        "sourceSha256": "c3d28101babe2477e45184accfa7815784f1b1d9de106cb977eb5b885385a5e2",
+        "beforeSha256": "af08b1ce28b1b0e2ae5d57094b905af1e28a20f7230907f45dc3e1a20ff2ace4",
+        "afterSha256": "ddf4b57c21dfa4b8025b76e36f21b3397fd50e5870032f3206addce0015f9799",
+        "selfVerified": true,
+        "g1a": "checked-compatible",
+        "g1b": "refuted",
+        "int": "checked-compatible",
+        "validityGaps": 0,
+        "specificG1bLastItem": "a",
+        "specificG1aSource": null
+      },
+      {
+        "id": "interleaved-read-ends-writer-final-control",
+        "expected": {
+          "g1b": "not-refuted",
+          "g1aRefuted": false,
+          "validityGap": false
+        },
+        "passed": true,
+        "sourceSha256": "9147b861ce9c4908465d0516237f1e1121c03974ce3520848d25b947255165c5",
+        "beforeSha256": "e030d4157d9d01acc27d92adc628ba4fef93359cd253abaa36668a858711c2f1",
+        "afterSha256": "e030d4157d9d01acc27d92adc628ba4fef93359cd253abaa36668a858711c2f1",
+        "selfVerified": true,
+        "g1a": "checked-compatible",
+        "g1b": "checked-compatible",
+        "int": "checked-compatible",
+        "validityGaps": 0,
+        "specificG1bLastItem": null,
+        "specificG1aSource": null
+      },
+      {
+        "id": "list-external-commit-b",
+        "expected": {
+          "g1b": "unknown",
+          "g1aRefuted": false,
+          "validityGap": true
+        },
+        "passed": true,
+        "sourceSha256": "1289896845b7d9e06878ff48e9ac93e88f5355c2d6dbc2cdce9e0dbbecb01725",
+        "beforeSha256": "108b6199f01ce2c5599750047a9b03362359f6e517a98158ee07a0f21a5efa1f",
+        "afterSha256": "21ad2d80a378029294a19a5738ec2defd20f4bab66aee1605c82c117691a070c",
+        "selfVerified": true,
+        "g1a": "unknown",
+        "g1b": "unknown",
+        "int": "unknown",
+        "validityGaps": 1,
+        "specificG1bLastItem": null,
+        "specificG1aSource": null
+      },
+      {
+        "id": "list-external-commit-ba",
+        "expected": {
+          "g1b": "unknown",
+          "g1aRefuted": false,
+          "validityGap": true
+        },
+        "passed": true,
+        "sourceSha256": "bd6213c86ae9636fbfafbfb92a507f44d40025c2d296191710e38f8b5d3012e4",
+        "beforeSha256": "daca5ead96dd95c8bcade4ff32e8174666d8a8f3a95d3e8768f58dd32073570b",
+        "afterSha256": "2f4c3f2415dcef51ed6e2d7a59fdb7a0b3a3b0d8fbc065a311998611e80791d5",
+        "selfVerified": true,
+        "g1a": "unknown",
+        "g1b": "unknown",
+        "int": "unknown",
+        "validityGaps": 1,
+        "specificG1bLastItem": null,
+        "specificG1aSource": null
+      },
+      {
+        "id": "list-external-abort-b",
+        "expected": {
+          "g1b": "unknown",
+          "g1aRefuted": true,
+          "validityGap": true
+        },
+        "passed": true,
+        "sourceSha256": "cd0dbab0d3f0e39b6895f6fe08303dc424f2a2d67d83bbf80744436cc47f50a4",
+        "beforeSha256": "09f0513abd7e821e70432b699e9c17f821a5d36c69480e9ebec5f2052f0278d0",
+        "afterSha256": "b2a7b7fbe12b19c9705732901a375162c11bd917988bac73af52eae4ca1fa983",
+        "selfVerified": true,
+        "g1a": "refuted",
+        "g1b": "unknown",
+        "int": "unknown",
+        "validityGaps": 1,
+        "specificG1bLastItem": null,
+        "specificG1aSource": "b"
+      },
+      {
+        "id": "list-external-abort-ba",
+        "expected": {
+          "g1b": "unknown",
+          "g1aRefuted": true,
+          "validityGap": true
+        },
+        "passed": true,
+        "sourceSha256": "79514a0edaf8d13de6370c1dd9b02ec8703ecce1ada034c59fb8aa2768a0b834",
+        "beforeSha256": "0d59411f68eee64629fdb60d5cdb3f7bcfea09a6130eebeb744c3cea4df75547",
+        "afterSha256": "b589df263270d914edd3e9f839e0b84edd22269cf772949f0d33c8698cbea21e",
+        "selfVerified": true,
+        "g1a": "refuted",
+        "g1b": "unknown",
+        "int": "unknown",
+        "validityGaps": 1,
+        "specificG1bLastItem": null,
+        "specificG1aSource": "a"
+      }
+    ]
+  },
+  "semanticDecisionSha256": "825b60bd6ec19eea7e14b79f7308064976d0bb8ef7204be763bcb6f6f83d4098"
+}

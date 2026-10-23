@@ -15,6 +15,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
     }
   }
   for(const folder of ['cmd','src','scripts','integrations','experiments','fixtures',...(includeDist?['dist']:[])])visit(folder);
+  if(existsSync(resolve(root,'cmd/legacy/v025')))visit('cmd/legacy/v025',true);
   // The independent v3 audits execute these helpers and consume this fixed
   // historical collection. New run receipts stay outside these input paths.
   if(existsSync(resolve(root,'verification/v3/tools')))visit('verification/v3/tools');
@@ -29,6 +30,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   names.push('examples/execution-roundtrip.mjs');
   names.push('examples/orm-profile-roundtrip.mjs');
   names.push('examples/classification-roundtrip.mjs');
+  names.push('examples/classification-models-roundtrip.mjs');
   return Object.fromEntries(names.sort().map(name=>[name,
     createHash('sha256').update(readFileSync(resolve(root,name))).digest('hex')]));
 }
