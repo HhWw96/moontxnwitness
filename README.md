@@ -18,6 +18,8 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 
 ## 运行演示
 
+从源码克隆时，Windows 请启用 Git 长路径支持：`git -c core.longpaths=true clone https://github.com/HhWw96/moontxnwitness.git`。
+
 下载并解压 portable ZIP，需要 Node.js ≥20：
 
 ```powershell

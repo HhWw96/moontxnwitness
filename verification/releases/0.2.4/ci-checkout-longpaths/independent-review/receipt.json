@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "scope": "Independent read-only review of four-line Windows hosted-runner checkout configuration change",
+  "comparisonCommit": "d702c5f5ec03fc09b2231b00dadcb1b1e426e590",
+  "workflowRelativePath": ".github/workflows/ci.yml",
+  "passed": false,
+  "checks": {
+    "exactlyOneFourLineInsertion": true,
+    "onlyInsertionAgainstHeadNormalizedBytes": true,
+    "reconstructedOriginalRawShaMatchesReceipt": true,
+    "currentRawShaMatchesReceipt": true,
+    "beforeCheckout": true,
+    "windowsOnlyGuard": true,
+    "failedLogShaMatchesReceipt": true,
+    "filenameTooLongObservedInOriginalLog": true,
+    "checkoutFailureObservedInOriginalLog": false
+  },
+  "headObjectSha256": "927b30608f59076a81d7d3c191da498be8a65849faf5ce86aaa9f9aafd3ff2a2",
+  "originalRawReconstructedSha256": "1cc5710228700b35f97d29498e7c7a4ee28e4565684efb98452c125b234a032a",
+  "currentRawSha256": "d881ea759d738f2993e86c704bbb91fab98562efc090ee1383af6b21dfb83b89",
+  "firstFailureReceiptSha256": "e49684f2c8ab054443c768abbd659c15686f0d1ea68fa4b26833dd0430cfda2a",
+  "firstFailureRawLogSha256": "1d4a602eacdc77208c4a2a427ab7bef40b78e1a08be15dc9dc3391380fdccc79",
+  "firstFailureGzipSha256": "34a579614e012d9fe80c40a7e5af3a93e5710e2c13fb3f5585a59fdb9a714d2e",
+  "selectedOriginalFailureLines": [
+    "2026-10-23T13:18:29.4649681Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+    "2026-10-23T13:18:59.5431999Z ##[error]error: unable to create file verification/releases/0.2.4/durability-test-fix/controlled-race/candidate-suite/raw/source-group-7f98eaaf09b74e788ea85b845af45eca/test_append_after_close_invalidates_original_source-ef90774bd7194e479060d2bcbc41fd1b.jsonl.index.json: Filename too long",
+    "2026-10-23T13:18:59.5444431Z ##[error]error: unable to create file verification/releases/0.2.4/durability-test-fix/controlled-race/candidate-suite/raw/source-group-7f98eaaf09b74e788ea85b845af45eca/test_append_after_close_invalidates_original_source-ef90774bd7194e479060d2bcbc41fd1b.jsonl.invalidated.json: Filename too long",
+    "2026-10-23T13:18:59.5447982Z ##[error]error: unable to create file verification/releases/0.2.4/durability-test-fix/controlled-race/candidate-suite/raw/source-group-7f98eaaf09b74e788ea85b845af45eca/test_default_source_wire_matches_legacy_bytes-9a8c9caf4d424c46bae9724806e48fa1.jsonl.index.json: Filename too long",
+    "2026-10-23T13:18:59.5451325Z ##[error]error: unable to create file verification/releases/0.2.4/durability-test-fix/controlled-race/candidate-suite/raw/source-group-7f98eaaf09b74e788ea85b845af45eca/test_group_synchronization_is_not_per_record_fsync-8fb80f42026f429298b769712a3c7bde.jsonl.index.json: Filename too long",
+    "2026-10-23T13:18:59.5455584Z ##[error]error: unable to create file verification/releases/0.2.4/durability-test-fix/controlled-race/candidate-suite/raw/source-group-7f98eaaf09b74e788ea85b845af45eca/test_index_failure_cannot_acknowledge_durable_tail-f4894610fc74406981eaedc7e1d51f41.jsonl.failure.json: Filename too long",
+    "2026-10-23T13:18:59.5461460Z ##[error]error: unable to create file verification/releases/0.2.4/durability-test-fix/controlled-race/candidate-suite/raw/source-group-7f98eaaf09b74e788ea85b845af45eca/test_index_failure_cannot_acknowledge_durable_tail-f4894610fc74406981eaedc7e1d51f41.jsonl.index.json: Filename too long",
+    "2026-10-23T13:18:59.5467821Z ##[error]error: unable to create file verification/releases/0.2.4/durability-test-fix/controlled-race/candidate-suite/raw/source-group-7f98eaaf09b74e788ea85b845af45eca/test_index_failure_cannot_acknowledge_durable_tail-f4894610fc74406981eaedc7e1d51f41.jsonl.writer.lock: Filename too long"
+  ],
+  "reviewedEffect": "The conditional step sets Git core.longpaths in the Windows job before the pinned checkout action; it does not execute locally or alter product test expectations.",
+  "remainingVerification": "A new hosted Windows run is required; this review does not claim that it passed.",
+  "rootFilesModified": false,
+  "productTestsRerun": false,
+  "databaseExecuted": false,
+  "compilerExecuted": false,
+  "networkRead": false,
+  "reviewer": "independent child agent capture_plan_audit; scoped static review, not complete release acceptance"
+}
