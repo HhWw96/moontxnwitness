@@ -1,0 +1,135 @@
+{
+  "schema": 3,
+  "algorithm": "v3-lifecycle-1",
+  "status": "ready",
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "observations": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "x": "x0",
+        "y": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "T",
+      "connection": "C"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "commit_request",
+      "tx": "T"
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "commit_ok",
+      "tx": "T"
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "begin",
+      "tx": "U",
+      "connection": "C"
+    },
+    {
+      "seq": 6,
+      "time": 5,
+      "kind": "read",
+      "tx": "U",
+      "key": "x",
+      "version": "x0"
+    },
+    {
+      "seq": 7,
+      "time": 6,
+      "kind": "commit_request",
+      "tx": "U"
+    },
+    {
+      "seq": 8,
+      "time": 7,
+      "kind": "commit_ok",
+      "tx": "U"
+    }
+  ],
+  "effects": [],
+  "transactions": [
+    {
+      "id": "T",
+      "connection": "C",
+      "status": "committed",
+      "beginSeq": 2,
+      "endSeq": 4,
+      "events": [
+        2,
+        3,
+        4
+      ],
+      "finalWrites": []
+    },
+    {
+      "id": "U",
+      "connection": "C",
+      "status": "committed",
+      "beginSeq": 5,
+      "endSeq": 8,
+      "events": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "finalWrites": []
+    }
+  ],
+  "history": {
+    "schemaVersion": 1,
+    "model": "serializable",
+    "initial": {
+      "x": "x0",
+      "y": "y0"
+    },
+    "versionOrders": {
+      "x": [
+        "x0"
+      ],
+      "y": [
+        "y0"
+      ]
+    },
+    "transactions": [
+      {
+        "id": "T",
+        "status": "committed",
+        "ops": [],
+        "start": null,
+        "end": null
+      },
+      {
+        "id": "U",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "read",
+            "key": "x",
+            "version": "x0"
+          }
+        ],
+        "start": null,
+        "end": null
+      }
+    ]
+  }
+}

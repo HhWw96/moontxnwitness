@@ -6,6 +6,8 @@ import assert from 'node:assert/strict';
 import {verificationFingerprint} from './verification-fingerprint.mjs';
 import {writeVerifiedJson,writeImmutableEvidence} from './performance-evidence.mjs';
 import {tmpdir} from 'node:os';
+import {relativeEvidencePath} from './evidence-reference.mjs';
+await import('./evidence-reference-test.mjs');
 
 // Default tests cover the shipped JS runtime and both bundled Wasm runtimes.
 // --all also executes native tests, requiring a supported system C compiler.
@@ -174,8 +176,8 @@ mkdirSync(resolve(root, 'verification'), { recursive: true });
 receipt.captureCliChecks = capture.checks;
 receipt.experimentalPresenceCliChecks = presence.checks;
 receipt.experimentalOrmSourceChecks = ormSource;
-receipt.configuredOrmProfileHostTests = ormProfileSDK;
-receipt.configuredOrmProfileDriverTests = userProfileUnits;
+receipt.configuredOrmProfileHostTests = {...ormProfileSDK, output: relativeEvidencePath(root, ormProfileSDK.output)};
+receipt.configuredOrmProfileDriverTests = {...userProfileUnits, receipt: relativeEvidencePath(root, userProfileUnits.receipt)};
 receipt.experimentalV3 = {foundationOnly:false,experimentalOnly:true,v011v012JointReleaseReady:false,independentReference:v3Oracle,acceptance:v3Acceptance,journal:{receipt:journalEvidence,...journalReceipt},independentStorageAudit:journalAudit,fullBusinessLifecycle:false,formalPerformanceMeasured:false};
 receipt.experimentalV3.appendList = {independentReference:listOracle,acceptance:listAcceptance,actualDatabaseExecuted:false,formalPerformanceMeasured:false};
 receipt.experimentalV3.relationSet = {independentReference:relationOracle,acceptance:relationAcceptance,actualDatabaseExecuted:false,formalPerformanceMeasured:false};
