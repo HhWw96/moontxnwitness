@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "passed": true,
+  "reviewer": "Independent integration review and execution",
+  "scope": "CI-only direct receipt-bound log preservation; not product or database acceptance",
+  "staticReview": [
+    "Exactly two always steps inserted; original staging/upload preserved byte-for-byte",
+    "Only selected current receipt.json direct same-directory log bindings followed",
+    "Index/receipt/log hashes and run context verified",
+    "Missing/tampered/unsafe/over-budget logs remain explicit failures",
+    "Existing receipts and original scripts/product sources unchanged"
+  ],
+  "executedTests": {
+    "kind": "ci-unit-log-retention-controller-tests",
+    "passed": true,
+    "testsRun": 32,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "actualDatabaseExecution": false,
+    "formalPerformanceMeasured": false
+  },
+  "sourceFiles": [
+    {
+      "path": ".github/stage_unit_logs.py",
+      "bytes": 12854,
+      "sha256": "446b5b44bd5d7bf7b78d84efa6793e9b8bae794cda73ebc2c614fa5f3e612d7d"
+    },
+    {
+      "path": ".github/test_stage_unit_logs.py",
+      "bytes": 13421,
+      "sha256": "0743414b067a590fa9a5b9b5b77811b2b48056461b5fd2a2dd708e45e3d2901a"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 3045,
+      "sha256": "1cc5710228700b35f97d29498e7c7a4ee28e4565684efb98452c125b234a032a"
+    }
+  ],
+  "verificationFingerprintUnchanged": true,
+  "testedFiles": 725,
+  "recursivePrivacyScan": {
+    "filesAndNestedMembers": 277,
+    "bytes": 17703693,
+    "passed": true,
+    "scope": "Known private home, GitHub token syntax and private key markers; not exhaustive"
+  }
+}

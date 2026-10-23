@@ -57,6 +57,12 @@ jobs:
       - name: Stage current-run evidence and exact current-version downloads
         if: always()
         run: python scripts/stage_ci_evidence.py
+      - name: Verify receipt-bound CI unit log retention controller
+        if: always()
+        run: python .github/test_stage_unit_logs.py
+      - name: Retain direct receipt-bound current unit logs
+        if: always()
+        run: python .github/stage_unit_logs.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

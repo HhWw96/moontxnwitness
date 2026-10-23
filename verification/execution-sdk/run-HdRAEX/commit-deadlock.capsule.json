@@ -1,0 +1,19 @@
+{
+  "format": "moontxnwitness-execution/v1",
+  "schemaVersion": 1,
+  "tool": "MoonTxnWitness",
+  "engineVersion": "0.2.4",
+  "diagnosticAlgorithm": "v3-observed-failures-1",
+  "budgets": {
+    "traceUtf8Bytes": 8388608,
+    "diagnosticUtf8Bytes": 33554432,
+    "capsuleUtf8Bytes": 33554432,
+    "normalizedJsonCodeUnits": 33554432,
+    "normalizationPolicy": "normalize_capture_v3_json/defaults",
+    "modelSearch": false
+  },
+  "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":3,\"time\":2},{\"kind\":\"rollback_ok\",\"tx\":\"A\",\"commitResponse\":{\"request\":3,\"sqlstate\":\"40P01\",\"diagnosticSqlstate\":\"40P01\",\"transactionStatus\":\"IDLE\"},\"seq\":4,\"time\":3}]}",
+  "traceSha256": "452395e69974a9b160ddfd78c53efd421f89dd913c4e21f163d015b0f34b0a57",
+  "diagnosticText": "{\"schemaVersion\":3,\"algorithm\":\"v3-observed-failures-1\",\"valid\":true,\"status\":\"observations\",\"scope\":\"Recorded execution failures; not an isolation-level conclusion\",\"modelViolationClaim\":false,\"databaseAuthenticityVerified\":false,\"certifiesFailureAbsence\":false,\"captureStatus\":\"ready\",\"captureCoverage\":{\"complete\":true,\"gaps\":[]},\"transactionOutcomes\":[{\"id\":\"A\",\"connection\":\"c\",\"status\":\"aborted\",\"beginSeq\":2,\"endSeq\":4,\"events\":[2,3,4],\"finalWrites\":[]}],\"observedFaultCount\":1,\"faults\":[{\"seq\":4,\"tx\":\"A\",\"statement\":null,\"request\":3,\"kind\":\"deadlock\",\"sqlstate\":\"40P01\",\"driverClass\":null,\"origin\":\"rollback_ok.commitResponse\"}]}",
+  "diagnosticSha256": "7102516637c50a182f33ec1e5991115bf38949849515447a909db754af7de344"
+}

@@ -1,0 +1,109 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-55680b31a51e4ca39aaa6f5757a76a54",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 63000,
+      "initial": {
+        "[\"mtw_provenance_dislock_20805b11ad0d.unread_returning\",\"text\",\"cronjob-lock:lease:importer\"]": "b1ba003c-f30b-40b4-b3cc-7b13d4968884",
+        "[\"mtw_provenance_dislock_20805b11ad0d.unread_returning\",\"text\",\"cronjob-lock:lease:synchronizer\"]": "8dadfc42-2a38-48d0-b0ca-b3b3f1603caa"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 375000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "execute-request",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_20805b11ad0d\".\"unread_returning\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at;\n        ",
+      "parameters": [
+        60,
+        "cronjob-lock:lease:importer",
+        "mtw-dislock:1001"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 391000,
+      "phase": "execute-ack",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_20805b11ad0d\".\"unread_returning\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at,OLD.\"mtwp_18d1c8f4640e5a21_version\"::text,NEW.\"mtwp_18d1c8f4640e5a21_version\"::text;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 407000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-23 20:47:13.272146+08:00"
+          },
+          "b1ba003c-f30b-40b4-b3cc-7b13d4968884",
+          "031e513e-cbdb-4018-8922-7b8009263103"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "op",
+      "time": 407000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_20805b11ad0d.unread_returning\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "b1ba003c-f30b-40b4-b3cc-7b13d4968884"
+      }
+    },
+    {
+      "seq": 7,
+      "kind": "op",
+      "time": 407000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_dislock_20805b11ad0d.unread_returning\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "031e513e-cbdb-4018-8922-7b8009263103"
+      }
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 407000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 9,
+      "kind": "end",
+      "time": 407000,
+      "tx": "tx-1",
+      "status": "committed"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "unconsumed_result",
+      "message": "Business RETURNING rows were not consumed before another operation or transaction end."
+    }
+  ]
+}

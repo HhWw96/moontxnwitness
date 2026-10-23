@@ -1,0 +1,66 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-510eed6c5a564584af9ae30e050cf838",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 78000,
+      "initial": {
+        "[\"mtw_provenance_profile_7211e141dee2.items_unconsumed\",\"text\",\"a\"]": "fe1f7955-2568-4d4f-bf81-af5cbfc8b8c7",
+        "[\"mtw_provenance_profile_7211e141dee2.items_unconsumed\",\"text\",\"b\"]": "c3f9be29-ee3c-4be4-9287-79d3d2b958b7"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 172000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 172000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_profile_7211e141dee2\".\"items_unconsumed\" WHERE \"id\"=%s",
+      "parameters": [
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 172000,
+      "phase": "execute-ack",
+      "sql": "SELECT \"value\",\"mtwp_6e50d22f5d6410d0_version\"::text FROM \"mtw_provenance_profile_7211e141dee2\".\"items_unconsumed\" WHERE \"id\"=%s",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 172000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "end",
+      "time": 172000,
+      "tx": "tx-1",
+      "status": "committed"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "unconsumed_result",
+      "message": "A mapped point-read result was not fully fetched before another operation or transaction end."
+    }
+  ]
+}
