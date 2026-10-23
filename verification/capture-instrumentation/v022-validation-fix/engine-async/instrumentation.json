@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "format": "moontxnwitness-instrumentation/v1",
+  "diagnosticOnly": true,
+  "completeAnalysisCoverage": false,
+  "actualDatabaseExecution": false,
+  "lifecycle": {
+    "sealed": true,
+    "records": 30,
+    "bytes": 3294,
+    "sha256": "4b236b44ab2a71fe037ca3044697d24c3b40f2d26b30a953f18005b8f53676fc"
+  },
+  "journal": {
+    "schema": 1,
+    "status": "incomplete",
+    "valid": true,
+    "complete": false,
+    "closed": true,
+    "sourceClosed": false,
+    "durableSeq": 32,
+    "eventCount": 32,
+    "segmentCount": 1,
+    "bytesVerified": 4390,
+    "indexSha256": "961bf49049c35d3e40cd993f6840859d3d1fbb97d3a6012d313ab6af7ae55a03",
+    "gaps": [
+      {
+        "code": "initialization_unproven",
+        "message": "The initial database snapshot has not been established as consistent."
+      },
+      {
+        "code": "diagnostic_instrumentation_only",
+        "message": "No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage."
+      },
+      {
+        "code": "orm_sql_unmapped",
+        "message": "Actual ORM DBAPI SQL has no independently validated fixed provenance profile."
+      },
+      {
+        "code": "pool_connection_invalidated",
+        "message": "An async transaction outcome is unresolved; later idle rollback does not resolve it."
+      },
+      {
+        "code": "transaction_outcome_unknown",
+        "message": "A connection disappeared while its transaction outcome was unresolved."
+      },
+      {
+        "code": "source_references_active",
+        "message": "Active transactions or unread results still refer to retained evidence."
+      },
+      {
+        "code": "source_unsealed",
+        "message": "Journal and explicit source window have not both been sealed."
+      }
+    ],
+    "actualDatabaseExecution": false
+  }
+}

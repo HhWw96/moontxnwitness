@@ -1,0 +1,394 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.2",
+  "algorithm": "v3-register-1",
+  "status": "violation",
+  "modelDefinition": {
+    "id": "register-serializable-v1",
+    "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+  },
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "normalized": {
+    "schema": 3,
+    "algorithm": "v3-lifecycle-1",
+    "status": "ready",
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "observations": [
+      {
+        "kind": "snapshot",
+        "consistent": true,
+        "initial": {
+          "pure-wr-k0": "pure-wr-v0-0",
+          "pure-wr-k1": "pure-wr-v1-0"
+        },
+        "seq": 1,
+        "time": 0
+      },
+      {
+        "kind": "begin",
+        "tx": "pure-wr-T0",
+        "connection": "pure-wr-T0",
+        "seq": 2,
+        "time": 1
+      },
+      {
+        "kind": "begin",
+        "tx": "pure-wr-T1",
+        "connection": "pure-wr-T1",
+        "seq": 3,
+        "time": 2
+      },
+      {
+        "kind": "write",
+        "tx": "pure-wr-T0",
+        "key": "pure-wr-k0",
+        "version": "pure-wr-v0-1",
+        "predecessor": "pure-wr-v0-0",
+        "seq": 4,
+        "time": 3
+      },
+      {
+        "kind": "write",
+        "tx": "pure-wr-T1",
+        "key": "pure-wr-k1",
+        "version": "pure-wr-v1-1",
+        "predecessor": "pure-wr-v1-0",
+        "seq": 5,
+        "time": 4
+      },
+      {
+        "kind": "read",
+        "tx": "pure-wr-T1",
+        "key": "pure-wr-k0",
+        "version": "pure-wr-v0-1",
+        "seq": 6,
+        "time": 5
+      },
+      {
+        "kind": "read",
+        "tx": "pure-wr-T0",
+        "key": "pure-wr-k1",
+        "version": "pure-wr-v1-1",
+        "seq": 7,
+        "time": 6
+      },
+      {
+        "kind": "commit_request",
+        "tx": "pure-wr-T0",
+        "seq": 8,
+        "time": 7
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "pure-wr-T0",
+        "seq": 9,
+        "time": 8
+      },
+      {
+        "kind": "commit_request",
+        "tx": "pure-wr-T1",
+        "seq": 10,
+        "time": 9
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "pure-wr-T1",
+        "seq": 11,
+        "time": 10
+      }
+    ],
+    "effects": [
+      {
+        "seq": 4,
+        "tx": "pure-wr-T0",
+        "key": "pure-wr-k0",
+        "version": "pure-wr-v0-1",
+        "predecessor": "pure-wr-v0-0",
+        "revertedBy": null
+      },
+      {
+        "seq": 5,
+        "tx": "pure-wr-T1",
+        "key": "pure-wr-k1",
+        "version": "pure-wr-v1-1",
+        "predecessor": "pure-wr-v1-0",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "pure-wr-T0",
+        "connection": "pure-wr-T0",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          4,
+          7,
+          8,
+          9
+        ],
+        "finalWrites": [
+          4
+        ]
+      },
+      {
+        "id": "pure-wr-T1",
+        "connection": "pure-wr-T1",
+        "status": "committed",
+        "beginSeq": 3,
+        "endSeq": 11,
+        "events": [
+          3,
+          5,
+          6,
+          10,
+          11
+        ],
+        "finalWrites": [
+          5
+        ]
+      }
+    ],
+    "history": {
+      "schemaVersion": 1,
+      "model": "serializable",
+      "initial": {
+        "pure-wr-k0": "pure-wr-v0-0",
+        "pure-wr-k1": "pure-wr-v1-0"
+      },
+      "versionOrders": {
+        "pure-wr-k0": [
+          "pure-wr-v0-0",
+          "pure-wr-v0-1"
+        ],
+        "pure-wr-k1": [
+          "pure-wr-v1-0",
+          "pure-wr-v1-1"
+        ]
+      },
+      "transactions": [
+        {
+          "id": "pure-wr-T0",
+          "status": "committed",
+          "ops": [
+            {
+              "type": "write",
+              "key": "pure-wr-k0",
+              "version": "pure-wr-v0-1"
+            },
+            {
+              "type": "read",
+              "key": "pure-wr-k1",
+              "version": "pure-wr-v1-1"
+            }
+          ],
+          "start": null,
+          "end": null
+        },
+        {
+          "id": "pure-wr-T1",
+          "status": "committed",
+          "ops": [
+            {
+              "type": "write",
+              "key": "pure-wr-k1",
+              "version": "pure-wr-v1-1"
+            },
+            {
+              "type": "read",
+              "key": "pure-wr-k0",
+              "version": "pure-wr-v0-1"
+            }
+          ],
+          "start": null,
+          "end": null
+        }
+      ]
+    }
+  },
+  "evidence": {
+    "schemaVersion": 2,
+    "tool": "MoonTxnWitness",
+    "version": "0.2.2",
+    "status": "violation",
+    "model": "serializable",
+    "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+    "complete": true,
+    "stats": {
+      "transactions": 2,
+      "committed": 2,
+      "operations": 4,
+      "dependencies": 2
+    },
+    "findings": [
+      {
+        "code": "dependency_cycle",
+        "severity": "violation",
+        "message": "The dependency cycle prevents any serial order satisfying these observations and constraints",
+        "transactions": [
+          "pure-wr-T0",
+          "pure-wr-T1"
+        ],
+        "key": null,
+        "ops": []
+      }
+    ],
+    "edges": [
+      {
+        "from": "pure-wr-T1",
+        "to": "pure-wr-T0",
+        "kind": "wr",
+        "key": "pure-wr-k1",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "pure-wr-v1-1",
+        "toVersion": "pure-wr-v1-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      },
+      {
+        "from": "pure-wr-T0",
+        "to": "pure-wr-T1",
+        "kind": "wr",
+        "key": "pure-wr-k0",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "pure-wr-v0-1",
+        "toVersion": "pure-wr-v0-1",
+        "reason": "The reader observes the unique final version written by the source transaction."
+      }
+    ],
+    "witness": {
+      "kind": "dependency_cycle",
+      "transactions": [
+        "pure-wr-T0",
+        "pure-wr-T1",
+        "pure-wr-T0"
+      ],
+      "edges": [
+        {
+          "from": "pure-wr-T0",
+          "to": "pure-wr-T1",
+          "kind": "wr",
+          "key": "pure-wr-k0",
+          "fromOp": 0,
+          "toOp": 1,
+          "fromVersion": "pure-wr-v0-1",
+          "toVersion": "pure-wr-v0-1",
+          "reason": "The reader observes the unique final version written by the source transaction."
+        },
+        {
+          "from": "pure-wr-T1",
+          "to": "pure-wr-T0",
+          "kind": "wr",
+          "key": "pure-wr-k1",
+          "fromOp": 0,
+          "toOp": 1,
+          "fromVersion": "pure-wr-v1-1",
+          "toVersion": "pure-wr-v1-1",
+          "reason": "The reader observes the unique final version written by the source transaction."
+        }
+      ],
+      "minimality": "shortest directed cycle in the constructed graph"
+    },
+    "serialOrder": [],
+    "versionOrders": {
+      "pure-wr-k0": [
+        "pure-wr-v0-0",
+        "pure-wr-v0-1"
+      ],
+      "pure-wr-k1": [
+        "pure-wr-v1-0",
+        "pure-wr-v1-1"
+      ]
+    },
+    "versionOrderSources": {
+      "pure-wr-k0": "asserted",
+      "pure-wr-k1": "asserted"
+    },
+    "graph": {
+      "analyzed": true,
+      "components": 1,
+      "cyclicComponents": 1,
+      "cyclicTransactions": 2,
+      "bfsRoots": 1,
+      "edgeBudgetExceeded": false
+    },
+    "coverage": [
+      {
+        "key": "pure-wr-k0",
+        "committedReads": 1,
+        "committedFinalWrites": 1,
+        "unresolvedReads": 0,
+        "versionOrderSource": "asserted",
+        "sourceLabel": "采集声明的版本链"
+      },
+      {
+        "key": "pure-wr-k1",
+        "committedReads": 1,
+        "committedFinalWrites": 1,
+        "unresolvedReads": 0,
+        "versionOrderSource": "asserted",
+        "sourceLabel": "采集声明的版本链"
+      }
+    ],
+    "nextSteps": [
+      "保留原始日志，使用 shrink 缩减反例，并用 capsule 保存可复现证据。"
+    ],
+    "search": {
+      "status": "not-needed",
+      "reason": "No bounded completion search was required."
+    },
+    "algorithm": "bounded-register-v2.1",
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "metrics": {
+      "attempts": 0,
+      "operationChecks": 0,
+      "cacheHits": 0,
+      "cachedStates": 0,
+      "blockers": []
+    }
+  },
+  "execution": {
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "metrics": {
+      "attempts": 0,
+      "operationChecks": 0,
+      "cacheHits": 0,
+      "cachedStates": 0,
+      "blockers": []
+    }
+  }
+}

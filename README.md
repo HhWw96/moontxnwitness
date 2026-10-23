@@ -1,18 +1,20 @@
 # MoonTxnWitness
 
+自动诊断采集：使用 [`instrument_engine`／局部 psycopg 工厂](docs/diagnostic-instrumentation.md) 在业务启动时接入，保留实际执行和结果；当前新入口输出执行诊断；完整来源自动映射仍在开发。
+
 **把事务读写日志变成可解释、可缩减、可回放的反例。** MoonBit 实现离线分析核心，提供 Mooncakes 库、JavaScript SDK、命令行和可选 PostgreSQL 采集器。
 
 English: An offline MoonBit transaction-history checker with shortest-cycle witnesses, bounded serial completion, counterexample reduction and replay.
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-## v0.2.0 支持范围
+## v0.2.2 支持范围
 
-本版整合有界寄存器分析、固定键普通表存在性与 CRUD、固定 ORM SQL 模板/缓存及局部来源诊断、追加列表、关系集合、已选中环解读和独立执行诊断包。前提、推荐入口、预算和限制集中在[稳定支持矩阵](docs/stable-scope.md)。
+本版新增指定 engine／连接工厂启动插桩，并保留有界寄存器分析、固定键普通表存在性与 CRUD、固定 ORM SQL 模板/缓存及局部来源诊断、追加列表、关系集合、已选中环解读和独立执行诊断包。前提、推荐入口、预算和限制集中在[稳定支持矩阵](docs/stable-scope.md)。
 
 模型与诊断各自保留未知提交、来源缺口和计算额度；包可重放不表示数据库真实性、无故障或完整应用修复。全部自动 SQL、完整 ORM、六模型分类及完整 MLflow/dislock 生产接入继续后续迭代。
 
-本版实际构建、回归、安装和公开下载以 `verification/releases/0.2.0/` 收据与[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。默认生产解析器沿用已发布17版完整实现；ASCII 复用候选首次正式对照的性能控制未通过，原试验保留并已回退。稳定18及本版未据该试验声明新性能或 RSS 成功。
+本版实际构建、回归、安装和公开下载以 `verification/releases/0.2.2/` 收据与[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。默认生产解析器沿用已发布17版完整实现；ASCII 复用和 v0.2.1 结构化优化候选未通过性能控制，原试验与失败结果保留并已回退。本版不据这些候选声明提速或 RSS 收益。
 
 ## 运行演示
 
@@ -49,7 +51,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.2.1
+moon add HhWw96/moontxnwitness@0.2.2
 ```
 
 ```javascript

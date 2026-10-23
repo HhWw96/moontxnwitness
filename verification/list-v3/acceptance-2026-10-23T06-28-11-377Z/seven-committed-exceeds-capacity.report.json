@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.2",
+  "algorithm": "v3-list-1",
+  "status": "inconclusive",
+  "modelDefinition": {
+    "id": "append-list-serializable-v1",
+    "scope": "committed transactions' full append/read/savepoint journals; aborted observations retained, no opacity or real-time claim"
+  },
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "normalized": {
+    "schema": 3,
+    "dataModel": "append-list-v1",
+    "algorithm": "v3-list-lifecycle-1",
+    "status": "ready",
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "observations": [
+      {
+        "seq": 1,
+        "time": 0,
+        "kind": "snapshot",
+        "initial": {
+          "x": [
+            {
+              "id": "x0",
+              "value": "same"
+            }
+          ],
+          "y": [
+            {
+              "id": "y0",
+              "value": "same"
+            }
+          ]
+        },
+        "consistent": true
+      },
+      {
+        "seq": 2,
+        "time": 1,
+        "kind": "begin",
+        "tx": "T0",
+        "connection": "C"
+      },
+      {
+        "seq": 3,
+        "time": 2,
+        "kind": "commit_request",
+        "tx": "T0"
+      },
+      {
+        "seq": 4,
+        "time": 3,
+        "kind": "commit_ok",
+        "tx": "T0"
+      },
+      {
+        "seq": 5,
+        "time": 4,
+        "kind": "begin",
+        "tx": "T1",
+        "connection": "C"
+      },
+      {
+        "seq": 6,
+        "time": 5,
+        "kind": "commit_request",
+        "tx": "T1"
+      },
+      {
+        "seq": 7,
+        "time": 6,
+        "kind": "commit_ok",
+        "tx": "T1"
+      },
+      {
+        "seq": 8,
+        "time": 7,
+        "kind": "begin",
+        "tx": "T2",
+        "connection": "C"
+      },
+      {
+        "seq": 9,
+        "time": 8,
+        "kind": "commit_request",
+        "tx": "T2"
+      },
+      {
+        "seq": 10,
+        "time": 9,
+        "kind": "commit_ok",
+        "tx": "T2"
+      },
+      {
+        "seq": 11,
+        "time": 10,
+        "kind": "begin",
+        "tx": "T3",
+        "connection": "C"
+      },
+      {
+        "seq": 12,
+        "time": 11,
+        "kind": "commit_request",
+        "tx": "T3"
+      },
+      {
+        "seq": 13,
+        "time": 12,
+        "kind": "commit_ok",
+        "tx": "T3"
+      },
+      {
+        "seq": 14,
+        "time": 13,
+        "kind": "begin",
+        "tx": "T4",
+        "connection": "C"
+      },
+      {
+        "seq": 15,
+        "time": 14,
+        "kind": "commit_request",
+        "tx": "T4"
+      },
+      {
+        "seq": 16,
+        "time": 15,
+        "kind": "commit_ok",
+        "tx": "T4"
+      },
+      {
+        "seq": 17,
+        "time": 16,
+        "kind": "begin",
+        "tx": "T5",
+        "connection": "C"
+      },
+      {
+        "seq": 18,
+        "time": 17,
+        "kind": "commit_request",
+        "tx": "T5"
+      },
+      {
+        "seq": 19,
+        "time": 18,
+        "kind": "commit_ok",
+        "tx": "T5"
+      },
+      {
+        "seq": 20,
+        "time": 19,
+        "kind": "begin",
+        "tx": "T6",
+        "connection": "C"
+      },
+      {
+        "seq": 21,
+        "time": 20,
+        "kind": "commit_request",
+        "tx": "T6"
+      },
+      {
+        "seq": 22,
+        "time": 21,
+        "kind": "commit_ok",
+        "tx": "T6"
+      }
+    ],
+    "effects": [],
+    "transactions": [
+      {
+        "id": "T0",
+        "connection": "C",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 4,
+        "events": [
+          2,
+          3,
+          4
+        ],
+        "finalWrites": []
+      },
+      {
+        "id": "T1",
+        "connection": "C",
+        "status": "committed",
+        "beginSeq": 5,
+        "endSeq": 7,
+        "events": [
+          5,
+          6,
+          7
+        ],
+        "finalWrites": []
+      },
+      {
+        "id": "T2",
+        "connection": "C",
+        "status": "committed",
+        "beginSeq": 8,
+        "endSeq": 10,
+        "events": [
+          8,
+          9,
+          10
+        ],
+        "finalWrites": []
+      },
+      {
+        "id": "T3",
+        "connection": "C",
+        "status": "committed",
+        "beginSeq": 11,
+        "endSeq": 13,
+        "events": [
+          11,
+          12,
+          13
+        ],
+        "finalWrites": []
+      },
+      {
+        "id": "T4",
+        "connection": "C",
+        "status": "committed",
+        "beginSeq": 14,
+        "endSeq": 16,
+        "events": [
+          14,
+          15,
+          16
+        ],
+        "finalWrites": []
+      },
+      {
+        "id": "T5",
+        "connection": "C",
+        "status": "committed",
+        "beginSeq": 17,
+        "endSeq": 19,
+        "events": [
+          17,
+          18,
+          19
+        ],
+        "finalWrites": []
+      },
+      {
+        "id": "T6",
+        "connection": "C",
+        "status": "committed",
+        "beginSeq": 20,
+        "endSeq": 22,
+        "events": [
+          20,
+          21,
+          22
+        ],
+        "finalWrites": []
+      }
+    ],
+    "history": null
+  },
+  "evidence": null,
+  "execution": {
+    "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
+    "analysisOptions": {
+      "maxStates": 100000,
+      "maxOperationChecks": 1000000
+    },
+    "effectiveLimits": {
+      "committedTransactions": 6,
+      "operations": 128,
+      "states": 100000,
+      "operationChecks": 1000000,
+      "inputUtf16Units": 8388608,
+      "events": 65536,
+      "identities": 10000,
+      "returnedItemReferences": 100000
+    },
+    "metrics": {
+      "states": 0,
+      "operationChecks": 0,
+      "complete": false,
+      "reason": "exact_capacity"
+    }
+  }
+}

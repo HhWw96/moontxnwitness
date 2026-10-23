@@ -356,7 +356,7 @@ const executionBudgetsV3 = () => ({
 // A future release may add only individually reviewed released engine/algorithm
 // pairs here. No wildcard version migration or rewriting of diagnostic fields.
 const executionEngineSupportedV3 = recorded => recorded === version() ||
-  ['0.1.7', '0.1.8', '0.2.0'].includes(recorded);
+  ['0.1.7', '0.1.8', '0.2.0', '0.2.1'].includes(recorded);
 const executionScopeV3 = () => ({
   diagnosticRecomputationOnly: true,
   actualDatabaseExecution: false,

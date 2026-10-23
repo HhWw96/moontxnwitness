@@ -153,7 +153,7 @@ priv struct WriteRef {
 
 ///|
 pub fn version() -> String {
-  "0.2.1"
+  "0.2.2"
 }
 
 ///|

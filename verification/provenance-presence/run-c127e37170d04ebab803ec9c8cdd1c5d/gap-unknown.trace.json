@@ -1,0 +1,137 @@
+{
+  "traceSchema": 2,
+  "clockDomain": "python-monotonic-e2ce0ed2424248dda9c5a21e01207cf3",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 79000,
+      "initial": {
+        "[\"mtw_provenance_presence_e442279ee65f.presence_gap_unknown\",\"text\",\"a\"]": "2b7d8f90-ff9d-4a0c-81ff-c9818b2906f8",
+        "[\"mtw_provenance_presence_e442279ee65f.presence_gap_unknown\",\"text\",\"b\"]": "0b3f3314-6a82-4da7-ad64-661d567b70b1",
+        "[\"mtw_provenance_presence_e442279ee65f.presence_gap_unknown\",\"text\",\"never\"]": "bf8168db-8b75-46df-8c8e-2f1c81bc96a1"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 141000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 141000,
+      "phase": "execute-request",
+      "sql": "SELECT 1",
+      "parameters": null,
+      "mapped": false,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 141000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 141000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          1
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "sql",
+      "time": 141000,
+      "phase": "execute-request",
+      "sql": "SAVEPOINT outside_profile",
+      "parameters": null,
+      "mapped": false,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 7,
+      "kind": "sql",
+      "time": 141000,
+      "phase": "execute-ack",
+      "affectedRows": -1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 157000,
+      "phase": "execute-request",
+      "sql": "RELEASE SAVEPOINT outside_profile",
+      "parameters": null,
+      "mapped": false,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 9,
+      "kind": "sql",
+      "time": 157000,
+      "phase": "execute-ack",
+      "affectedRows": -1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 10,
+      "kind": "sql",
+      "time": 157000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 11,
+      "kind": "end",
+      "time": 157000,
+      "tx": "tx-1",
+      "status": "committed"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "unsupported_sql",
+      "message": "An SQL statement has no explicit point-read/write mapping."
+    }
+  ],
+  "presenceFacts": {
+    "schema": 1,
+    "projection": "column-presence-register-v0.1.2-experimental",
+    "initial": [
+      {
+        "key": "[\"mtw_provenance_presence_e442279ee65f.presence_gap_unknown\",\"text\",\"a\"]",
+        "version": "2b7d8f90-ff9d-4a0c-81ff-c9818b2906f8",
+        "present": true
+      },
+      {
+        "key": "[\"mtw_provenance_presence_e442279ee65f.presence_gap_unknown\",\"text\",\"b\"]",
+        "version": "0b3f3314-6a82-4da7-ad64-661d567b70b1",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_presence_e442279ee65f.presence_gap_unknown\",\"text\",\"never\"]",
+        "version": "bf8168db-8b75-46df-8c8e-2f1c81bc96a1",
+        "present": false
+      }
+    ],
+    "reads": [],
+    "writes": []
+  }
+}

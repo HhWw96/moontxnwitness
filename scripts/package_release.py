@@ -209,6 +209,13 @@ for kind in ("portable", "source"):
         assert all(item['valid'] and item['engineVersion'] == '0.1.7' for item in previous_execution['cases'])
         checks.append(kind + ' actual-v017 execution-capsule compatibility')
 
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 2):
+        original21 = json.loads(run([NODE, 'scripts/v021-compatibility-test.mjs'], consumer))
+        assert original21['passed'] and original21['runtimeVersion'] == VERSION
+        assert original21['producerEngineVersion'] == '0.2.1' and original21['actualPublishedProducer']
+        assert original21['capsules'] == 8 and original21['checks'] >= 100
+        checks.append(kind + ' actual-public-v021 model, execution and invalid-diagnostic capsule compatibility')
+
     if tuple(map(int, VERSION.split('.'))) >= (0, 2, 1):
         for script, expected_capsules, expected_checks in (
                 ('v020-compatibility-test.mjs', 6, 59),
@@ -292,6 +299,27 @@ for kind in ("portable", "source"):
             assert json.loads(json.loads((consumer / capsule).read_text(encoding='utf8'))['historyText']) == original_history
             assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay', capsule], consumer))['valid']
         checks.append(kind + ' actual ordinary-table CRUD, negative-read and lock-wait capsules')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 2):
+        instrumentation_only = work / (kind + '-instrumentation-only')
+        standalone_capture = instrumentation_only / 'moontxnwitness_capture'
+        standalone_capture.mkdir(parents=True, exist_ok=False)
+        for module in (consumer / 'integrations/python/moontxnwitness_capture').glob('*.py'):
+            if not module.name.startswith('test_'):
+                shutil.copyfile(module, standalone_capture / module.name)
+        diagnostic = json.loads(run([sys.executable, '-I', '-S', '-B', '-c',
+            'import sys,json;from pathlib import Path;sys.path.insert(0,sys.argv[1]);'
+            'from moontxnwitness_capture.instrumentation import instrument_psycopg;'
+            'base=Path(sys.argv[1]);observer,connect=instrument_psycopg(lambda:None,base/"capture");'
+            'observer.close();receipt=observer.export_diagnostic(base/"trace.json");'
+            'trace=json.loads((base/"trace.json").read_text(encoding="utf8"));'
+            'assert receipt["complete"] is False and receipt["diagnostic"] is True;'
+            'assert any(g["code"]=="diagnostic_instrumentation_only" for g in trace["gaps"]);'
+            'assert not any(e["kind"] in ("read","write","condition") for e in trace["events"]);'
+            'assert "sqlalchemy" not in sys.modules and "psycopg" not in sys.modules;'
+            'print(json.dumps({"passed":True,"complete":False,"optionalDependenciesImported":False}))',
+            str(instrumentation_only)], instrumentation_only))
+        assert diagnostic == {'passed': True, 'complete': False, 'optionalDependenciesImported': False}
+        checks.append(kind + ' standalone automatic instrumentation without optional dependencies and with explicit diagnostic gaps')
     for filename, status, exit_code in fixtures:
         report = json.loads(run([NODE, "dist/moontxnwitness.mjs", "check", "examples/" + filename + ".json", "--format", "json"], consumer, exit_code))
         assert report["status"] == status

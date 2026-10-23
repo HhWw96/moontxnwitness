@@ -80,6 +80,21 @@ def validate_scoped_acceptance(acceptance, manifest):
         for kind in ('source', 'portable'):
             assert kind + ' actual-public-v020 model, execution and invalid-diagnostic capsule compatibility' in package['checks']
             assert kind + ' pinned public20 performance baseline and full common-input closure' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 2):
+        original21 = summary['publicV021CompatibilityTests']
+        assert original21['passed'] and original21['runtimeVersion'] == VERSION
+        assert original21['actualPublishedProducer'] and original21['producerEngineVersion'] == '0.2.1'
+        assert original21['capsules'] == 8 and original21['checks'] >= 100
+        for kind in ('source', 'portable'):
+            assert kind + ' actual-public-v021 model, execution and invalid-diagnostic capsule compatibility' in package['checks']
+        argument_validation = summary['instrumentationArgumentResourceTests']
+        assert argument_validation['passed'] and argument_validation['tests'] == 4
+        assert argument_validation['failures'] == argument_validation['errors'] == 0
+        instrumentation = summary['instrumentationAdapterUnitTests']
+        assert instrumentation['passed'] and instrumentation['tests'] >= 38
+        assert instrumentation['failures'] == instrumentation['errors'] == instrumentation['skipped'] == 0
+        for kind in ('source', 'portable'):
+            assert kind + ' standalone automatic instrumentation without optional dependencies and with explicit diagnostic gaps' in package['checks']
     tested = json.loads(run(['node', '--input-type=module', '-e',
         "import {verificationFingerprint} from './scripts/verification-fingerprint.mjs'; console.log(JSON.stringify(verificationFingerprint(process.cwd())));" ]))
     assert tested == summary['testedFileSha256'], 'Current executable files differ from tested release'

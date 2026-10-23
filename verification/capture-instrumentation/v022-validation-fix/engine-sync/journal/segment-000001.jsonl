@@ -1,0 +1,32 @@
+{"consistent":false,"initial":{},"kind":"snapshot","seq":1,"time":15000000}
+{"connection":"connection-572d8e7abd664ba2aec5990668c8a832","kind":"begin","seq":2,"time":203000000,"tx":"transaction-e78a53b6968e4102a9b78ad3c66b1407"}
+{"kind":"statement","parameters":{},"seq":3,"sql":"SELECT id,value FROM \"mtw_instrumentation_0878d358379645fa\".\"engine_sync\" ORDER BY id","time":203000000,"tx":"transaction-e78a53b6968e4102a9b78ad3c66b1407"}
+{"complete":false,"kind":"rows","rows":[[1,"one"]],"seq":4,"statement":3,"time":234000000,"tx":"transaction-e78a53b6968e4102a9b78ad3c66b1407"}
+{"complete":true,"kind":"rows","rows":[[2,"two"]],"seq":5,"statement":3,"time":234000000,"tx":"transaction-e78a53b6968e4102a9b78ad3c66b1407"}
+{"kind":"statement","seq":6,"sql":"INSERT INTO \"mtw_instrumentation_0878d358379645fa\".\"engine_sync\" VALUES(%s,%s)","time":234000000,"tx":"transaction-e78a53b6968e4102a9b78ad3c66b1407"}
+{"complete":true,"kind":"rows","rows":[],"seq":7,"statement":6,"time":234000000,"tx":"transaction-e78a53b6968e4102a9b78ad3c66b1407"}
+{"kind":"commit_request","seq":8,"time":234000000,"tx":"transaction-e78a53b6968e4102a9b78ad3c66b1407"}
+{"kind":"commit_ok","seq":9,"time":234000000,"tx":"transaction-e78a53b6968e4102a9b78ad3c66b1407"}
+{"connection":"connection-572d8e7abd664ba2aec5990668c8a832","kind":"begin","seq":10,"time":234000000,"tx":"transaction-ce84de8247be45f184d7bbb3cb86df18"}
+{"kind":"statement","parameters":{},"seq":11,"sql":"SAVEPOINT sa_savepoint_1","time":234000000,"tx":"transaction-ce84de8247be45f184d7bbb3cb86df18"}
+{"complete":true,"kind":"rows","rows":[],"seq":12,"statement":11,"time":234000000,"tx":"transaction-ce84de8247be45f184d7bbb3cb86df18"}
+{"instance":"savepoint-89c8304be98f4dbea149545ebc226a0a","kind":"savepoint","name":"sa_savepoint_1","seq":13,"time":234000000,"tx":"transaction-ce84de8247be45f184d7bbb3cb86df18"}
+{"kind":"statement","parameters":{},"seq":14,"sql":"INSERT INTO \"mtw_instrumentation_0878d358379645fa\".\"engine_sync\" VALUES(5,'reverted')","time":250000000,"tx":"transaction-ce84de8247be45f184d7bbb3cb86df18"}
+{"complete":true,"kind":"rows","rows":[],"seq":15,"statement":14,"time":250000000,"tx":"transaction-ce84de8247be45f184d7bbb3cb86df18"}
+{"kind":"statement","parameters":{},"seq":16,"sql":"ROLLBACK TO SAVEPOINT sa_savepoint_1","time":250000000,"tx":"transaction-ce84de8247be45f184d7bbb3cb86df18"}
+{"complete":true,"kind":"rows","rows":[],"seq":17,"statement":16,"time":250000000,"tx":"transaction-ce84de8247be45f184d7bbb3cb86df18"}
+{"instance":"savepoint-89c8304be98f4dbea149545ebc226a0a","kind":"rollback_to","seq":18,"time":250000000,"tx":"transaction-ce84de8247be45f184d7bbb3cb86df18"}
+{"kind":"commit_request","seq":19,"time":250000000,"tx":"transaction-ce84de8247be45f184d7bbb3cb86df18"}
+{"kind":"commit_ok","seq":20,"time":250000000,"tx":"transaction-ce84de8247be45f184d7bbb3cb86df18"}
+{"connection":"connection-572d8e7abd664ba2aec5990668c8a832","kind":"begin","seq":21,"time":250000000,"tx":"transaction-c1367c609f3f4e2482d7c98ad22bb2ba"}
+{"kind":"statement","parameters":{},"seq":22,"sql":"SELECT id FROM \"mtw_instrumentation_0878d358379645fa\".\"engine_sync\" WHERE id=5","time":250000000,"tx":"transaction-c1367c609f3f4e2482d7c98ad22bb2ba"}
+{"complete":true,"kind":"rows","rows":[],"seq":23,"statement":22,"time":250000000,"tx":"transaction-c1367c609f3f4e2482d7c98ad22bb2ba"}
+{"kind":"rollback_ok","seq":24,"time":250000000,"tx":"transaction-c1367c609f3f4e2482d7c98ad22bb2ba"}
+{"connection":"connection-572d8e7abd664ba2aec5990668c8a832","kind":"begin","seq":25,"time":250000000,"tx":"transaction-43ac0666c613443f8f3844363a00acd9"}
+{"kind":"statement","parameters":{},"seq":26,"sql":"SELECT 1","time":250000000,"tx":"transaction-43ac0666c613443f8f3844363a00acd9"}
+{"complete":true,"kind":"rows","rows":[[1]],"seq":27,"statement":26,"time":250000000,"tx":"transaction-43ac0666c613443f8f3844363a00acd9"}
+{"kind":"disconnect","seq":28,"time":250000000,"tx":"transaction-43ac0666c613443f8f3844363a00acd9"}
+{"connection":"connection-ae91999ccd6f473c86193ea9ad65cc97","kind":"begin","seq":29,"time":375000000,"tx":"transaction-b2a902e1a1ae4456bdfb5c7cab48f88e"}
+{"kind":"statement","parameters":{},"seq":30,"sql":"SELECT 2","time":375000000,"tx":"transaction-b2a902e1a1ae4456bdfb5c7cab48f88e"}
+{"complete":true,"kind":"rows","rows":[[2]],"seq":31,"statement":30,"time":375000000,"tx":"transaction-b2a902e1a1ae4456bdfb5c7cab48f88e"}
+{"kind":"rollback_ok","seq":32,"time":375000000,"tx":"transaction-b2a902e1a1ae4456bdfb5c7cab48f88e"}

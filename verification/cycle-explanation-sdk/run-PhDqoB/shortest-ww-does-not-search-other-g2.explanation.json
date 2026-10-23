@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "kind": "moontxnwitness-register-cycle-explanation/v1",
+  "algorithm": "verified-register-cycle-v1",
+  "traceTextSha256": "948a920203d4dce34457aacd38aca033b62b597cc9031f36eaaeb9b908dcae0f",
+  "reportTextSha256": "28758802128d8c3494bf4915be10500c2bf6fa5d6b6aa744e868ebb1e9d3bbf6",
+  "verifiedReport": true,
+  "sourceReportVersion": "0.2.2",
+  "sourceStatus": "violation",
+  "sourceCoverageComplete": true,
+  "status": "explained",
+  "reason": "verified-point-cycle",
+  "subtype": "G0",
+  "categoriesSearched": false,
+  "scope": {
+    "witnessOnly": true,
+    "searchesOtherCategoryCycles": false,
+    "acceptsIsolationModels": false,
+    "completeIsolationClassification": false,
+    "classifiesExecutionFailures": false,
+    "authenticatesCaptureSources": false
+  },
+  "witness": {
+    "kind": "dependency_cycle",
+    "transactions": [
+      "short-T0",
+      "short-T1",
+      "short-T0"
+    ],
+    "edges": [
+      {
+        "from": "short-T0",
+        "to": "short-T1",
+        "kind": "ww",
+        "key": "short-k0",
+        "fromOp": 0,
+        "toOp": 0,
+        "fromVersion": "short-v0-1",
+        "toVersion": "short-v0-1-2",
+        "reason": "The asserted per-key version order puts this write before the next write."
+      },
+      {
+        "from": "short-T1",
+        "to": "short-T0",
+        "kind": "ww",
+        "key": "short-k1",
+        "fromOp": 1,
+        "toOp": 1,
+        "fromVersion": "short-v1-1",
+        "toVersion": "short-v1-1-2",
+        "reason": "The asserted per-key version order puts this write before the next write."
+      }
+    ],
+    "minimality": "shortest directed cycle in the constructed graph"
+  },
+  "steps": [
+    {
+      "edgeIndex": 0,
+      "dependency": {
+        "from": "short-T0",
+        "to": "short-T1",
+        "kind": "ww",
+        "key": "short-k0",
+        "fromOp": 0,
+        "toOp": 0,
+        "fromVersion": "short-v0-1",
+        "toVersion": "short-v0-1-2",
+        "reason": "The asserted per-key version order puts this write before the next write."
+      },
+      "from": {
+        "transaction": "short-T0",
+        "projectedOperation": 0,
+        "operation": {
+          "type": "write",
+          "key": "short-k0",
+          "version": "short-v0-1"
+        },
+        "matchingOriginalSeqs": [
+          4
+        ]
+      },
+      "to": {
+        "transaction": "short-T1",
+        "projectedOperation": 0,
+        "operation": {
+          "type": "write",
+          "key": "short-k0",
+          "version": "short-v0-1-2"
+        },
+        "matchingOriginalSeqs": [
+          5
+        ]
+      },
+      "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+      "versionOrderSource": "asserted",
+      "versionOrder": [
+        "short-v0-0",
+        "short-v0-1",
+        "short-v0-1-2"
+      ]
+    },
+    {
+      "edgeIndex": 1,
+      "dependency": {
+        "from": "short-T1",
+        "to": "short-T0",
+        "kind": "ww",
+        "key": "short-k1",
+        "fromOp": 1,
+        "toOp": 1,
+        "fromVersion": "short-v1-1",
+        "toVersion": "short-v1-1-2",
+        "reason": "The asserted per-key version order puts this write before the next write."
+      },
+      "from": {
+        "transaction": "short-T1",
+        "projectedOperation": 1,
+        "operation": {
+          "type": "write",
+          "key": "short-k1",
+          "version": "short-v1-1"
+        },
+        "matchingOriginalSeqs": [
+          6
+        ]
+      },
+      "to": {
+        "transaction": "short-T0",
+        "projectedOperation": 1,
+        "operation": {
+          "type": "write",
+          "key": "short-k1",
+          "version": "short-v1-1-2"
+        },
+        "matchingOriginalSeqs": [
+          7
+        ]
+      },
+      "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+      "versionOrderSource": "asserted",
+      "versionOrder": [
+        "short-v1-0",
+        "short-v1-1",
+        "short-v1-1-2"
+      ]
+    }
+  ],
+  "rules": {
+    "repository": "jepsen-io/elle",
+    "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+    "file": "src/elle/txn.clj",
+    "definition": "cycle-explainer; ww/wr/item-rw subset only"
+  },
+  "pattern": {
+    "itemAntiDependencies": 0,
+    "adjacentAntiDependenciesIncludingWraparound": false
+  },
+  "categoryCoverage": "Only this existing witness; another anomaly may exist elsewhere in the history."
+}

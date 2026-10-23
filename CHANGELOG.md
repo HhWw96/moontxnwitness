@@ -1,5 +1,9 @@
-# 0.2.0 — 2026-10-22
+# 0.2.2 — 2026-10-23
 
+- Attach diagnostic collection to one SQLAlchemy engine or a local psycopg connection factory before business use; no global driver replacement or database migration.
+- Preserve actual fetch delivery, exceptions, native COMMIT/ROLLBACK responses, pool lifecycle and executemany observations with explicit incomplete-coverage gaps.
+- Add sync/async setup examples, original38 protocol checks, dependency-free fresh package checks and real PostgreSQL fixtures.
+- Verify eight authentic public v0.2.1 capsules alongside the original14 public v0.2.0 capsules. Retain explicitly supported released replay engines through0.2.1. Automatic source promotion, grouped source logs and performance targets continue in later versions.
 
 ## 0.2.1
 
@@ -8,6 +12,8 @@
 - Keep the stable v3 defaults on the public20 implementation. Two structured candidates failed tail-latency controls; their source, runtime, tests and failed receipts remain available in the linked performance evidence.
 
 See [performance evidence and withdrawal](docs/performance-v0.2.1-withdrawal.md).
+
+## 0.2.0 — 2026-10-22
 
 - Converge the declared bounded register, fixed-key presence, SQL-template/cache, list, relation, selected-cycle and execution-capsule interfaces into one support matrix and upgrade guide.
 - Retain existing budgets and checks; explicitly preserve v0.1.8 model capsules and v0.1.7/v0.1.8 execution capsules without rewriting observed data.

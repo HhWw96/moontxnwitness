@@ -1,0 +1,586 @@
+[
+  {
+    "id": "register-wr-chain",
+    "traceSha256": "eb8af867cea242d2742561cdffbdbd0bc059863c1e194e2f4a4ebe62020375ce",
+    "storedElleValid": true,
+    "storedElleAnomalies": [],
+    "currentCoreStatus": "consistent",
+    "derived": {
+      "schemaVersion": 1,
+      "kind": "moontxnwitness-register-cycle-explanation/v1",
+      "algorithm": "verified-register-cycle-v1",
+      "traceTextSha256": "eb8af867cea242d2742561cdffbdbd0bc059863c1e194e2f4a4ebe62020375ce",
+      "reportTextSha256": "8dc456345e8b174a1a74d2e3de30c6d27b9c742a40686e7e6bab543ff9a47c40",
+      "verifiedReport": true,
+      "sourceReportVersion": "0.2.2",
+      "sourceStatus": "consistent",
+      "sourceCoverageComplete": true,
+      "status": "not-applicable",
+      "reason": "no-cycle-witness",
+      "subtype": null,
+      "categoriesSearched": false,
+      "scope": {
+        "witnessOnly": true,
+        "searchesOtherCategoryCycles": false,
+        "acceptsIsolationModels": false,
+        "completeIsolationClassification": false,
+        "classifiesExecutionFailures": false,
+        "authenticatesCaptureSources": false
+      },
+      "witness": null,
+      "steps": [],
+      "rules": {
+        "repository": "jepsen-io/elle",
+        "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+        "file": "src/elle/txn.clj",
+        "definition": "cycle-explainer; ww/wr/item-rw subset only"
+      }
+    },
+    "knownEmptyGraphDifference": false,
+    "newElleExecution": false
+  },
+  {
+    "id": "register-initial-write-skew",
+    "traceSha256": "bc59ab043448ab95bef64a293e973a71a85d97a4be13ffa4728efc4594b964e7",
+    "storedElleValid": false,
+    "storedElleAnomalies": [
+      "G2-item"
+    ],
+    "currentCoreStatus": "violation",
+    "derived": {
+      "schemaVersion": 1,
+      "kind": "moontxnwitness-register-cycle-explanation/v1",
+      "algorithm": "verified-register-cycle-v1",
+      "traceTextSha256": "bc59ab043448ab95bef64a293e973a71a85d97a4be13ffa4728efc4594b964e7",
+      "reportTextSha256": "5d70254b740350344a418395a2ec4b3f1c008244da7a28d79a1491eae2f32eca",
+      "verifiedReport": true,
+      "sourceReportVersion": "0.2.2",
+      "sourceStatus": "violation",
+      "sourceCoverageComplete": true,
+      "status": "explained",
+      "reason": "verified-point-cycle",
+      "subtype": "G2-item",
+      "categoriesSearched": false,
+      "scope": {
+        "witnessOnly": true,
+        "searchesOtherCategoryCycles": false,
+        "acceptsIsolationModels": false,
+        "completeIsolationClassification": false,
+        "classifiesExecutionFailures": false,
+        "authenticatesCaptureSources": false
+      },
+      "witness": {
+        "kind": "dependency_cycle",
+        "transactions": [
+          "A",
+          "B",
+          "A"
+        ],
+        "edges": [
+          {
+            "from": "A",
+            "to": "B",
+            "kind": "rw",
+            "key": "y",
+            "fromOp": 0,
+            "toOp": 1,
+            "fromVersion": "y0",
+            "toVersion": "y1",
+            "reason": "The reader observes an earlier version and must precede this later committed write."
+          },
+          {
+            "from": "B",
+            "to": "A",
+            "kind": "rw",
+            "key": "x",
+            "fromOp": 0,
+            "toOp": 1,
+            "fromVersion": "x0",
+            "toVersion": "x1",
+            "reason": "The reader observes an earlier version and must precede this later committed write."
+          }
+        ],
+        "minimality": "shortest directed cycle in the constructed graph"
+      },
+      "steps": [
+        {
+          "edgeIndex": 0,
+          "dependency": {
+            "from": "A",
+            "to": "B",
+            "kind": "rw",
+            "key": "y",
+            "fromOp": 0,
+            "toOp": 1,
+            "fromVersion": "y0",
+            "toVersion": "y1",
+            "reason": "The reader observes an earlier version and must precede this later committed write."
+          },
+          "from": {
+            "transaction": "A",
+            "projectedOperation": 0,
+            "operation": {
+              "type": "read",
+              "key": "y",
+              "version": "y0"
+            },
+            "matchingOriginalSeqs": [
+              4
+            ]
+          },
+          "to": {
+            "transaction": "B",
+            "projectedOperation": 1,
+            "operation": {
+              "type": "write",
+              "key": "y",
+              "version": "y1"
+            },
+            "matchingOriginalSeqs": [
+              7
+            ]
+          },
+          "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+          "versionOrderSource": "asserted",
+          "versionOrder": [
+            "y0",
+            "y1"
+          ]
+        },
+        {
+          "edgeIndex": 1,
+          "dependency": {
+            "from": "B",
+            "to": "A",
+            "kind": "rw",
+            "key": "x",
+            "fromOp": 0,
+            "toOp": 1,
+            "fromVersion": "x0",
+            "toVersion": "x1",
+            "reason": "The reader observes an earlier version and must precede this later committed write."
+          },
+          "from": {
+            "transaction": "B",
+            "projectedOperation": 0,
+            "operation": {
+              "type": "read",
+              "key": "x",
+              "version": "x0"
+            },
+            "matchingOriginalSeqs": [
+              5
+            ]
+          },
+          "to": {
+            "transaction": "A",
+            "projectedOperation": 1,
+            "operation": {
+              "type": "write",
+              "key": "x",
+              "version": "x1"
+            },
+            "matchingOriginalSeqs": [
+              6
+            ]
+          },
+          "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+          "versionOrderSource": "asserted",
+          "versionOrder": [
+            "x0",
+            "x1"
+          ]
+        }
+      ],
+      "rules": {
+        "repository": "jepsen-io/elle",
+        "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+        "file": "src/elle/txn.clj",
+        "definition": "cycle-explainer; ww/wr/item-rw subset only"
+      },
+      "pattern": {
+        "itemAntiDependencies": 2,
+        "adjacentAntiDependenciesIncludingWraparound": true
+      },
+      "categoryCoverage": "Only this existing witness; another anomaly may exist elsewhere in the history."
+    },
+    "knownEmptyGraphDifference": false,
+    "newElleExecution": false
+  },
+  {
+    "id": "register-wr-cycle",
+    "traceSha256": "c8370470be61f986f4e709b32c7f60433597e008ae0ba46fa7259e1a289c14c0",
+    "storedElleValid": false,
+    "storedElleAnomalies": [
+      "G1c"
+    ],
+    "currentCoreStatus": "violation",
+    "derived": {
+      "schemaVersion": 1,
+      "kind": "moontxnwitness-register-cycle-explanation/v1",
+      "algorithm": "verified-register-cycle-v1",
+      "traceTextSha256": "c8370470be61f986f4e709b32c7f60433597e008ae0ba46fa7259e1a289c14c0",
+      "reportTextSha256": "0353915ee93cd952712c5db2c0535fa8f4769ea4bdb909b1d1e68ff17dac1009",
+      "verifiedReport": true,
+      "sourceReportVersion": "0.2.2",
+      "sourceStatus": "violation",
+      "sourceCoverageComplete": true,
+      "status": "explained",
+      "reason": "verified-point-cycle",
+      "subtype": "G1c",
+      "categoriesSearched": false,
+      "scope": {
+        "witnessOnly": true,
+        "searchesOtherCategoryCycles": false,
+        "acceptsIsolationModels": false,
+        "completeIsolationClassification": false,
+        "classifiesExecutionFailures": false,
+        "authenticatesCaptureSources": false
+      },
+      "witness": {
+        "kind": "dependency_cycle",
+        "transactions": [
+          "A",
+          "B",
+          "A"
+        ],
+        "edges": [
+          {
+            "from": "A",
+            "to": "B",
+            "kind": "wr",
+            "key": "x",
+            "fromOp": 0,
+            "toOp": 1,
+            "fromVersion": "x1",
+            "toVersion": "x1",
+            "reason": "The reader observes the unique final version written by the source transaction."
+          },
+          {
+            "from": "B",
+            "to": "A",
+            "kind": "wr",
+            "key": "y",
+            "fromOp": 0,
+            "toOp": 1,
+            "fromVersion": "y1",
+            "toVersion": "y1",
+            "reason": "The reader observes the unique final version written by the source transaction."
+          }
+        ],
+        "minimality": "shortest directed cycle in the constructed graph"
+      },
+      "steps": [
+        {
+          "edgeIndex": 0,
+          "dependency": {
+            "from": "A",
+            "to": "B",
+            "kind": "wr",
+            "key": "x",
+            "fromOp": 0,
+            "toOp": 1,
+            "fromVersion": "x1",
+            "toVersion": "x1",
+            "reason": "The reader observes the unique final version written by the source transaction."
+          },
+          "from": {
+            "transaction": "A",
+            "projectedOperation": 0,
+            "operation": {
+              "type": "write",
+              "key": "x",
+              "version": "x1"
+            },
+            "matchingOriginalSeqs": [
+              4
+            ]
+          },
+          "to": {
+            "transaction": "B",
+            "projectedOperation": 1,
+            "operation": {
+              "type": "read",
+              "key": "x",
+              "version": "x1"
+            },
+            "matchingOriginalSeqs": [
+              7
+            ]
+          },
+          "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+          "versionOrderSource": "asserted",
+          "versionOrder": [
+            "x0",
+            "x1"
+          ]
+        },
+        {
+          "edgeIndex": 1,
+          "dependency": {
+            "from": "B",
+            "to": "A",
+            "kind": "wr",
+            "key": "y",
+            "fromOp": 0,
+            "toOp": 1,
+            "fromVersion": "y1",
+            "toVersion": "y1",
+            "reason": "The reader observes the unique final version written by the source transaction."
+          },
+          "from": {
+            "transaction": "B",
+            "projectedOperation": 0,
+            "operation": {
+              "type": "write",
+              "key": "y",
+              "version": "y1"
+            },
+            "matchingOriginalSeqs": [
+              5
+            ]
+          },
+          "to": {
+            "transaction": "A",
+            "projectedOperation": 1,
+            "operation": {
+              "type": "read",
+              "key": "y",
+              "version": "y1"
+            },
+            "matchingOriginalSeqs": [
+              6
+            ]
+          },
+          "sourceReferenceKind": "all matching original point observations; no unique occurrence inferred",
+          "versionOrderSource": "asserted",
+          "versionOrder": [
+            "y0",
+            "y1"
+          ]
+        }
+      ],
+      "rules": {
+        "repository": "jepsen-io/elle",
+        "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+        "file": "src/elle/txn.clj",
+        "definition": "cycle-explainer; ww/wr/item-rw subset only"
+      },
+      "pattern": {
+        "itemAntiDependencies": 0,
+        "adjacentAntiDependenciesIncludingWraparound": false
+      },
+      "categoryCoverage": "Only this existing witness; another anomaly may exist elsewhere in the history."
+    },
+    "knownEmptyGraphDifference": false,
+    "newElleExecution": false
+  },
+  {
+    "id": "register-empty-dependency-graph",
+    "traceSha256": "353801c50fab05b762dd2c96f24a7bb0938c9ee14cbd7d470d9b906778109da7",
+    "storedElleValid": "unknown",
+    "storedElleAnomalies": [
+      "empty-transaction-graph"
+    ],
+    "currentCoreStatus": "consistent",
+    "derived": {
+      "schemaVersion": 1,
+      "kind": "moontxnwitness-register-cycle-explanation/v1",
+      "algorithm": "verified-register-cycle-v1",
+      "traceTextSha256": "353801c50fab05b762dd2c96f24a7bb0938c9ee14cbd7d470d9b906778109da7",
+      "reportTextSha256": "1aa2c5250c685b63976946becad9488e71348b4afb2594bdae0d0c5ff2bfde62",
+      "verifiedReport": true,
+      "sourceReportVersion": "0.2.2",
+      "sourceStatus": "consistent",
+      "sourceCoverageComplete": true,
+      "status": "not-applicable",
+      "reason": "no-cycle-witness",
+      "subtype": null,
+      "categoriesSearched": false,
+      "scope": {
+        "witnessOnly": true,
+        "searchesOtherCategoryCycles": false,
+        "acceptsIsolationModels": false,
+        "completeIsolationClassification": false,
+        "classifiesExecutionFailures": false,
+        "authenticatesCaptureSources": false
+      },
+      "witness": null,
+      "steps": [],
+      "rules": {
+        "repository": "jepsen-io/elle",
+        "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+        "file": "src/elle/txn.clj",
+        "definition": "cycle-explainer; ww/wr/item-rw subset only"
+      }
+    },
+    "knownEmptyGraphDifference": true,
+    "newElleExecution": false
+  },
+  {
+    "id": "list-wr-chain",
+    "traceSha256": "9c80570b21d3d4a4c4b2706c22bd0a02e64ca2264a67028a59296c8604ee4675",
+    "storedElleValid": true,
+    "storedElleAnomalies": [],
+    "currentCoreStatus": "consistent",
+    "derived": {
+      "schemaVersion": 1,
+      "kind": "moontxnwitness-register-cycle-explanation/v1",
+      "algorithm": "verified-register-cycle-v1",
+      "traceTextSha256": "9c80570b21d3d4a4c4b2706c22bd0a02e64ca2264a67028a59296c8604ee4675",
+      "reportTextSha256": "46efe24990cfc30754b71dfe3c1841dda4cc0c1de918c717ca6cc4f3d6a8dab5",
+      "verifiedReport": true,
+      "sourceReportVersion": "0.2.2",
+      "sourceStatus": "consistent",
+      "sourceCoverageComplete": true,
+      "status": "not-applicable",
+      "reason": "explicit-register-observations-required",
+      "subtype": null,
+      "categoriesSearched": false,
+      "scope": {
+        "witnessOnly": true,
+        "searchesOtherCategoryCycles": false,
+        "acceptsIsolationModels": false,
+        "completeIsolationClassification": false,
+        "classifiesExecutionFailures": false,
+        "authenticatesCaptureSources": false
+      },
+      "witness": null,
+      "steps": [],
+      "rules": {
+        "repository": "jepsen-io/elle",
+        "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+        "file": "src/elle/txn.clj",
+        "definition": "cycle-explainer; ww/wr/item-rw subset only"
+      }
+    },
+    "knownEmptyGraphDifference": false,
+    "newElleExecution": false
+  },
+  {
+    "id": "list-wr-cycle",
+    "traceSha256": "ed76f48ae210ab13495304a5df37289553a98943de24ee44cb9aaabe6ab41924",
+    "storedElleValid": false,
+    "storedElleAnomalies": [
+      "G1c"
+    ],
+    "currentCoreStatus": "violation",
+    "derived": {
+      "schemaVersion": 1,
+      "kind": "moontxnwitness-register-cycle-explanation/v1",
+      "algorithm": "verified-register-cycle-v1",
+      "traceTextSha256": "ed76f48ae210ab13495304a5df37289553a98943de24ee44cb9aaabe6ab41924",
+      "reportTextSha256": "63a26ff5957ad331b85f7eba8dcc0abc20672558b5e89e71f61573d741382237",
+      "verifiedReport": true,
+      "sourceReportVersion": "0.2.2",
+      "sourceStatus": "violation",
+      "sourceCoverageComplete": true,
+      "status": "not-applicable",
+      "reason": "explicit-register-observations-required",
+      "subtype": null,
+      "categoriesSearched": false,
+      "scope": {
+        "witnessOnly": true,
+        "searchesOtherCategoryCycles": false,
+        "acceptsIsolationModels": false,
+        "completeIsolationClassification": false,
+        "classifiesExecutionFailures": false,
+        "authenticatesCaptureSources": false
+      },
+      "witness": null,
+      "steps": [],
+      "rules": {
+        "repository": "jepsen-io/elle",
+        "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+        "file": "src/elle/txn.clj",
+        "definition": "cycle-explainer; ww/wr/item-rw subset only"
+      }
+    },
+    "knownEmptyGraphDifference": false,
+    "newElleExecution": false
+  },
+  {
+    "id": "list-duplicate-observed-identity",
+    "traceSha256": "9e3be2a31d72fa0fc96ae587123d3e4c11cae606ecbbbc4947470567311505b6",
+    "storedElleValid": false,
+    "storedElleAnomalies": [
+      "duplicate-elements"
+    ],
+    "currentCoreStatus": "violation",
+    "derived": {
+      "schemaVersion": 1,
+      "kind": "moontxnwitness-register-cycle-explanation/v1",
+      "algorithm": "verified-register-cycle-v1",
+      "traceTextSha256": "9e3be2a31d72fa0fc96ae587123d3e4c11cae606ecbbbc4947470567311505b6",
+      "reportTextSha256": "241449d69aa81dc190519c1adf56f5d769e4677628f01f7b0c60c188bd937737",
+      "verifiedReport": true,
+      "sourceReportVersion": "0.2.2",
+      "sourceStatus": "violation",
+      "sourceCoverageComplete": true,
+      "status": "not-applicable",
+      "reason": "explicit-register-observations-required",
+      "subtype": null,
+      "categoriesSearched": false,
+      "scope": {
+        "witnessOnly": true,
+        "searchesOtherCategoryCycles": false,
+        "acceptsIsolationModels": false,
+        "completeIsolationClassification": false,
+        "classifiesExecutionFailures": false,
+        "authenticatesCaptureSources": false
+      },
+      "witness": null,
+      "steps": [],
+      "rules": {
+        "repository": "jepsen-io/elle",
+        "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+        "file": "src/elle/txn.clj",
+        "definition": "cycle-explainer; ww/wr/item-rw subset only"
+      }
+    },
+    "knownEmptyGraphDifference": false,
+    "newElleExecution": false
+  },
+  {
+    "id": "list-empty-dependency-graph",
+    "traceSha256": "287c83ef8aaf60e274ecb4a182706790389af48fb8b3d49f8b1bcc8b99ff2354",
+    "storedElleValid": "unknown",
+    "storedElleAnomalies": [
+      "empty-transaction-graph"
+    ],
+    "currentCoreStatus": "consistent",
+    "derived": {
+      "schemaVersion": 1,
+      "kind": "moontxnwitness-register-cycle-explanation/v1",
+      "algorithm": "verified-register-cycle-v1",
+      "traceTextSha256": "287c83ef8aaf60e274ecb4a182706790389af48fb8b3d49f8b1bcc8b99ff2354",
+      "reportTextSha256": "8e85dffe77d61889882e2164dee3d371b931f1238f8bf9b8299d97082fcdb3d5",
+      "verifiedReport": true,
+      "sourceReportVersion": "0.2.2",
+      "sourceStatus": "consistent",
+      "sourceCoverageComplete": true,
+      "status": "not-applicable",
+      "reason": "explicit-register-observations-required",
+      "subtype": null,
+      "categoriesSearched": false,
+      "scope": {
+        "witnessOnly": true,
+        "searchesOtherCategoryCycles": false,
+        "acceptsIsolationModels": false,
+        "completeIsolationClassification": false,
+        "classifiesExecutionFailures": false,
+        "authenticatesCaptureSources": false
+      },
+      "witness": null,
+      "steps": [],
+      "rules": {
+        "repository": "jepsen-io/elle",
+        "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+        "file": "src/elle/txn.clj",
+        "definition": "cycle-explainer; ww/wr/item-rw subset only"
+      }
+    },
+    "knownEmptyGraphDifference": true,
+    "newElleExecution": false
+  }
+]

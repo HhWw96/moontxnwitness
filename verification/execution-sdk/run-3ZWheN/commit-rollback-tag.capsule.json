@@ -1,0 +1,19 @@
+{
+  "format": "moontxnwitness-execution/v1",
+  "schemaVersion": 1,
+  "tool": "MoonTxnWitness",
+  "engineVersion": "0.2.2",
+  "diagnosticAlgorithm": "v3-observed-failures-1",
+  "budgets": {
+    "traceUtf8Bytes": 8388608,
+    "diagnosticUtf8Bytes": 33554432,
+    "capsuleUtf8Bytes": 33554432,
+    "normalizedJsonCodeUnits": 33554432,
+    "normalizationPolicy": "normalize_capture_v3_json/defaults",
+    "modelSearch": false
+  },
+  "traceText": "{\"traceSchema\":3,\"clockDomain\":\"manual-execution-capsule-v1\",\"scope\":{\"exclusiveWriters\":true},\"gaps\":[],\"events\":[{\"kind\":\"snapshot\",\"initial\":{},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"c\",\"seq\":2,\"time\":1},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":3,\"time\":2},{\"kind\":\"rollback_ok\",\"tx\":\"A\",\"commitResponse\":{\"request\":3,\"commandTag\":\"ROLLBACK\"},\"seq\":4,\"time\":3}]}",
+  "traceSha256": "7d6c6d9c2fdb31013cdd87925576db4a252a18954d0c22f999b4a9099ffeb2fb",
+  "diagnosticText": "{\"schemaVersion\":3,\"algorithm\":\"v3-observed-failures-1\",\"valid\":true,\"status\":\"observations\",\"scope\":\"Recorded execution failures; not an isolation-level conclusion\",\"modelViolationClaim\":false,\"databaseAuthenticityVerified\":false,\"certifiesFailureAbsence\":false,\"captureStatus\":\"ready\",\"captureCoverage\":{\"complete\":true,\"gaps\":[]},\"transactionOutcomes\":[{\"id\":\"A\",\"connection\":\"c\",\"status\":\"aborted\",\"beginSeq\":2,\"endSeq\":4,\"events\":[2,3,4],\"finalWrites\":[]}],\"observedFaultCount\":1,\"faults\":[{\"seq\":4,\"tx\":\"A\",\"statement\":null,\"request\":3,\"kind\":\"commit_rolled_back\",\"sqlstate\":null,\"driverClass\":null,\"origin\":\"rollback_ok.commitResponse\"}]}",
+  "diagnosticSha256": "7aaac69395b0a3db49f8e46d4a364e18dca8d4093bad503f7e3495af9ad9348b"
+}

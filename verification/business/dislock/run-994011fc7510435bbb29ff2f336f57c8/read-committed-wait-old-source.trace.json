@@ -1,0 +1,259 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-35d5ef795f6c49789656666391224ab0",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 93000,
+      "initial": {
+        "[\"mtw_provenance_dislock_da02250ad860.rc_wait_source\",\"text\",\"cronjob-lock:lease:importer\"]": "c5b9ffb9-fde1-4921-b4ad-34d721210696",
+        "[\"mtw_provenance_dislock_da02250ad860.rc_wait_source\",\"text\",\"cronjob-lock:lease:synchronizer\"]": "96d98312-b94e-4dcd-95f2-a357d5359e8d"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 343000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-request",
+      "sql": "\n        SELECT expire_at, value\n        FROM \"mtw_provenance_dislock_da02250ad860\".\"rc_wait_source\"\n        WHERE key = %s;\n        ",
+      "parameters": [
+        "cronjob-lock:lease:importer"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "execute-ack",
+      "sql": "\n        SELECT expire_at, value,\"mtwp_799c2148400e2a0a_version\"::text\n        FROM \"mtw_provenance_dislock_da02250ad860\".\"rc_wait_source\"\n        WHERE key = %s;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-23 15:13:28.986362+08:00"
+          },
+          "mtw-dislock:1001",
+          "c5b9ffb9-fde1-4921-b4ad-34d721210696"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "op",
+      "time": 359000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_da02250ad860.rc_wait_source\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "c5b9ffb9-fde1-4921-b4ad-34d721210696"
+      }
+    },
+    {
+      "seq": 7,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 8,
+      "kind": "end",
+      "time": 359000,
+      "tx": "tx-1",
+      "status": "committed"
+    },
+    {
+      "seq": 9,
+      "kind": "begin",
+      "time": 359000,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 10,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "execute-request",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_da02250ad860\".\"rc_wait_source\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at;\n        ",
+      "parameters": [
+        180,
+        "cronjob-lock:lease:importer",
+        "mtw-dislock:1001"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 11,
+      "kind": "sql",
+      "time": 390000,
+      "phase": "execute-ack",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_da02250ad860\".\"rc_wait_source\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at,OLD.\"mtwp_799c2148400e2a0a_version\"::text,NEW.\"mtwp_799c2148400e2a0a_version\"::text;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 12,
+      "kind": "sql",
+      "time": 390000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-23 15:06:29.368706+08:00"
+          },
+          "c5b9ffb9-fde1-4921-b4ad-34d721210696",
+          "f73a1191-d115-4fba-87bf-d184e92ffc8f"
+        ]
+      ],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 13,
+      "kind": "op",
+      "time": 390000,
+      "tx": "tx-2",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_da02250ad860.rc_wait_source\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "c5b9ffb9-fde1-4921-b4ad-34d721210696"
+      }
+    },
+    {
+      "seq": 14,
+      "kind": "op",
+      "time": 390000,
+      "tx": "tx-2",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_dislock_da02250ad860.rc_wait_source\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "f73a1191-d115-4fba-87bf-d184e92ffc8f"
+      }
+    },
+    {
+      "seq": 15,
+      "kind": "begin",
+      "time": 406000,
+      "tx": "tx-3"
+    },
+    {
+      "seq": 16,
+      "kind": "sql",
+      "time": 406000,
+      "phase": "execute-request",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_da02250ad860\".\"rc_wait_source\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at;\n        ",
+      "parameters": [
+        240,
+        "cronjob-lock:lease:importer",
+        "mtw-dislock:1001"
+      ],
+      "mapped": true,
+      "tx": "tx-3"
+    },
+    {
+      "seq": 17,
+      "kind": "sql",
+      "time": 406000,
+      "phase": "commit-ack",
+      "tx": "tx-2"
+    },
+    {
+      "seq": 18,
+      "kind": "end",
+      "time": 406000,
+      "tx": "tx-2",
+      "status": "committed"
+    },
+    {
+      "seq": 19,
+      "kind": "sql",
+      "time": 437000,
+      "phase": "execute-ack",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_da02250ad860\".\"rc_wait_source\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at,OLD.\"mtwp_799c2148400e2a0a_version\"::text,NEW.\"mtwp_799c2148400e2a0a_version\"::text;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-3"
+    },
+    {
+      "seq": 20,
+      "kind": "sql",
+      "time": 437000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-23 15:07:29.404589+08:00"
+          },
+          "f73a1191-d115-4fba-87bf-d184e92ffc8f",
+          "3bcf4e78-2149-4a51-b99d-f55c9f549714"
+        ]
+      ],
+      "tx": "tx-3"
+    },
+    {
+      "seq": 21,
+      "kind": "op",
+      "time": 437000,
+      "tx": "tx-3",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_da02250ad860.rc_wait_source\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "f73a1191-d115-4fba-87bf-d184e92ffc8f"
+      }
+    },
+    {
+      "seq": 22,
+      "kind": "op",
+      "time": 437000,
+      "tx": "tx-3",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_dislock_da02250ad860.rc_wait_source\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "3bcf4e78-2149-4a51-b99d-f55c9f549714"
+      }
+    },
+    {
+      "seq": 23,
+      "kind": "sql",
+      "time": 437000,
+      "phase": "commit-ack",
+      "tx": "tx-3"
+    },
+    {
+      "seq": 24,
+      "kind": "end",
+      "time": 437000,
+      "tx": "tx-3",
+      "status": "committed"
+    }
+  ],
+  "gaps": []
+}
