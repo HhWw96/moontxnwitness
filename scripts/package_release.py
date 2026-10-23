@@ -209,6 +209,33 @@ for kind in ("portable", "source"):
         assert all(item['valid'] and item['engineVersion'] == '0.1.7' for item in previous_execution['cases'])
         checks.append(kind + ' actual-v017 execution-capsule compatibility')
 
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 1):
+        for script, expected_capsules, expected_checks in (
+                ('v020-compatibility-test.mjs', 6, 59),
+                ('v020-invalid-compatibility-test.mjs', 8, 96)):
+            original20 = json.loads(run([NODE, 'scripts/' + script], consumer))
+            assert original20['passed'] and original20['runtimeVersion'] == VERSION
+            assert original20['producerEngineVersion'] == '0.2.0' and original20['actualPublishedProducer']
+            assert original20['capsules'] == expected_capsules and original20['checks'] == expected_checks
+        checks.append(kind + ' actual-public-v020 model, execution and invalid-diagnostic capsule compatibility')
+        baseline_path = consumer / 'verification/baselines/0.2.0/manifest.json'
+        assert sha256(baseline_path) == '0b764ff214e1a5cf6732a7c783899c4bbfeec2dd13b7c0ecbeb0732757f68503'
+        baseline = json.loads(baseline_path.read_text(encoding='utf8'))
+        assert baseline['publicArchiveSha256'] == '92ffd79314841e09b7ba13209c7678d4626265d74c3c12dba2726089e9b490a3'
+        for name, expected in baseline['files'].items():
+            path = consumer / baseline['provider'] / name
+            assert path.is_file() and path.stat().st_size == expected['bytes'] and sha256(path) == expected['sha256']
+        assert sha256(consumer / baseline['anonymousDownloadReviewReceipt']) == baseline['anonymousDownloadReviewReceiptSha256']
+        control = consumer / 'verification/fixtures/v010-comparison/manifest.json'
+        assert sha256(control) == '208a86d4f19224b7bdea753e6380b677b52155bab557f734b2021f525f9056a6'
+        assert len(json.loads(control.read_text(encoding='utf8'))['cases']) == 20
+        if kind == 'source':
+            baseline_fixtures = json.loads(run([NODE, '--input-type=module', '-e',
+                "import{performanceFixturesV020}from'./scripts/performance-v020-fixtures.mjs';"
+                "console.log(JSON.stringify({cases:performanceFixturesV020(process.cwd()).length}));"], consumer))
+            assert baseline_fixtures['cases'] == 41
+        checks.append(kind + ' pinned public20 performance baseline and full common-input closure')
+
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 3):
         isolated = work / (kind + '-orm-only')
         copied = isolated / 'moontxnwitness_capture'

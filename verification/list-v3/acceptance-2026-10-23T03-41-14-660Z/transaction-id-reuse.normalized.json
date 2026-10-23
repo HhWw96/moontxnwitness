@@ -1,0 +1,80 @@
+{
+  "schema": 3,
+  "dataModel": "append-list-v1",
+  "algorithm": "v3-list-lifecycle-1",
+  "status": "invalid",
+  "coverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "invalid_capture_v3",
+        "message": "Failure(src/capture_v3.mbt:448:11-448:58@HhWw96/moontxnwitness FAILED: Transaction identities cannot be reused)"
+      }
+    ]
+  },
+  "observations": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "x": [
+          {
+            "id": "x0",
+            "value": "same"
+          }
+        ],
+        "y": [
+          {
+            "id": "y0",
+            "value": "same"
+          }
+        ]
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "T",
+      "connection": "C"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "commit_request",
+      "tx": "T"
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "commit_ok",
+      "tx": "T"
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "begin",
+      "tx": "T",
+      "connection": "C"
+    }
+  ],
+  "effects": [],
+  "transactions": [
+    {
+      "id": "T",
+      "connection": "C",
+      "status": "committed",
+      "beginSeq": 2,
+      "endSeq": 4,
+      "events": [
+        2,
+        3,
+        4
+      ],
+      "finalWrites": []
+    }
+  ],
+  "history": null
+}

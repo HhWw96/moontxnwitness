@@ -69,6 +69,17 @@ def validate_scoped_acceptance(acceptance, manifest):
         assert compatibility['producerEngineVersion'] == '0.1.7' and compatibility['capsuleCount'] == 2
         for kind in ('source', 'portable'):
             assert kind + ' actual-v017 execution-capsule compatibility' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 1):
+        for field, capsules, checks in (
+                ('publicV020CompatibilityTests', 6, 59),
+                ('publicV020InvalidCompatibilityTests', 8, 96)):
+            compatibility = summary[field]
+            assert compatibility['passed'] and compatibility['runtimeVersion'] == VERSION
+            assert compatibility['actualPublishedProducer'] and compatibility['producerEngineVersion'] == '0.2.0'
+            assert compatibility['capsules'] == capsules and compatibility['checks'] == checks
+        for kind in ('source', 'portable'):
+            assert kind + ' actual-public-v020 model, execution and invalid-diagnostic capsule compatibility' in package['checks']
+            assert kind + ' pinned public20 performance baseline and full common-input closure' in package['checks']
     tested = json.loads(run(['node', '--input-type=module', '-e',
         "import {verificationFingerprint} from './scripts/verification-fingerprint.mjs'; console.log(JSON.stringify(verificationFingerprint(process.cwd())));" ]))
     assert tested == summary['testedFileSha256'], 'Current executable files differ from tested release'

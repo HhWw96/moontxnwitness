@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.1",
+  "algorithm": "v3-list-1",
+  "status": "consistent",
+  "modelDefinition": {
+    "id": "append-list-serializable-v1",
+    "scope": "committed transactions' full append/read/savepoint journals; aborted observations retained, no opacity or real-time claim"
+  },
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "normalized": {
+    "schema": 3,
+    "dataModel": "append-list-v1",
+    "algorithm": "v3-list-lifecycle-1",
+    "status": "ready",
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "observations": [
+      {
+        "seq": 1,
+        "time": 0,
+        "kind": "snapshot",
+        "initial": {
+          "x": [],
+          "y": []
+        },
+        "consistent": true
+      },
+      {
+        "seq": 2,
+        "time": 1,
+        "kind": "begin",
+        "tx": "T",
+        "connection": "connection-T"
+      },
+      {
+        "seq": 3,
+        "time": 2,
+        "kind": "savepoint",
+        "tx": "T",
+        "name": "scope",
+        "instance": "s1"
+      },
+      {
+        "seq": 4,
+        "time": 3,
+        "kind": "append",
+        "tx": "T",
+        "key": "x",
+        "id": "a1",
+        "value": "same"
+      },
+      {
+        "seq": 5,
+        "time": 4,
+        "kind": "list_read",
+        "tx": "T",
+        "key": "x",
+        "items": [
+          {
+            "id": "a1",
+            "value": "same"
+          }
+        ]
+      },
+      {
+        "seq": 6,
+        "time": 5,
+        "kind": "rollback_to",
+        "tx": "T",
+        "instance": "s1"
+      },
+      {
+        "seq": 7,
+        "time": 6,
+        "kind": "list_read",
+        "tx": "T",
+        "key": "x",
+        "items": []
+      },
+      {
+        "seq": 8,
+        "time": 7,
+        "kind": "commit_request",
+        "tx": "T"
+      },
+      {
+        "seq": 9,
+        "time": 8,
+        "kind": "commit_ok",
+        "tx": "T"
+      }
+    ],
+    "effects": [
+      {
+        "seq": 4,
+        "tx": "T",
+        "key": "x",
+        "id": "a1",
+        "value": "same",
+        "revertedBy": 6
+      }
+    ],
+    "transactions": [
+      {
+        "id": "T",
+        "connection": "connection-T",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "finalWrites": []
+      }
+    ],
+    "history": null
+  },
+  "evidence": {
+    "kind": "serial-list-replay",
+    "serialOrder": [
+      "T"
+    ],
+    "sourceEvidence": [
+      {
+        "id": "a1",
+        "value": "same",
+        "key": "x",
+        "sourceSeq": 4,
+        "writer": "T",
+        "revertedBy": 6
+      }
+    ]
+  },
+  "execution": {
+    "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
+    "analysisOptions": {
+      "maxStates": 100000,
+      "maxOperationChecks": 1000000
+    },
+    "effectiveLimits": {
+      "committedTransactions": 6,
+      "operations": 128,
+      "states": 100000,
+      "operationChecks": 1000000,
+      "inputUtf16Units": 8388608,
+      "events": 65536,
+      "identities": 10000,
+      "returnedItemReferences": 100000
+    },
+    "metrics": {
+      "states": 1,
+      "operationChecks": 6,
+      "complete": true,
+      "reason": "found"
+    }
+  }
+}

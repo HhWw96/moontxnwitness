@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.1",
+  "algorithm": "v3-register-1",
+  "status": "inconclusive",
+  "modelDefinition": {
+    "id": "register-serializable-v1",
+    "scope": "unique-version point read/write; no real-time order inferred from event timestamps"
+  },
+  "coverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "outstanding_transaction",
+        "message": "A transaction has no confirmed terminal event"
+      }
+    ]
+  },
+  "normalized": {
+    "schema": 3,
+    "algorithm": "v3-lifecycle-1",
+    "status": "inconclusive",
+    "coverage": {
+      "complete": false,
+      "gaps": [
+        {
+          "code": "outstanding_transaction",
+          "message": "A transaction has no confirmed terminal event"
+        }
+      ]
+    },
+    "observations": [
+      {
+        "kind": "snapshot",
+        "consistent": true,
+        "initial": {
+          "unknown-k0": "unknown-v0-0",
+          "unknown-k1": "unknown-v1-0"
+        },
+        "seq": 1,
+        "time": 0
+      },
+      {
+        "kind": "begin",
+        "tx": "unknown-T0",
+        "connection": "unknown-T0",
+        "seq": 2,
+        "time": 1
+      },
+      {
+        "kind": "begin",
+        "tx": "unknown-T1",
+        "connection": "unknown-T1",
+        "seq": 3,
+        "time": 2
+      },
+      {
+        "kind": "write",
+        "tx": "unknown-T1",
+        "key": "unknown-k0",
+        "version": "unknown-v0-1",
+        "predecessor": "unknown-v0-0",
+        "seq": 4,
+        "time": 3
+      },
+      {
+        "kind": "write",
+        "tx": "unknown-T0",
+        "key": "unknown-k1",
+        "version": "unknown-v1-1",
+        "predecessor": "unknown-v1-0",
+        "seq": 5,
+        "time": 4
+      },
+      {
+        "kind": "read",
+        "tx": "unknown-T0",
+        "key": "unknown-k0",
+        "version": "unknown-v0-0",
+        "seq": 6,
+        "time": 5
+      },
+      {
+        "kind": "read",
+        "tx": "unknown-T1",
+        "key": "unknown-k1",
+        "version": "unknown-v1-0",
+        "seq": 7,
+        "time": 6
+      },
+      {
+        "kind": "commit_request",
+        "tx": "unknown-T0",
+        "seq": 8,
+        "time": 7
+      },
+      {
+        "kind": "commit_ok",
+        "tx": "unknown-T0",
+        "seq": 9,
+        "time": 8
+      },
+      {
+        "kind": "commit_request",
+        "tx": "unknown-T1",
+        "seq": 10,
+        "time": 9
+      }
+    ],
+    "effects": [
+      {
+        "seq": 4,
+        "tx": "unknown-T1",
+        "key": "unknown-k0",
+        "version": "unknown-v0-1",
+        "predecessor": "unknown-v0-0",
+        "revertedBy": null
+      },
+      {
+        "seq": 5,
+        "tx": "unknown-T0",
+        "key": "unknown-k1",
+        "version": "unknown-v1-1",
+        "predecessor": "unknown-v1-0",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "unknown-T0",
+        "connection": "unknown-T0",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          5,
+          6,
+          8,
+          9
+        ],
+        "finalWrites": [
+          5
+        ]
+      },
+      {
+        "id": "unknown-T1",
+        "connection": "unknown-T1",
+        "status": "unknown",
+        "beginSeq": 3,
+        "endSeq": null,
+        "events": [
+          3,
+          4,
+          7,
+          10
+        ],
+        "finalWrites": [
+          4
+        ]
+      }
+    ],
+    "history": null
+  },
+  "evidence": null,
+  "execution": {
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "metrics": null
+  }
+}

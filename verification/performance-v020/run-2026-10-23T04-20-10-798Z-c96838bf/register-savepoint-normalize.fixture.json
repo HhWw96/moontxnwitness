@@ -1,0 +1,91 @@
+{
+  "name": "register-savepoint",
+  "phase": "normalize",
+  "input": {
+    "traceSchema": 3,
+    "clockDomain": "example-client-monotonic",
+    "scope": {
+      "exclusiveWriters": true
+    },
+    "gaps": [],
+    "events": [
+      {
+        "seq": 1,
+        "time": 0,
+        "kind": "snapshot",
+        "consistent": true,
+        "initial": {
+          "x": "x0"
+        }
+      },
+      {
+        "seq": 2,
+        "time": 1,
+        "kind": "begin",
+        "tx": "T1",
+        "connection": "C1"
+      },
+      {
+        "seq": 3,
+        "time": 2,
+        "kind": "savepoint",
+        "tx": "T1",
+        "name": "work",
+        "instance": "S1"
+      },
+      {
+        "seq": 4,
+        "time": 3,
+        "kind": "write",
+        "tx": "T1",
+        "key": "x",
+        "version": "x1",
+        "predecessor": "x0"
+      },
+      {
+        "seq": 5,
+        "time": 4,
+        "kind": "read",
+        "tx": "T1",
+        "key": "x",
+        "version": "x1"
+      },
+      {
+        "seq": 6,
+        "time": 5,
+        "kind": "rollback_to",
+        "tx": "T1",
+        "instance": "S1"
+      },
+      {
+        "seq": 7,
+        "time": 6,
+        "kind": "read",
+        "tx": "T1",
+        "key": "x",
+        "version": "x0"
+      },
+      {
+        "seq": 8,
+        "time": 7,
+        "kind": "release",
+        "tx": "T1",
+        "instance": "S1"
+      },
+      {
+        "seq": 9,
+        "time": 8,
+        "kind": "commit_request",
+        "tx": "T1"
+      },
+      {
+        "seq": 10,
+        "time": 9,
+        "kind": "commit_ok",
+        "tx": "T1"
+      }
+    ]
+  },
+  "expectedStatus": "ready",
+  "group": "normalization"
+}

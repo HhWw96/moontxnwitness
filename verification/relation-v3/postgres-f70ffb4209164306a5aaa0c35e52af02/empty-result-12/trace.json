@@ -1,0 +1,159 @@
+{
+  "traceSchema": 3,
+  "dataModel": "relation-set-v1",
+  "relationSchema": {
+    "accounts": {
+      "primaryKey": "id",
+      "columns": {
+        "id": "int64",
+        "balance": "int64",
+        "active": "bool",
+        "region": "text"
+      }
+    }
+  },
+  "clockDomain": "relation-fixture-mtw_relation_v3_11aa8810049b_0_11",
+  "scope": {
+    "exclusiveWriters": true,
+    "completeSnapshotTables": [
+      "accounts"
+    ]
+  },
+  "events": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "accounts": [
+          {
+            "key": "-9223372036854775808",
+            "version": "f9013516-647d-41f4-a0eb-8e8f881ef892",
+            "values": {
+              "balance": "-9223372036854775808",
+              "active": false,
+              "region": ""
+            }
+          },
+          {
+            "key": "9223372036854775807",
+            "version": "5080c60f-2457-4b35-b138-84c08297c26a",
+            "values": {
+              "balance": "9223372036854775807",
+              "active": true,
+              "region": "𐀀"
+            }
+          }
+        ]
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 94000,
+      "kind": "begin",
+      "tx": "A",
+      "connection": "C-A"
+    },
+    {
+      "seq": 3,
+      "time": 110000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [
+        {
+          "column": "balance",
+          "op": "gt",
+          "value": "0"
+        },
+        {
+          "column": "balance",
+          "op": "lt",
+          "value": "0"
+        }
+      ],
+      "rows": [],
+      "complete": true
+    },
+    {
+      "seq": 4,
+      "time": 110000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [
+        {
+          "column": "region",
+          "op": "lt",
+          "value": "𐀀"
+        }
+      ],
+      "rows": [
+        {
+          "key": "-9223372036854775808",
+          "version": "f9013516-647d-41f4-a0eb-8e8f881ef892",
+          "values": {
+            "balance": "-9223372036854775808",
+            "active": false,
+            "region": ""
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 5,
+      "time": 110000,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "accounts",
+      "predicate": [
+        {
+          "column": "id",
+          "op": "ge",
+          "value": "-9223372036854775808"
+        },
+        {
+          "column": "id",
+          "op": "le",
+          "value": "9223372036854775807"
+        }
+      ],
+      "rows": [
+        {
+          "key": "-9223372036854775808",
+          "version": "f9013516-647d-41f4-a0eb-8e8f881ef892",
+          "values": {
+            "balance": "-9223372036854775808",
+            "active": false,
+            "region": ""
+          }
+        },
+        {
+          "key": "9223372036854775807",
+          "version": "5080c60f-2457-4b35-b138-84c08297c26a",
+          "values": {
+            "balance": "9223372036854775807",
+            "active": true,
+            "region": "𐀀"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 6,
+      "time": 110000,
+      "kind": "commit_request",
+      "tx": "A"
+    },
+    {
+      "seq": 7,
+      "time": 110000,
+      "kind": "commit_ok",
+      "tx": "A"
+    }
+  ],
+  "gaps": []
+}

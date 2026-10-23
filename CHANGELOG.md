@@ -1,5 +1,14 @@
 # 0.2.0 — 2026-10-22
 
+
+## 0.2.1
+
+- Add a pinned public v0.2.0 performance baseline, complete-output comparisons and reproducible raw samples for the three v3 data models and common controls.
+- Add actual public20 model, execution and invalid-input capsule regression checks to both fresh package consumers.
+- Keep the stable v3 defaults on the public20 implementation. Two structured candidates failed tail-latency controls; their source, runtime, tests and failed receipts remain available in the linked performance evidence.
+
+See [performance evidence and withdrawal](docs/performance-v0.2.1-withdrawal.md).
+
 - Converge the declared bounded register, fixed-key presence, SQL-template/cache, list, relation, selected-cycle and execution-capsule interfaces into one support matrix and upgrade guide.
 - Retain existing budgets and checks; explicitly preserve v0.1.8 model capsules and v0.1.7/v0.1.8 execution capsules without rewriting observed data.
 - Update stale scope/development documentation and retain the original large roadmap as history. Full automatic SQL/ORM, six-model classification and complete production integrations remain future work.

@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 2,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.1",
+  "status": "unchanged",
+  "oneMinimal": true,
+  "removedTransactions": [],
+  "checks": 2,
+  "reason": "Every remaining singleton deletion was checked under the fixed balanced analyzer predicate and options. Not a global or operation minimum.",
+  "limits": {
+    "transactions": 512,
+    "operations": 10000,
+    "checks": 256
+  },
+  "cachedCandidateChecks": 0,
+  "scope": "transaction deletion; fixed initial state; asserted orders pruned; analyzer-specific definite-violation predicate",
+  "reducedHistory": {
+    "schemaVersion": 1,
+    "model": "serializable",
+    "initial": {
+      "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"x\"]": "x0",
+      "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"y\"]": "y0"
+    },
+    "versionOrders": {},
+    "transactions": [
+      {
+        "id": "tx-1",
+        "status": "committed",
+        "start": 250000,
+        "end": 281000,
+        "ops": [
+          {
+            "type": "read",
+            "key": "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"x\"]",
+            "version": "x0"
+          },
+          {
+            "type": "write",
+            "key": "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"y\"]",
+            "version": "y1"
+          }
+        ]
+      },
+      {
+        "id": "tx-2",
+        "status": "committed",
+        "start": 250000,
+        "end": 281000,
+        "ops": [
+          {
+            "type": "read",
+            "key": "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"y\"]",
+            "version": "y0"
+          },
+          {
+            "type": "write",
+            "key": "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"x\"]",
+            "version": "x1"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "schemaVersion": 2,
+    "tool": "MoonTxnWitness",
+    "version": "0.2.1",
+    "status": "violation",
+    "model": "serializable",
+    "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+    "complete": true,
+    "stats": {
+      "transactions": 2,
+      "committed": 2,
+      "operations": 4,
+      "dependencies": 2
+    },
+    "findings": [
+      {
+        "code": "dependency_cycle",
+        "severity": "violation",
+        "message": "The dependency cycle prevents any serial order satisfying these observations and constraints",
+        "transactions": [
+          "tx-1",
+          "tx-2"
+        ],
+        "key": null,
+        "ops": []
+      }
+    ],
+    "edges": [
+      {
+        "from": "tx-1",
+        "to": "tx-2",
+        "kind": "rw",
+        "key": "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"x\"]",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "x0",
+        "toVersion": "x1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      },
+      {
+        "from": "tx-2",
+        "to": "tx-1",
+        "kind": "rw",
+        "key": "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"y\"]",
+        "fromOp": 0,
+        "toOp": 1,
+        "fromVersion": "y0",
+        "toVersion": "y1",
+        "reason": "The reader observes an earlier version and must precede this later committed write."
+      }
+    ],
+    "witness": {
+      "kind": "dependency_cycle",
+      "transactions": [
+        "tx-1",
+        "tx-2",
+        "tx-1"
+      ],
+      "edges": [
+        {
+          "from": "tx-1",
+          "to": "tx-2",
+          "kind": "rw",
+          "key": "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"x\"]",
+          "fromOp": 0,
+          "toOp": 1,
+          "fromVersion": "x0",
+          "toVersion": "x1",
+          "reason": "The reader observes an earlier version and must precede this later committed write."
+        },
+        {
+          "from": "tx-2",
+          "to": "tx-1",
+          "kind": "rw",
+          "key": "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"y\"]",
+          "fromOp": 0,
+          "toOp": 1,
+          "fromVersion": "y0",
+          "toVersion": "y1",
+          "reason": "The reader observes an earlier version and must precede this later committed write."
+        }
+      ],
+      "minimality": "shortest directed cycle in the constructed graph"
+    },
+    "serialOrder": [],
+    "versionOrders": {
+      "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"x\"]": [
+        "x0",
+        "x1"
+      ],
+      "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"y\"]": [
+        "y0",
+        "y1"
+      ]
+    },
+    "versionOrderSources": {
+      "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"x\"]": "single-writer",
+      "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"y\"]": "single-writer"
+    },
+    "graph": {
+      "analyzed": true,
+      "components": 1,
+      "cyclicComponents": 1,
+      "cyclicTransactions": 2,
+      "bfsRoots": 1,
+      "edgeBudgetExceeded": false
+    },
+    "coverage": [
+      {
+        "key": "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"x\"]",
+        "committedReads": 1,
+        "committedFinalWrites": 1,
+        "unresolvedReads": 0,
+        "versionOrderSource": "single-writer",
+        "sourceLabel": "单写者推断"
+      },
+      {
+        "key": "[\"mtw_capture_b1402e60db464cf4b2e6a0aeeff6ddc9.registers\",\"text\",\"y\"]",
+        "committedReads": 1,
+        "committedFinalWrites": 1,
+        "unresolvedReads": 0,
+        "versionOrderSource": "single-writer",
+        "sourceLabel": "单写者推断"
+      }
+    ],
+    "nextSteps": [
+      "保留原始日志，使用 shrink 缩减反例，并用 capsule 保存可复现证据。"
+    ],
+    "search": {
+      "status": "not-needed",
+      "reason": "No bounded completion search was required."
+    },
+    "algorithm": "bounded-register-v2.1",
+    "effectiveLimits": {
+      "transactions": 12,
+      "operations": 512,
+      "keys": 128,
+      "attempts": 100000,
+      "operationChecks": 1000000,
+      "cachedStates": 50000
+    },
+    "analysisOptions": {
+      "maxAttempts": 100000,
+      "maxOperationChecks": 1000000,
+      "maxCachedStates": 50000
+    },
+    "metrics": {
+      "attempts": 0,
+      "operationChecks": 0,
+      "cacheHits": 0,
+      "cachedStates": 0,
+      "blockers": []
+    }
+  }
+}

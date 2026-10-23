@@ -1,0 +1,219 @@
+{
+  "status": "driver-passed-core-pending",
+  "actualDatabaseExecution": true,
+  "scope": "controlled synthetic SQL profile; not existing external application adoption",
+  "server": "PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35229, 64-bit",
+  "driver": "3.3.6",
+  "python": "3.12.5",
+  "scenarios": [
+    {
+      "name": "same-value-intermediate-rollback",
+      "trace": "same-value-intermediate-rollback.trace.json",
+      "expectedStatus": "ready",
+      "expectedVerdict": "consistent",
+      "facts": {
+        "intermediateWriteTokens": [
+          "755531a6-5717-44ea-a114-0a98101d73a5",
+          "c3adbcb1-e7bc-4e50-9c80-a812c088c7ed"
+        ],
+        "abortedToken": "5098a756-3917-45ff-861f-ee38631934eb",
+        "businessSurfaceCompared": true,
+        "originalConstraintError": "23502"
+      },
+      "independentAudit": {
+        "versions": 4,
+        "writes": 2,
+        "ordering": "predecessor links only; UUID/row order is not commit order"
+      },
+      "ddlTamperingRejected": [
+        "nonce",
+        "disabled-trigger",
+        "function-body"
+      ],
+      "uninstallPreservedBusinessRows": true
+    },
+    {
+      "name": "repeatable-read-write-skew",
+      "trace": "repeatable-read-write-skew.trace.json",
+      "expectedStatus": "ready",
+      "expectedVerdict": "violation",
+      "facts": {
+        "schedule": "both point reads before disjoint point updates; acknowledged commits"
+      }
+    },
+    {
+      "name": "unsupported-sql",
+      "trace": "unsupported-sql.trace.json",
+      "expectedStatus": "inconclusive",
+      "expectedVerdict": null,
+      "facts": {
+        "originalSqlExecuted": true
+      }
+    },
+    {
+      "name": "unconsumed",
+      "trace": "unconsumed.trace.json",
+      "expectedStatus": "inconclusive",
+      "expectedVerdict": null,
+      "facts": {
+        "originalSqlExecuted": true
+      }
+    }
+  ],
+  "rejections": [
+    {
+      "feature": "outgoing-fk",
+      "rejected": true,
+      "stableRejected": true,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "incoming-fk",
+      "rejected": true,
+      "stableRejected": true,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "rewrite-rule",
+      "rejected": true,
+      "stableRejected": true,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "check",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "generated",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "expression-index",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "partial-index",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "domain",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "inherited-parent",
+      "rejected": true,
+      "stableRejected": true,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "inherited-child",
+      "rejected": true,
+      "stableRejected": true,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    },
+    {
+      "feature": "failure-after-ddl",
+      "rejected": true,
+      "stableRejected": null,
+      "noNewInstallationObjects": true,
+      "originalBusinessRowsPreserved": true
+    }
+  ],
+  "schemaRetained": false,
+  "notMeasured": [
+    "full capture C/A performance",
+    "multi-client contention cost",
+    "CPU",
+    "RSS",
+    "lock waits"
+  ],
+  "sources": {
+    "capture_profile_postgres.py": "b9876f6fbe448619ad121b08c834d364b9154620ede5c6d778d9729a4637cdeb",
+    "capture_profile.py": "21ea64636c33bd81181146e2d59895f063c5ec36f7e4d827b565a65a81b764fa",
+    "prototype.py": "e851b183a2362bdee0d34ac8c66c273c038edcd90927032a630f49d019480769"
+  },
+  "implementationSources": {
+    "before": {
+      "moontxnwitness_capture/__init__.py": {
+        "bytes": 564,
+        "sha256": "82ac16660a6e0ea61da6c19d27ef4f9711d475d2901a91fda4c7b0ea6948c3aa"
+      },
+      "moontxnwitness_capture/capture.py": {
+        "bytes": 56812,
+        "sha256": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e"
+      },
+      "moontxnwitness_capture/_provenance.py": {
+        "bytes": 18417,
+        "sha256": "2e40349d7d44fe8ca54786c0f3a9ecc52847a4558078bc7bd2cab6c1c9e64a71"
+      },
+      "moontxnwitness_capture/_column_profile.py": {
+        "bytes": 24306,
+        "sha256": "1003a4a1cd7a2bbc2ee22bb13632304ef10a464e729642e179736d5ab09c43f7"
+      },
+      "moontxnwitness_capture/_initialization_guard.py": {
+        "bytes": 4420,
+        "sha256": "7a28a1a84e19af89e3ac67aa6a3a27c7cf5ce39df688fed95de590a39fe7253a"
+      },
+      "moontxnwitness_capture/_source_inventory.py": {
+        "bytes": 2497,
+        "sha256": "0b2da28f8ac929b41e53c01b90d538336992705ecb024119cafc662e3e76edc6"
+      },
+      "moontxnwitness_capture/presence.py": {
+        "bytes": 34897,
+        "sha256": "892a412347d9a76cc5a47a15a32ac148b6d915f19a6456394d9f38ce1ae70990"
+      }
+    },
+    "after": {
+      "moontxnwitness_capture/__init__.py": {
+        "bytes": 564,
+        "sha256": "82ac16660a6e0ea61da6c19d27ef4f9711d475d2901a91fda4c7b0ea6948c3aa"
+      },
+      "moontxnwitness_capture/capture.py": {
+        "bytes": 56812,
+        "sha256": "12c81689813bb820742cb5761b17bb523f996ddf651bae9a0a6dc5bdb4691b3e"
+      },
+      "moontxnwitness_capture/_provenance.py": {
+        "bytes": 18417,
+        "sha256": "2e40349d7d44fe8ca54786c0f3a9ecc52847a4558078bc7bd2cab6c1c9e64a71"
+      },
+      "moontxnwitness_capture/_column_profile.py": {
+        "bytes": 24306,
+        "sha256": "1003a4a1cd7a2bbc2ee22bb13632304ef10a464e729642e179736d5ab09c43f7"
+      },
+      "moontxnwitness_capture/_initialization_guard.py": {
+        "bytes": 4420,
+        "sha256": "7a28a1a84e19af89e3ac67aa6a3a27c7cf5ce39df688fed95de590a39fe7253a"
+      },
+      "moontxnwitness_capture/_source_inventory.py": {
+        "bytes": 2497,
+        "sha256": "0b2da28f8ac929b41e53c01b90d538336992705ecb024119cafc662e3e76edc6"
+      },
+      "moontxnwitness_capture/presence.py": {
+        "bytes": 34897,
+        "sha256": "892a412347d9a76cc5a47a15a32ac148b6d915f19a6456394d9f38ce1ae70990"
+      }
+    },
+    "unchanged": true
+  },
+  "legacySourceRole": "Compatibility shim / fixture hashes; implementationSources binds package code"
+}

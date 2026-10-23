@@ -49,7 +49,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.2.0
+moon add HhWw96/moontxnwitness@0.2.1
 ```
 
 ```javascript

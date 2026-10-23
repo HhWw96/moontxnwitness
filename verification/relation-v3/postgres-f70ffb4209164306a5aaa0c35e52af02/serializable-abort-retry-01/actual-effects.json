@@ -1,0 +1,109 @@
+{
+  "effectLedger": [
+    [
+      "75ec53fd-c5ed-4e0b-9980-a67fb463eb25",
+      "1",
+      "3b3d81d5-54ee-4d84-8238-68c95bc6eae3",
+      "UPDATE",
+      true,
+      true,
+      {
+        "active": false,
+        "region": "east",
+        "balance": "10"
+      }
+    ]
+  ],
+  "finalRows": [
+    {
+      "key": "2",
+      "version": "14755994-d906-4bce-9512-eb64e3d3dd68",
+      "values": {
+        "balance": "20",
+        "active": true,
+        "region": "west"
+      }
+    },
+    {
+      "key": "1",
+      "version": "75ec53fd-c5ed-4e0b-9980-a67fb463eb25",
+      "values": {
+        "balance": "10",
+        "active": false,
+        "region": "east"
+      }
+    }
+  ],
+  "state": [
+    [
+      "-9223372036854775808",
+      null,
+      false
+    ],
+    [
+      "2",
+      "14755994-d906-4bce-9512-eb64e3d3dd68",
+      true
+    ],
+    [
+      "3",
+      null,
+      false
+    ],
+    [
+      "9223372036854775807",
+      null,
+      false
+    ],
+    [
+      "1",
+      "75ec53fd-c5ed-4e0b-9980-a67fb463eb25",
+      true
+    ]
+  ],
+  "sources": {
+    "effects": {
+      "request": 85,
+      "response": 86,
+      "commandTag": "SELECT 1"
+    },
+    "final": {
+      "request": 87,
+      "response": 88,
+      "commandTag": "SELECT 2"
+    },
+    "state": {
+      "request": 89,
+      "response": 90,
+      "commandTag": "SELECT 5"
+    }
+  },
+  "survivingWriteEvents": [
+    6
+  ],
+  "outcomes": {
+    "A": {
+      "status": "committed",
+      "source": {
+        "request": 75,
+        "response": 76,
+        "commandTag": "COMMIT"
+      }
+    },
+    "B": {
+      "status": "aborted",
+      "sqlstate": "40001",
+      "serverResponse": true
+    },
+    "B-retry-1": {
+      "status": "committed",
+      "source": {
+        "request": 83,
+        "response": 84,
+        "commandTag": "COMMIT"
+      }
+    }
+  },
+  "actualLedgerEqualsAllCommittedUnrevertedEffects": true,
+  "versionOrderInferredFromAckUuidOrTransactionIds": false
+}

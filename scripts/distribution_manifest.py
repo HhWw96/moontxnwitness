@@ -16,6 +16,10 @@ EXCLUDED_NAMES = {'.local-toolchain.json', '.DS_Store'}
 # Preserve complete fixed runs, not just the few trace files used by consumers.
 # Their original receipts/SQL/journals/capsules continue to describe these bytes.
 FIXED_VERIFICATION_ROOTS = {
+    'verification/experimental-candidates/v021-structured-withdrawn': 'withdrawn candidate source, runtime and test preservation; not a stable performance claim',
+    'verification/releases/0.2.0/published-package-review/public-reproduction/downloaded-components/0.2.0/portable/dist': 'public20 exact six-file SDK baseline for reproducible performance',
+    'verification/fixtures/v010-comparison': 'twenty pinned common control inputs; same original manifest and bytes',
+    'verification/performance-v020': 'complete current baseline experiments, including failed first run and raw samples',
     'verification/v3/tools': 'npm test: independent executable audit helpers',
     'verification/v3/synthetic-dislock-source-closure-v1': 'fingerprint and fresh-consumer v3 proof/reduction',
     'verification/business/dislock/v3-647afacfcbe14586b46714bac34c8f30': 'fingerprint and independent SQL/policy audits',
@@ -26,6 +30,8 @@ FIXED_VERIFICATION_ROOTS = {
     'verification/experimental-candidates/orm-source2-r3-2026-10-21': 'npm test and fresh-consumer fixed ORM source/journal fixtures',
 }
 FIXED_VERIFICATION_FILES = {
+    'verification/baselines/0.2.0/manifest.json': 'pinned actual published20 provider and archive identities',
+    'verification/releases/0.2.0/published-package-review/public-reproduction/evidence/published-package-210-receipt.json': 'bound anonymous public20 download review receipt',
     'verification/relation-v3/frozen-corpus-promotion.json': 'relation oracle and acceptance read this frozen promotion',
     'verification/v3/dislock-explicit-policy-preregistration-2026-10-21.json': 'fingerprint and explicit-policy audit contract',
     'verification/v3/dislock-sql-supplement-preregistration-2026-10-21.json': 'fingerprint and SQL proof supplement provenance',
@@ -168,6 +174,14 @@ def select_distribution_files(root, public_names, tested_files, version):
                     and item.name != 'package.json' and (folder == 'dist' or name in public_names)):
                 portable.add(name)
     portable.update(n for n in required if n.startswith(('verification/', 'dist/')))
+    if tuple(map(int, version.split('.'))) >= (0, 2, 1):
+        # Explicit small consumer inputs; no baseline binaries or historical runs.
+        for name in ('scripts/v020-compatibility-test.mjs', 'scripts/v020-invalid-compatibility-test.mjs'):
+            require(name, 'fresh-consumer actual published20 compatibility')
+            portable.add(name)
+        for folder in ('fixtures/compat-v020', 'fixtures/compat-v020-invalid', 'fixtures/compat-v020-list-wrapper'):
+            require_tree(folder, 'fresh-consumer original published20 capsules')
+            portable.update(n for n in public_names if n.startswith(folder + '/'))
     # The standalone execution example consumes exact frozen traces and licenses.
     portable.update(n for n in public_names if n.startswith('fixtures/execution-v3/'))
     for name in sorted(source | portable):
