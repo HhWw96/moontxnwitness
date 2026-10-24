@@ -1,0 +1,67 @@
+name: Experimental fixed-model reduction differential
+on:
+  push:
+    branches: [experimental/v028-reduction-dispatch-20261025]
+permissions:
+  contents: read
+jobs:
+  differential:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out the exact experimental candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: candidate
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check out the unchanged public v0.2.7 baseline
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: c10b06c5bfcabd1f40b0ff0099717072a816ec74
+          path: baseline
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Install and record the fixed official toolchain
+        run: |
+          set -euo pipefail
+          mkdir -p reduction-evidence
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh -o "$RUNNER_TEMP/moon-install.sh"
+          bash "$RUNNER_TEMP/moon-install.sh" "$MOONBIT_INSTALL_VERSION" 2>&1 | tee reduction-evidence/toolchain-install.original.log
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+          echo "MOON_HOME=$HOME/.moon" >> "$GITHUB_ENV"
+          "$HOME/.moon/bin/moonc" -v > reduction-evidence/moonc-version.txt 2>&1
+          node --version > reduction-evidence/node-version.txt
+          python --version > reduction-evidence/python-version.txt
+      - name: Syntax-check the frozen exact-output differential
+        run: node --check candidate/.github/experiments/reduction-dispatch/run_differential.mjs
+      - name: Build the unchanged baseline once
+        working-directory: baseline
+        run: npm run build
+      - name: Build the experimental candidate once
+        working-directory: candidate
+        run: npm run build
+      - name: Bind actual runtimes then run all 284 comparisons once
+        run: python candidate/.github/experiments/reduction-dispatch/freeze_and_run.py
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: reduction-differential-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            reduction-evidence/
+            baseline/dist/
+            candidate/dist/
+          if-no-files-found: error
+          compression-level: 6
