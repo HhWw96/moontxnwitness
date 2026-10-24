@@ -1,0 +1,71 @@
+name: experimental-reduction-cpu
+on:
+  push:
+    branches: [experimental/v028-reduction-cpu-diagnostic-20261025]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Attest exact new source and preserve fixed diagnostic plan
+        env:
+          MTW_CPU_HELPER_SHA: 'cbfcfabfc152d71fba1215ba2ae97cc99465e70224701d71d2bd32ae3678ec17'
+        run: python -B scripts/performance/prepare_v028_reduction_cpu.py preflight
+      - name: Download the single unchanged differential artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/moontxnwitness-v028-cpu-$GITHUB_RUN_ID-1"
+          gh api --hostname github.com repos/HhWw96/moontxnwitness/actions/artifacts/12571426613 > "$work/artifact-metadata.original.json"
+          gh api --hostname github.com repos/HhWw96/moontxnwitness/actions/artifacts/12571426613/zip > "$work/original-artifact.zip"
+          printf '%s  %s\n' '17e80186010e7678da89497332c9f03ad07b774d5ce17cce168170079cbc5e8c' "$work/original-artifact.zip" > "$work/original-artifact.expected.sha256"
+          sha256sum --check "$work/original-artifact.expected.sha256"
+      - name: Reuse the exact reviewed safe runtime extraction
+        env:
+          MTW_CPU_HELPER_SHA: 'cbfcfabfc152d71fba1215ba2ae97cc99465e70224701d71d2bd32ae3678ec17'
+        run: python -B scripts/performance/prepare_v028_reduction_cpu.py extract
+      - name: Run only four bounded CPU diagnostic workers
+        env:
+          MOONTXN_CPU_DIAGNOSTIC: '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/moontxnwitness-v028-cpu-$GITHUB_RUN_ID-1"
+          set +e
+          node "$work/bundle/cpu/run.mjs" --plan "$work/bundle/cpu/plan.json" --expected-plan-sha256 '15b2aa0595e6e8b976a5cafaefc17b2b30485c206b2cd2f885bb8be8084c7660' --out "$work/results" --execute-hosted-cpu-diagnostic > "$work/controller.stdout.original" 2> "$work/controller.stderr.original"
+          status=$?
+          printf '%s\n' "$status" > "$work/controller.exit.original"
+          exit "$status"
+      - name: Preserve original profiles, reports, failures, plan and unchanged runtime ZIP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v028-reduction-cpu-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 90
+          path: |
+            ${{ runner.temp }}/moontxnwitness-v028-cpu-${{ github.run_id }}-1/*.json
+            ${{ runner.temp }}/moontxnwitness-v028-cpu-${{ github.run_id }}-1/*.original
+            ${{ runner.temp }}/moontxnwitness-v028-cpu-${{ github.run_id }}-1/*.zip
+            ${{ runner.temp }}/moontxnwitness-v028-cpu-${{ github.run_id }}-1/*.sha256
+            ${{ runner.temp }}/moontxnwitness-v028-cpu-${{ github.run_id }}-1/bundle/cpu/**
+            ${{ runner.temp }}/moontxnwitness-v028-cpu-${{ github.run_id }}-1/bundle/*.mjs
+            ${{ runner.temp }}/moontxnwitness-v028-cpu-${{ github.run_id }}-1/bundle/plan.json
+            ${{ runner.temp }}/moontxnwitness-v028-cpu-${{ github.run_id }}-1/bundle/inputs/**
+            ${{ runner.temp }}/moontxnwitness-v028-cpu-${{ github.run_id }}-1/bundle/evidence/**
+            ${{ runner.temp }}/moontxnwitness-v028-cpu-${{ github.run_id }}-1/results/**

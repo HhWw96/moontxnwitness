@@ -1,0 +1,70 @@
+{
+  "format": "moontxnwitness-v028-reduction-cpu-diagnostic/v1",
+  "parent": "c96fc56339022e76c43775ad1fe4714c7e1f7fda",
+  "branch": "experimental/v028-reduction-cpu-diagnostic-20261025",
+  "originalPlanSha256": "4f09d227801b316db95604f7dbd601aebd2f735c4a132e4334dec41b0d966641",
+  "settings": {
+    "iterations": 128,
+    "samplingIntervalUs": 100,
+    "workerTimeoutMs": 120000,
+    "minimumAvailableBytes": 1073741824,
+    "maxOutputBytes": 33554432,
+    "stdioBudgetBytes": 1048576,
+    "workers": 4,
+    "profiledReduceCalls": 512,
+    "finalVerifications": 4,
+    "formalPerformanceMeasurement": false
+  },
+  "jobs": [
+    {
+      "id": "list-baseline",
+      "input": "list",
+      "role": "baseline"
+    },
+    {
+      "id": "list-candidate",
+      "input": "list",
+      "role": "candidate"
+    },
+    {
+      "id": "relation-baseline",
+      "input": "relation",
+      "role": "baseline"
+    },
+    {
+      "id": "relation-candidate",
+      "input": "relation",
+      "role": "candidate"
+    }
+  ],
+  "method": "reduceV3",
+  "options": {
+    "maxChecks": 256
+  },
+  "tools": [
+    {
+      "path": "cpu/profile-core.mjs",
+      "bytes": 5581,
+      "sha256": "80be62907ccc4f9158555a4c20e50f54b87bf4099cdabf6b86f13f12ef265501"
+    },
+    {
+      "path": "cpu/worker.mjs",
+      "bytes": 5076,
+      "sha256": "93a7011904d84e4b7fe50dadb8ef509125651238833cee6cb45e554c60cf0af6"
+    },
+    {
+      "path": "cpu/run.mjs",
+      "bytes": 6449,
+      "sha256": "1d2634da66d5eb0897d733ce2dcabb2aac371a4fa2d50b7931c5266ceb5b75ff"
+    }
+  ],
+  "profileOnly": "Whole SDK calls and loop assignment/counter between Profiler.start and stop. Import/input/files/JSON/hashes/verify are outside. Last complete result only; intermediate result objects overwritten, not serialized. No clock-derived speedup or formal acceptance.",
+  "sourceRuntimeArtifact": {
+    "id": 12571426613,
+    "bytes": 12484724,
+    "sha256": "17e80186010e7678da89497332c9f03ad07b774d5ce17cce168170079cbc5e8c"
+  },
+  "iterationsChosenBeforeDiagnosticExecution": true,
+  "formalPerformancePlanUnchanged": true,
+  "candidateAdopted": false
+}
