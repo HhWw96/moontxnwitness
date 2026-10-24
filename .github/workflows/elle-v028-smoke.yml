@@ -35,7 +35,7 @@ jobs:
       - name: Validate external admission and exact smoke source before download
         run: |
           export TEMP="$RUNNER_TEMP" TMP="$RUNNER_TEMP" TMPDIR="$RUNNER_TEMP"
-          python -B -c "import hashlib,sys;from pathlib import Path;p,h=sys.argv[1:3];b=Path(p).read_bytes();assert hashlib.sha256(b).hexdigest()==h;sys.argv=[p,*sys.argv[3:]];exec(compile(b,p,'exec'),{'__name__':'__main__','__file__':p,'__verified_source_sha256__':h})" experiments/elle/v028/hosted_smoke.py 906c392c3321823bdcc36acdb298136145a57807628cc60da6cd2a9904a8c8d3 --phase preflight --source-manifest-sha256 d819cd1cd72cfc8a0626bb60d3d4fbb0e4b3e46e5253c6edfb34b7b6780b46af
+          python -B -c "import hashlib,sys;from pathlib import Path;p,h=sys.argv[1:3];b=Path(p).read_bytes();assert hashlib.sha256(b).hexdigest()==h;sys.argv=[p,*sys.argv[3:]];exec(compile(b,p,'exec'),{'__name__':'__main__','__file__':p,'__verified_source_sha256__':h})" experiments/elle/v028/hosted_smoke.py d8bff60353abe61720f3d6345c84154ae9bad60b17076bf891fea278b5af42e2 --phase preflight --source-manifest-sha256 eed9fb7fad2397d0f7273a191b576c6e93164ed10882445826ba319313c5f7fb
       - name: Fetch only the already admitted original runtime artifact
         env:
           GH_TOKEN: ${{ github.token }}
@@ -53,7 +53,7 @@ jobs:
       - name: Restore exact runtime and execute the original8 once
         run: |
           export TEMP="$RUNNER_TEMP" TMP="$RUNNER_TEMP" TMPDIR="$RUNNER_TEMP"
-          python -B -c "import hashlib,sys;from pathlib import Path;p,h=sys.argv[1:3];b=Path(p).read_bytes();assert hashlib.sha256(b).hexdigest()==h;sys.argv=[p,*sys.argv[3:]];exec(compile(b,p,'exec'),{'__name__':'__main__','__file__':p,'__verified_source_sha256__':h})" experiments/elle/v028/hosted_smoke.py 906c392c3321823bdcc36acdb298136145a57807628cc60da6cd2a9904a8c8d3 --phase execute --source-manifest-sha256 d819cd1cd72cfc8a0626bb60d3d4fbb0e4b3e46e5253c6edfb34b7b6780b46af
+          python -B -c "import hashlib,sys;from pathlib import Path;p,h=sys.argv[1:3];b=Path(p).read_bytes();assert hashlib.sha256(b).hexdigest()==h;sys.argv=[p,*sys.argv[3:]];exec(compile(b,p,'exec'),{'__name__':'__main__','__file__':p,'__verified_source_sha256__':h})" experiments/elle/v028/hosted_smoke.py d8bff60353abe61720f3d6345c84154ae9bad60b17076bf891fea278b5af42e2 --phase execute --source-manifest-sha256 eed9fb7fad2397d0f7273a191b576c6e93164ed10882445826ba319313c5f7fb
       - name: Preserve complete first smoke evidence including hidden files
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

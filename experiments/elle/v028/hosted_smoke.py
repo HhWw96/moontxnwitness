@@ -4,6 +4,7 @@ import argparse,base64,contextlib,hashlib,json,os,re,signal,stat,subprocess,sys,
 REPOSITORY="HhWw96/moontxnwitness"
 BRANCH="experiment/elle-v028-smoke"
 PARENT="092687468bdc999486fda16320669bcf49772b50"
+SOURCE_PARENT="5d35a83c8fe6ca5f3fada41a88432833543075d7"
 APP="experiments/elle/v028"
 WORKFLOW=".github/workflows/elle-v028-smoke.yml"
 NEW_FILES=frozenset((WORKFLOW,APP+"/hosted_smoke.py",APP+"/smoke-stage.json",APP+"/smoke-execution-source-manifest.json"))
@@ -69,8 +70,8 @@ def read_git(project,*args):
 def validate_context(env,head,parents,changed,status,event):
     need(env.get("GITHUB_ACTIONS")=="true" and env.get("RUNNER_OS")=="Linux","Actual Linux hosted context required")
     need(env.get("GITHUB_REPOSITORY")==REPOSITORY and env.get("GITHUB_EVENT_NAME")=="push" and env.get("GITHUB_REF")=="refs/heads/"+BRANCH,"Dedicated smoke push only")
-    need(re.fullmatch(r"[0-9a-f]{40}",head) is not None and env.get("GITHUB_SHA")==head and parents==[head,PARENT],"Exact checkout/event and single reviewed parent required")
-    need(changed=={x:"A" for x in NEW_FILES} and status==b"","Only four new source files in an actually clean checkout")
+    need(re.fullmatch(r"[0-9a-f]{40}",head) is not None and env.get("GITHUB_SHA")==head and parents==[head,SOURCE_PARENT],"Exact checkout/event and single reviewed parent required")
+    need(changed=={x:"M" for x in NEW_FILES if not x.endswith("/smoke-stage.json")} and status==b"","Only three reviewed modifications in an actually clean smoke checkout")
     need(env.get("GITHUB_RUN_ATTEMPT")=="1" and re.fullmatch(r"[1-9][0-9]*",env.get("GITHUB_RUN_ID","")) is not None,"Actual first run identity required; no retry")
     need(event.get("ref")==env["GITHUB_REF"] and event.get("after")==head and event.get("head_commit",{}).get("id")==head and event.get("repository",{}).get("full_name")==REPOSITORY,"Original push event differs")
     need(env.get("RUNNER_TEMP")==RUNNER_LITERAL,"Exact original literal RUNNER_TEMP required")
@@ -112,11 +113,11 @@ def validate_sources(project,manifest_raw,pin):
 
 def source_check(project,pin,env):
     plain(project);head=read_git(project,"rev-parse","HEAD").decode().strip();parents=read_git(project,"rev-list","--parents","-n","1","HEAD").decode().strip().split()
-    changes=parse_changes(read_git(project,"diff-tree","--no-commit-id","--name-status","-r","-z",PARENT,"HEAD"));status=read_git(project,"status","--porcelain=v1","--untracked-files=all")
+    changes=parse_changes(read_git(project,"diff-tree","--no-commit-id","--name-status","-r","-z",SOURCE_PARENT,"HEAD"));status=read_git(project,"status","--porcelain=v1","--untracked-files=all")
     event_path=Path(env["GITHUB_EVENT_PATH"]);need(event_path.is_absolute(),"Absolute original event path required");plain(event_path);event_raw=event_path.read_bytes();validate_context(env,head,parents,changes,status,decode(event_raw))
     for name in NEW_FILES:need((project/name).read_bytes()==read_git(project,"show","HEAD:"+name),"Working source differs from actual Git blob")
     raw=(project/APP/"smoke-execution-source-manifest.json").read_bytes();doc,admission_raw,a,plan=validate_sources(project,raw,pin)
-    return {"sourceCommit":head,"parent":PARENT,"branch":BRANCH,"runId":int(env["GITHUB_RUN_ID"]),"runAttempt":1,"eventSha256":sha(event_raw),"smokeSourceManifestSha256":pin,"original106SourceFilesUnchanged":True,"original53R4ClosureUnchanged":True,"actualSourceFiles":{n:binding(project/n) for n in sorted(NEW_FILES)}},admission_raw,a,plan
+    return {"sourceCommit":head,"parent":SOURCE_PARENT,"producerParent":PARENT,"branch":BRANCH,"runId":int(env["GITHUB_RUN_ID"]),"runAttempt":1,"eventSha256":sha(event_raw),"smokeSourceManifestSha256":pin,"original106SourceFilesUnchanged":True,"original53R4ClosureUnchanged":True,"actualSourceFiles":{n:binding(project/n) for n in sorted(NEW_FILES)}},admission_raw,a,plan
 
 def validate_metadata(meta):
     need(meta.get("id")==ARTIFACT_ID and meta.get("size_in_bytes")==ARTIFACT_BYTES and meta.get("digest")=="sha256:"+ARTIFACT_SHA and meta.get("expired") is False,"Actual original artifact metadata differs")
@@ -171,6 +172,39 @@ def closure(root):
         else:raise ValueError("Nonregular owned output")
     return {"files":files,"directories":sorted(dirs)}
 
+GENERATED_CLASS_POLICY="dom-top-1.0.11-mutableacc-original8-v1"
+GENERATED_WRITER="runtime/runtime-home/.m2/repository/dom-top/dom-top/1.0.11/dom-top-1.0.11.jar"
+GENERATED_WRITER_LOCK={"bytes":23699,"sha256":"d21401fbf7c5d4d1e59b1ac22093c7c708146a263f535b87cfd6074f55ba6633"}
+GENERATED_CLASSES={
+    "runtime/upstream/classes/dom_top/core/MutableAcc-Object-Object-Object.class":{"bytes":219,"sha256":"d76e6772c26914897d41db25f9da696d20462783eecd30cbab57fe98585d6f5d"},
+    "runtime/upstream/classes/dom_top/core/MutableAcc-Object-Object.class":{"bytes":199,"sha256":"c36bd7a65cbe002e7e0dbadf38e0e573844f79cafe75169708f2752a458d1f6a"}}
+GENERATED_DIRECTORIES=frozenset(("runtime/upstream/classes","runtime/upstream/classes/dom_top","runtime/upstream/classes/dom_top/core"))
+
+def validate_runtime_delta(before,after):
+    need(before["files"].get(GENERATED_WRITER)==GENERATED_WRITER_LOCK,"Original fixed dom-top writer jar binding differs")
+    need(all(after["files"].get(n)==v for n,v in before["files"].items()),"An original runtime file was modified or deleted")
+    need(set(before["directories"])<=set(after["directories"]),"An original runtime directory was deleted")
+    need(not(set(GENERATED_CLASSES)&set(before["files"])) and not(GENERATED_DIRECTORIES&set(before["directories"])),"Generated output must not pre-exist in the admitted runtime")
+    added={n:v for n,v in after["files"].items()if n not in before["files"]};dirs=set(after["directories"])-set(before["directories"])
+    need((not added and not dirs)or(added==GENERATED_CLASSES and dirs==GENERATED_DIRECTORIES),"Only the exact two pinned generated classes and three parent directories may be added")
+    return {"schema":1,"policy":GENERATED_CLASS_POLICY,"originalRuntimeFilesUnchanged":True,"runtimeUnchanged":not added and not dirs,"generatedFiles":added,"generatedDirectories":sorted(dirs),"writerJar":{"relativePath":GENERATED_WRITER,**GENERATED_WRITER_LOCK},"newOutputsAreObservedBytesNotCheckerResults":True}
+
+def retain_bound_file(source,target,expected):
+    plain(source);need(source.is_file() and source.stat().st_size==expected["bytes"],"Bound generated output size differs")
+    raw=source.read_bytes();need({"bytes":len(raw),"sha256":sha(raw)}==expected,"Bound generated output bytes differ")
+    write_new(target,raw);need(binding(target)==expected,"Retained generated output bytes differ")
+    return binding(target)
+
+def retain_generated_runtime_files(root,output,delta):
+    need(binding(root/GENERATED_WRITER)==GENERATED_WRITER_LOCK,"Actual fixed dom-top writer jar bytes differ")
+    evidence=output/"generated-runtime-classes";evidence.mkdir();retained={}
+    write_new(output/"GENERATED-RUNTIME-OUTPUTS-BEFORE.json",{"policy":GENERATED_CLASS_POLICY,"actualObservedFiles":delta["generatedFiles"],"writerJar":delta["writerJar"],"copyCompleted":False})
+    for name,expected in sorted(delta["generatedFiles"].items()):
+        need(name in GENERATED_CLASSES and expected==GENERATED_CLASSES[name],"Generated evidence must use the fixed class whitelist")
+        target=evidence/Path(name).name;retained[name]={"ownedEvidencePath":target.relative_to(output).as_posix(),**retain_bound_file(root/relative(name),target,expected)}
+    write_new(output/"GENERATED-RUNTIME-OUTPUTS.json",{"schema":1,"policy":GENERATED_CLASS_POLICY,"writerJar":delta["writerJar"],"generatedDirectories":delta["generatedDirectories"],"retainedFiles":retained,"copyCompleted":True,"checkerSemanticsNotInferred":True})
+    return binding(output/"GENERATED-RUNTIME-OUTPUTS.json")
+
 def in_process(path,pin,args,logs):
     ns=verified_module(path,pin,"verified_smoke_"+path.stem);logs.mkdir();old_argv=sys.argv;old_signals={sig:signal.getsignal(sig) for sig in (signal.SIGTERM,signal.SIGINT)};attempted=False;returned=False;rc=None;primary=None;post=None
     def cancel_owned_checker(signum,frame):raise HostedSmokeCancelled("Hosted smoke cancelled; unwind original owned-group cleanup")
@@ -221,7 +255,7 @@ def execute_smoke(project,output,archive,source,admission,plan):
     verify_args=["--root",str(runtime),"--index-sha256",RUNTIME_INDEX_SHA,"--runtime-sha256",RUNTIME_SHA,"--controller",str(r4/"r4_controller.py"),"--output",str(output/"runtime-restore-first.json")]
     smoke_args=["--execute","--plan",str(r4/"plans-final2/smoke-eight.json"),"--plan-sha256",PLAN,"--runtime",str(runtime/"runtime-manifest.json"),"--runtime-sha256",RUNTIME_SHA,"--wrapper",str(r4/"elle_batch_r4.clj"),"--summary",str(r4/"original-r3/result_summary.clj"),"--transport",str(r4/"original-r3/transport.clj"),"--output",str(output/"original-eight-first")]
     write_new(output/"ATTEMPT-BEFORE-INVOCATION.json",{"sameByteVerifierArgv":[sys.executable,"-B","-c",LOADER,str(project/APP/"supply/verify_restored_runtime.py"),VERIFY,*verify_args],"sameByteOriginalEightArgv":[sys.executable,"-B","-c",LOADER,str(r4/"r4_controller.py"),CORE,*smoke_args],"inputCases":plan["cases"],"runtimeAdmissionSha256":ADMISSION_SHA,"resourceGate":resources,"actualSmokeAcceptedFor2000":False,"SDKOrProvisioningCalled":False})
-    attempted=False;rc=None;primary=None
+    attempted=False;rc=None;primary=None;delta=None;generated_evidence=None
     try:
         need(in_process(project/APP/"supply/verify_restored_runtime.py",VERIFY,verify_args,output/"restore-verifier-process")==0,"Original restore verifier failed, including actual host executable hashes")
         need(closure(Path(PRODUCER_LITERAL))==snapshot,"Verifier changed immutable original runtime")
@@ -231,14 +265,17 @@ def execute_smoke(project,output,archive,source,admission,plan):
     except BaseException as e:primary=e;raise
     finally:
         try:
-            after=closure(Path(PRODUCER_LITERAL));write_new(output/"RUNTIME-AFTER.json",after);need(after==snapshot,"Immutable restored runtime changed")
+            after=closure(Path(PRODUCER_LITERAL));write_new(output/"RUNTIME-AFTER.json",after)
+            delta=validate_runtime_delta(snapshot,after);write_new(output/"RUNTIME-DELTA.json",delta)
+            generated_evidence=retain_generated_runtime_files(Path(PRODUCER_LITERAL),output,delta)
+            need(closure(Path(PRODUCER_LITERAL))==after,"Runtime changed while retaining generated class evidence")
         except Exception as e:
             try:write_new(output/"RUNTIME-AFTER-FAILURE.json",{"error":str(e),"runtimeUnchanged":False})
             except Exception as diagnostic:
                 (primary if primary is not None else e).add_note("Runtime-after-failure receipt could not be persisted: "+repr(diagnostic))
             if primary is None:raise
             primary.add_note("Runtime after-verification also failed: "+repr(e))
-    return {"passed":True,"scope":"Original8 transport execution only; semantic/unknown results require independent raw review","source":source,"runtimeAdmissionSha256":ADMISSION_SHA,"originalArtifact":{"id":ARTIFACT_ID,"bytes":ARTIFACT_BYTES,"sha256":ARTIFACT_SHA},"coreMainAttempted":attempted,"coreMainReturned":True,"coreMainReturnCode":rc,"originalEightAccounting":binding(output/"original-eight-first/accounting.json"),"runtimeUnchanged":True,"actualSDKExecuted":False,"actual2000Executed":False,"actualSmokeAcceptedFor2000":False,"noAgreementOrFutureAdmissionInferred":True,"automaticRetry":False}
+    return {"passed":True,"scope":"Original8 transport execution only; semantic/unknown results require independent raw review","source":source,"runtimeAdmissionSha256":ADMISSION_SHA,"originalArtifact":{"id":ARTIFACT_ID,"bytes":ARTIFACT_BYTES,"sha256":ARTIFACT_SHA},"coreMainAttempted":attempted,"coreMainReturned":True,"coreMainReturnCode":rc,"originalEightAccounting":binding(output/"original-eight-first/accounting.json"),"runtimeUnchanged":delta["runtimeUnchanged"],"originalRuntimeFilesUnchanged":True,"runtimeDeltaPolicy":GENERATED_CLASS_POLICY,"generatedOutputsEvidence":generated_evidence,"actualSDKExecuted":False,"actual2000Executed":False,"actualSmokeAcceptedFor2000":False,"noAgreementOrFutureAdmissionInferred":True,"automaticRetry":False}
 
 def main():
     p=argparse.ArgumentParser();p.add_argument("--phase",choices=("preflight","execute"),required=True);p.add_argument("--source-manifest-sha256",required=True);a=p.parse_args()
