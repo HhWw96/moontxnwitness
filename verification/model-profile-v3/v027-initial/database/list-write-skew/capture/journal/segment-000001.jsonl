@@ -1,0 +1,15 @@
+{"consistent":false,"initial":{},"kind":"snapshot","seq":1,"time":15000000}
+{"connection":"connection-c2ee6bf6155047f2941aba742a97f666","kind":"begin","seq":2,"time":328000000,"tx":"transaction-ee08f6671c17417ea4e0f67cb82e2e44"}
+{"executedSql":"SELECT items FROM \"model_c2c25f8f30f842ff\".\"business\" WHERE key=%s","kind":"statement","mappingId":"configured-model/list-read","parameters":["x"],"seq":3,"sql":"SELECT items FROM \"model_c2c25f8f30f842ff\".\"business\" WHERE key=%s","time":328000000,"tx":"transaction-ee08f6671c17417ea4e0f67cb82e2e44"}
+{"columns":[{"name":"items","typeCode":3802}],"complete":true,"kind":"rows","rows":[[[]]],"seq":4,"statement":3,"time":343000000,"tx":"transaction-ee08f6671c17417ea4e0f67cb82e2e44"}
+{"connection":"connection-c9a1c0b158644b008f7b75e93ee2bbd4","kind":"begin","seq":5,"time":343000000,"tx":"transaction-ad9742be2a3c4d51b77a64c88e7614d7"}
+{"executedSql":"SELECT items FROM \"model_c2c25f8f30f842ff\".\"business\" WHERE key=%s","kind":"statement","mappingId":"configured-model/list-read","parameters":["y"],"seq":6,"sql":"SELECT items FROM \"model_c2c25f8f30f842ff\".\"business\" WHERE key=%s","time":343000000,"tx":"transaction-ad9742be2a3c4d51b77a64c88e7614d7"}
+{"columns":[{"name":"items","typeCode":3802}],"complete":true,"kind":"rows","rows":[[[]]],"seq":7,"statement":6,"time":343000000,"tx":"transaction-ad9742be2a3c4d51b77a64c88e7614d7"}
+{"executedSql":"UPDATE \"model_c2c25f8f30f842ff\".\"business\" SET items=items || %s::jsonb WHERE key=%s RETURNING items","kind":"statement","mappingId":"configured-model/list-append","parameters":["[{\"id\": \"a\", \"value\": \"v\"}]","y"],"seq":8,"sql":"UPDATE \"model_c2c25f8f30f842ff\".\"business\" SET items=items || %s::jsonb WHERE key=%s RETURNING items","time":343000000,"tx":"transaction-ee08f6671c17417ea4e0f67cb82e2e44"}
+{"columns":[{"name":"items","typeCode":3802}],"complete":true,"kind":"rows","rows":[[[{"id":"a","value":"v"}]]],"seq":9,"statement":8,"time":359000000,"tx":"transaction-ee08f6671c17417ea4e0f67cb82e2e44"}
+{"executedSql":"UPDATE \"model_c2c25f8f30f842ff\".\"business\" SET items=items || %s::jsonb WHERE key=%s RETURNING items","kind":"statement","mappingId":"configured-model/list-append","parameters":["[{\"id\": \"b\", \"value\": \"v\"}]","x"],"seq":10,"sql":"UPDATE \"model_c2c25f8f30f842ff\".\"business\" SET items=items || %s::jsonb WHERE key=%s RETURNING items","time":359000000,"tx":"transaction-ad9742be2a3c4d51b77a64c88e7614d7"}
+{"columns":[{"name":"items","typeCode":3802}],"complete":true,"kind":"rows","rows":[[[{"id":"b","value":"v"}]]],"seq":11,"statement":10,"time":375000000,"tx":"transaction-ad9742be2a3c4d51b77a64c88e7614d7"}
+{"kind":"commit_request","seq":12,"time":375000000,"tx":"transaction-ee08f6671c17417ea4e0f67cb82e2e44"}
+{"kind":"commit_ok","seq":13,"time":375000000,"tx":"transaction-ee08f6671c17417ea4e0f67cb82e2e44"}
+{"kind":"commit_request","seq":14,"time":390000000,"tx":"transaction-ad9742be2a3c4d51b77a64c88e7614d7"}
+{"kind":"commit_ok","seq":15,"time":390000000,"tx":"transaction-ad9742be2a3c4d51b77a64c88e7614d7"}

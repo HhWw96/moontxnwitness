@@ -5,6 +5,7 @@ import {isDeepStrictEqual} from 'node:util';
 import {classify_v3_json,reduce_classification_v3_json,verify_classification_v3_json,version} from './core.mjs';
 
 import {callLegacyV025} from './legacy-v025.mjs';
+import {callLegacyV026} from './legacy-v026.mjs';
 
 const MiB=1024*1024;
 const ALGORITHM='classification-host-1';
@@ -146,6 +147,7 @@ export function reduceClassificationV3(source,options){
 export function verifyClassificationV3(source,supplied,options){
   try{
     const text=bounded(supplied,BUDGETS.reportUtf8Bytes,'classification report'),report=JSON.parse(text);
+    if(report?.format==='moontxnwitness-classification-report/v1'&&report.engine?.version==='0.2.6'&&version()!=='0.2.6')return callLegacyV026('verify-classification',options===undefined?[source,supplied]:[source,supplied,options]);
     if(report?.format==='moontxnwitness-classification-report/v1'&&report.engine?.version==='0.2.5'&&version()!=='0.2.5')return callLegacyV025('verify-classification',options===undefined?[source,supplied]:[source,supplied,options]);
     if(report?.format!=='moontxnwitness-classification-report/v1'||report.algorithm!==ALGORITHM||
        !['classify','reduce'].includes(report.operation)||typeof report.requestOptionsText!=='string')
@@ -178,6 +180,7 @@ export function replayClassificationCapsuleV3(text){
   try{
     if(typeof text!=='string')return reject('classification-capsule-must-be-original-text');
     bounded(text,BUDGETS.capsuleUtf8Bytes,'classification capsule');const value=JSON.parse(text);
+    if(value?.format==='moontxnwitness-classification/v1'&&value.engine?.version==='0.2.6'&&version()!=='0.2.6')return callLegacyV026('replay-classification',[text]);
     if(value?.format==='moontxnwitness-classification/v1'&&value.engine?.version==='0.2.5'&&version()!=='0.2.5')return callLegacyV025('replay-classification',[text]);
     if(value?.format!=='moontxnwitness-classification/v1'||value.schemaVersion!==1||value.tool!=='MoonTxnWitness'||
        value.algorithm!==ALGORITHM||!['classify','reduce'].includes(value.operation)||!isDeepStrictEqual(value.engine,ENGINE)||

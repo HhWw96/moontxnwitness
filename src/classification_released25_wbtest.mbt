@@ -114,7 +114,10 @@ test "released25 category engine and algorithm are explicit" {
   let trace = classification_test_cycle_trace("G0").stringify()
   let report = @json.parse(classify_v3_json(trace, "{}"))
   let fields = object_fields_unchecked_v3(report)
-  for engine in ["0.2.4", "0.2.7", "unknown"] {
+  // The current engine accepts its unchanged report; only a synthetic future
+  // sentinel stays unsupported as new releases become current.
+  assert_true(released25_category_verification(trace, report.stringify()))
+  for engine in ["0.2.4", version() + "-unsupported", "unknown"] {
     fields["version"] = engine.to_json()
     assert_eq(
       released25_category_verification(trace, report.stringify()),

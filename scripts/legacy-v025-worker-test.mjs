@@ -17,7 +17,7 @@ return{valid:header.allow===true,status:header.status??'inconclusive',method,syn
 export function verifyOrmProfileV3(...args){return evaluate('verifyOrmProfileV3',args)}export function replayOrmProfileCapsuleV3(...args){return evaluate('replayOrmProfileCapsuleV3',args)}export function verifyClassificationV3(...args){return evaluate('verifyClassificationV3',args)}export function replayClassificationCapsuleV3(...args){return evaluate('replayClassificationCapsuleV3',args)}\n`;
 function fixture({timeout=false,unready=false,smallBudget=false}={}){
  const at=resolve(out,'synthetic-'+(++number)),cmd=resolve(at,'cmd'),legacy=resolve(cmd,'legacy/v025');mkdirSync(legacy,{recursive:true});
- for(const name of ['legacy-v025.mjs','legacy-v025-runtime.mjs','legacy-v025-worker.mjs','legacy-v025-binding.mjs','orm-profile.mjs','classification.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(cmd,name));
+ for(const name of ['legacy-v025.mjs','legacy-v025-runtime.mjs','legacy-v025-worker.mjs','legacy-v025-binding.mjs','legacy-v026.mjs','legacy-v026-runtime.mjs','legacy-v026-worker.mjs','legacy-v026-binding.mjs','orm-profile.mjs','classification.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(cmd,name));
  if(timeout){const p=resolve(cmd,'legacy-v025.mjs');writeFileSync(p,readFileSync(p,'utf8').replace('TIMEOUT_MS=300000','TIMEOUT_MS=100'));}
  if(smallBudget){const p=resolve(cmd,'legacy-v025.mjs');writeFileSync(p,readFileSync(p,'utf8').replace('MAX_BYTES=384*1024*1024','MAX_BYTES=4096'));}
  write(resolve(cmd,'legacy-v024.mjs'),`export function getLegacyOrmV024(){return{verifyOrmProfileV3:()=>({valid:true,synthetic24Route:true}),replayOrmProfileCapsuleV3:()=>({valid:true,synthetic24Route:true})}}\n`);

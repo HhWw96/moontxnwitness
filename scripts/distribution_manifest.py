@@ -16,6 +16,7 @@ EXCLUDED_NAMES = {'.local-toolchain.json', '.DS_Store'}
 # Preserve complete fixed runs, not just the few trace files used by consumers.
 # Their original receipts/SQL/journals/capsules continue to describe these bytes.
 FIXED_VERIFICATION_ROOTS = {
+    'verification/model-profile-v3/v027-initial': 'configured model host: exact original driver cases, source journals, compiled checks and retained first failures',
     'verification/configured-user-profile/v024-initial': 'configured ORM host: both exact real source packets and retained first failure receipts',
     'verification/capture-persistence/v023-initial': 'configured ORM host: exact earlier real unknown COMMIT input and collector receipts',
     'verification/experimental-candidates/v021-structured-withdrawn': 'withdrawn candidate source, runtime and test preservation; not a stable performance claim',
@@ -137,6 +138,33 @@ def select_distribution_files(root, public_names, tested_files, version):
                      'scripts/legacy-v025-runtime.mjs', 'scripts/compat-v025-test.mjs'):
             require(name, 'fixed public25 replay dispatch and fresh-consumer exact compatibility')
 
+    public026_compatibility = (tuple(map(int, version.split('.'))) >= (0, 2, 7)
+                               or 'cmd/legacy/v026/manifest.json' in public_names)
+    if public026_compatibility:
+        require_tree('cmd/legacy/v026', 'exact genuine public26 ESM and licence closure for fixed historical worker')
+        for name in ('manifest.json', 'core.mjs', 'orm-profile.mjs', 'classification.mjs',
+                     'classification-models.mjs', 'legacy-v024.mjs', 'legacy-v025.mjs',
+                     'legacy-v025-runtime.mjs', 'legacy-v025-worker.mjs', 'legacy-v025-binding.mjs',
+                     'build-manifest.json', 'LICENSE', 'THIRD_PARTY_NOTICES.txt', 'origin.json'):
+            require('cmd/legacy/v026/' + name, 'mandatory fixed public26 replay and licence bytes')
+        runtime_manifest26 = root / 'cmd/legacy/v026/manifest.json'
+        if runtime_manifest26.is_file():
+            try:
+                runtime_files26 = json.loads(runtime_manifest26.read_text(encoding='utf8')).get('files', {})
+                for name in runtime_files26:
+                    require('cmd/legacy/v026/' + safe_name(name), 'every bound historical26 manifest member')
+            except (ValueError, TypeError, AttributeError):
+                missing.append({'file': 'cmd/legacy/v026/manifest.json', 'problem': 'invalid historical runtime file inventory'})
+        require_tree('fixtures/compat-v026', 'immutable genuine public26 producer reports/capsules and raw runtime provenance')
+        require_tree('verification/compatibility/public-v026-producer-2026-10-24', 'original anonymous public26 producer transport and provenance')
+        for name in ('legacy-v026.mjs', 'legacy-v026-runtime.mjs', 'legacy-v026-worker.mjs', 'legacy-v026-binding.mjs'):
+            require('cmd/' + name, 'fixed public26 strict verify/replay dispatch')
+            require('dist/' + name, 'installed fixed public26 strict verify/replay dispatch')
+        for name in ('scripts/legacy-v026-runtime.mjs', 'scripts/freeze-public026-runtime.mjs',
+                     'scripts/legacy-v026-worker-test.mjs', 'scripts/freeze-public026-runtime-test.mjs',
+                     'scripts/compat-v026-test.mjs', 'scripts/public026-fixture-binding.mjs'):
+            require(name, 'fixed public26 freezing, protocol and fresh-consumer exact compatibility')
+
     relation_manifest = root / 'fixtures/relation-v3/manifest.json'
     if relation_manifest.is_file():
         for archive in json.loads(relation_manifest.read_text(encoding='utf8'))['historyArchives']:
@@ -148,6 +176,12 @@ def select_distribution_files(root, public_names, tested_files, version):
         plan = json.loads(supplement.read_text(encoding='utf8'))
         for field in ('originalFailureReceipt', 'originalAuditImplementation'):
             require(plan[field]['path'], 'small original failure/source referenced by SQL supplement contract')
+
+    if tuple(map(int, version.split('.'))) >= (0, 2, 7):
+        for name in ('cmd/model-profile.mjs', 'dist/model-profile.mjs',
+                     'docs/configured-model-profile.md', 'docs/model-profile-sdk.md',
+                     'examples/model-profile-roundtrip.mjs'):
+            require(name, 'mandatory configured list/relation source mapping and replay interface')
 
     pg = 'verification/releases/' + safe_name(version) + '/postgres/'
     for name in sorted(public_names):
@@ -238,6 +272,10 @@ def select_distribution_files(root, public_names, tested_files, version):
     if public025_compatibility:
         portable.update(n for n in public_names if n.startswith('fixtures/compat-v025/'))
         portable.add('scripts/compat-v025-test.mjs')
+    if public026_compatibility:
+        portable.update(n for n in public_names if n.startswith('fixtures/compat-v026/'))
+        portable.add('scripts/compat-v026-test.mjs')
+        portable.add('scripts/public026-fixture-binding.mjs')
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))

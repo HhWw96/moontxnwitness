@@ -11,6 +11,9 @@ import { classifyModelsV3, verifyModelsClassificationV3, makeModelsClassificatio
 import { classifyV3, reduceClassificationV3, verifyClassificationV3, makeClassificationCapsuleV3,
   makeClassificationReductionCapsuleV3, replayClassificationCapsuleV3 } from './classification.mjs';
 
+import { analyzeModelProfileV3, verifyModelProfileV3, makeModelProfileCapsuleV3,
+  replayModelProfileCapsuleV3 } from './model-profile.mjs';
+
 const help = `MoonTxnWitness v${version()}
 用法：
   node dist/moontxnwitness.mjs check HISTORY.json [--format text|json|markdown|dot] [--output FILE] [--witness FILE]
@@ -38,6 +41,9 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs shrink-classification-v3 TRACE3.json --category G0|G1c|G2-item [--max-checks N] [--options REDUCTION_OPTIONS.json] [--output REPORT.json] [--capture MINI.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs verify-classification-v3 TRACE3.json REPORT.json [--options OPTIONS.json] [--output VERIFIED.json]
   node dist/moontxnwitness.mjs replay-classification-v3 CAPSULE.json [--output REPLAY.json]
+  node dist/moontxnwitness.mjs model-profile-v3 MODEL_SOURCE.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs replay-model-profile-v3 CAPSULE.json [--output REPLAY.json]
+  node dist/moontxnwitness.mjs verify-model-profile-v3 MODEL_SOURCE.json REPORT.json [--options OPTIONS.json] [--output VERIFIED.json]
   ingest-v3/check-v3/reduce-v3 可选 --sql-proof dislock-f9946f0-sql-proof-1 核验固定 SQL 来源；默认保留原 v3 规则。
   check 也支持 --capsule FILE 导出含日志、报告和 SHA-256 的自包含复现包。
   check 支持 --profile balanced 使用 12 事务搜索和 v2 证据；默认 compat 保留旧接口行为。
@@ -195,6 +201,24 @@ try {
     process.exitCode='valid' in result?(result.valid?0:2):result.status==='invalid'?2:
       ['refuted','reduced','unchanged'].includes(result.status)?1:result.status==='checked-compatible'?0:
       result.status==='not-refuted'&&result.result?.report?.rules?.[result.result.category]?.status==='checked-compatible'?0:3;
+  } else if (['model-profile-v3','replay-model-profile-v3','verify-model-profile-v3'].includes(args[0])) {
+    const command=args[0];
+    const allowed=command==='replay-model-profile-v3'?['--output']:command==='verify-model-profile-v3'?['--options','--output']:['--options','--output','--capsule'];
+    const {paths,options}=localArgs(args.slice(1),allowed,command==='verify-model-profile-v3'?2:1);
+    const inputs=[...paths,...(options['--options']?[options['--options']]:[])];
+    if(inputs.filter(path=>path==='-').length>1)throw new Error('多个输入不能同时使用标准输入');
+    const source=readBounded(paths[0],command==='replay-model-profile-v3'?128*1024*1024:64*1024*1024);
+    const requested=options['--options']===undefined?{}:JSON.parse(readBounded(options['--options'],4096));
+    let result;const companions=[];
+    if(command==='replay-model-profile-v3')result=replayModelProfileCapsuleV3(source);
+    else if(command==='verify-model-profile-v3')result=verifyModelProfileV3(source,readBounded(paths[1],64*1024*1024),options['--options']===undefined?undefined:requested);
+    else if(options['--capsule']){
+      const capsule=makeModelProfileCapsuleV3(source,requested);
+      result=JSON.parse(JSON.parse(capsule).reportText);companions.push([options['--capsule'],capsule]);
+    }else result=analyzeModelProfileV3(source,requested);
+    if(Buffer.byteLength(JSON.stringify(result,null,2)+'\n','utf8')>128*1024*1024)throw new Error('model profile输出超过128MiB');
+    emitJSON(result,options['--output'],inputs,companions);
+    process.exitCode='valid' in result?(result.valid?0:2):result.status==='consistent'?0:result.status==='violation'?1:3;
   } else if (['orm-profile-v3','shrink-orm-profile-v3','replay-orm-profile-v3','verify-orm-profile-v3'].includes(args[0])) {
     const command=args[0];
     const allowed=command==='replay-orm-profile-v3'?['--output']:command==='verify-orm-profile-v3'?['--options','--output']:command==='shrink-orm-profile-v3'?['--options','--max-checks','--output','--history','--capsule']:['--options','--output','--capsule'];

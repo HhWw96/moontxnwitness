@@ -1,0 +1,318 @@
+{
+  "independentReference": true,
+  "normalization": "ready",
+  "coverageComplete": true,
+  "issues": [],
+  "normalized": {
+    "status": "ready",
+    "complete": true,
+    "issues": [],
+    "observations": [
+      {
+        "kind": "snapshot",
+        "initial": {
+          "x": [],
+          "y": []
+        },
+        "consistent": true,
+        "time": 15000000,
+        "seq": 1
+      },
+      {
+        "connection": "connection-c2ee6bf6155047f2941aba742a97f666",
+        "kind": "begin",
+        "seq": 2,
+        "time": 328000000,
+        "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44"
+      },
+      {
+        "kind": "list_read",
+        "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44",
+        "key": "x",
+        "items": [],
+        "time": 343000000,
+        "seq": 3
+      },
+      {
+        "connection": "connection-c9a1c0b158644b008f7b75e93ee2bbd4",
+        "kind": "begin",
+        "seq": 4,
+        "time": 343000000,
+        "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7"
+      },
+      {
+        "kind": "list_read",
+        "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7",
+        "key": "y",
+        "items": [],
+        "time": 343000000,
+        "seq": 5
+      },
+      {
+        "kind": "append",
+        "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44",
+        "key": "y",
+        "id": "a",
+        "value": "v",
+        "time": 359000000,
+        "seq": 6
+      },
+      {
+        "kind": "append",
+        "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7",
+        "key": "x",
+        "id": "b",
+        "value": "v",
+        "time": 375000000,
+        "seq": 7
+      },
+      {
+        "kind": "commit_request",
+        "seq": 8,
+        "time": 375000000,
+        "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 9,
+        "time": 375000000,
+        "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44"
+      },
+      {
+        "kind": "commit_request",
+        "seq": 10,
+        "time": 390000000,
+        "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 11,
+        "time": 390000000,
+        "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7"
+      }
+    ],
+    "effects": [
+      {
+        "seq": 6,
+        "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44",
+        "key": "y",
+        "id": "a",
+        "value": "v",
+        "revertedBy": null
+      },
+      {
+        "seq": 7,
+        "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7",
+        "key": "x",
+        "id": "b",
+        "value": "v",
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "transaction-ee08f6671c17417ea4e0f67cb82e2e44",
+        "connection": "connection-c2ee6bf6155047f2941aba742a97f666",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          3,
+          6,
+          8,
+          9
+        ],
+        "finalWrites": [
+          6
+        ]
+      },
+      {
+        "id": "transaction-ad9742be2a3c4d51b77a64c88e7614d7",
+        "connection": "connection-c9a1c0b158644b008f7b75e93ee2bbd4",
+        "status": "committed",
+        "beginSeq": 4,
+        "endSeq": 11,
+        "events": [
+          4,
+          5,
+          7,
+          10,
+          11
+        ],
+        "finalWrites": [
+          7
+        ]
+      }
+    ],
+    "initial": {
+      "x": [],
+      "y": []
+    },
+    "operations": 4,
+    "journals": {
+      "transaction-ee08f6671c17417ea4e0f67cb82e2e44": {
+        "id": "transaction-ee08f6671c17417ea4e0f67cb82e2e44",
+        "connection": "connection-c2ee6bf6155047f2941aba742a97f666",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          3,
+          6,
+          8,
+          9
+        ],
+        "active": false,
+        "requested": 8,
+        "marks": {},
+        "activeEffects": [
+          6
+        ],
+        "journal": [
+          {
+            "kind": "list_read",
+            "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44",
+            "key": "x",
+            "items": [],
+            "time": 343000000,
+            "seq": 3
+          },
+          {
+            "kind": "append",
+            "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44",
+            "key": "y",
+            "id": "a",
+            "value": "v",
+            "time": 359000000,
+            "seq": 6
+          },
+          {
+            "kind": "commit_request",
+            "seq": 8,
+            "time": 375000000,
+            "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44"
+          },
+          {
+            "kind": "commit_ok",
+            "seq": 9,
+            "time": 375000000,
+            "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44"
+          }
+        ]
+      },
+      "transaction-ad9742be2a3c4d51b77a64c88e7614d7": {
+        "id": "transaction-ad9742be2a3c4d51b77a64c88e7614d7",
+        "connection": "connection-c9a1c0b158644b008f7b75e93ee2bbd4",
+        "status": "committed",
+        "beginSeq": 4,
+        "endSeq": 11,
+        "events": [
+          4,
+          5,
+          7,
+          10,
+          11
+        ],
+        "active": false,
+        "requested": 10,
+        "marks": {},
+        "activeEffects": [
+          7
+        ],
+        "journal": [
+          {
+            "kind": "list_read",
+            "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7",
+            "key": "y",
+            "items": [],
+            "time": 343000000,
+            "seq": 5
+          },
+          {
+            "kind": "append",
+            "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7",
+            "key": "x",
+            "id": "b",
+            "value": "v",
+            "time": 375000000,
+            "seq": 7
+          },
+          {
+            "kind": "commit_request",
+            "seq": 10,
+            "time": 390000000,
+            "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7"
+          },
+          {
+            "kind": "commit_ok",
+            "seq": 11,
+            "time": 390000000,
+            "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7"
+          }
+        ]
+      }
+    },
+    "reads": [
+      {
+        "seq": 3,
+        "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44",
+        "key": "x",
+        "items": [],
+        "activeEffectsAtRead": []
+      },
+      {
+        "seq": 5,
+        "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7",
+        "key": "y",
+        "items": [],
+        "activeEffectsAtRead": []
+      }
+    ],
+    "sources": {
+      "a": {
+        "seq": 6,
+        "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44",
+        "key": "y",
+        "id": "a",
+        "value": "v",
+        "revertedBy": null,
+        "initial": false,
+        "effect": {
+          "seq": 6,
+          "tx": "transaction-ee08f6671c17417ea4e0f67cb82e2e44",
+          "key": "y",
+          "id": "a",
+          "value": "v",
+          "revertedBy": null
+        }
+      },
+      "b": {
+        "seq": 7,
+        "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7",
+        "key": "x",
+        "id": "b",
+        "value": "v",
+        "revertedBy": null,
+        "initial": false,
+        "effect": {
+          "seq": 7,
+          "tx": "transaction-ad9742be2a3c4d51b77a64c88e7614d7",
+          "key": "x",
+          "id": "b",
+          "value": "v",
+          "revertedBy": null
+        }
+      }
+    }
+  },
+  "analysis": "violation",
+  "exact": {
+    "status": "violation",
+    "reason": "no_serial_execution",
+    "states": 2,
+    "operationChecks": 6,
+    "witness": null
+  }
+}

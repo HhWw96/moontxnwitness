@@ -16,11 +16,13 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   }
   for(const folder of ['cmd','src','scripts','integrations','experiments','fixtures',...(includeDist?['dist']:[])])visit(folder);
   if(existsSync(resolve(root,'cmd/legacy/v025')))visit('cmd/legacy/v025',true);
+  if(existsSync(resolve(root,'cmd/legacy/v026')))visit('cmd/legacy/v026',true);
   // The independent v3 audits execute these helpers and consume this fixed
   // historical collection. New run receipts stay outside these input paths.
   if(existsSync(resolve(root,'verification/v3/tools')))visit('verification/v3/tools');
   for(const folder of ['verification/v3/synthetic-dislock-source-closure-v1','verification/business/dislock/v3-647afacfcbe14586b46714bac34c8f30','verification/faults/mlflow/run-c7227fba032f4c92b127b7357252107c'])if(existsSync(resolve(root,folder)))visit(folder,true);
   for(const folder of ['verification/configured-user-profile/v024-initial','verification/capture-persistence/v023-initial'])if(existsSync(resolve(root,folder)))visit(folder,true);
+  if(existsSync(resolve(root,'verification/model-profile-v3/v027-initial')))visit('verification/model-profile-v3/v027-initial',true);
   for(const name of ['verification/v3/dislock-explicit-policy-preregistration-2026-10-21.json','verification/v3/dislock-sql-supplement-preregistration-2026-10-21.json'])if(existsSync(resolve(root,name)))names.push(name);
   names.push('examples/postgres-requirements.txt');
   names.push('examples/orm-requirements.txt');
@@ -29,6 +31,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   names.push('examples/register-cycle.json', 'examples/register-cycle-roundtrip.mjs');
   names.push('examples/execution-roundtrip.mjs');
   names.push('examples/orm-profile-roundtrip.mjs');
+  names.push('examples/model-profile-roundtrip.mjs');
   names.push('examples/classification-roundtrip.mjs');
   names.push('examples/classification-models-roundtrip.mjs');
   return Object.fromEntries(names.sort().map(name=>[name,

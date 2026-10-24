@@ -1,0 +1,149 @@
+Error: [0007]
+   ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_controls_v3.mbt:4:3 ]
+   │
+ 4 │   initial_state : Array[Json]
+   │   ──────┬──────  
+   │         ╰──────── Error Warning (unused_field): Field 'initial_state' is never read
+───╯
+Error: [4122]
+    ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_plans_v3.mbt:94:11 ]
+    │
+ 94 │   let q = v3_dislock_quote(config.schema)
+    │           ───────────────┬───────────────  
+    │                          ╰───────────────── Function with error can only be used inside a function with error types in its signature. Please fix the return type of this function.
+────╯
+Error: [4122]
+     ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_plans_v3.mbt:119:20 ]
+     │
+ 119 │       clauses.push(v3_dislock_quote(term.0) + (if term.0 == "region" { " COLLATE \"C\"" } else { "" }) + op + "%s")
+     │                    ────────────┬───────────  
+     │                                ╰───────────── Function with error can only be used inside a function with error types in its signature. Please fix the return type of this function.
+─────╯
+Error: [4014]
+    ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:63:37 ]
+    │
+ 63 │     [{ "name": "items", "typeCode": 3802 }].to_json()
+    │                                     ──┬─  
+    │                                       ╰─── Expr Type Mismatch
+        has type : Int
+        wanted   : String
+────╯
+Error: [4014]
+    ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:65:34 ]
+    │
+ 65 │     [{ "name": "id", "typeCode": 20 }, { "name": "balance", "typeCode": 20 }, { "name": "active", "typeCode": 16 }, { "name": "region", "typeCode": 25 }].to_json()
+    │                                  ─┬  
+    │                                   ╰── Expr Type Mismatch
+        has type : Int
+        wanted   : String
+────╯
+Error: [4014]
+    ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:65:73 ]
+    │
+ 65 │     [{ "name": "id", "typeCode": 20 }, { "name": "balance", "typeCode": 20 }, { "name": "active", "typeCode": 16 }, { "name": "region", "typeCode": 25 }].to_json()
+    │                                                                         ─┬  
+    │                                                                          ╰── Expr Type Mismatch
+        has type : Int
+        wanted   : String
+────╯
+Error: [4014]
+    ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:65:111 ]
+    │
+ 65 │     [{ "name": "id", "typeCode": 20 }, { "name": "balance", "typeCode": 20 }, { "name": "active", "typeCode": 16 }, { "name": "region", "typeCode": 25 }].to_json()
+    │                                                                                                               ─┬  
+    │                                                                                                                ╰── Expr Type Mismatch
+        has type : Int
+        wanted   : String
+────╯
+Error: [4014]
+    ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:65:149 ]
+    │
+ 65 │     [{ "name": "id", "typeCode": 20 }, { "name": "balance", "typeCode": 20 }, { "name": "active", "typeCode": 16 }, { "name": "region", "typeCode": 25 }].to_json()
+    │                                                                                                                                                     ─┬  
+    │                                                                                                                                                      ╰── Expr Type Mismatch
+        has type : Int
+        wanted   : String
+────╯
+Error: [3002]
+    ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:91:20 ]
+    │
+ 91 │   let result : Json
+    │                    │ 
+    │                    ╰─ Unexpected line break here, missing `=` at the end of this line.
+────╯
+Error: [4087]
+    ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:98:7 ]
+    │
+ 98 │       result = { "kind": "list_read", "tx": tx, "key": key, "items": items.to_json() }
+    │       ───┬──  
+    │          ╰──── The variable result is not mutable.
+────╯
+Error: [4087]
+     ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:101:7 ]
+     │
+ 101 │       result = { "kind": "append", "tx": tx, "key": key, "id": orm_get(params[0], "id"), "value": orm_get(params[0], "value") }
+     │       ───┬──  
+     │          ╰──── The variable result is not mutable.
+─────╯
+Error: [4087]
+     ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:116:5 ]
+     │
+ 116 │     result = { "kind": "row_read", "tx": tx, "relation": "business", "predicate": predicate.to_json(), "rows": returned.to_json(), "complete": true }
+     │     ───┬──  
+     │        ╰──── The variable result is not mutable.
+─────╯
+Error: [4087]
+     ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:127:5 ]
+     │
+ 127 │     result = { "kind": "row_write", "tx": tx, "relation": "business", "key": key, "action": action.to_json(), "version": cells[4], "predecessor": cells[5], "values": image }
+     │     ───┬──  
+     │        ╰──── The variable result is not mutable.
+─────╯
+Error: [0013]
+     ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:168:47 ]
+     │
+ 168 │     for key in config.keys { values[key] = [].to_json() }
+     │                                               ───┬───  
+     │                                                  ╰───── Error Warning (unresolved_type_variable): The type of this expression is (Array[_/0]) -> Json, which contains unresolved type variables. The type variable is default to Unit.
+─────╯
+Error: [3002]
+     ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:178:23 ]
+     │
+ 178 │     let derived : Json
+     │                       │ 
+     │                       ╰─ Unexpected line break here, missing `=` at the end of this line.
+─────╯
+Error: [4087]
+     ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:189:7 ]
+     │
+ 189 │       derived = copy.to_json()
+     │       ───┬───  
+     │          ╰───── The variable derived is not mutable.
+─────╯
+Error: [4087]
+     ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:192:7 ]
+     │
+ 192 │       derived = { "kind": "snapshot", "initial": initial, "consistent": true, "time": required(event, "time", "snapshot") }
+     │       ───┬───  
+     │          ╰───── The variable derived is not mutable.
+─────╯
+Error: [4087]
+     ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_projection_v3.mbt:196:7 ]
+     │
+ 196 │       derived = raw
+     │       ───┬───  
+     │          ╰───── The variable derived is not mutable.
+─────╯
+Error: [4122]
+    ╭─[ D:\CodexScratch\MoonTxnWitness-capture-v022-20261023\src\model_profile_sql_v3.mbt:31:3 ]
+    │
+ 31 │   templates.map(text => text.replace_all(old="\"mtw_template_schema\"", new=v3_dislock_quote(schema)))
+    │   ──────────────────────────────────────────────────┬─────────────────────────────────────────────────  
+    │                                                     ╰─────────────────────────────────────────────────── Function with error can only be used inside a function with error types in its signature. Please fix the return type of this function.
+────╯
+Failed with 0 warnings, 19 errors.
+Error: failed to run check for target Js
+
+Caused by:
+    failed when checking project
+MoonBit exited with 4294967295

@@ -1,0 +1,127 @@
+{
+  "traceSchema": 3,
+  "dataModel": "relation-set-v1",
+  "clockDomain": "mtw-v3-433baf572b134c808236bcd87d0c3cc6",
+  "scope": {
+    "exclusiveWriters": true,
+    "completeSnapshotTables": [
+      "business"
+    ]
+  },
+  "events": [
+    {
+      "kind": "snapshot",
+      "initial": {
+        "business": [
+          {
+            "key": "1",
+            "values": {
+              "active": true,
+              "balance": "10",
+              "region": "east"
+            },
+            "version": "9f536dd9-462c-4072-a54e-c1f575ae4947"
+          },
+          {
+            "key": "2",
+            "values": {
+              "active": true,
+              "balance": "20",
+              "region": "east"
+            },
+            "version": "e8452401-b0b8-4638-9123-dd5d6567309d"
+          }
+        ]
+      },
+      "consistent": true,
+      "time": 15000000,
+      "seq": 1
+    },
+    {
+      "connection": "connection-5d4f5b69de5548338bf900871c87c355",
+      "kind": "begin",
+      "seq": 2,
+      "time": 109000000,
+      "tx": "transaction-6dcf4e3add14432abdf5ce436f316312"
+    },
+    {
+      "kind": "row_write",
+      "tx": "transaction-6dcf4e3add14432abdf5ce436f316312",
+      "relation": "business",
+      "key": "1",
+      "action": "update",
+      "version": "d78ecb3c-a07b-450a-9c2d-818fd73d0e75",
+      "predecessor": "9f536dd9-462c-4072-a54e-c1f575ae4947",
+      "values": {
+        "balance": "99",
+        "active": false,
+        "region": "west"
+      },
+      "time": 140000000,
+      "seq": 3
+    },
+    {
+      "kind": "rollback_ok",
+      "seq": 4,
+      "time": 140000000,
+      "tx": "transaction-6dcf4e3add14432abdf5ce436f316312"
+    },
+    {
+      "connection": "connection-87b7dc9680744754a785c98c8da97e73",
+      "kind": "begin",
+      "seq": 5,
+      "time": 250000000,
+      "tx": "transaction-2a8508a299c041bfa71505c87aca0ca7"
+    },
+    {
+      "kind": "row_read",
+      "tx": "transaction-2a8508a299c041bfa71505c87aca0ca7",
+      "relation": "business",
+      "predicate": [
+        {
+          "column": "id",
+          "op": "eq",
+          "value": "1"
+        }
+      ],
+      "rows": [
+        {
+          "key": "1",
+          "version": "9f536dd9-462c-4072-a54e-c1f575ae4947",
+          "values": {
+            "balance": "10",
+            "active": true,
+            "region": "east"
+          }
+        }
+      ],
+      "complete": true,
+      "time": 265000000,
+      "seq": 6
+    },
+    {
+      "kind": "commit_request",
+      "seq": 7,
+      "time": 265000000,
+      "tx": "transaction-2a8508a299c041bfa71505c87aca0ca7"
+    },
+    {
+      "kind": "commit_ok",
+      "seq": 8,
+      "time": 265000000,
+      "tx": "transaction-2a8508a299c041bfa71505c87aca0ca7"
+    }
+  ],
+  "gaps": [],
+  "relationSchema": {
+    "business": {
+      "primaryKey": "id",
+      "columns": {
+        "id": "int64",
+        "balance": "int64",
+        "active": "bool",
+        "region": "text"
+      }
+    }
+  }
+}

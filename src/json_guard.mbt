@@ -146,7 +146,7 @@ fn JsonScan::value(self : JsonScan) -> Unit raise {
 }
 
 ///|
-fn guarded_json(text : String, limit? : Int = 1048576) -> Json raise {
+fn guarded_base(text : String, limit? : Int = 1048576) -> Json raise {
   if text.length() > limit {
     fail("JSON input exceeds the size limit")
   }
@@ -180,4 +180,188 @@ fn valid_identifier(s : String) -> Bool {
     }
   }
   true
+}
+
+///|
+// The original JsonScan remains the exact scalar-indexed raw-index checksum
+// scanner. Large guarded_json inputs only need forward traversal and use one
+// Unicode Char iterator plus one current element instead of a full Char array.
+priv struct StreamingJsonScan {
+  chars : Iter[Char]
+  decoded_keys : Map[String, String]
+  mut current : Char?
+  mut pos : Int
+  mut depth : Int
+}
+
+///|
+fn StreamingJsonScan::new(text : String) -> StreamingJsonScan {
+  let chars = text.iter()
+  { chars, decoded_keys: Map([]), current: chars.next(), pos: 0, depth: 0, }
+}
+
+///|
+fn StreamingJsonScan::advance(self : StreamingJsonScan) -> Unit {
+  if self.current != None {
+    self.pos += 1
+    self.current = self.chars.next()
+  }
+}
+
+///|
+fn StreamingJsonScan::skip_string(self : StreamingJsonScan) -> Unit raise {
+  self.advance()
+  while self.current != None {
+    let c = self.current.unwrap()
+    self.advance()
+    if c == '"' {
+      return
+    }
+    if c == '\\' {
+      if self.current == None {
+        fail("Truncated JSON escape")
+      }
+      self.advance()
+    }
+  }
+  fail("Unterminated JSON string")
+}
+
+///|
+fn StreamingJsonScan::white(self : StreamingJsonScan) -> Unit {
+  while self.current != None && json_white(self.current.unwrap()) {
+    self.advance()
+  }
+}
+
+///|
+fn StreamingJsonScan::string_token(self : StreamingJsonScan) -> String raise {
+  if self.current == None || self.current.unwrap() != '"' {
+    fail("Expected JSON string")
+  }
+  let b = StringBuilder()
+  b.write_char('"')
+  self.advance()
+  while self.current != None {
+    let c = self.current.unwrap()
+    self.advance()
+    b.write_char(c)
+    if c == '"' {
+      return b.to_string()
+    }
+    if c == '\\' {
+      if self.current == None {
+        fail("Truncated JSON escape")
+      }
+      b.write_char(self.current.unwrap())
+      self.advance()
+    }
+  }
+  fail("Unterminated JSON string")
+}
+
+///|
+fn StreamingJsonScan::value(self : StreamingJsonScan) -> Unit raise {
+  self.white()
+  if self.current == None {
+    fail("Truncated JSON value")
+  }
+  let c = self.current.unwrap()
+  if c == '{' || c == '[' {
+    self.depth += 1
+    if self.depth > 64 {
+      fail("JSON nesting exceeds 64 levels")
+    }
+    self.advance()
+    let close = if c == '{' { '}' } else { ']' }
+    self.white()
+    let seen : Map[String, Bool] = Map([])
+    if self.current != None && self.current.unwrap() == close {
+      self.advance()
+      self.depth -= 1
+      return
+    }
+    while self.current != None {
+      if c == '{' {
+        self.white()
+        let raw_key = self.string_token()
+        let key = match self.decoded_keys.get(raw_key) {
+          Some(key) => key
+          None => {
+            let key = match @json.parse(raw_key) {
+              String(s) => s
+              _ => fail("Invalid object key")
+            }
+            self.decoded_keys[raw_key] = key
+            key
+          }
+        }
+        if seen.contains(key) {
+          fail("Duplicate JSON object key: " + key)
+        }
+        seen[key] = true
+        self.white()
+        if self.current == None || self.current.unwrap() != ':' {
+          fail("Missing JSON colon")
+        }
+        self.advance()
+      }
+      self.value()
+      self.white()
+      if self.current == None {
+        fail("Unclosed JSON container")
+      }
+      if self.current.unwrap() == close {
+        self.advance()
+        self.depth -= 1
+        return
+      }
+      if self.current.unwrap() != ',' {
+        fail("Missing JSON comma")
+      }
+      self.advance()
+    }
+    fail("Unclosed JSON container")
+  } else if c == '"' {
+    self.skip_string()
+  } else {
+    let start = self.pos
+    while self.current != None &&
+          self.current.unwrap() != ',' &&
+          self.current.unwrap() != '}' &&
+          self.current.unwrap() != ']' &&
+          !json_white(self.current.unwrap()) {
+      self.advance()
+    }
+    if self.pos == start {
+      fail("Invalid JSON value")
+    }
+  }
+}
+
+///|
+
+///|
+// Valid large inputs avoid a materialized character array. Input errors use
+// the original guard to preserve diagnostic priority and source coordinates.
+fn guarded_json(text : String, limit? : Int = 1048576) -> Json raise {
+  if text.length() > limit {
+    return guarded_base(text, limit~)
+  }
+  let scan = StreamingJsonScan::new(text)
+  let parsed : Json? = try {
+    scan.value()
+    scan.white()
+    if scan.current == None {
+      Some(@json.parse(text))
+    } else {
+      None
+    }
+  } catch {
+    _ => None
+  }
+  match parsed {
+    Some(value) => value
+    None => guarded_base(text, limit~)
+  }
 }

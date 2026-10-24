@@ -1,3 +1,12 @@
+## Unreleased — v0.2.7
+
+- Add an explicit PostgreSQL list and relation capture profile that derives model facts from original SQL, native results, actual fetch delivery and transaction outcomes.
+- Add configured-model SDK/CLI analysis, exact report verification and complete original-source capsules. Unsupported or incomplete observations retain their diagnostic gaps.
+- Integrate the Unicode streaming JSON guard with the original fallback and error semantics. The paired v0.2.6 experiment is recorded in [performance evidence](docs/performance-experiment-streaming-json-guard.md); it is not a whole-version v0.2.7 performance result.
+- Preserve 35 authentic public v0.2.6 producer families through an integrity-checked historical worker. Ordinary current analysis starts no historical worker.
+- Add the ten-case configured-model PostgreSQL CI flow and the new host/driver checks. Full clean-environment verification, current database evidence and stable publication are still pending.
+
+The configured model profile currently provides analysis and original-package replay. Source-closed profile reduction remains a later extension.
 # 0.2.6 — 2026-10-24
 
 - Add explicit six-definition model checks for versioned point registers and the bounded single-append list graph profile, with separate per-rule results and applicability gaps.

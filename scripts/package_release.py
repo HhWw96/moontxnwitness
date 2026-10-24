@@ -35,13 +35,18 @@ current_source = subprocess.check_output([NODE, '--input-type=module', '-e',
 assert current_source == MANIFEST['sourceSha256'], 'MoonBit source changed after the verified build'
 for runtime, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'captureCoreSha256')):
     assert hashlib.sha256((ROOT / 'dist' / runtime).read_bytes()).hexdigest() == MANIFEST[field], 'Compiled runtime changed after build'
-for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'demo.mjs', 'postgres-demo.mjs'):
+for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'demo.mjs', 'postgres-demo.mjs'):
     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
 
 
 assert (ROOT/'cmd/legacy-v024.mjs').read_bytes() == (ROOT/'dist/legacy-v024.mjs').read_bytes(), 'Frozen ORM dispatch changed after build'
 subprocess.check_call([NODE,'--input-type=module','-e',
     "import{verifyFrozenLegacyV024}from'./scripts/legacy-v024-runtime.mjs';verifyFrozenLegacyV024(process.cwd());verifyFrozenLegacyV024(process.cwd(),process.cwd()+'/dist/legacy/v024');"],cwd=ROOT)
+
+for helper in ('legacy-v026.mjs', 'legacy-v026-runtime.mjs', 'legacy-v026-worker.mjs', 'legacy-v026-binding.mjs'):
+    assert (ROOT / 'cmd' / helper).read_bytes() == (ROOT / 'dist' / helper).read_bytes(), 'Fixed public26 helper changed after build: ' + helper
+subprocess.check_call([NODE, '--input-type=module', '-e',
+    "import{verifyPublicV026Runtime as source}from'./cmd/legacy-v026-runtime.mjs';import{verifyPublicV026Runtime as installed}from'./dist/legacy-v026-runtime.mjs';const a=source(),b=installed();if(a.manifestSha256!==b.manifestSha256||a.workerSha256!==b.workerSha256)throw Error('Copied public26 runtime differs');"], cwd=ROOT)
 
 def archive(files, path):
     home_paths = private_home_paths(
@@ -181,6 +186,26 @@ for kind in ("portable", "source"):
         assert replay['valid'] and replay['report']['result']['reduction']['sourceClosure']['complete']
         checks.append(kind + ' configured ORM explicit-profile source binding, closed reduction and capsule replay')
 
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 7):
+        assert (consumer / 'dist/model-profile.mjs').is_file(), 'Required model-profile runtime missing'
+        assert (consumer / 'examples/model-profile-roundtrip.mjs').is_file(), 'Required model-profile example missing'
+
+    if (consumer / 'dist/model-profile.mjs').is_file():
+        configured_model_demo = json.loads(run([NODE, 'examples/model-profile-roundtrip.mjs', '--out-root', str(work)], consumer))
+        assert configured_model_demo['passed'] and configured_model_demo['version'] == VERSION
+        assert configured_model_demo['actualDatabaseExecution'] is False and configured_model_demo['cases'] == 4
+        assert configured_model_demo['originalDiagnosticsRemainPartial'] and configured_model_demo['fullOriginalSourcesRetained']
+        assert configured_model_demo['sourceClosedReductionClaimed'] is False
+        directory = (work / configured_model_demo['outputDirectory']).resolve()
+        assert directory.is_relative_to(work.resolve())
+        for item in configured_model_demo['files']:
+            path = (directory / item['file']).resolve()
+            assert path.is_relative_to(directory)
+            assert sha256(path) == item['sha256'] and path.stat().st_size == item['bytes']
+        replay = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-model-profile-v3', str(directory / 'list-write-skew.capsule.json')], consumer))
+        assert replay['valid'] and replay['status'] == 'violation' and replay['analysisCoverageAccepted']
+        checks.append(kind + ' configured list/relation original-source model projection and complete capsule replay')
+
     if (consumer / 'dist/classification-models.mjs').is_file():
         model_demo = json.loads(run([NODE, 'examples/classification-models-roundtrip.mjs', '--out-root', str(work)], consumer))
         assert model_demo['passed'] and model_demo['version'] == VERSION
@@ -268,6 +293,15 @@ for kind in ("portable", "source"):
         assert previous_execution['producerEngineVersion'] == '0.1.7' and len(previous_execution['cases']) == 2
         assert all(item['valid'] and item['engineVersion'] == '0.1.7' for item in previous_execution['cases'])
         checks.append(kind + ' actual-v017 execution-capsule compatibility')
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 7):
+        original26 = json.loads(run([NODE, 'scripts/compat-v026-test.mjs', 'dist',
+                                     'fixtures/compat-v026', str(work / ('public26-' + kind))], consumer))
+        assert original26['passed'] and original26['currentRuntimeVersion'] == VERSION
+        assert original26['originalProducerFamilies'] == 35 and original26['checks'] > 0
+        assert original26['normalAnalysisHistoricalWorkersStarted'] == 0
+        assert original26['expectedRegenerated'] is False
+        checks.append(kind + ' actual public26 35-family fixed-runtime exact compatibility and tamper controls')
 
     if tuple(map(int, VERSION.split('.'))) >= (0, 2, 6):
         original25 = json.loads(run([NODE, 'scripts/compat-v025-test.mjs', 'dist',

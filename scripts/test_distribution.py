@@ -61,6 +61,7 @@ class DistributionTests(unittest.TestCase):
         put('docs/usage.md', 'fixture\n')
         put('examples/input.json', {})
         put('examples/orm-profile-roundtrip.mjs', '// offline configured-profile consumer\n')
+        put('examples/model-profile-roundtrip.mjs', '// offline configured model source consumer\n')
         put('examples/classification-roundtrip.mjs', '// offline category source consumer\n')
         put('examples/classification-models-roundtrip.mjs', '// offline explicit model consumer\n')
         put('fixtures/classification-models-v3/list-skew.json', {'syntheticInputs': True})
@@ -78,6 +79,7 @@ class DistributionTests(unittest.TestCase):
         put('dist/core.mjs', 'export const actualCore = true;\n')
         put('dist/capture-core.mjs', 'export const actualCaptureCore = true;\n')
         put('dist/orm-profile.mjs', 'export const analyzeOrmProfileV3 = true;\n')
+        put('dist/model-profile.mjs', 'export const analyzeModelProfileV3 = true;\n')
         put('dist/classification.mjs', 'export const classifyV3 = true;\n')
         put('dist/classification-models.mjs', 'export const classifyModelsV3 = true;\n')
         cls.tested = {'cmd/sdk.mjs': 'fixture', 'dist/core.mjs': 'fixture'}
@@ -134,6 +136,12 @@ class DistributionTests(unittest.TestCase):
         for kind in ('source','portable'):
             self.assertIn('examples/classification-models-roundtrip.mjs',self.selection[kind])
             self.assertIn('fixtures/classification-models-v3/list-skew.json',self.selection[kind])
+
+    def test_configured_model_runtime_example_and_original_evidence_remain(self):
+        self.assertIn('dist/model-profile.mjs',self.selection['portable'])
+        for kind in ('source','portable'):
+            self.assertIn('examples/model-profile-roundtrip.mjs',self.selection[kind])
+            self.assertIn('verification/model-profile-v3/v027-initial/fixture.json',self.selection[kind])
 
     def test_actual_presence_and_capture_run_closures_remain(self):
         for kind in ('source', 'portable'):

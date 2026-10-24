@@ -46,6 +46,30 @@ jobs:
         run: npm run build
       - name: Install frozen optional database driver
         run: python -m pip install --require-hashes -r examples/postgres-requirements.txt
+      - name: Capture all ten configured model scenarios and verify the current build
+        shell: bash
+        env:
+          MTW_MODEL_PG_PORT: ${{ job.services.postgres.ports[5432] }}
+          MTW_MODEL_CONNECTION: ${{ runner.temp }}/moontxnwitness-model-profile-${{ github.run_id }}-${{ github.run_attempt }}.json
+          MTW_PYTHON: python
+        run: |
+          set -euo pipefail
+          umask 077
+          python -I -B - <<'PY'
+          import json, os, pathlib
+          connection = pathlib.Path(os.environ['MTW_MODEL_CONNECTION'])
+          assert connection.parent.resolve() == pathlib.Path(os.environ['RUNNER_TEMP']).resolve()
+          with connection.open('x', encoding='utf-8') as stream:
+              json.dump({'host':'127.0.0.1', 'port':int(os.environ['MTW_MODEL_PG_PORT']),
+                         'dbname':'mtw_test', 'user':'mtw', 'password':'fixture-only'}, stream)
+          PY
+          trap 'rm -f -- "$MTW_MODEL_CONNECTION"' EXIT
+          python -B experiments/model_profile_v3/driver_cases.py \
+            --connection-file "$MTW_MODEL_CONNECTION" \
+            --output verification/model-profile-v3/postgres-ci/suite
+          node experiments/model_profile_v3/verify_cases.mjs \
+            verification/model-profile-v3/postgres-ci/suite \
+            verification/model-profile-v3/postgres-ci/projection
       - name: Capture and reproduce 20 rounds per isolation scenario
         env:
           MTW_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
@@ -172,4 +196,11 @@ jobs:
             verification/relation-v3/postgres-ci-model/
             verification/faults/mlflow/ci/
             verification/faults/mlflow/ci-model/
+            verification/model-profile-v3/postgres-ci/suite/database-receipt.json
+            verification/model-profile-v3/postgres-ci/suite/*-failure.txt
+            verification/model-profile-v3/postgres-ci/suite/*/profile-source.json
+            verification/model-profile-v3/postgres-ci/suite/*/sources.jsonl
+            verification/model-profile-v3/postgres-ci/suite/*/sources.jsonl.index.json
+            verification/model-profile-v3/postgres-ci/suite/*/capture/
+            verification/model-profile-v3/postgres-ci/projection/
             dist/
