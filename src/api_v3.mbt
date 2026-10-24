@@ -332,6 +332,12 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
     }
     let mut trace = guarded_json(text, limit=8388608)
     let mut report = v3_analysis(text, analysis_options)
+    // Deleting transactions preserves the root dataModel. Dispatch directly to
+    // the same full analyzer; its parser still source-validates every candidate.
+    let data_model = match trace {
+      Object(root) => root.get("dataModel")
+      _ => None
+    }
     let removed : Array[String] = []
     let mut checks = 0
     let mut minimal = false
@@ -373,10 +379,26 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
             prune_sql_ledger~,
           )
           checks += 1
-          let candidate_report = v3_analysis(
-            candidate.stringify(),
-            analysis_options,
-          )
+          let candidate_text = candidate.stringify()
+          // Keep the old dispatch fallback if canonical encoding crosses its
+          // text limit; otherwise deletion cannot change the model or depth.
+          // The guarded JSON map has no duplicate keys; reuse its structure,
+          // but reconstruct every semantic index and preserve invalid fallbacks.
+          let candidate_report = if candidate_text.length() > 8388608 {
+            v3_analysis(candidate_text, analysis_options)
+          } else {
+            match data_model {
+              Some(String("append-list-v1")) =>
+                list_v3_analysis(candidate_text, analysis_options, v=candidate)
+              Some(String("relation-set-v1")) =>
+                relation_v3_analysis(
+                  candidate_text,
+                  analysis_options,
+                  v=candidate,
+                )
+              _ => v3_analysis(candidate_text, analysis_options)
+            }
+          }
           if object_fields(candidate_report, "report").get("status") ==
             Some("violation".to_json()) {
             let old_events = match object_fields(trace, "trace").at("events") {
@@ -431,5 +453,15 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
     result.stringify(indent=2)
   } catch {
     e => v3_failure(e.to_string()).stringify(indent=2)
+  }
+}
+
+///|
+// A private reduction value is derived only from the original guarded capture.
+// Public textual calls retain duplicate-key, depth and text-size validation.
+fn v3_guarded_candidate(text : String, value : Json?) -> Json raise {
+  match value {
+    Some(value) => value
+    None => guarded_json(text, limit=8388608)
   }
 }

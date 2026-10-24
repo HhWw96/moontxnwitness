@@ -133,8 +133,8 @@ fn list_v3_invalid(text : String, message : String) -> Json {
 }
 
 ///|
-fn list_v3_parse(text : String) -> ListV3Parsed raise {
-  let root = object_fields(guarded_json(text, limit=8388608), "list trace")
+fn list_v3_parse(text : String, v? : Json) -> ListV3Parsed raise {
+  let root = object_fields(v3_guarded_candidate(text, v), "list trace")
   known_fields(
     root,
     ["traceSchema", "dataModel", "clockDomain", "scope", "events", "gaps"],
@@ -782,9 +782,9 @@ fn list_v3_report(
 }
 
 ///|
-fn list_v3_analysis(text : String, options_text : String) -> Json raise {
-  let options = list_v3_options(options_text)
-  let parsed = list_v3_parse(text) catch {
+fn list_v3_analysis(text : String, o : String, v? : Json) -> Json raise {
+  let options = list_v3_options(o)
+  let parsed = list_v3_parse(text, v?) catch {
     error =>
       return list_v3_report(
         list_v3_invalid(text, error.to_string()),
