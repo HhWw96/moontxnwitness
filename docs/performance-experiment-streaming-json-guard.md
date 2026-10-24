@@ -15,6 +15,12 @@
 
 [原始证据包](../verification/performance-experiments/streaming-json-guard/MoonTxnWitness-v0.2.6-streaming-guard-performance-evidence.tar.xz)、[独立复核](../verification/performance-experiments/streaming-json-guard/independent-review.json)及[逐负载结果](../verification/performance-experiments/streaming-json-guard/REPORT.json)保留源码差分、固定输入、原工具和 94 个运行文件。用同目录 `verify_evidence.py` 加归档路径，只读核对所有样本和原始报告；它不导入 SDK，也不重新计时。
 
-605 份正确性原件公开 604 份；1 份首次失败日志含本机用户路径，原文私下保留，公开其相对身份、长度和摘要。原 plan 未改，因此公开子集不能直接一键重跑原控制器的全部依赖，详见 [隐私范围](../verification/performance-experiments/streaming-json-guard/PRIVACY-SCOPE.json)。两处历史测试清单偏差保持待核实，不把公开 v0.2.6 输出兼容当作其规范正确性。
+605 份正确性原件公开 604 份；1 份首次失败日志含本机用户路径，原文私下保留，公开其相对身份、长度和摘要。原 plan 未改，因此公开子集不能直接一键重跑原控制器的全部依赖，详见 [隐私范围](../verification/performance-experiments/streaming-json-guard/PRIVACY-SCOPE.json)。原实验把两处历史测试清单偏差列为待核实；后续适用性复核见下文，不把输出兼容直接当作全部规范正确性。
 
 本次实验通过预先声明的速度／内存二选一目标及全部控制检查。原实验的 `candidateAdopted=false` 保持，正式主线集成、跨目标回归和发布采用分别记录；已发布的 v0.2.6 默认实现不因这份实验记录而改变。[此前失败的图复用实验](performance-experiment-empty-interval-reuse.md)保持原结论。
+
+## 历史期望适用性补充
+
+随后查明，这两处原始清单比较来自同一个“读取后来被保存点回滚的自有写”案例。早已公开的 [protocol-correction-1.json](../fixtures/v3/protocol-correction-1.json) 明确更正该期望：读取按当时自有写覆盖判断，后来的回滚撤销写效果，不撤销已交付观察；该更正没有修改生产实现。
+
+本轮采集比较脚本未加载这一更正层，故原始 `historicalManifestMatched=false` 继续按原文保存。[独立适用性复核](../verification/performance-experiments/streaming-json-guard/historical-expectation-review.json)绑定了原清单、原始历史、更正文件及此前已执行的 oracle 记录；未发现该案例的新生产语义缺口。历史的 57 例 oracle 与更正层追加的 5 例不回填成本轮新执行，后续测试清单同时固定原 manifest 和 correction 摘要。

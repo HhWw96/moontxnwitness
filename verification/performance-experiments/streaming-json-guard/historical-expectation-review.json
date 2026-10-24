@@ -1,0 +1,103 @@
+{
+  "format": "moontxnwitness-v3-historical-expectation-applicability-review/v1",
+  "reviewPassed": true,
+  "finding": "The raw52-case manual manifest was explicitly superseded by a pre-existing published protocol correction. The new195-case baseline-compatibility harness compared the raw manifest without applying that existing correction.",
+  "originalPublishedCommit": "16ba3552f08d134f55795e6d95286c1d43a374ad",
+  "currentPublicBaselineCommit": "4c74fd29f45c2e6756a20881fefb03677fa9bf52",
+  "originalManifestSha256": "2819d0b21f5b4f8f89ac3121cbee52a639304f2687e4eabfbda190f9fea9d86c",
+  "correctionSha256": "dbb7ccaf5caea41b7fb25da956b3eb088d582d92d920fa024e8593c351beffee",
+  "correctionBytes": 3378,
+  "correctionAlreadyPresentInInitialV3Commit": true,
+  "originalManifestAndTargetTraceAndCorrectionUnmodifiedAcrossBothCommits": true,
+  "originalExpectation": {
+    "status": "inconclusive",
+    "issue": "own_read_mismatch",
+    "readCount": 1
+  },
+  "applicableExplicitlyCorrectedExpectation": {
+    "status": "ready",
+    "revertedVersions": [
+      "x1"
+    ],
+    "finalVersions": [],
+    "readCount": 1,
+    "legacyReadCount": 0
+  },
+  "correctionReason": "The original independent oracle applied the final revertedBy flag to an earlier own read. The own overlay must instead be checked at the read event. A later rollback revokes a write effect, but does not invalidate a previously valid own read. Observations remain intact and valid own reads can be omitted from the intertransaction register projection. Reading a revoked version after rollback remains inconclusive. Both directions are covered below.",
+  "productionImplementationChangedForCorrection": false,
+  "originalRawManifestMatchedByCurrentPublicAndCandidate": false,
+  "existingApplicableCorrectionExplainsBothHarnessMismatches": true,
+  "newProductionSemanticGapConfirmedForThisFixture": false,
+  "notAStreamingCandidateRegression": true,
+  "normalizerSourceEvidence": {
+    "initialReadTagLine": 457,
+    "initialPostPassFilterLine": 686,
+    "initialProjectionFilterLine": 824,
+    "publicReadTagLine": 512,
+    "publicPostPassFilterLine": 777,
+    "publicProjectionFilterLine": 916,
+    "meaning": "Own-read status is determined at observation time and preserved across later rollback; source checks apply to non-own reads; valid own observations remain in raw evidence but are omitted from intertransaction projection."
+  },
+  "originalFirstFailure": {
+    "path": "verification/v3/acceptance-2026-10-21T02-10-46-492Z/receipt.json",
+    "bytes": 15427,
+    "sha256": "7fa2cceb57e05ec9ec1c115b9fae6e804dfd47bf97d6a23fd246d3c23d380760",
+    "passed": false,
+    "targetCases": [
+      {
+        "name": "normalize/read-of-later-reverted-own-write",
+        "passed": false,
+        "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'ready'\n- 'inconclusive'\n"
+      },
+      {
+        "name": "analyze/read-of-later-reverted-own-write",
+        "passed": false,
+        "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'consistent'\n- 'inconclusive'\n"
+      }
+    ]
+  },
+  "existingHistorical57ReferenceReceipt": {
+    "path": "verification/v3/acceptance-2026-10-23T08-31-31-964Z/oracle-results.json",
+    "bytes": 136944,
+    "sha256": "78af16dec732e2ee74c910991de39d7cd6b6e09ce95d8ff43b7898bf4931ed11",
+    "passed": true,
+    "cases": 57,
+    "targetManualExpectationPassed": true,
+    "targetExpectationOrigin": "fixtures/v3/protocol-correction-1.json",
+    "targetSummary": {
+      "status": "ready",
+      "txOutcomes": {
+        "T": "committed"
+      },
+      "activeVersions": [],
+      "revertedVersions": [
+        "x1"
+      ],
+      "finalVersions": [],
+      "readCount": 1,
+      "legacyReadCount": 0
+    },
+    "actualDatabaseExecution": false,
+    "historicalExecutionOnlyNotNewCandidateCall": true
+  },
+  "publicSources": {
+    "explicitCorrection": "https://github.com/HhWw96/moontxnwitness/blob/4c74fd29f45c2e6756a20881fefb03677fa9bf52/fixtures/v3/protocol-correction-1.json",
+    "originalRawManifest": "https://github.com/HhWw96/moontxnwitness/blob/4c74fd29f45c2e6756a20881fefb03677fa9bf52/fixtures/v3/manifest.json",
+    "effectiveReferenceLoader": "https://github.com/HhWw96/moontxnwitness/blob/4c74fd29f45c2e6756a20881fefb03677fa9bf52/scripts/v3-independent-oracle.py"
+  },
+  "followupTodos": [
+    "Update future capture acceptance inventories to bind both original manifest SHA and existing correction SHA, keeping raw-manifest and effective-contract comparisons as separate fields.",
+    "Add the correction layer five additional frozen boundary inputs to future new-candidate capture validation; preserve original expected values and source identities.",
+    "Do not increment the completed195 candidate cases or claim those additional five were executed in this campaign.",
+    "Preserve historicalManifestMatched=false for the raw old-manifest comparison; explain explicitCorrectionApplicable=true in a separate audit addendum.",
+    "No product change is justified solely to match the obsolete inconclusive expectation."
+  ],
+  "newCandidateAdditionalFiveCasesExecutedHere": false,
+  "existingHistoricalRawEvidenceOrPerformanceArchiveModified": false,
+  "oldExpectationsRewritten": false,
+  "sdkExecutedHere": false,
+  "compilerExecutedHere": false,
+  "oracleExecutedHere": false,
+  "databaseExecutedHere": false,
+  "performanceMeasuredHere": false
+}

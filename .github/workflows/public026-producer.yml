@@ -7,9 +7,11 @@ jobs:
   public026-producer:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    env:
-      PUBLIC026_OUT: ${{ runner.temp }}/moontxnwitness-public026-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
+      - name: Set the fresh output path at runtime
+        shell: bash
+        run: |
+          printf '%s\n' "PUBLIC026_OUT=$RUNNER_TEMP/moontxnwitness-public026-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.workflow_sha }}
