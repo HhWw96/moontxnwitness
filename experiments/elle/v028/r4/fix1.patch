@@ -1,0 +1,39 @@
+--- original-as/r4_controller.py
++++ fix1/r4_controller.py
+@@ -175,6 +175,16 @@
+                 returned = "returned" in phases
+                 if value.get("actualElleResultReturned") is not returned:
+                     raise ValueError("Returned result lacks matching durable marker")
++                attempted = value.get("actualElleInvocationAttempted")
++                retained = value.get("rawResultRetained")
++                if type(attempted) is not bool or type(retained) is not bool:
++                    raise ValueError("Actual invocation/retention state must be boolean")
++                if attempted is not ("invocation-intent" in phases):
++                    raise ValueError("Attempted state contradicts original durable phases")
++                if returned and not attempted:
++                    raise ValueError("Returned result requires an attempted invocation")
++                if retained and not returned:
++                    raise ValueError("Retained result requires a returned invocation")
+                 row["actualCheckerReturned"] = returned
+                 row["actualCheckerInvocationAttempted"] = value.get("actualElleInvocationAttempted") is True
+                 if value.get("rawResultRetained"):
+--- original-as/collect_campaign.py
++++ fix1/collect_campaign.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ import sys
+ 
+-PIN = "7ee592481a8df704e608d144f76e51d46a7d524f4ab99dfd4e58ed6602a9fb45"
++PIN = "4f9a73a5fe82478d913cb751ab68714d4ba0558c85b45a3933c6eb9a6c3078ef"
+ 
+ 
+ 
+@@ -13,7 +13,7 @@
+     all_present = directories == 40 and len(results) == 40
+     returned = (all_present and not issues and all(r["transportIntegrity"] for r in results.values())
+                 and report["actualElleReturnedInputs"] == 2000)
+-    process_ok = all(r.get("process", {}).get("exitCode") == 0
++    process_ok = all_present and all(r.get("process", {}).get("exitCode") == 0
+                      and r.get("process", {}).get("stopReason") is None
+                      and not r.get("process", {}).get("rawStreamsMayBeTruncated")
+                      and not r.get("process", {}).get("controllerErrors")

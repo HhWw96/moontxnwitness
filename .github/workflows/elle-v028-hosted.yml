@@ -1,0 +1,45 @@
+# Experimental branch only. Producer never approves or starts checker inputs.
+name: Elle v028 runtime producer only
+on:
+  push:
+    branches: [experiment/elle-v028-hosted]
+    paths:
+      - '.github/workflows/elle-v028-hosted.yml'
+      - 'experiments/elle/v028/**'
+permissions:
+  contents: read
+concurrency:
+  group: elle-v028-runtime-producer
+  cancel-in-progress: false
+jobs:
+  runtime-producer:
+    if: github.repository == 'HhWw96/moontxnwitness' && github.ref == 'refs/heads/experiment/elle-v028-hosted'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Execute reviewed runtime provider once and preserve first evidence
+        run: |
+          set -euo pipefail
+          export TEMP="$RUNNER_TEMP" TMP="$RUNNER_TEMP" TMPDIR="$RUNNER_TEMP"
+          python -B -c 'import hashlib,sys;from pathlib import Path;p,h=sys.argv[1:3];b=Path(p).read_bytes();assert hashlib.sha256(b).hexdigest()==h;sys.argv=[p,*sys.argv[3:]];exec(compile(b,p,"exec"),{"__name__":"__main__","__file__":p})'             experiments/elle/v028/hosted_producer.py 983e645a85f551efb1af278b69df0c257ada80d8ceb204c023c3c2b49a13cb64             --source-manifest-sha256 8751cb374e5605508e166e9c72f2a78c325da29091faebb2cbfeb8ce6df94a50
+      - name: Preserve actual runtime and raw logs including hidden dependency caches
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: elle-v028-runtime-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/mtw-elle-v028-runtime-first/
+          if-no-files-found: warn
+          include-hidden-files: true
+          compression-level: 6
