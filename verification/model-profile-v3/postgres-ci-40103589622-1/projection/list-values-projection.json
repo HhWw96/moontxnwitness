@@ -1,0 +1,330 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.7",
+  "algorithm": "v3-configured-model-source-projection-1",
+  "profile": "pg18-configured-models/1",
+  "status": "consistent",
+  "analysisCoverageAccepted": true,
+  "originalDiagnosticCoverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "writer_scope_unproven",
+        "message": "Other writers have not been excluded"
+      },
+      {
+        "code": "initialization_unproven",
+        "message": "The initial database snapshot has not been established as consistent."
+      },
+      {
+        "code": "diagnostic_instrumentation_only",
+        "message": "No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage."
+      },
+      {
+        "code": "source_unsealed",
+        "message": "Journal and explicit source window have not both been sealed."
+      },
+      {
+        "code": "diagnostic_only",
+        "message": "This export is incomplete diagnostic evidence, not a complete analysis input."
+      },
+      {
+        "code": "inconsistent_snapshot",
+        "message": "Initial state is not a consistent captured snapshot"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      }
+    ]
+  },
+  "derivedTrace": {
+    "traceSchema": 3,
+    "dataModel": "append-list-v1",
+    "clockDomain": "mtw-v3-9f113a39e154475cadc6405d10c2632b",
+    "scope": {
+      "exclusiveWriters": true
+    },
+    "events": [
+      {
+        "kind": "snapshot",
+        "initial": {
+          "x": [],
+          "y": []
+        },
+        "consistent": true,
+        "time": 4463404,
+        "seq": 1
+      },
+      {
+        "connection": "connection-ade3b3007cc04b2db121abb583294a0c",
+        "kind": "begin",
+        "seq": 2,
+        "time": 11122180,
+        "tx": "transaction-4a7846f5f32943c99a0bb030684f2373"
+      },
+      {
+        "kind": "append",
+        "tx": "transaction-4a7846f5f32943c99a0bb030684f2373",
+        "key": "x",
+        "id": "one",
+        "value": "same",
+        "time": 14661640,
+        "seq": 3
+      },
+      {
+        "kind": "append",
+        "tx": "transaction-4a7846f5f32943c99a0bb030684f2373",
+        "key": "x",
+        "id": "two",
+        "value": "same",
+        "time": 16196996,
+        "seq": 4
+      },
+      {
+        "kind": "list_read",
+        "tx": "transaction-4a7846f5f32943c99a0bb030684f2373",
+        "key": "x",
+        "items": [
+          {
+            "id": "one",
+            "value": "same"
+          },
+          {
+            "id": "two",
+            "value": "same"
+          }
+        ],
+        "time": 17394625,
+        "seq": 5
+      },
+      {
+        "kind": "commit_request",
+        "seq": 6,
+        "time": 17938911,
+        "tx": "transaction-4a7846f5f32943c99a0bb030684f2373"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 7,
+        "time": 18533900,
+        "tx": "transaction-4a7846f5f32943c99a0bb030684f2373"
+      }
+    ],
+    "gaps": []
+  },
+  "retainedOriginalSeq": [
+    1,
+    2,
+    4,
+    6,
+    8,
+    9,
+    10
+  ],
+  "analysis": {
+    "schemaVersion": 3,
+    "tool": "MoonTxnWitness",
+    "version": "0.2.7",
+    "algorithm": "v3-list-1",
+    "status": "consistent",
+    "modelDefinition": {
+      "id": "append-list-serializable-v1",
+      "scope": "committed transactions' full append/read/savepoint journals; aborted observations retained, no opacity or real-time claim"
+    },
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "normalized": {
+      "schema": 3,
+      "dataModel": "append-list-v1",
+      "algorithm": "v3-list-lifecycle-1",
+      "status": "ready",
+      "coverage": {
+        "complete": true,
+        "gaps": []
+      },
+      "observations": [
+        {
+          "kind": "snapshot",
+          "initial": {
+            "x": [],
+            "y": []
+          },
+          "consistent": true,
+          "time": 4463404,
+          "seq": 1
+        },
+        {
+          "connection": "connection-ade3b3007cc04b2db121abb583294a0c",
+          "kind": "begin",
+          "seq": 2,
+          "time": 11122180,
+          "tx": "transaction-4a7846f5f32943c99a0bb030684f2373"
+        },
+        {
+          "kind": "append",
+          "tx": "transaction-4a7846f5f32943c99a0bb030684f2373",
+          "key": "x",
+          "id": "one",
+          "value": "same",
+          "time": 14661640,
+          "seq": 3
+        },
+        {
+          "kind": "append",
+          "tx": "transaction-4a7846f5f32943c99a0bb030684f2373",
+          "key": "x",
+          "id": "two",
+          "value": "same",
+          "time": 16196996,
+          "seq": 4
+        },
+        {
+          "kind": "list_read",
+          "tx": "transaction-4a7846f5f32943c99a0bb030684f2373",
+          "key": "x",
+          "items": [
+            {
+              "id": "one",
+              "value": "same"
+            },
+            {
+              "id": "two",
+              "value": "same"
+            }
+          ],
+          "time": 17394625,
+          "seq": 5
+        },
+        {
+          "kind": "commit_request",
+          "seq": 6,
+          "time": 17938911,
+          "tx": "transaction-4a7846f5f32943c99a0bb030684f2373"
+        },
+        {
+          "kind": "commit_ok",
+          "seq": 7,
+          "time": 18533900,
+          "tx": "transaction-4a7846f5f32943c99a0bb030684f2373"
+        }
+      ],
+      "effects": [
+        {
+          "seq": 3,
+          "tx": "transaction-4a7846f5f32943c99a0bb030684f2373",
+          "key": "x",
+          "id": "one",
+          "value": "same",
+          "revertedBy": null
+        },
+        {
+          "seq": 4,
+          "tx": "transaction-4a7846f5f32943c99a0bb030684f2373",
+          "key": "x",
+          "id": "two",
+          "value": "same",
+          "revertedBy": null
+        }
+      ],
+      "transactions": [
+        {
+          "id": "transaction-4a7846f5f32943c99a0bb030684f2373",
+          "connection": "connection-ade3b3007cc04b2db121abb583294a0c",
+          "status": "committed",
+          "beginSeq": 2,
+          "endSeq": 7,
+          "events": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "finalWrites": [
+            3,
+            4
+          ]
+        }
+      ],
+      "history": null
+    },
+    "evidence": {
+      "kind": "serial-list-replay",
+      "serialOrder": [
+        "transaction-4a7846f5f32943c99a0bb030684f2373"
+      ],
+      "sourceEvidence": [
+        {
+          "id": "one",
+          "value": "same",
+          "key": "x",
+          "sourceSeq": 3,
+          "writer": "transaction-4a7846f5f32943c99a0bb030684f2373",
+          "revertedBy": null
+        },
+        {
+          "id": "two",
+          "value": "same",
+          "key": "x",
+          "sourceSeq": 4,
+          "writer": "transaction-4a7846f5f32943c99a0bb030684f2373",
+          "revertedBy": null
+        }
+      ]
+    },
+    "execution": {
+      "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
+      "analysisOptions": {
+        "maxStates": 100000,
+        "maxOperationChecks": 1000000
+      },
+      "effectiveLimits": {
+        "committedTransactions": 6,
+        "operations": 128,
+        "states": 100000,
+        "operationChecks": 1000000,
+        "inputUtf16Units": 8388608,
+        "events": 65536,
+        "identities": 10000,
+        "returnedItemReferences": 100000
+      },
+      "metrics": {
+        "states": 1,
+        "operationChecks": 5,
+        "complete": true,
+        "reason": "found"
+      }
+    }
+  },
+  "mappingCoverage": {
+    "complete": true,
+    "gaps": [],
+    "actualCalls": {
+      "pairedCalls": 4,
+      "confirmedTransactions": 1,
+      "statementCalls": 3
+    },
+    "sourceWindowsChecked": true,
+    "committedEffectsChecked": 2
+  },
+  "sourceBindings": {
+    "traceSha256": "204d3fd4bc78f1c7435126aabbb51c67f80cd49c691eaf71f95a74d7829b7fde",
+    "sourceJournalSha256": "02909e2da8abae88ac7fabe7d3de921606c6202d9aafeb802a03000d3664bdf8",
+    "lifecycleSha256": "0a1895bd1d123f7f17769a2395ea73edb85fae5c5f2c87eb99ff497ada285351",
+    "journalIndexSha256": "f743f2e16c33a0b79591bb000291f1f1cab9014e28714f38de3a04563700b8eb"
+  },
+  "scope": "Explicit new controlled PostgreSQL18 schema and one startup synchronous psycopg factory; exact registered list append/point read or relation point CRUD/AND SELECT only. RETURNING is not a predicate read. Original raw gaps remain incomplete; source/driver observations are independently projected. Source checks bind the supplied index self-checksum/descriptors, not absent segment payloads. Hashes do not authenticate the server or exclusive writer declaration. No ORM, async, savepoint, arbitrary SQL/table, mixed model, isolation-level or real-time claim."
+}

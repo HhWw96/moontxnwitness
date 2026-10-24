@@ -1,0 +1,331 @@
+{
+  "schema": 3,
+  "algorithm": "v3-lifecycle-1",
+  "status": "inconclusive",
+  "coverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "writer_scope_unproven",
+        "message": "Other writers have not been excluded"
+      },
+      {
+        "code": "initialization_unproven",
+        "message": "The initial database snapshot has not been established as consistent."
+      },
+      {
+        "code": "diagnostic_instrumentation_only",
+        "message": "No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage."
+      },
+      {
+        "code": "source_unsealed",
+        "message": "Journal and explicit source window have not both been sealed."
+      },
+      {
+        "code": "diagnostic_only",
+        "message": "This export is incomplete diagnostic evidence, not a complete analysis input."
+      },
+      {
+        "code": "inconsistent_snapshot",
+        "message": "Initial state is not a consistent captured snapshot"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      }
+    ]
+  },
+  "observations": [
+    {
+      "consistent": false,
+      "initial": {},
+      "kind": "snapshot",
+      "seq": 1,
+      "time": 3430009
+    },
+    {
+      "connection": "connection-de4e99aba4f940a193a382d0f855ad03",
+      "kind": "begin",
+      "seq": 2,
+      "time": 11898283,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "executedSql": "SELECT id,balance,active,region,version FROM \"model_8964638398b1466a\".\"business\" WHERE id=%s",
+      "kind": "statement",
+      "mappingId": "configured-model/row-read",
+      "parameters": [
+        3
+      ],
+      "seq": 3,
+      "sql": "SELECT id,balance,active,region FROM \"model_8964638398b1466a\".\"business\" WHERE id=%s",
+      "time": 12111751,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "typeCode": 20
+        },
+        {
+          "name": "balance",
+          "typeCode": 20
+        },
+        {
+          "name": "active",
+          "typeCode": 16
+        },
+        {
+          "name": "region",
+          "typeCode": 25
+        }
+      ],
+      "complete": true,
+      "kind": "rows",
+      "rows": [],
+      "seq": 4,
+      "statement": 3,
+      "time": 13760595,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "executedSql": "INSERT INTO \"model_8964638398b1466a\".\"business\"(id,balance,active,region) VALUES(%s,%s,%s,%s) RETURNING id,balance,active,region,version,\"model_8964638398b1466a\".\"predecessor\"(version)",
+      "kind": "statement",
+      "mappingId": "configured-model/row-insert",
+      "parameters": [
+        3,
+        -7,
+        false,
+        "😀"
+      ],
+      "seq": 5,
+      "sql": "INSERT INTO \"model_8964638398b1466a\".\"business\"(id,balance,active,region) VALUES(%s,%s,%s,%s) RETURNING id,balance,active,region",
+      "time": 14476701,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "typeCode": 20
+        },
+        {
+          "name": "balance",
+          "typeCode": 20
+        },
+        {
+          "name": "active",
+          "typeCode": 16
+        },
+        {
+          "name": "region",
+          "typeCode": 25
+        }
+      ],
+      "complete": true,
+      "kind": "rows",
+      "rows": [
+        [
+          3,
+          -7,
+          false,
+          "😀"
+        ]
+      ],
+      "seq": 6,
+      "statement": 5,
+      "time": 18004686,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "executedSql": "UPDATE \"model_8964638398b1466a\".\"business\" SET balance=%s,active=%s,region=%s WHERE id=%s RETURNING WITH (OLD AS o,NEW AS n) n.id,n.balance,n.active,n.region,n.version,o.version",
+      "kind": "statement",
+      "mappingId": "configured-model/row-update",
+      "parameters": [
+        9,
+        true,
+        "west",
+        3
+      ],
+      "seq": 7,
+      "sql": "UPDATE \"model_8964638398b1466a\".\"business\" SET balance=%s,active=%s,region=%s WHERE id=%s RETURNING id,balance,active,region",
+      "time": 18831248,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "typeCode": 20
+        },
+        {
+          "name": "balance",
+          "typeCode": 20
+        },
+        {
+          "name": "active",
+          "typeCode": 16
+        },
+        {
+          "name": "region",
+          "typeCode": 25
+        }
+      ],
+      "complete": true,
+      "kind": "rows",
+      "rows": [
+        [
+          3,
+          9,
+          true,
+          "west"
+        ]
+      ],
+      "seq": 8,
+      "statement": 7,
+      "time": 19921041,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "executedSql": "DELETE FROM \"model_8964638398b1466a\".\"business\" WHERE id=%s RETURNING WITH (OLD AS o,NEW AS n) o.id,o.balance,o.active,o.region,\"model_8964638398b1466a\".\"delete_token\"(o.id,o.version),o.version",
+      "kind": "statement",
+      "mappingId": "configured-model/row-delete",
+      "parameters": [
+        3
+      ],
+      "seq": 9,
+      "sql": "DELETE FROM \"model_8964638398b1466a\".\"business\" WHERE id=%s RETURNING id,balance,active,region",
+      "time": 20727916,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "typeCode": 20
+        },
+        {
+          "name": "balance",
+          "typeCode": 20
+        },
+        {
+          "name": "active",
+          "typeCode": 16
+        },
+        {
+          "name": "region",
+          "typeCode": 25
+        }
+      ],
+      "complete": true,
+      "kind": "rows",
+      "rows": [
+        [
+          3,
+          9,
+          true,
+          "west"
+        ]
+      ],
+      "seq": 10,
+      "statement": 9,
+      "time": 21924509,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "executedSql": "SELECT id,balance,active,region,version FROM \"model_8964638398b1466a\".\"business\" WHERE id=%s",
+      "kind": "statement",
+      "mappingId": "configured-model/row-read",
+      "parameters": [
+        3
+      ],
+      "seq": 11,
+      "sql": "SELECT id,balance,active,region FROM \"model_8964638398b1466a\".\"business\" WHERE id=%s",
+      "time": 22716246,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "typeCode": 20
+        },
+        {
+          "name": "balance",
+          "typeCode": 20
+        },
+        {
+          "name": "active",
+          "typeCode": 16
+        },
+        {
+          "name": "region",
+          "typeCode": 25
+        }
+      ],
+      "complete": true,
+      "kind": "rows",
+      "rows": [],
+      "seq": 12,
+      "statement": 11,
+      "time": 23343133,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "kind": "commit_request",
+      "seq": 13,
+      "time": 23953472,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    },
+    {
+      "kind": "commit_ok",
+      "seq": 14,
+      "time": 24520552,
+      "tx": "transaction-134c2bdbb0b24d29a86c47a1a2428af8"
+    }
+  ],
+  "effects": [],
+  "transactions": [
+    {
+      "id": "transaction-134c2bdbb0b24d29a86c47a1a2428af8",
+      "connection": "connection-de4e99aba4f940a193a382d0f855ad03",
+      "status": "committed",
+      "beginSeq": 2,
+      "endSeq": 14,
+      "events": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "finalWrites": []
+    }
+  ],
+  "history": null
+}

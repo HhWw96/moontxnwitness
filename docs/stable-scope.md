@@ -1,3 +1,13 @@
+# v0.2.7 稳定支持矩阵
+
+新增显式配置化列表与关系来源入口：`install_model_profile()`、`analyzeModelProfileV3`、`verifyModelProfileV3` 与完整来源复现包。从受支持的真实 SQL、参数、数据库返回、实际 fetch 和事务结果映射事实，由 MoonBit 独立核验。见[安装与 SQL 范围](configured-model-profile.md)和[SDK／CLI](model-profile-sdk.md)。
+
+入口使用独立受控 PostgreSQL18 schema、同步 psycopg 工厂及明确初始化／写者范围；声明之外的 SQL、零行或多行条件写、缺失来源及未确认结果保留诊断和无法判定。列表与关系精确解释器维持6个提交事务、128操作的范围，耗尽返回无法判定。新配置化来源入口提供分析、验证和完整包重放；来源闭合缩减、关系六模型及混合模型事务留待后续。
+
+实际 CI 已执行10个配置化数据库场景，7个支持投射与独立解释器核对，3个拒绝扩大覆盖；独立安装包复核还完成原公开0.2.6的35家族／623检查和当前10采集包重放及70项篡改拒绝。本机独立源码重编译未执行，源码消费者与Linux Native由实际CI执行。完整收据见 `verification/releases/0.2.7/`，公开发布与下载核验分别记录。
+
+Unicode 流式 JSON 预检查保持旧错误与回退行为。[固定v0.2.6成对实验](performance-experiment-streaming-json-guard.md)中，128事务完整SDK约1.235倍、六模型组几何平均约1.202倍；128组峰值RSS未下降。该实验不是整个新版本或新增模型入口的统一性能结论。既有能力、范围和失败证据继续保留如下。
+
 # v0.2.6 稳定支持矩阵
 
 新增 `classifyModelsV3`、`verifyModelsClassificationV3` 及独立模型复现包，默认逐项检查六个固定定义：`adya-pl-1-v1`、`adya-pl-2-v1`、`adya-pl-2.99-v1`、`elle-generalized-si-v1`、`adya-pl-3-v1`、`strict-pl-ss-v1`。所选模型全部必要检查完成且适用条件满足，才报告这段所给历史相容；具体反证不被其它搜索的预算耗尽覆盖。见[入口与示例](classification-models-sdk.md)及[反证蕴含修复](classification-implication-v026.md)。

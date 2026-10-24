@@ -1,0 +1,65 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-dca4522ce122423889d77fdd3ce16019",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 2191,
+      "initial": {
+        "[\"mtw_capture_4096afcf85b4453d84e5569ce14b718c.registers\",\"text\",\"x\"]": "x0",
+        "[\"mtw_capture_4096afcf85b4453d84e5569ce14b718c.registers\",\"text\",\"y\"]": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 7993,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 8050,
+      "phase": "execute-request",
+      "sql": "SELECT value,version FROM \"mtw_capture_4096afcf85b4453d84e5569ce14b718c\".registers WHERE key=%s",
+      "parameters": [
+        "x"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 8978,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 9309,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "end",
+      "time": 9361,
+      "tx": "tx-1",
+      "status": "committed"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "unconsumed_result",
+      "message": "A mapped point-read result was not fully fetched before another operation or transaction end."
+    }
+  ]
+}

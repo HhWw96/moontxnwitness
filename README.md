@@ -8,15 +8,17 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-## v0.2.6 支持范围
+## v0.2.7 支持范围
 
-新增独立[六模型检查入口](docs/classification-models-sdk.md)：对唯一版本点寄存器和声明的单追加列表范围，逐项检查异常与适用条件，输出反证、已完成检查及覆盖缺口。它补充 G1a、G1b、内部一致性、非相邻反依赖和有明确来源的实时关系。模型名称使用固定定义标识，不将结果直接等同于数据库产品的隔离级别。
+配置化[列表与关系来源采集](docs/configured-model-profile.md)可从实际 SQL、原始返回、fetch 交付和事务结果自动投射模型事实，无需手写历史。[SDK 与命令行](docs/model-profile-sdk.md)提供分析、报告验证和完整原始来源包重放；10 个真实 PostgreSQL 场景覆盖 7 个受支持路径和 3 个明确无法判定的边界。配置化模型来源缩减留待后续版本。
+
+已有独立[六模型检查入口](docs/classification-models-sdk.md)：对唯一版本点寄存器和声明的单追加列表范围，逐项检查异常与适用条件，输出反证、已完成检查及覆盖缺口。它补充 G1a、G1b、内部一致性、非相邻反依赖和有明确来源的实时关系。模型名称使用固定定义标识，不将结果直接等同于数据库产品的隔离级别。
 
 已有 G0、G1c、G2-item [分类搜索及固定类别缩减](docs/classification-sdk.md)继续保留。配置化 base-user 采集可将受支持的按 ID 增删改查送入分析、缩减和重放；通用启动插桩保留实际 SQL、结果和执行诊断。完整范围见[支持矩阵](docs/stable-scope.md)。
 
 可靠反证在其它检查预算耗尽时仍成立；缺少来源、完整读取、内部有效性或实时证据时，相关检查保持无法判定。关系六模型分类、模型保持缩减、任意 SQL 和完整认证系统接入仍未支持。重放成功说明证据可复现，不表示采集内容得到数据库真实性认证。
 
-本版的实际构建、回归和公开交付以 `verification/releases/0.2.6/` 收据及[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。默认分析实现继续保留已验证的算法；新增检查的成本与旧版完整分析分别报告。此前未通过性能控制的优化候选及[完整采集成本差距](docs/performance-v0.2.5-candidate.md)继续公开保留，本版不从新增功能推算性能收益。
+本版的实际构建、回归和公开交付以 `verification/releases/0.2.7/` 收据及[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。默认分析实现继续保留已验证的算法；新增检查的成本与旧版完整分析分别报告。此前未通过性能控制的优化候选及[完整采集成本差距](docs/performance-v0.2.5-candidate.md)继续公开保留，Unicode 流式 JSON 预检查的[固定工作负载成对实验](docs/performance-experiment-streaming-json-guard.md)保留全部原始样本；该实验不等于所有 v0.2.7 调用的统一提速或内存下降。
 
 ## 运行演示
 
@@ -55,7 +57,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.2.6
+moon add HhWw96/moontxnwitness@0.2.7
 ```
 
 ```javascript

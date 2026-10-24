@@ -1,0 +1,89 @@
+{
+  "format": "moontxnwitness027-independent-prepublication-candidate-audit/v1",
+  "passed": false,
+  "version": "0.2.7",
+  "auditKind": "prepublication-ci-candidate",
+  "publicDownloadVerified": false,
+  "publicReleaseVerified": false,
+  "newDatabaseExecution": false,
+  "newHTTP": false,
+  "sourceClosedReductionClaimed": false,
+  "steps": [
+    {
+      "name": "actual-original-ci-archive-and-metadata",
+      "passed": true,
+      "ciFreshConsumerChecks": 122,
+      "ciSourceRebuilt": true,
+      "sourceCommit": "8967b960326eab4b7f0a17b61ca7942393856c08"
+    },
+    {
+      "name": "reused-first-extracted-originals-rehashed",
+      "passed": true,
+      "firstAttemptSdkCalls": 0,
+      "firstHarnessMissingPortablePackageJsonPreserved": true
+    },
+    {
+      "name": "full-original-source-and-runtime-closure",
+      "passed": true,
+      "sourceFiles": 8018,
+      "portableFiles": 7691,
+      "runtimeFiles": 102,
+      "sourceFingerprintFiles": 106,
+      "buildManifest": {
+        "version": "0.2.7",
+        "toolchain": {
+          "compiler": "v0.10.14+7d59c7ec9",
+          "moon": "moon 0.1.20260920"
+        },
+        "sourceSha256": "82d1bff2dbdbfba5a09b11095b4aa348fa445c36f70535f30fd52b4f9ab47518",
+        "coreSha256": "4f1fceb7de3e541646feb80395b05ffedab1f457b308ec91e83092a485bdcfeb",
+        "captureCoreSha256": "21fec4d54602c70dba539fd305dcc65691d4d84ceaacb12caae5a5a520d1af39"
+      }
+    },
+    {
+      "name": "actual-tested-source-and-frozen-script-bindings",
+      "passed": true,
+      "testedFiles": 1553,
+      "coreTestsPerExecutedTargetFromOriginalCI": 772,
+      "executedTargetsFromOriginalSummary": [
+        "js",
+        "wasm-gc",
+        "wasm"
+      ],
+      "nativeEvidence": "original full Linux log; stale native-status.json is not used"
+    },
+    {
+      "name": "unchanged-original-public026-compatibility",
+      "passed": true,
+      "assertions": 623,
+      "families": 35,
+      "actualCliInvocations": 12,
+      "sdkTopLevelCalls": null,
+      "sdkCountReason": "original unmodified producer test does not instrument SDK top-level count",
+      "historicalWorkerLaunches": 543,
+      "historicalWorkerLaunchesByVersion": {
+        "v024": 0,
+        "v025": 0,
+        "v026": 543
+      }
+    },
+    {
+      "name": "current-10-original-captured-model-capsules",
+      "passed": true,
+      "sdkTopLevelCalls": 101,
+      "cases": 10,
+      "tamperRefusals": 70,
+      "newDatabaseExecution": false,
+      "sourceClosedReductionClaimed": false
+    },
+    {
+      "name": "packaged-retained-configured-model-example",
+      "passed": true,
+      "cases": 4,
+      "sdkTopLevelCalls": null,
+      "originalInputsFromRetainedDatabaseRun": true,
+      "current10CasesClaimed": false
+    }
+  ],
+  "fatal": "Traceback (most recent call last):\n  File \"D:\\CodexScratch\\MoonTxnWitness-v027-prepublication-candidate-audit-20261024-am\\fix1\\candidate_audit_fix1.py\", line 135, in execute\n    analyzed=run(node,[cli,'model-profile-v3',envelope,'--output',report,'--capsule',capsule],'configured-cli-analyze',out,portable,expected=(1,));assert analyzed['status']=='violation'\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\CodexScratch\\MoonTxnWitness-v027-prepublication-candidate-audit-20261024-am\\fix1\\candidate_audit_fix1.py\", line 74, in run\n    return decoded(stdout.read_bytes())\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\CodexScratch\\MoonTxnWitness-v027-prepublication-candidate-audit-20261024-am\\fix1\\candidate_audit_fix1.py\", line 60, in decoded\n    def decoded(raw):return json.loads(raw.decode('utf-8-sig'))\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\Border\\python\\Lib\\json\\__init__.py\", line 346, in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\Border\\python\\Lib\\json\\decoder.py\", line 337, in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\Border\\python\\Lib\\json\\decoder.py\", line 355, in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n"
+}

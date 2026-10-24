@@ -1,0 +1,29 @@
+{"record":"header","traceSchema":1,"clockDomain":"python-monotonic-8b147f9f460147c3abfb3e27792d5d1a","scope":{"exclusiveWriters":true}}
+{"record":"event","event":{"seq":1,"kind":"snapshot","time":4255,"initial":{"[\"mtw_capture_4096afcf85b4453d84e5569ce14b718c.registers\",\"text\",\"x\"]":"x0","[\"mtw_capture_4096afcf85b4453d84e5569ce14b718c.registers\",\"text\",\"y\"]":"y0"},"consistent":true}}
+{"record":"event","event":{"seq":2,"kind":"begin","time":16564,"tx":"tx-1"}}
+{"record":"event","event":{"seq":3,"kind":"sql","time":16627,"phase":"execute-request","sql":"BEGIN ISOLATION LEVEL REPEATABLE READ","parameters":null,"mapped":true,"tx":"tx-1"}}
+{"record":"event","event":{"seq":4,"kind":"sql","time":17141,"phase":"execute-ack","affectedRows":-1,"tx":"tx-1"}}
+{"record":"event","event":{"seq":5,"kind":"begin","time":17284,"tx":"tx-2"}}
+{"record":"event","event":{"seq":6,"kind":"sql","time":17329,"phase":"execute-request","sql":"BEGIN ISOLATION LEVEL REPEATABLE READ","parameters":null,"mapped":true,"tx":"tx-2"}}
+{"record":"event","event":{"seq":7,"kind":"sql","time":17800,"phase":"execute-ack","affectedRows":-1,"tx":"tx-2"}}
+{"record":"event","event":{"seq":8,"kind":"sql","time":17944,"phase":"execute-request","sql":"SELECT value,version FROM \"mtw_capture_4096afcf85b4453d84e5569ce14b718c\".registers WHERE key=%s","parameters":["x"],"mapped":true,"tx":"tx-1"}}
+{"record":"event","event":{"seq":9,"kind":"sql","time":18770,"phase":"execute-ack","affectedRows":1,"tx":"tx-1"}}
+{"record":"event","event":{"seq":10,"kind":"sql","time":18923,"phase":"fetch","returnedRows":1,"exhausted":false,"rows":[[1,"x0"]],"tx":"tx-1"}}
+{"record":"event","event":{"seq":11,"kind":"op","time":18987,"tx":"tx-1","op":{"type":"read","key":"[\"mtw_capture_4096afcf85b4453d84e5569ce14b718c.registers\",\"text\",\"x\"]","version":"x0"}}}
+{"record":"event","event":{"seq":12,"kind":"sql","time":19091,"phase":"execute-request","sql":"SELECT value,version FROM \"mtw_capture_4096afcf85b4453d84e5569ce14b718c\".registers WHERE key=%s","parameters":["y"],"mapped":true,"tx":"tx-2"}}
+{"record":"event","event":{"seq":13,"kind":"sql","time":19873,"phase":"execute-ack","affectedRows":1,"tx":"tx-2"}}
+{"record":"event","event":{"seq":14,"kind":"sql","time":19999,"phase":"fetch","returnedRows":1,"exhausted":false,"rows":[[1,"y0"]],"tx":"tx-2"}}
+{"record":"event","event":{"seq":15,"kind":"op","time":20052,"tx":"tx-2","op":{"type":"read","key":"[\"mtw_capture_4096afcf85b4453d84e5569ce14b718c.registers\",\"text\",\"y\"]","version":"y0"}}}
+{"record":"event","event":{"seq":16,"kind":"sql","time":20156,"phase":"execute-request","sql":"UPDATE \"mtw_capture_4096afcf85b4453d84e5569ce14b718c\".registers SET value=%s,version=%s WHERE key=%s","parameters":[0,"y1","y"],"mapped":true,"tx":"tx-1"}}
+{"record":"event","event":{"seq":17,"kind":"sql","time":20672,"phase":"execute-ack","affectedRows":1,"tx":"tx-1"}}
+{"record":"event","event":{"seq":18,"kind":"op","time":20763,"tx":"tx-1","op":{"type":"write","key":"[\"mtw_capture_4096afcf85b4453d84e5569ce14b718c.registers\",\"text\",\"y\"]","version":"y1"}}}
+{"record":"event","event":{"seq":19,"kind":"sql","time":20895,"phase":"execute-request","sql":"UPDATE \"mtw_capture_4096afcf85b4453d84e5569ce14b718c\".registers SET value=%s,version=%s WHERE key=%s","parameters":[0,"x1","x"],"mapped":true,"tx":"tx-2"}}
+{"record":"event","event":{"seq":20,"kind":"sql","time":21355,"phase":"execute-ack","affectedRows":1,"tx":"tx-2"}}
+{"record":"event","event":{"seq":21,"kind":"op","time":21444,"tx":"tx-2","op":{"type":"write","key":"[\"mtw_capture_4096afcf85b4453d84e5569ce14b718c.registers\",\"text\",\"x\"]","version":"x1"}}}
+{"record":"event","event":{"seq":22,"kind":"sql","time":21903,"phase":"commit-ack","tx":"tx-1"}}
+{"record":"event","event":{"seq":23,"kind":"end","time":21961,"tx":"tx-1","status":"committed"}}
+{"record":"event","event":{"seq":24,"kind":"sql","time":22340,"phase":"commit-ack","tx":"tx-2"}}
+{"record":"event","event":{"seq":25,"kind":"end","time":22393,"tx":"tx-2","status":"committed"}}
+{"record":"event","event":{"seq":26,"kind":"sql","time":22446,"phase":"commit-ack"}}
+{"record":"event","event":{"seq":27,"kind":"sql","time":22572,"phase":"commit-ack"}}
+{"record":"footer","eventCount":27,"gapCount":0,"sha256":"55506cc5936fe75d00f8ef525e08429d7d59ef01da9ef1bcadb6b8ec6ac247bf"}

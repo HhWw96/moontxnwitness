@@ -1,0 +1,653 @@
+﻿2026-10-24T14:41:03.9456156Z Current runner version: '2.338.0'
+2026-10-24T14:41:03.9482068Z ##[group]Runner Image Provisioner
+2026-10-24T14:41:03.9482903Z Hosted Compute Agent
+2026-10-24T14:41:03.9483434Z Version: 20261021.618
+2026-10-24T14:41:03.9484054Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-24T14:41:03.9484722Z Build Date: 2026-10-21T00:45:21Z
+2026-10-24T14:41:03.9485350Z Worker ID: {515073be-8ca7-4229-8d06-cfa82554e73a}
+2026-10-24T14:41:03.9486070Z Region: westus
+2026-10-24T14:41:03.9486549Z Cloud: Azure
+2026-10-24T14:41:03.9487083Z ##[endgroup]
+2026-10-24T14:41:03.9488388Z ##[group]Operating System
+2026-10-24T14:41:03.9489060Z Microsoft Windows Server 2022
+2026-10-24T14:41:03.9489650Z 10.0.20348
+2026-10-24T14:41:03.9490141Z Datacenter
+2026-10-24T14:41:03.9490732Z ##[endgroup]
+2026-10-24T14:41:03.9491223Z ##[group]Runner Image
+2026-10-24T14:41:03.9491758Z Image: windows-2022
+2026-10-24T14:41:03.9492316Z Version: 20261022.344.1
+2026-10-24T14:41:03.9493698Z Included Software: https://github.com/actions/runner-images/blob/win22/20261022.344/images/windows/Windows2022-Readme.md
+2026-10-24T14:41:03.9495275Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261022.344
+2026-10-24T14:41:03.9496141Z ##[endgroup]
+2026-10-24T14:41:03.9497174Z ##[group]GITHUB_TOKEN Permissions
+2026-10-24T14:41:03.9499045Z Contents: read
+2026-10-24T14:41:03.9499630Z Metadata: read
+2026-10-24T14:41:03.9500123Z ##[endgroup]
+2026-10-24T14:41:03.9502187Z Secret source: Actions
+2026-10-24T14:41:03.9503091Z Cache mode: write
+2026-10-24T14:41:03.9503825Z Prepare workflow directory
+2026-10-24T14:41:03.9959446Z Prepare all required actions
+2026-10-24T14:41:04.0008042Z Getting action download info
+2026-10-24T14:41:04.4153484Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-24T14:41:04.5498303Z Download action repository 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020' (SHA:820762786026740c76f36085b0efc47a31fe5020)
+2026-10-24T14:41:04.7047868Z Download action repository 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97' (SHA:5fda3b95a4ea91299a34e894583c3862153e4b97)
+2026-10-24T14:41:04.8569919Z Download action repository 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a' (SHA:043fb46d1a93c77aae656e7c1c64a875d1fc6a0a)
+2026-10-24T14:41:05.1735800Z Complete job name: verify (windows-2022)
+2026-10-24T14:41:05.3583927Z ##[group]Run git config --global core.longpaths true
+2026-10-24T14:41:05.3585426Z [36;1mgit config --global core.longpaths true[0m
+2026-10-24T14:41:05.3907414Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-24T14:41:05.3908771Z env:
+2026-10-24T14:41:05.3909317Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:41:05.3910046Z ##[endgroup]
+2026-10-24T14:41:06.4850057Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-10-24T14:41:06.4851581Z with:
+2026-10-24T14:41:06.4852398Z   fetch-depth: 0
+2026-10-24T14:41:06.4853303Z   repository: HhWw96/moontxnwitness
+2026-10-24T14:41:06.4861594Z   token: ***
+2026-10-24T14:41:06.4862406Z   ssh-strict: true
+2026-10-24T14:41:06.4863224Z   ssh-user: git
+2026-10-24T14:41:06.4864065Z   persist-credentials: true
+2026-10-24T14:41:06.4864985Z   clean: true
+2026-10-24T14:41:06.4865823Z   sparse-checkout-cone-mode: true
+2026-10-24T14:41:06.4866803Z   fetch-tags: false
+2026-10-24T14:41:06.4867638Z   show-progress: true
+2026-10-24T14:41:06.4868485Z   lfs: false
+2026-10-24T14:41:06.4869261Z   submodules: false
+2026-10-24T14:41:06.4870101Z   set-safe-directory: true
+2026-10-24T14:41:06.4871053Z   allow-unsafe-pr-checkout: false
+2026-10-24T14:41:06.4872013Z env:
+2026-10-24T14:41:06.4872827Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:41:06.4873884Z ##[endgroup]
+2026-10-24T14:41:06.6372475Z Syncing repository: HhWw96/moontxnwitness
+2026-10-24T14:41:06.6375198Z ##[group]Getting Git version info
+2026-10-24T14:41:06.6376497Z Working directory is 'D:\a\moontxnwitness\moontxnwitness'
+2026-10-24T14:41:06.7309654Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-24T14:41:06.7585033Z git version 2.56.0.windows.3
+2026-10-24T14:41:06.7625165Z ##[endgroup]
+2026-10-24T14:41:06.7635323Z Copying 'C:\Users\runneradmin\.gitconfig' to 'D:\a\_temp\04cb8cb1-c90f-496c-a8d8-23698ef2d9b8\.gitconfig'
+2026-10-24T14:41:06.7656508Z Temporarily overriding HOME='D:\a\_temp\04cb8cb1-c90f-496c-a8d8-23698ef2d9b8' before making global git config changes
+2026-10-24T14:41:06.7659080Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T14:41:06.7666995Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\moontxnwitness\moontxnwitness
+2026-10-24T14:41:06.7954160Z Deleting the contents of 'D:\a\moontxnwitness\moontxnwitness'
+2026-10-24T14:41:06.7958496Z ##[group]Determining repository object format
+2026-10-24T14:41:06.7961542Z ##[endgroup]
+2026-10-24T14:41:06.7963943Z ##[group]Initializing the repository
+2026-10-24T14:41:06.7972107Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\moontxnwitness\moontxnwitness
+2026-10-24T14:41:06.9045827Z Initialized empty Git repository in D:/a/moontxnwitness/moontxnwitness/.git/
+2026-10-24T14:41:06.9098522Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/HhWw96/moontxnwitness
+2026-10-24T14:41:07.0005822Z ##[endgroup]
+2026-10-24T14:41:07.0007310Z ##[group]Disabling automatic garbage collection
+2026-10-24T14:41:07.0014574Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-10-24T14:41:07.0312798Z ##[endgroup]
+2026-10-24T14:41:07.0314260Z ##[group]Setting up auth
+2026-10-24T14:41:07.0315308Z Removing SSH command configuration
+2026-10-24T14:41:07.0323778Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T14:41:07.0622562Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-24T14:41:09.1201398Z Removing HTTP extra header
+2026-10-24T14:41:09.1217329Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T14:41:09.1529364Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-24T14:41:09.6189509Z Removing includeIf entries pointing to credentials config files
+2026-10-24T14:41:09.6204248Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-24T14:41:09.6507621Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-24T14:41:10.1379056Z [command]"C:\Program Files\Git\bin\git.exe" config --file D:\a\_temp\git-credentials-2d9dbd1d-5761-4bbe-b5ce-de42c2da36c8.config http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-10-24T14:41:10.1684839Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/moontxnwitness/moontxnwitness/.git.path D:\a\_temp\git-credentials-2d9dbd1d-5761-4bbe-b5ce-de42c2da36c8.config
+2026-10-24T14:41:10.1988542Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/moontxnwitness/moontxnwitness/.git/worktrees/*.path D:\a\_temp\git-credentials-2d9dbd1d-5761-4bbe-b5ce-de42c2da36c8.config
+2026-10-24T14:41:10.2381393Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-2d9dbd1d-5761-4bbe-b5ce-de42c2da36c8.config
+2026-10-24T14:41:10.2686704Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-2d9dbd1d-5761-4bbe-b5ce-de42c2da36c8.config
+2026-10-24T14:41:10.2993764Z ##[endgroup]
+2026-10-24T14:41:10.2994243Z ##[group]Fetching the repository
+2026-10-24T14:41:10.3011677Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-24T14:41:40.4775027Z From https://github.com/HhWw96/moontxnwitness
+2026-10-24T14:41:40.4775980Z  * [new branch]        codex/v024-compat-fixtures -> origin/codex/v024-compat-fixtures
+2026-10-24T14:41:40.4777249Z  * [new branch]        experiments/full-capture-capacity-v2-20261023-a -> origin/experiments/full-capture-capacity-v2-20261023-a
+2026-10-24T14:41:40.4778627Z  * [new branch]        experiments/public025-producer-20261024-a -> origin/experiments/public025-producer-20261024-a
+2026-10-24T14:41:40.4779481Z  * [new branch]        main       -> origin/main
+2026-10-24T14:41:40.4779947Z  * [new tag]           v0.0.1     -> v0.0.1
+2026-10-24T14:41:40.4780441Z  * [new tag]           v0.0.10    -> v0.0.10
+2026-10-24T14:41:40.4780938Z  * [new tag]           v0.0.11    -> v0.0.11
+2026-10-24T14:41:40.4781415Z  * [new tag]           v0.0.2     -> v0.0.2
+2026-10-24T14:41:40.4781874Z  * [new tag]           v0.0.3     -> v0.0.3
+2026-10-24T14:41:40.4782361Z  * [new tag]           v0.0.4     -> v0.0.4
+2026-10-24T14:41:40.4782836Z  * [new tag]           v0.0.5     -> v0.0.5
+2026-10-24T14:41:40.4783269Z  * [new tag]           v0.0.6     -> v0.0.6
+2026-10-24T14:41:40.4783694Z  * [new tag]           v0.0.7     -> v0.0.7
+2026-10-24T14:41:40.4784119Z  * [new tag]           v0.0.8     -> v0.0.8
+2026-10-24T14:41:40.4784569Z  * [new tag]           v0.0.9     -> v0.0.9
+2026-10-24T14:41:40.4785034Z  * [new tag]           v0.1.0     -> v0.1.0
+2026-10-24T14:41:40.4785430Z  * [new tag]           v0.1.1     -> v0.1.1
+2026-10-24T14:41:40.4785818Z  * [new tag]           v0.1.2     -> v0.1.2
+2026-10-24T14:41:40.4786265Z  * [new tag]           v0.1.3     -> v0.1.3
+2026-10-24T14:41:40.4786708Z  * [new tag]           v0.1.4     -> v0.1.4
+2026-10-24T14:41:40.4787126Z  * [new tag]           v0.1.5     -> v0.1.5
+2026-10-24T14:41:40.4787546Z  * [new tag]           v0.1.6     -> v0.1.6
+2026-10-24T14:41:40.4787934Z  * [new tag]           v0.1.7     -> v0.1.7
+2026-10-24T14:41:40.4788330Z  * [new tag]           v0.1.8     -> v0.1.8
+2026-10-24T14:41:40.4788748Z  * [new tag]           v0.2.0     -> v0.2.0
+2026-10-24T14:41:40.4789133Z  * [new tag]           v0.2.1     -> v0.2.1
+2026-10-24T14:41:40.4789534Z  * [new tag]           v0.2.2     -> v0.2.2
+2026-10-24T14:41:40.4789958Z  * [new tag]           v0.2.3     -> v0.2.3
+2026-10-24T14:41:40.4790381Z  * [new tag]           v0.2.4     -> v0.2.4
+2026-10-24T14:41:40.4791975Z  * [new tag]           v0.2.5     -> v0.2.5
+2026-10-24T14:41:40.4792487Z  * [new tag]           v0.2.6     -> v0.2.6
+2026-10-24T14:41:40.4826253Z [command]"C:\Program Files\Git\bin\git.exe" branch --list --remote origin/main
+2026-10-24T14:41:40.5266793Z   origin/main
+2026-10-24T14:41:40.5305063Z [command]"C:\Program Files\Git\bin\git.exe" rev-parse refs/remotes/origin/main
+2026-10-24T14:41:40.5658090Z 8967b960326eab4b7f0a17b61ca7942393856c08
+2026-10-24T14:41:40.5686486Z ##[endgroup]
+2026-10-24T14:41:40.5686957Z ##[group]Determining the checkout info
+2026-10-24T14:41:40.5687544Z ##[endgroup]
+2026-10-24T14:41:40.5696962Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-10-24T14:41:40.6136315Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-10-24T14:41:40.6441832Z ##[group]Checking out the ref
+2026-10-24T14:41:40.6455481Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B main refs/remotes/origin/main
+2026-10-24T14:41:41.7743270Z Updating files:   6% (3267/47847)
+2026-10-24T14:41:41.8657105Z Updating files:   7% (3350/47847)
+2026-10-24T14:41:41.9629483Z Updating files:   8% (3828/47847)
+2026-10-24T14:41:42.0643792Z Updating files:   9% (4307/47847)
+2026-10-24T14:41:42.2424753Z Updating files:  10% (4785/47847)
+2026-10-24T14:41:42.3707224Z Updating files:  11% (5264/47847)
+2026-10-24T14:41:42.4590282Z Updating files:  12% (5742/47847)
+2026-10-24T14:41:42.5496822Z Updating files:  13% (6221/47847)
+2026-10-24T14:41:42.6831461Z Updating files:  14% (6699/47847)
+2026-10-24T14:41:42.7432793Z Updating files:  15% (7178/47847)
+2026-10-24T14:41:42.9108224Z Updating files:  15% (7279/47847)
+2026-10-24T14:41:43.0865834Z Updating files:  16% (7656/47847)
+2026-10-24T14:41:43.1795238Z Updating files:  17% (8134/47847)
+2026-10-24T14:41:43.3006420Z Updating files:  18% (8613/47847)
+2026-10-24T14:41:43.4026649Z Updating files:  19% (9091/47847)
+2026-10-24T14:41:43.5239402Z Updating files:  20% (9570/47847)
+2026-10-24T14:41:43.6267475Z Updating files:  21% (10048/47847)
+2026-10-24T14:41:43.7239317Z Updating files:  22% (10527/47847)
+2026-10-24T14:41:43.7448990Z Updating files:  23% (11005/47847)
+2026-10-24T14:41:43.8211306Z Updating files:  23% (11113/47847)
+2026-10-24T14:41:43.9532158Z Updating files:  24% (11484/47847)
+2026-10-24T14:41:44.0589472Z Updating files:  25% (11962/47847)
+2026-10-24T14:41:44.1801433Z Updating files:  26% (12441/47847)
+2026-10-24T14:41:44.2864982Z Updating files:  27% (12919/47847)
+2026-10-24T14:41:44.4048494Z Updating files:  28% (13398/47847)
+2026-10-24T14:41:44.5135175Z Updating files:  29% (13876/47847)
+2026-10-24T14:41:44.6195048Z Updating files:  30% (14355/47847)
+2026-10-24T14:41:44.7356545Z Updating files:  31% (14833/47847)
+2026-10-24T14:41:44.7451540Z Updating files:  32% (15312/47847)
+2026-10-24T14:41:44.8413490Z Updating files:  32% (15363/47847)
+2026-10-24T14:41:45.4083965Z Updating files:  33% (15790/47847)
+2026-10-24T14:41:45.4909738Z Updating files:  34% (16268/47847)
+2026-10-24T14:41:45.5739452Z Updating files:  35% (16747/47847)
+2026-10-24T14:41:45.6569565Z Updating files:  36% (17225/47847)
+2026-10-24T14:41:45.8060683Z Updating files:  37% (17704/47847)
+2026-10-24T14:41:45.8570368Z Updating files:  37% (17922/47847)
+2026-10-24T14:41:45.9705007Z Updating files:  38% (18182/47847)
+2026-10-24T14:41:46.1162671Z Updating files:  39% (18661/47847)
+2026-10-24T14:41:46.2051905Z Updating files:  40% (19139/47847)
+2026-10-24T14:41:46.2912699Z Updating files:  41% (19618/47847)
+2026-10-24T14:41:46.5604102Z Updating files:  42% (20096/47847)
+2026-10-24T14:41:46.6413867Z Updating files:  43% (20575/47847)
+2026-10-24T14:41:46.7304447Z Updating files:  44% (21053/47847)
+2026-10-24T14:41:46.7536189Z Updating files:  45% (21532/47847)
+2026-10-24T14:41:46.8110238Z Updating files:  45% (21666/47847)
+2026-10-24T14:41:46.8941069Z Updating files:  46% (22010/47847)
+2026-10-24T14:41:46.9895631Z Updating files:  47% (22489/47847)
+2026-10-24T14:41:47.0809452Z Updating files:  48% (22967/47847)
+2026-10-24T14:41:47.1758717Z Updating files:  49% (23446/47847)
+2026-10-24T14:41:47.2694485Z Updating files:  50% (23924/47847)
+2026-10-24T14:41:47.4314819Z Updating files:  51% (24402/47847)
+2026-10-24T14:41:47.5890116Z Updating files:  52% (24881/47847)
+2026-10-24T14:41:47.8333294Z Updating files:  53% (25359/47847)
+2026-10-24T14:41:47.8720623Z Updating files:  53% (25694/47847)
+2026-10-24T14:41:48.0183519Z Updating files:  54% (25838/47847)
+2026-10-24T14:41:48.1206043Z Updating files:  55% (26316/47847)
+2026-10-24T14:41:48.2115732Z Updating files:  56% (26795/47847)
+2026-10-24T14:41:48.2978984Z Updating files:  57% (27273/47847)
+2026-10-24T14:41:48.3873959Z Updating files:  58% (27752/47847)
+2026-10-24T14:41:48.4731347Z Updating files:  59% (28230/47847)
+2026-10-24T14:41:48.5654553Z Updating files:  60% (28709/47847)
+2026-10-24T14:41:48.6651204Z Updating files:  61% (29187/47847)
+2026-10-24T14:41:48.7523987Z Updating files:  62% (29666/47847)
+2026-10-24T14:41:48.7565068Z Updating files:  63% (30144/47847)
+2026-10-24T14:41:48.8523662Z Updating files:  63% (30165/47847)
+2026-10-24T14:41:48.9868884Z Updating files:  64% (30623/47847)
+2026-10-24T14:41:49.2668007Z Updating files:  65% (31101/47847)
+2026-10-24T14:41:49.4265592Z Updating files:  66% (31580/47847)
+2026-10-24T14:41:49.5679935Z Updating files:  67% (32058/47847)
+2026-10-24T14:41:49.7377584Z Updating files:  68% (32536/47847)
+2026-10-24T14:41:49.7576964Z Updating files:  69% (33015/47847)
+2026-10-24T14:41:49.8368736Z Updating files:  69% (33090/47847)
+2026-10-24T14:41:49.9318596Z Updating files:  70% (33493/47847)
+2026-10-24T14:41:50.0274668Z Updating files:  71% (33972/47847)
+2026-10-24T14:41:50.1371044Z Updating files:  72% (34450/47847)
+2026-10-24T14:41:50.2921507Z Updating files:  73% (34929/47847)
+2026-10-24T14:41:50.4218277Z Updating files:  74% (35407/47847)
+2026-10-24T14:41:50.7600813Z Updating files:  75% (35886/47847)
+2026-10-24T14:41:50.7620224Z Updating files:  75% (36355/47847)
+2026-10-24T14:41:50.9516658Z Updating files:  76% (36364/47847)
+2026-10-24T14:41:51.0870476Z Updating files:  77% (36843/47847)
+2026-10-24T14:41:51.2209151Z Updating files:  78% (37321/47847)
+2026-10-24T14:41:51.3316188Z Updating files:  79% (37800/47847)
+2026-10-24T14:41:51.5074874Z Updating files:  80% (38278/47847)
+2026-10-24T14:41:51.7514191Z Updating files:  81% (38757/47847)
+2026-10-24T14:41:51.7610434Z Updating files:  82% (39235/47847)
+2026-10-24T14:41:52.0406771Z Updating files:  82% (39273/47847)
+2026-10-24T14:41:52.1254952Z Updating files:  83% (39714/47847)
+2026-10-24T14:41:52.2129301Z Updating files:  84% (40192/47847)
+2026-10-24T14:41:52.2985723Z Updating files:  85% (40670/47847)
+2026-10-24T14:41:52.3839373Z Updating files:  86% (41149/47847)
+2026-10-24T14:41:52.4684386Z Updating files:  87% (41627/47847)
+2026-10-24T14:41:52.5521574Z Updating files:  88% (42106/47847)
+2026-10-24T14:41:52.6399559Z Updating files:  89% (42584/47847)
+2026-10-24T14:41:52.7237830Z Updating files:  90% (43063/47847)
+2026-10-24T14:41:52.7617190Z Updating files:  91% (43541/47847)
+2026-10-24T14:41:52.8105678Z Updating files:  91% (43756/47847)
+2026-10-24T14:41:52.8967687Z Updating files:  92% (44020/47847)
+2026-10-24T14:41:52.9840051Z Updating files:  93% (44498/47847)
+2026-10-24T14:41:53.0942132Z Updating files:  94% (44977/47847)
+2026-10-24T14:41:53.1843833Z Updating files:  95% (45455/47847)
+2026-10-24T14:41:53.4088570Z Updating files:  96% (45934/47847)
+2026-10-24T14:41:53.5170429Z Updating files:  97% (46412/47847)
+2026-10-24T14:41:53.6399457Z Updating files:  98% (46891/47847)
+2026-10-24T14:41:53.7467056Z Updating files:  99% (47369/47847)
+2026-10-24T14:41:53.7467432Z Updating files: 100% (47847/47847)
+2026-10-24T14:41:53.7467717Z Updating files: 100% (47847/47847), done.
+2026-10-24T14:41:53.8271500Z Switched to a new branch 'main'
+2026-10-24T14:41:53.8286220Z branch 'main' set up to track 'origin/main'.
+2026-10-24T14:41:53.8477444Z ##[endgroup]
+2026-10-24T14:41:53.8815921Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-10-24T14:41:53.9098991Z 8967b960326eab4b7f0a17b61ca7942393856c08
+2026-10-24T14:41:53.9464184Z ##[group]Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+2026-10-24T14:41:53.9464776Z with:
+2026-10-24T14:41:53.9465035Z   node-version: 24
+2026-10-24T14:41:53.9465294Z   check-latest: false
+2026-10-24T14:41:53.9468552Z   token: ***
+2026-10-24T14:41:53.9468788Z   package-manager-cache: true
+2026-10-24T14:41:53.9469046Z env:
+2026-10-24T14:41:53.9469262Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:41:53.9469555Z ##[endgroup]
+2026-10-24T14:41:54.1187949Z Found in cache @ C:\hostedtoolcache\windows\node\24.22.1\x64
+2026-10-24T14:41:54.1193559Z ##[group]Environment details
+2026-10-24T14:42:02.9731121Z node: v24.22.1
+2026-10-24T14:42:02.9731792Z npm: 11.19.1
+2026-10-24T14:42:02.9732019Z yarn: 1.22.22
+2026-10-24T14:42:02.9732965Z ##[endgroup]
+2026-10-24T14:42:03.0386433Z ##[group]Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+2026-10-24T14:42:03.0386936Z with:
+2026-10-24T14:42:03.0387143Z   python-version: 3.12
+2026-10-24T14:42:03.0387371Z   check-latest: false
+2026-10-24T14:42:03.0390143Z   token: ***
+2026-10-24T14:42:03.0391216Z   update-environment: true
+2026-10-24T14:42:03.0391467Z   allow-prereleases: false
+2026-10-24T14:42:03.0391700Z   freethreaded: false
+2026-10-24T14:42:03.0391905Z env:
+2026-10-24T14:42:03.0392104Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:42:03.0392380Z ##[endgroup]
+2026-10-24T14:42:03.1900069Z ##[group]Installed versions
+2026-10-24T14:42:03.2141903Z Successfully set up CPython (3.12.10)
+2026-10-24T14:42:03.2142526Z ##[endgroup]
+2026-10-24T14:42:03.2377918Z ##[group]Run $ErrorActionPreference = 'Stop'
+2026-10-24T14:42:03.2378403Z [36;1m$ErrorActionPreference = 'Stop'[0m
+2026-10-24T14:42:03.2378940Z [36;1mInvoke-RestMethod https://cli.moonbitlang.com/install/powershell.ps1 | Invoke-Expression[0m
+2026-10-24T14:42:03.2379623Z [36;1m"$env:USERPROFILE\.moon\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append[0m
+2026-10-24T14:42:03.2421167Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-24T14:42:03.2421532Z env:
+2026-10-24T14:42:03.2421774Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:42:03.2422132Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:03.2422633Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-10-24T14:42:03.2423092Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:03.2423530Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:03.2424015Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:03.2424336Z ##[endgroup]
+2026-10-24T14:42:04.6123595Z 
+2026-10-24T14:42:04.6131727Z     Directory: C:\Users\runneradmin
+2026-10-24T14:42:04.6132160Z 
+2026-10-24T14:42:04.6135152Z [32;1mMode   [0m[32;1m              LastWriteTime[0m [32;1;3m        Length[0m[32;1m Name[0m
+2026-10-24T14:42:04.6136759Z [32;1m----   [0m [32;1m             -------------[0m [32;1m        ------[0m [32;1m----[0m
+2026-10-24T14:42:04.6261008Z d----          10/24/2026  2:42 PM                [44;1m.moon[0m
+2026-10-24T14:42:04.6287575Z Downloading moonbit ...
+2026-10-24T14:42:06.6533317Z Downloading core ...
+2026-10-24T14:42:10.7642240Z Bundling core ...
+2026-10-24T14:42:19.9532121Z Finished. moon: ran 328 tasks, now up to date
+2026-10-24T14:42:20.1053100Z Added ~/.moon/bin to the PATH.
+2026-10-24T14:42:20.1054111Z Please restart your terminal to use moonbit.
+2026-10-24T14:42:20.1056806Z To verify the download binaries, check https://www.moonbitlang.com/download#verifying-binaries for instructions.
+2026-10-24T14:42:20.1058542Z To know how to add shell completions, run 'moon shell-completion --help'
+2026-10-24T14:42:20.1124324Z 
+2026-10-24T14:42:20.1481506Z ##[group]Run python scripts/publication_privacy.py --history
+2026-10-24T14:42:20.1482054Z [36;1mpython scripts/publication_privacy.py --history[0m
+2026-10-24T14:42:20.1523109Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-24T14:42:20.1523455Z env:
+2026-10-24T14:42:20.1523676Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:42:20.1524048Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:20.1524521Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-10-24T14:42:20.1524975Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:20.1525406Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:20.1525817Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:20.1526156Z ##[endgroup]
+2026-10-24T14:42:37.9457017Z {"tool": "MoonTxnWitness", "passed": true, "checkedFilesAndBlobs": 69549, "historyBlobs": 21702, "findings": [], "publicHostedRunnerHomeExcluded": true, "scope": "Private publisher home paths, GitHub token syntax, private keys and selected local configuration; recognized GitHub-hosted service-account roots are public CI metadata; not an exhaustive secret detector"}
+2026-10-24T14:42:38.0652995Z ##[group]Run python scripts/verify_business_evidence.py --git
+2026-10-24T14:42:38.0653533Z [36;1mpython scripts/verify_business_evidence.py --git[0m
+2026-10-24T14:42:38.0696157Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-24T14:42:38.0696507Z env:
+2026-10-24T14:42:38.0696714Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:42:38.0697073Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:38.0697531Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-10-24T14:42:38.0697982Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:38.0698380Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:38.0698786Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:42:38.0699104Z ##[endgroup]
+2026-10-24T14:43:19.4635304Z {"passed": true, "receipts": 43, "artifactBindings": 1224, "source": "HEAD git blobs", "actualDatabaseExecution": false, "scope": "Byte bindings only; does not authenticate collection or certify application behavior"}
+2026-10-24T14:43:19.5946830Z ##[group]Run python -m pip install --require-hashes -r examples/orm-requirements.txt
+2026-10-24T14:43:19.5947537Z [36;1mpython -m pip install --require-hashes -r examples/orm-requirements.txt[0m
+2026-10-24T14:43:19.5989734Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-24T14:43:19.5990098Z env:
+2026-10-24T14:43:19.5990314Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:43:19.5990677Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:43:19.5991155Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-10-24T14:43:19.5991632Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:43:19.5992048Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:43:19.5992446Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:43:19.5992801Z ##[endgroup]
+2026-10-24T14:43:24.6968392Z Collecting psycopg==3.3.6 (from -r D:\a\moontxnwitness\moontxnwitness\examples\postgres-requirements.txt (line 2))
+2026-10-24T14:43:24.8576165Z   Downloading psycopg-3.3.6-py3-none-any.whl (215 kB)
+2026-10-24T14:43:25.3292765Z Collecting psycopg-binary==3.3.6 (from -r D:\a\moontxnwitness\moontxnwitness\examples\postgres-requirements.txt (line 3))
+2026-10-24T14:43:25.3385746Z   Downloading psycopg_binary-3.3.6-cp312-cp312-win_amd64.whl (3.7 MB)
+2026-10-24T14:43:25.3994929Z      ---------------------------------------- 3.7/3.7 MB 72.3 MB/s  0:00:00
+2026-10-24T14:43:25.4295419Z Collecting typing-extensions==4.16.0 (from -r D:\a\moontxnwitness\moontxnwitness\examples\postgres-requirements.txt (line 6))
+2026-10-24T14:43:25.4353115Z   Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-10-24T14:43:25.4773086Z Collecting tzdata==2026.5 (from -r D:\a\moontxnwitness\moontxnwitness\examples\postgres-requirements.txt (line 7))
+2026-10-24T14:43:25.4826718Z   Downloading tzdata-2026.5-py2.py3-none-any.whl (347 kB)
+2026-10-24T14:43:25.8398043Z Collecting sqlalchemy==2.0.55 (from -r examples/orm-requirements.txt (line 3))
+2026-10-24T14:43:25.8456170Z   Downloading sqlalchemy-2.0.55-cp312-cp312-win_amd64.whl (2.2 MB)
+2026-10-24T14:43:25.8856754Z      ---------------------------------------- 2.2/2.2 MB 61.8 MB/s  0:00:00
+2026-10-24T14:43:26.0586342Z Collecting greenlet==3.5.1 (from -r examples/orm-requirements.txt (line 6))
+2026-10-24T14:43:26.0643431Z   Downloading greenlet-3.5.1-cp312-cp312-win_amd64.whl (238 kB)
+2026-10-24T14:43:26.4637323Z Installing collected packages: tzdata, typing-extensions, psycopg-binary, greenlet, sqlalchemy, psycopg
+2026-10-24T14:43:31.5155130Z 
+2026-10-24T14:43:31.5179380Z Successfully installed greenlet-3.5.1 psycopg-3.3.6 psycopg-binary-3.3.6 sqlalchemy-2.0.55 typing-extensions-4.16.0 tzdata-2026.5
+2026-10-24T14:43:31.7296621Z ##[group]Run npm test
+2026-10-24T14:43:31.7297191Z [36;1mnpm test[0m
+2026-10-24T14:43:31.7340340Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-24T14:43:31.7340690Z env:
+2026-10-24T14:43:31.7340902Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:43:31.7341275Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:43:31.7341739Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-10-24T14:43:31.7342185Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:43:31.7342594Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:43:31.7343016Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:43:31.7343384Z ##[endgroup]
+2026-10-24T14:43:32.8767102Z 
+2026-10-24T14:43:32.8767673Z > moontxnwitness@0.2.7 test
+2026-10-24T14:43:32.8768064Z > node scripts/test.mjs
+2026-10-24T14:43:32.8768239Z 
+2026-10-24T14:43:32.9896550Z {"passed":true,"checks":13}
+2026-10-24T14:43:34.3676993Z Finished. moon: ran 106 tasks, now up to date
+2026-10-24T14:43:38.5955729Z Finished. moon: ran 28 tasks, now up to date
+2026-10-24T14:43:46.0721300Z Total tests: 772, passed: 772, failed: 0.
+2026-10-24T14:43:53.6116317Z Total tests: 772, passed: 772, failed: 0.
+2026-10-24T14:44:02.7295200Z Total tests: 772, passed: 772, failed: 0.
+2026-10-24T14:44:04.5568276Z Finished. moon: ran 5 tasks, now up to date
+2026-10-24T14:44:04.8968358Z Built MoonTxnWitness v0.2.7: portable MoonBit core + local Node.js CLI.
+2026-10-24T14:44:07.9132086Z Parser differential: 2542 inputs agree; 2174 malformed inputs rejected by reference.
+2026-10-24T14:44:13.1528312Z Independent oracle: 10320 histories agree; 6373 cycle certificates verified.
+2026-10-24T14:44:28.6713871Z CLI integration: 75 checks passed, including actual SQLite capture.
+2026-10-24T14:44:29.3525542Z Capture SDK/CLI checks passed (complete skew, missing event, unknown outcome, open scope, duplicate keys, safe output).
+2026-10-24T14:44:30.3780004Z Presence SDK/CLI checks passed (26; experimental schema, source facts, absence, safe export, fail-closed gaps).
+2026-10-24T14:48:19.1967186Z test_async_cancellation_is_not_swallowed (__main__.AsyncCaptureUnitTests.test_async_cancellation_is_not_swallowed) ... ok
+2026-10-24T14:48:19.2046004Z test_async_confirmed_server_rollback (__main__.AsyncCaptureUnitTests.test_async_confirmed_server_rollback) ... ok
+2026-10-24T14:48:19.2118335Z test_async_context_commit_error_matches_driver_close_order (__main__.AsyncCaptureUnitTests.test_async_context_commit_error_matches_driver_close_order) ... ok
+2026-10-24T14:48:19.2191070Z test_async_context_preserves_exception (__main__.AsyncCaptureUnitTests.test_async_context_preserves_exception) ... ok
+2026-10-24T14:48:19.2270351Z test_async_fetchmany_all_iteration_and_cursor_context (__main__.AsyncCaptureUnitTests.test_async_fetchmany_all_iteration_and_cursor_context) ... ok
+2026-10-24T14:48:19.2345447Z test_async_read_write_commit (__main__.AsyncCaptureUnitTests.test_async_read_write_commit) ... ok
+2026-10-24T14:48:19.2419025Z test_async_unconsumed_read_and_savepoint_gap (__main__.AsyncCaptureUnitTests.test_async_unconsumed_read_and_savepoint_gap) ... ok
+2026-10-24T14:48:19.2492476Z test_async_unknown_commit (__main__.AsyncCaptureUnitTests.test_async_unknown_commit) ... ok
+2026-10-24T14:48:19.2525906Z test_aggregate_nodes_stop_expanding_shared_short_list_tree (__main__.CaptureUnitTests.test_aggregate_nodes_stop_expanding_shared_short_list_tree) ... ok
+2026-10-24T14:48:19.2532370Z test_aggregate_string_bytes_do_not_change_original_business_value (__main__.CaptureUnitTests.test_aggregate_string_bytes_do_not_change_original_business_value) ... ok
+2026-10-24T14:48:19.2538031Z test_autocommit_does_not_claim_supported_complete_capture (__main__.CaptureUnitTests.test_autocommit_does_not_claim_supported_complete_capture) ... ok
+2026-10-24T14:48:19.2545890Z test_bounded_events_and_outstanding_transaction_are_not_complete (__main__.CaptureUnitTests.test_bounded_events_and_outstanding_transaction_are_not_complete) ... ok
+2026-10-24T14:48:19.2548909Z test_business_exception_identity_not_swallowed (__main__.CaptureUnitTests.test_business_exception_identity_not_swallowed) ... ok
+2026-10-24T14:48:19.2551209Z test_capture_close_leaves_business_connection_alone (__main__.CaptureUnitTests.test_capture_close_leaves_business_connection_alone) ... ok
+2026-10-24T14:48:19.2556761Z test_commit_after_server_error_is_aborted (__main__.CaptureUnitTests.test_commit_after_server_error_is_aborted) ... ok
+2026-10-24T14:48:19.2587889Z test_commit_server_rollback_requires_diagnostics_and_idle_state (__main__.CaptureUnitTests.test_commit_server_rollback_requires_diagnostics_and_idle_state) ... ok
+2026-10-24T14:48:19.2593546Z test_connection_context_preserves_business_exception_after_rollback_error (__main__.CaptureUnitTests.test_connection_context_preserves_business_exception_after_rollback_error) ... ok
+2026-10-24T14:48:19.2599209Z test_context_commit_error_matches_psycopg_336_close_order (__main__.CaptureUnitTests.test_context_commit_error_matches_psycopg_336_close_order) ... ok
+2026-10-24T14:48:19.2605713Z test_context_commits_and_closes_without_extra_transactions (__main__.CaptureUnitTests.test_context_commits_and_closes_without_extra_transactions) ... ok
+2026-10-24T14:48:19.2649691Z test_discarded_unconsumed_cursor_is_gap_and_wrapping_is_idempotent (__main__.CaptureUnitTests.test_discarded_unconsumed_cursor_is_gap_and_wrapping_is_idempotent) ... ok
+2026-10-24T14:48:19.2657378Z test_event_budget_rejects_large_payload_before_retaining_it (__main__.CaptureUnitTests.test_event_budget_rejects_large_payload_before_retaining_it) ... ok
+2026-10-24T14:48:19.2663858Z test_explicit_commit_sql_server_rollback_is_aborted (__main__.CaptureUnitTests.test_explicit_commit_sql_server_rollback_is_aborted) ... ok
+2026-10-24T14:48:19.2671163Z test_explicit_transaction_on_autocommit_connection_is_supported (__main__.CaptureUnitTests.test_explicit_transaction_on_autocommit_connection_is_supported) ... ok
+2026-10-24T14:48:19.2677327Z test_failed_commit_is_unknown_and_exception_identity_preserved (__main__.CaptureUnitTests.test_failed_commit_is_unknown_and_exception_identity_preserved) ... ok
+2026-10-24T14:48:19.2683142Z test_fetch_failure_preserves_exception_and_marks_gap (__main__.CaptureUnitTests.test_fetch_failure_preserves_exception_and_marks_gap) ... ok
+2026-10-24T14:48:19.2691664Z test_fetchmany_arraysize_and_iteration_preserved (__main__.CaptureUnitTests.test_fetchmany_arraysize_and_iteration_preserved) ... ok
+2026-10-24T14:48:19.2700282Z test_gap_records_have_a_hard_count_and_payload_bound (__main__.CaptureUnitTests.test_gap_records_have_a_hard_count_and_payload_bound) ... ok
+2026-10-24T14:48:19.2701848Z test_generated_templates_have_known_shape_and_quoted_identifiers (__main__.CaptureUnitTests.test_generated_templates_have_known_shape_and_quoted_identifiers) ... ok
+2026-10-24T14:48:19.2708603Z test_locked_snapshot_precedes_transactions_and_preserves_initial (__main__.CaptureUnitTests.test_locked_snapshot_precedes_transactions_and_preserves_initial) ... ok
+2026-10-24T14:48:19.2713831Z test_log_write_failure_never_masks_business_error (__main__.CaptureUnitTests.test_log_write_failure_never_masks_business_error) ... ok
+2026-10-24T14:48:19.2729191Z test_memoryview_binary_boundary_charges_base64_expansion (__main__.CaptureUnitTests.test_memoryview_binary_boundary_charges_base64_expansion) ... ok
+2026-10-24T14:48:19.2744676Z test_memoryview_element_count_cannot_bypass_binary_byte_budget (__main__.CaptureUnitTests.test_memoryview_element_count_cannot_bypass_binary_byte_budget) ... ok
+2026-10-24T14:48:19.2754695Z test_multiple_writes_and_own_read_preserve_order (__main__.CaptureUnitTests.test_multiple_writes_and_own_read_preserve_order) ... ok
+2026-10-24T14:48:19.2762437Z test_noncontiguous_memoryview_is_gap_before_binary_copy (__main__.CaptureUnitTests.test_noncontiguous_memoryview_is_gap_before_binary_copy) ... ok
+2026-10-24T14:48:19.2797225Z test_oversized_raw_result_omits_rows_with_gap_preserving_business_result (__main__.CaptureUnitTests.test_oversized_raw_result_omits_rows_with_gap_preserving_business_result) ... ok
+2026-10-24T14:48:19.2804936Z test_pending_read_before_next_sql_is_incomplete (__main__.CaptureUnitTests.test_pending_read_before_next_sql_is_incomplete) ... ok
+2026-10-24T14:48:19.2813811Z test_pending_read_on_close_or_commit_is_incomplete (__main__.CaptureUnitTests.test_pending_read_on_close_or_commit_is_incomplete) ... ok
+2026-10-24T14:48:19.2818688Z test_raw_byte_boundary_counts_utf8_and_json_escapes_before_encoding (__main__.CaptureUnitTests.test_raw_byte_boundary_counts_utf8_and_json_escapes_before_encoding) ... ok
+2026-10-24T14:48:19.2827521Z test_raw_large_integers_preserve_precision_for_js_consumers (__main__.CaptureUnitTests.test_raw_large_integers_preserve_precision_for_js_consumers) ... ok
+2026-10-24T14:48:19.2864559Z test_raw_log_invalid_header_and_deep_json_are_corrupt (__main__.CaptureUnitTests.test_raw_log_invalid_header_and_deep_json_are_corrupt) ... ok
+2026-10-24T14:48:19.2902652Z test_raw_log_non_object_records_preserve_valid_prefix (__main__.CaptureUnitTests.test_raw_log_non_object_records_preserve_valid_prefix) ... ok
+2026-10-24T14:48:19.2944910Z test_raw_log_roundtrip_and_truncation (__main__.CaptureUnitTests.test_raw_log_roundtrip_and_truncation) ... ok
+2026-10-24T14:48:19.2988426Z test_raw_log_size_line_and_event_limits_preserve_valid_prefix (__main__.CaptureUnitTests.test_raw_log_size_line_and_event_limits_preserve_valid_prefix) ... ok
+2026-10-24T14:48:19.3009631Z test_raw_log_tampering_and_content_after_footer_detected (__main__.CaptureUnitTests.test_raw_log_tampering_and_content_after_footer_detected) ... ok
+2026-10-24T14:48:19.3014311Z test_raw_node_boundary_is_shared_across_all_containers (__main__.CaptureUnitTests.test_raw_node_boundary_is_shared_across_all_containers) ... ok
+2026-10-24T14:48:19.3020399Z test_raw_parameters_and_rows_are_actual_driver_observations (__main__.CaptureUnitTests.test_raw_parameters_and_rows_are_actual_driver_observations) ... ok
+2026-10-24T14:48:19.3027519Z test_returned_tree_budget_preserves_row_identity_and_records_gap (__main__.CaptureUnitTests.test_returned_tree_budget_preserves_row_identity_and_records_gap) ... ok
+2026-10-24T14:48:19.3035380Z test_savepoint_and_unmapped_sql_execute_but_gap (__main__.CaptureUnitTests.test_savepoint_and_unmapped_sql_execute_but_gap) ... ok
+2026-10-24T14:48:19.3038406Z test_scope_not_inferred_and_inflight_transaction_is_gap (__main__.CaptureUnitTests.test_scope_not_inferred_and_inflight_transaction_is_gap) ... ok
+2026-10-24T14:48:19.3053922Z test_seq_and_time_monotonic (__main__.CaptureUnitTests.test_seq_and_time_monotonic) ... ok
+2026-10-24T14:48:19.3072975Z test_session_byte_budget_stops_evidence_without_stopping_business (__main__.CaptureUnitTests.test_session_byte_budget_stops_evidence_without_stopping_business) ... ok
+2026-10-24T14:48:19.3086584Z test_session_node_budget_is_independent_of_event_count_and_bytes (__main__.CaptureUnitTests.test_session_node_budget_is_independent_of_event_count_and_bytes) ... ok
+2026-10-24T14:48:19.3089558Z test_snapshot_budget_rejects_before_creating_a_large_initial_dictionary (__main__.CaptureUnitTests.test_snapshot_budget_rejects_before_creating_a_large_initial_dictionary) ... ok
+2026-10-24T14:48:19.3093788Z test_snapshot_rejects_foreign_keys_rules_and_inheritance_before_business_activity (__main__.CaptureUnitTests.test_snapshot_rejects_foreign_keys_rules_and_inheritance_before_business_activity) ... ok
+2026-10-24T14:48:19.3095357Z test_snapshot_rejects_non_string_version (__main__.CaptureUnitTests.test_snapshot_rejects_non_string_version) ... ok
+2026-10-24T14:48:19.3100775Z test_snapshot_rejects_trigger_or_rls_and_preserves_failure (__main__.CaptureUnitTests.test_snapshot_rejects_trigger_or_rls_and_preserves_failure) ... ok
+2026-10-24T14:48:19.3103341Z test_snapshot_requires_idle_dedicated_setup_and_cannot_repeat (__main__.CaptureUnitTests.test_snapshot_requires_idle_dedicated_setup_and_cannot_repeat) ... ok
+2026-10-24T14:48:19.3111983Z test_sql_budget_passes_the_original_query_unchanged (__main__.CaptureUnitTests.test_sql_budget_passes_the_original_query_unchanged) ... ok
+2026-10-24T14:48:19.3125010Z test_sync_read_write_commit_preserves_results_and_parameters (__main__.CaptureUnitTests.test_sync_read_write_commit_preserves_results_and_parameters) ... ok
+2026-10-24T14:48:19.3126130Z test_typed_keys_cannot_collide (__main__.CaptureUnitTests.test_typed_keys_cannot_collide) ... ok
+2026-10-24T14:48:19.3128703Z test_unknown_connection_method_and_raw_access_record_gap (__main__.CaptureUnitTests.test_unknown_connection_method_and_raw_access_record_gap) ... ok
+2026-10-24T14:48:19.3134799Z test_zero_row_result_does_not_fabricate_initial_or_tombstone (__main__.CaptureUnitTests.test_zero_row_result_does_not_fabricate_initial_or_tombstone) ... ok
+2026-10-24T14:48:19.3135457Z 
+2026-10-24T14:48:19.3135729Z ----------------------------------------------------------------------
+2026-10-24T14:48:19.3136158Z Ran 62 tests in 0.125s
+2026-10-24T14:48:19.3136341Z 
+2026-10-24T14:48:19.3136467Z OK
+2026-10-24T14:48:19.3139588Z {"suite": "python-capture-unit", "actualDatabaseExecution": false, "tests": 62, "failures": 0, "errors": 0, "passed": true}
+2026-10-24T14:50:28.6625519Z Independent v3 reference 57 traces; 167 SDK/CLI/evidence checks; journal 66 executed, 0 skipped.
+2026-10-24T14:50:28.9905256Z MoonTxnWitness v0.2.7 verification complete.
+2026-10-24T14:50:29.1144810Z ##[group]Run node scripts/performance-evidence-test.mjs
+2026-10-24T14:50:29.1145410Z [36;1mnode scripts/performance-evidence-test.mjs[0m
+2026-10-24T14:50:29.1186199Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-24T14:50:29.1186598Z env:
+2026-10-24T14:50:29.1186856Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:50:29.1187268Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:50:29.1187800Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-10-24T14:50:29.1188334Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:50:29.1188808Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:50:29.1189265Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:50:29.1189633Z ##[endgroup]
+2026-10-24T14:50:29.4413536Z PASS partial physical writes leave the previous checkpoint and atomic pointer intact; failure snapshot preserves raw samples
+2026-10-24T14:50:29.4940772Z PASS failed pointer replacement cannot expose a new terminal result; an interruption replaces it only after complete persistence
+2026-10-24T14:50:29.5272633Z PASS physical partial writes to the next pointer staging file never truncate the current latest JSON
+2026-10-24T14:50:29.6234830Z PASS real child-process exit during a physical partial write preserves the last durable checkpoint
+2026-10-24T14:50:29.6384098Z PASS transient file-open failures retry at most three times and commit exactly one unchanged receipt
+2026-10-24T14:50:29.6727520Z PASS missing/corrupt pointer recovery ignores malformed or tampered snapshots and never infers terminal acceptance
+2026-10-24T14:50:29.6883589Z PASS immutable publication refuses existing different bytes and reports failure without overwriting either raw artifact
+2026-10-24T14:50:29.7046722Z PASS pointer acceptance flags must agree with the hashed snapshot; external edits cannot promote an incomplete checkpoint
+2026-10-24T14:50:29.7231823Z PASS verified JSON receipt replacement preserves original bytes after physical write failures and retries only the already encoded output
+2026-10-24T14:50:29.7240366Z {"passed":true,"tests":9,"cases":["partial physical writes leave the previous checkpoint and atomic pointer intact; failure snapshot preserves raw samples","failed pointer replacement cannot expose a new terminal result; an interruption replaces it only after complete persistence","physical partial writes to the next pointer staging file never truncate the current latest JSON","real child-process exit during a physical partial write preserves the last durable checkpoint","transient file-open failures retry at most three times and commit exactly one unchanged receipt","missing/corrupt pointer recovery ignores malformed or tampered snapshots and never infers terminal acceptance","immutable publication refuses existing different bytes and reports failure without overwriting either raw artifact","pointer acceptance flags must agree with the hashed snapshot; external edits cannot promote an incomplete checkpoint","verified JSON receipt replacement preserves original bytes after physical write failures and retries only the already encoded output"],"benchmarkOperationsExecuted":0,"helperSha256":"fb0fc271d87f29f164013553e57dffbc155e92baf5f83304665654ba0dd1423a"}
+2026-10-24T14:50:29.8462757Z ##[group]Run npm run package
+2026-10-24T14:50:29.8463162Z [36;1mnpm run package[0m
+2026-10-24T14:50:29.8506907Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-24T14:50:29.8507318Z env:
+2026-10-24T14:50:29.8507579Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:50:29.8508010Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:50:29.8508544Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-10-24T14:50:29.8509055Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:50:29.8509518Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:50:29.8509970Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:50:29.8510370Z ##[endgroup]
+2026-10-24T14:50:30.4580645Z 
+2026-10-24T14:50:30.4581549Z > moontxnwitness@0.2.7 package
+2026-10-24T14:50:30.4582336Z > node scripts/package.mjs
+2026-10-24T14:50:30.4582654Z 
+2026-10-24T14:50:30.5635452Z Finished. moon: no work to do
+2026-10-24T14:50:30.8754114Z Built MoonTxnWitness v0.2.7: portable MoonBit core + local Node.js CLI.
+2026-10-24T14:58:14.9286973Z Packaged MoonTxnWitness-v0.2.7: source + portable; 122 fresh-consumer checks passed.
+2026-10-24T14:58:14.9288102Z MoonTxnWitness-v0.2.7-source.zip  50699580 bytes  4216d06ba6ccf71f4b52ea4d117d3a6c266e5aa49e533896f5230e608d415a9b
+2026-10-24T14:58:14.9289373Z MoonTxnWitness-v0.2.7-portable.zip  47886010 bytes  5a21f2e9ae5aeef2e93f721293a443efdcabfb9fabfdb12bbb4727a10b56d4ec
+2026-10-24T14:58:15.0139876Z ##[group]Run python scripts/stage_ci_evidence.py
+2026-10-24T14:58:15.0140441Z [36;1mpython scripts/stage_ci_evidence.py[0m
+2026-10-24T14:58:15.0181111Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-24T14:58:15.0181523Z env:
+2026-10-24T14:58:15.0181779Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:58:15.0182213Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:15.0182729Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-10-24T14:58:15.0183244Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:15.0183716Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:15.0184189Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:15.0184575Z ##[endgroup]
+2026-10-24T14:58:15.9911327Z warning: in the working copy of 'verification/publication-privacy.json', CRLF will be replaced by LF the next time Git touches it
+2026-10-24T14:58:19.2595568Z {"staged": 2057, "bytes": 210135177}
+2026-10-24T14:58:19.3672794Z ##[group]Run python .github/test_stage_unit_logs.py
+2026-10-24T14:58:19.3673303Z [36;1mpython .github/test_stage_unit_logs.py[0m
+2026-10-24T14:58:19.3713583Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-24T14:58:19.3714000Z env:
+2026-10-24T14:58:19.3714263Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:58:19.3714691Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:19.3715219Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-10-24T14:58:19.3715759Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:19.3716412Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:19.3716880Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:19.3717285Z ##[endgroup]
+2026-10-24T14:58:19.7195621Z test_absolute_path_rejected (__main__.Tests.test_absolute_path_rejected) ... ok
+2026-10-24T14:58:19.7300700Z test_backslash_windows_escape_rejected (__main__.Tests.test_backslash_windows_escape_rejected) ... ok
+2026-10-24T14:58:19.8174828Z test_cli_current_context_produces_exact_retention (__main__.Tests.test_cli_current_context_produces_exact_retention) ... ok
+2026-10-24T14:58:19.8911524Z test_cli_requires_ci_context (__main__.Tests.test_cli_requires_ci_context) ... ok
+2026-10-24T14:58:19.8964930Z test_duplicate_index_entry_is_rejected (__main__.Tests.test_duplicate_index_entry_is_rejected) ... ok
+2026-10-24T14:58:19.9098207Z test_exact_log_budget_finishes (__main__.Tests.test_exact_log_budget_finishes) ... ok
+2026-10-24T14:58:19.9262157Z test_exact_original_bytes_retained_and_index_receipt_unchanged (__main__.Tests.test_exact_original_bytes_retained_and_index_receipt_unchanged) ... ok
+2026-10-24T14:58:19.9426383Z test_existing_appendix_is_never_overwritten (__main__.Tests.test_existing_appendix_is_never_overwritten) ... ok
+2026-10-24T14:58:19.9595407Z test_existing_different_staged_log_is_preserved_and_refused (__main__.Tests.test_existing_different_staged_log_is_preserved_and_refused) ... ok
+2026-10-24T14:58:19.9766196Z test_existing_same_staged_log_is_verified_without_overwrite (__main__.Tests.test_existing_same_staged_log_is_verified_without_overwrite) ... ok
+2026-10-24T14:58:19.9939177Z test_failed_unit_receipt_stays_failed_when_log_retention_succeeds (__main__.Tests.test_failed_unit_receipt_stays_failed_when_log_retention_succeeds) ... ok
+2026-10-24T14:58:20.0120052Z test_ignored_log_not_in_original_index_is_still_retained (__main__.Tests.test_ignored_log_not_in_original_index_is_still_retained) ... ok
+2026-10-24T14:58:20.0173898Z test_index_traversal_is_rejected_even_when_not_receipt (__main__.Tests.test_index_traversal_is_rejected_even_when_not_receipt) ... ok
+2026-10-24T14:58:20.0316110Z test_log_sha_tampering_is_not_copied (__main__.Tests.test_log_sha_tampering_is_not_copied) ... ok
+2026-10-24T14:58:20.0421254Z test_malformed_direct_binding_fails_visibly (__main__.Tests.test_malformed_direct_binding_fails_visibly) ... ok
+2026-10-24T14:58:20.0443288Z test_missing_index_fails_and_writes_appendix (__main__.Tests.test_missing_index_fails_and_writes_appendix) ... ok
+2026-10-24T14:58:20.0552254Z test_missing_log_remains_explicit_failure (__main__.Tests.test_missing_log_remains_explicit_failure) ... ok
+2026-10-24T14:58:20.0658157Z test_original_receipt_changed_after_staging_is_rejected (__main__.Tests.test_original_receipt_changed_after_staging_is_rejected) ... ok
+2026-10-24T14:58:20.0898050Z test_other_good_logs_survive_missing_log_failure (__main__.Tests.test_other_good_logs_survive_missing_log_failure) ... ok
+2026-10-24T14:58:20.1000684Z test_parent_escape_rejected (__main__.Tests.test_parent_escape_rejected) ... ok
+2026-10-24T14:58:20.1116341Z test_per_log_budget_not_silently_skipped (__main__.Tests.test_per_log_budget_not_silently_skipped) ... ok
+2026-10-24T14:58:20.1310877Z test_several_hundred_kib_log_is_retained_without_truncation (__main__.Tests.test_several_hundred_kib_log_is_retained_without_truncation) ... ok
+2026-10-24T14:58:20.1413907Z test_single_windows_separator_cannot_escape_receipt_directory (__main__.Tests.test_single_windows_separator_cannot_escape_receipt_directory) ... ok
+2026-10-24T14:58:20.1494325Z test_staged_receipt_changed_after_index_is_rejected (__main__.Tests.test_staged_receipt_changed_after_index_is_rejected) ... ok
+2026-10-24T14:58:20.1596287Z test_subdirectory_is_outside_same_receipt_directory (__main__.Tests.test_subdirectory_is_outside_same_receipt_directory) ... ok
+2026-10-24T14:58:20.1705308Z test_symlink_detection_fails_closed_without_platform_privileges (__main__.Tests.test_symlink_detection_fails_closed_without_platform_privileges) ... ok
+2026-10-24T14:58:20.1941535Z test_total_log_budget_keeps_prior_original_and_records_refusal (__main__.Tests.test_total_log_budget_keeps_prior_original_and_records_refusal) ... ok
+2026-10-24T14:58:20.2049811Z test_unbound_receipt_does_not_invent_log_reference (__main__.Tests.test_unbound_receipt_does_not_invent_log_reference) ... ok
+2026-10-24T14:58:20.2221492Z test_unselected_historical_receipt_is_not_followed (__main__.Tests.test_unselected_historical_receipt_is_not_followed) ... ok
+2026-10-24T14:58:20.2325062Z test_windows_drive_and_alternate_stream_rejected (__main__.Tests.test_windows_drive_and_alternate_stream_rejected) ... ok
+2026-10-24T14:58:20.2380038Z test_wrong_current_attempt_is_rejected (__main__.Tests.test_wrong_current_attempt_is_rejected) ... ok
+2026-10-24T14:58:20.2438058Z test_wrong_current_run_is_rejected (__main__.Tests.test_wrong_current_run_is_rejected) ... ok
+2026-10-24T14:58:20.2438568Z 
+2026-10-24T14:58:20.2438969Z ----------------------------------------------------------------------
+2026-10-24T14:58:20.2439661Z Ran 32 tests in 0.536s
+2026-10-24T14:58:20.2440222Z 
+2026-10-24T14:58:20.2440364Z OK
+2026-10-24T14:58:20.2441750Z {"kind": "ci-unit-log-retention-controller-tests", "passed": true, "testsRun": 32, "failures": 0, "errors": 0, "skipped": 0, "actualDatabaseExecution": false, "formalPerformanceMeasured": false}
+2026-10-24T14:58:20.3590821Z ##[group]Run python .github/stage_unit_logs.py
+2026-10-24T14:58:20.3591340Z [36;1mpython .github/stage_unit_logs.py[0m
+2026-10-24T14:58:20.3632175Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-24T14:58:20.3632577Z env:
+2026-10-24T14:58:20.3632824Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:58:20.3633561Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:20.3634404Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-10-24T14:58:20.3635005Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:20.3635650Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:20.3636167Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:20.3636550Z ##[endgroup]
+2026-10-24T14:58:20.8132336Z {"passed": true, "appendix": "artifacts/ci-evidence/receipt-bound-unit-logs.json", "logs": 1, "retainedLogBytes": 16685, "errors": []}
+2026-10-24T14:58:20.9294903Z ##[group]Run actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+2026-10-24T14:58:20.9295693Z with:
+2026-10-24T14:58:20.9296117Z   name: evidence-windows-2022
+2026-10-24T14:58:20.9296601Z   path: artifacts/ci-evidence/
+2026-10-24T14:58:20.9297064Z   if-no-files-found: error
+2026-10-24T14:58:20.9297504Z   compression-level: 6
+2026-10-24T14:58:20.9297910Z   overwrite: false
+2026-10-24T14:58:20.9298325Z   include-hidden-files: false
+2026-10-24T14:58:20.9298758Z   archive: true
+2026-10-24T14:58:20.9299122Z env:
+2026-10-24T14:58:20.9299555Z   MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+2026-10-24T14:58:20.9300170Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:20.9300975Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-10-24T14:58:20.9301835Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:20.9302706Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:20.9303502Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-10-24T14:58:20.9304139Z ##[endgroup]
+2026-10-24T14:58:21.7859554Z With the provided path, there will be 2060 files uploaded
+2026-10-24T14:58:21.7866769Z Artifact name is valid!
+2026-10-24T14:58:21.7868349Z Root directory input is valid!
+2026-10-24T14:58:22.2189779Z Uploading artifact: evidence-windows-2022.zip
+2026-10-24T14:58:22.2228550Z Beginning upload of artifact content to blob storage
+2026-10-24T14:58:23.7652067Z Uploaded bytes 8388608
+2026-10-24T14:58:23.9489886Z Uploaded bytes 16777216
+2026-10-24T14:58:24.0476094Z Uploaded bytes 25165824
+2026-10-24T14:58:24.1933475Z Uploaded bytes 33554432
+2026-10-24T14:58:24.2509792Z Uploaded bytes 41943040
+2026-10-24T14:58:24.4394739Z Uploaded bytes 50331648
+2026-10-24T14:58:24.5258419Z Uploaded bytes 58720256
+2026-10-24T14:58:24.8731553Z Uploaded bytes 67108864
+2026-10-24T14:58:24.9979284Z Uploaded bytes 75497472
+2026-10-24T14:58:25.2906930Z Uploaded bytes 83886080
+2026-10-24T14:58:25.7511361Z Uploaded bytes 92274688
+2026-10-24T14:58:27.5547447Z Uploaded bytes 100663296
+2026-10-24T14:58:28.6218030Z Uploaded bytes 106184780
+2026-10-24T14:58:28.6921284Z Finished uploading artifact content to blob storage!
+2026-10-24T14:58:28.6926326Z SHA256 digest of uploaded artifact is 14d9d689518a252423a3851e3d63284d869d4adc00cded8fc3ff2a1c182227b8
+2026-10-24T14:58:28.6928605Z Finalizing artifact upload
+2026-10-24T14:58:29.3161309Z Artifact evidence-windows-2022 successfully finalized. Artifact ID 12563993479
+2026-10-24T14:58:29.3162835Z Artifact evidence-windows-2022 has been successfully uploaded! Final size is 106184780 bytes. Artifact ID is 12563993479
+2026-10-24T14:58:29.3171245Z Artifact download URL: https://github.com/HhWw96/moontxnwitness/actions/runs/40103589528/artifacts/12563993479
+2026-10-24T14:58:29.3562304Z Post job cleanup.
+2026-10-24T14:58:29.5367027Z Post job cleanup.
+2026-10-24T14:58:29.7130637Z Post job cleanup.
+2026-10-24T14:58:29.9529128Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-24T14:58:29.9806500Z git version 2.56.0.windows.3
+2026-10-24T14:58:29.9863412Z Copying 'C:\Users\runneradmin\.gitconfig' to 'D:\a\_temp\8d0e9c79-34c6-424e-8c69-41f3a18d607f\.gitconfig'
+2026-10-24T14:58:29.9885791Z Temporarily overriding HOME='D:\a\_temp\8d0e9c79-34c6-424e-8c69-41f3a18d607f' before making global git config changes
+2026-10-24T14:58:29.9887109Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T14:58:29.9899925Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\moontxnwitness\moontxnwitness
+2026-10-24T14:58:30.0260780Z Removing SSH command configuration
+2026-10-24T14:58:30.0274294Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T14:58:30.0644402Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-24T14:58:30.5606020Z Removing HTTP extra header
+2026-10-24T14:58:30.5619400Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T14:58:30.5923537Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-24T14:58:31.0736948Z Removing includeIf entries pointing to credentials config files
+2026-10-24T14:58:31.0747372Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-24T14:58:31.1004170Z includeif.gitdir:D:/a/moontxnwitness/moontxnwitness/.git.path
+2026-10-24T14:58:31.1005225Z includeif.gitdir:D:/a/moontxnwitness/moontxnwitness/.git/worktrees/*.path
+2026-10-24T14:58:31.1005881Z includeif.gitdir:/github/workspace/.git.path
+2026-10-24T14:58:31.1006455Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-24T14:58:31.1041512Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/moontxnwitness/moontxnwitness/.git.path
+2026-10-24T14:58:31.1291726Z D:\a\_temp\git-credentials-2d9dbd1d-5761-4bbe-b5ce-de42c2da36c8.config
+2026-10-24T14:58:31.1325660Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/moontxnwitness/moontxnwitness/.git.path D\:\\a\\_temp\\git\-credentials\-2d9dbd1d\-5761\-4bbe\-b5ce\-de42c2da36c8\.config
+2026-10-24T14:58:31.1607003Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/moontxnwitness/moontxnwitness/.git/worktrees/*.path
+2026-10-24T14:58:31.1853883Z D:\a\_temp\git-credentials-2d9dbd1d-5761-4bbe-b5ce-de42c2da36c8.config
+2026-10-24T14:58:31.1885373Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/moontxnwitness/moontxnwitness/.git/worktrees/*.path D\:\\a\\_temp\\git\-credentials\-2d9dbd1d\-5761\-4bbe\-b5ce\-de42c2da36c8\.config
+2026-10-24T14:58:31.2162568Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-24T14:58:31.2407198Z /github/runner_temp/git-credentials-2d9dbd1d-5761-4bbe-b5ce-de42c2da36c8.config
+2026-10-24T14:58:31.2436971Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-2d9dbd1d\-5761\-4bbe\-b5ce\-de42c2da36c8\.config
+2026-10-24T14:58:31.2715957Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-24T14:58:31.2958144Z /github/runner_temp/git-credentials-2d9dbd1d-5761-4bbe-b5ce-de42c2da36c8.config
+2026-10-24T14:58:31.3033416Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-2d9dbd1d\-5761\-4bbe\-b5ce\-de42c2da36c8\.config
+2026-10-24T14:58:31.3315407Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-24T14:58:31.7938727Z Removing credentials config 'D:\a\_temp\git-credentials-2d9dbd1d-5761-4bbe-b5ce-de42c2da36c8.config'
+2026-10-24T14:58:31.8123948Z Cleaning up orphan processes

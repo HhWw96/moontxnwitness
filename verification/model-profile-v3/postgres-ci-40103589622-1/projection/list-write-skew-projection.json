@@ -1,0 +1,409 @@
+{
+  "schemaVersion": 3,
+  "tool": "MoonTxnWitness",
+  "version": "0.2.7",
+  "algorithm": "v3-configured-model-source-projection-1",
+  "profile": "pg18-configured-models/1",
+  "status": "violation",
+  "analysisCoverageAccepted": true,
+  "originalDiagnosticCoverage": {
+    "complete": false,
+    "gaps": [
+      {
+        "code": "writer_scope_unproven",
+        "message": "Other writers have not been excluded"
+      },
+      {
+        "code": "initialization_unproven",
+        "message": "The initial database snapshot has not been established as consistent."
+      },
+      {
+        "code": "diagnostic_instrumentation_only",
+        "message": "No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage."
+      },
+      {
+        "code": "source_unsealed",
+        "message": "Journal and explicit source window have not both been sealed."
+      },
+      {
+        "code": "diagnostic_only",
+        "message": "This export is incomplete diagnostic evidence, not a complete analysis input."
+      },
+      {
+        "code": "inconsistent_snapshot",
+        "message": "Initial state is not a consistent captured snapshot"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      },
+      {
+        "code": "unmapped_statement",
+        "message": "Raw SQL has no verified versioned statement mapping"
+      }
+    ]
+  },
+  "derivedTrace": {
+    "traceSchema": 3,
+    "dataModel": "append-list-v1",
+    "clockDomain": "mtw-v3-7756e07c706e45e480758cfc91c9cc76",
+    "scope": {
+      "exclusiveWriters": true
+    },
+    "events": [
+      {
+        "kind": "snapshot",
+        "initial": {
+          "x": [],
+          "y": []
+        },
+        "consistent": true,
+        "time": 2794367,
+        "seq": 1
+      },
+      {
+        "connection": "connection-cf9a2326269a4185ab213a0130106e2b",
+        "kind": "begin",
+        "seq": 2,
+        "time": 15565312,
+        "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026"
+      },
+      {
+        "kind": "list_read",
+        "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026",
+        "key": "x",
+        "items": [],
+        "time": 17042730,
+        "seq": 3
+      },
+      {
+        "connection": "connection-62394244fa094be8b9d91c3940555606",
+        "kind": "begin",
+        "seq": 4,
+        "time": 17449310,
+        "tx": "transaction-40bb962912e54890a50808f2a865e8d1"
+      },
+      {
+        "kind": "list_read",
+        "tx": "transaction-40bb962912e54890a50808f2a865e8d1",
+        "key": "y",
+        "items": [],
+        "time": 18781637,
+        "seq": 5
+      },
+      {
+        "kind": "append",
+        "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026",
+        "key": "y",
+        "id": "a",
+        "value": "v",
+        "time": 21690569,
+        "seq": 6
+      },
+      {
+        "kind": "append",
+        "tx": "transaction-40bb962912e54890a50808f2a865e8d1",
+        "key": "x",
+        "id": "b",
+        "value": "v",
+        "time": 24344264,
+        "seq": 7
+      },
+      {
+        "kind": "commit_request",
+        "seq": 8,
+        "time": 25019665,
+        "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 9,
+        "time": 25586724,
+        "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026"
+      },
+      {
+        "kind": "commit_request",
+        "seq": 10,
+        "time": 25882376,
+        "tx": "transaction-40bb962912e54890a50808f2a865e8d1"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 11,
+        "time": 26377781,
+        "tx": "transaction-40bb962912e54890a50808f2a865e8d1"
+      }
+    ],
+    "gaps": []
+  },
+  "retainedOriginalSeq": [
+    1,
+    2,
+    4,
+    5,
+    7,
+    9,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "analysis": {
+    "schemaVersion": 3,
+    "tool": "MoonTxnWitness",
+    "version": "0.2.7",
+    "algorithm": "v3-list-1",
+    "status": "violation",
+    "modelDefinition": {
+      "id": "append-list-serializable-v1",
+      "scope": "committed transactions' full append/read/savepoint journals; aborted observations retained, no opacity or real-time claim"
+    },
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "normalized": {
+      "schema": 3,
+      "dataModel": "append-list-v1",
+      "algorithm": "v3-list-lifecycle-1",
+      "status": "ready",
+      "coverage": {
+        "complete": true,
+        "gaps": []
+      },
+      "observations": [
+        {
+          "kind": "snapshot",
+          "initial": {
+            "x": [],
+            "y": []
+          },
+          "consistent": true,
+          "time": 2794367,
+          "seq": 1
+        },
+        {
+          "connection": "connection-cf9a2326269a4185ab213a0130106e2b",
+          "kind": "begin",
+          "seq": 2,
+          "time": 15565312,
+          "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026"
+        },
+        {
+          "kind": "list_read",
+          "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026",
+          "key": "x",
+          "items": [],
+          "time": 17042730,
+          "seq": 3
+        },
+        {
+          "connection": "connection-62394244fa094be8b9d91c3940555606",
+          "kind": "begin",
+          "seq": 4,
+          "time": 17449310,
+          "tx": "transaction-40bb962912e54890a50808f2a865e8d1"
+        },
+        {
+          "kind": "list_read",
+          "tx": "transaction-40bb962912e54890a50808f2a865e8d1",
+          "key": "y",
+          "items": [],
+          "time": 18781637,
+          "seq": 5
+        },
+        {
+          "kind": "append",
+          "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026",
+          "key": "y",
+          "id": "a",
+          "value": "v",
+          "time": 21690569,
+          "seq": 6
+        },
+        {
+          "kind": "append",
+          "tx": "transaction-40bb962912e54890a50808f2a865e8d1",
+          "key": "x",
+          "id": "b",
+          "value": "v",
+          "time": 24344264,
+          "seq": 7
+        },
+        {
+          "kind": "commit_request",
+          "seq": 8,
+          "time": 25019665,
+          "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026"
+        },
+        {
+          "kind": "commit_ok",
+          "seq": 9,
+          "time": 25586724,
+          "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026"
+        },
+        {
+          "kind": "commit_request",
+          "seq": 10,
+          "time": 25882376,
+          "tx": "transaction-40bb962912e54890a50808f2a865e8d1"
+        },
+        {
+          "kind": "commit_ok",
+          "seq": 11,
+          "time": 26377781,
+          "tx": "transaction-40bb962912e54890a50808f2a865e8d1"
+        }
+      ],
+      "effects": [
+        {
+          "seq": 6,
+          "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026",
+          "key": "y",
+          "id": "a",
+          "value": "v",
+          "revertedBy": null
+        },
+        {
+          "seq": 7,
+          "tx": "transaction-40bb962912e54890a50808f2a865e8d1",
+          "key": "x",
+          "id": "b",
+          "value": "v",
+          "revertedBy": null
+        }
+      ],
+      "transactions": [
+        {
+          "id": "transaction-a5a9766ac7904e0c90905a4dc5f3a026",
+          "connection": "connection-cf9a2326269a4185ab213a0130106e2b",
+          "status": "committed",
+          "beginSeq": 2,
+          "endSeq": 9,
+          "events": [
+            2,
+            3,
+            6,
+            8,
+            9
+          ],
+          "finalWrites": [
+            6
+          ]
+        },
+        {
+          "id": "transaction-40bb962912e54890a50808f2a865e8d1",
+          "connection": "connection-62394244fa094be8b9d91c3940555606",
+          "status": "committed",
+          "beginSeq": 4,
+          "endSeq": 11,
+          "events": [
+            4,
+            5,
+            7,
+            10,
+            11
+          ],
+          "finalWrites": [
+            7
+          ]
+        }
+      ],
+      "history": null
+    },
+    "evidence": {
+      "kind": "bounded-serial-exhaustion",
+      "code": "no_serial_list_execution",
+      "sampleBlockers": [
+        {
+          "tx": "transaction-40bb962912e54890a50808f2a865e8d1",
+          "readSeq": 5,
+          "key": "y",
+          "code": "list_state_mismatch",
+          "actualIds": [
+            "a"
+          ],
+          "observedIds": []
+        },
+        {
+          "tx": "transaction-a5a9766ac7904e0c90905a4dc5f3a026",
+          "readSeq": 3,
+          "key": "x",
+          "code": "list_state_mismatch",
+          "actualIds": [
+            "b"
+          ],
+          "observedIds": []
+        }
+      ],
+      "sourceEvidence": [
+        {
+          "id": "a",
+          "value": "v",
+          "key": "y",
+          "sourceSeq": 6,
+          "writer": "transaction-a5a9766ac7904e0c90905a4dc5f3a026",
+          "revertedBy": null
+        },
+        {
+          "id": "b",
+          "value": "v",
+          "key": "x",
+          "sourceSeq": 7,
+          "writer": "transaction-40bb962912e54890a50808f2a865e8d1",
+          "revertedBy": null
+        }
+      ]
+    },
+    "execution": {
+      "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
+      "analysisOptions": {
+        "maxStates": 100000,
+        "maxOperationChecks": 1000000
+      },
+      "effectiveLimits": {
+        "committedTransactions": 6,
+        "operations": 128,
+        "states": 100000,
+        "operationChecks": 1000000,
+        "inputUtf16Units": 8388608,
+        "events": 65536,
+        "identities": 10000,
+        "returnedItemReferences": 100000
+      },
+      "metrics": {
+        "states": 4,
+        "operationChecks": 6,
+        "complete": true,
+        "reason": "exhausted"
+      }
+    }
+  },
+  "mappingCoverage": {
+    "complete": true,
+    "gaps": [],
+    "actualCalls": {
+      "pairedCalls": 6,
+      "confirmedTransactions": 2,
+      "statementCalls": 4
+    },
+    "sourceWindowsChecked": true,
+    "committedEffectsChecked": 2
+  },
+  "sourceBindings": {
+    "traceSha256": "4134f3ab68a2964e69bdd153d427eb083165a3f728747d49e208065a1043c63b",
+    "sourceJournalSha256": "aa6b59a15b2c72c64cc5fc3bad0e107f50dae0ed49f0071888985b1d9295fa07",
+    "lifecycleSha256": "59cbfb7fcd0673e5c5e1ff8cfa1973308956085b36d6c2b3a5f8d718f39aac9a",
+    "journalIndexSha256": "ef219f2398fbd38086de20dd5e1786493cba093dc141890d7a7b47136637369f"
+  },
+  "scope": "Explicit new controlled PostgreSQL18 schema and one startup synchronous psycopg factory; exact registered list append/point read or relation point CRUD/AND SELECT only. RETURNING is not a predicate read. Original raw gaps remain incomplete; source/driver observations are independently projected. Source checks bind the supplied index self-checksum/descriptors, not absent segment payloads. Hashes do not authenticate the server or exclusive writer declaration. No ORM, async, savepoint, arbitrary SQL/table, mixed model, isolation-level or real-time claim."
+}

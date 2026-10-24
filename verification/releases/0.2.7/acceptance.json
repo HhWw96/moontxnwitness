@@ -2,8 +2,8 @@
   "schema": 1,
   "policy": "scoped-stable-v2",
   "version": "0.2.7",
-  "passed": false,
-  "releaseReady": false,
+  "passed": true,
+  "releaseReady": true,
   "publicReleaseVerified": false,
   "supportedProfiles": [
     "register-v1",
@@ -23,18 +23,30 @@
   },
   "databaseEvidence": "database.json",
   "tests": {
-    "receipt": "test-summary.json",
+    "receipt": "ci-originals/general-8967/summary.original.json",
     "passed": true,
     "executedTargets": [
       "js",
       "wasm-gc",
       "wasm"
     ],
+    "checkedTargets": [
+      "js",
+      "wasm-gc",
+      "wasm",
+      "native"
+    ],
     "coreTestsPerTarget": 772,
-    "sourceCommit": "32ca42abc7a770767d755c313fc7739d4d5ec9f5",
-    "generalRun": 40095757095,
-    "generalRunConclusion": "failure",
-    "failureBoundary": "Package input closure; all npm tests and Linux Native passed"
+    "sourceCommit": "8967b960326eab4b7f0a17b61ca7942393856c08",
+    "generalRun": 40103589528,
+    "generalRunConclusion": "success",
+    "linuxNativeTests": 772,
+    "nativeEvidence": "ci-originals/general-8967/job-120900561955.original.log",
+    "freshConsumerChecks": 122,
+    "freshConsumerReceipt": "ci-originals/general-8967/package.original.json",
+    "configuredModelHostCases": 50,
+    "configuredModelDriverTests": 22,
+    "driverCountBasis": "Original complete CI job log, not a count invented in the summary"
   },
   "configuredModelScope": {
     "supportedMappings": 7,
@@ -44,14 +56,31 @@
     "relationSixModelClassification": false
   },
   "independentReview": {
-    "passed": false,
-    "status": "pending-current-clean-package-review"
+    "passed": true,
+    "status": "passed-after-two-retained-harness-scope-fixes",
+    "receipt": "independent-candidate-8967/AGGREGATE.json",
+    "reviewer": "Independent AI technical review",
+    "cleanArchiveReplayPassed": true,
+    "localSourceRebuildExecuted": false,
+    "sourceAndPortableOriginalFilesVerified": 15709,
+    "sourceFingerprintFiles": 106,
+    "executableFingerprintFiles": 1553,
+    "originalCompatibilityAssertions": 623,
+    "originalCompatibilityFamilies": 35,
+    "originalCompatibilityCliInvocations": 12,
+    "currentCapturedCases": 10,
+    "currentCapturedSdkCalls": 101,
+    "currentCapturedTamperRejections": 70,
+    "additionalConfiguredCliInvocations": 3,
+    "actualDatabaseExecutionByReviewer": false,
+    "postPublicationDownloadByReviewer": false,
+    "originalHarnessFailuresRetained": true
   },
   "performanceEvidence": "../../../docs/performance-experiment-streaming-json-guard.md",
-  "pending": [
-    "Fresh source and portable package consumers",
-    "Current database before/after executable binding",
-    "Independent clean-package technical review",
-    "Public release checksums and registry installation"
-  ]
+  "technicalScopeBasis": "Same1553 executable inputs and102 runtime files as actual cross-target/Native/PG and independent CI-candidate audit; final source changes are documentation and evidence only.",
+  "finalExactSourceCIBeforePublication": "required-pending-final-source-freeze",
+  "postPublicationDownloadsBeforeCompletion": "required-not-executed",
+  "finalExactSourceCIPassed": false,
+  "publicationGatePassed": false,
+  "freezeRecordMeaning": "State at source freeze; final exact-source CI and public-download receipts are recorded separately without rewriting immutable source archives."
 }
