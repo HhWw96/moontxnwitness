@@ -1,0 +1,179 @@
+{
+  "traceSchema": 2,
+  "clockDomain": "python-monotonic-ee92267c590c4d58b4116c3713737a34",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 29696,
+      "initial": {
+        "[\"mtw_provenance_presence_ci.presence_gap_zero\",\"text\",\"a\"]": "2d02923f-c83c-42d7-a236-0e3860838d20",
+        "[\"mtw_provenance_presence_ci.presence_gap_zero\",\"text\",\"b\"]": "c3f9ff12-98ee-4761-869f-a61be853f919",
+        "[\"mtw_provenance_presence_ci.presence_gap_zero\",\"text\",\"never\"]": "fd71aef1-f3e6-4949-a804-25d3b85c17f5"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 36326,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 36369,
+      "phase": "execute-request",
+      "sql": "INSERT INTO \"mtw_provenance_presence_ci\".\"presence_gap_zero\" (\"id\",\"value\") VALUES (%s,%s)",
+      "parameters": [
+        null,
+        "null-key"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 38211,
+      "phase": "execute-error",
+      "sql": "INSERT INTO \"mtw_provenance_presence_ci\".\"presence_gap_zero\" (\"id\",\"value\") VALUES (%s,%s)",
+      "errorClass": "NotNullViolation",
+      "sqlstate": "23502",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 38534,
+      "phase": "rollback-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "end",
+      "time": 38583,
+      "tx": "tx-1",
+      "status": "aborted"
+    },
+    {
+      "seq": 7,
+      "kind": "begin",
+      "time": 38671,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 38705,
+      "phase": "execute-request",
+      "sql": "UPDATE \"mtw_provenance_presence_ci\".\"presence_gap_zero\" SET \"value\"=%s WHERE \"id\"=%s",
+      "parameters": [
+        "x",
+        "never"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 9,
+      "kind": "sql",
+      "time": 39479,
+      "phase": "execute-ack",
+      "sql": "UPDATE \"mtw_provenance_presence_ci\".\"presence_gap_zero\" SET \"value\"=%s WHERE \"id\"=%s RETURNING OLD.\"mtwp_84aa14a262458fec_version\"::text,NEW.\"mtwp_84aa14a262458fec_version\"::text",
+      "affectedRows": 0,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 10,
+      "kind": "sql",
+      "time": 39601,
+      "phase": "fetch",
+      "returnedRows": 0,
+      "exhausted": true,
+      "rows": [],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 11,
+      "kind": "sql",
+      "time": 39768,
+      "phase": "execute-request",
+      "sql": "DELETE FROM \"mtw_provenance_presence_ci\".\"presence_gap_zero\" WHERE \"id\"=%s",
+      "parameters": [
+        "never"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 12,
+      "kind": "sql",
+      "time": 40202,
+      "phase": "execute-ack",
+      "sql": "DELETE FROM \"mtw_provenance_presence_ci\".\"presence_gap_zero\" WHERE \"id\"=%s RETURNING OLD.\"mtwp_84aa14a262458fec_version\"::text,\"mtw_provenance_presence_ci\".\"mtwp_84aa14a262458fec_delete_token\"(OLD.\"id\",OLD.\"mtwp_84aa14a262458fec_version\")::text",
+      "affectedRows": 0,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 13,
+      "kind": "sql",
+      "time": 40337,
+      "phase": "fetch",
+      "returnedRows": 0,
+      "exhausted": true,
+      "rows": [],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 14,
+      "kind": "sql",
+      "time": 40588,
+      "phase": "commit-ack",
+      "tx": "tx-2"
+    },
+    {
+      "seq": 15,
+      "kind": "end",
+      "time": 40641,
+      "tx": "tx-2",
+      "status": "committed"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "presence_scope_unsupported",
+      "message": "Only declared fixed text keys and ordinary tuple cursors can be rewritten."
+    },
+    {
+      "code": "presence_write_unproven",
+      "message": "The point DML did not return exactly one distinct write and immutable predecessor token."
+    }
+  ],
+  "presenceFacts": {
+    "schema": 1,
+    "projection": "column-presence-register-v0.1.2-experimental",
+    "initial": [
+      {
+        "key": "[\"mtw_provenance_presence_ci.presence_gap_zero\",\"text\",\"a\"]",
+        "version": "2d02923f-c83c-42d7-a236-0e3860838d20",
+        "present": true
+      },
+      {
+        "key": "[\"mtw_provenance_presence_ci.presence_gap_zero\",\"text\",\"b\"]",
+        "version": "c3f9ff12-98ee-4761-869f-a61be853f919",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_presence_ci.presence_gap_zero\",\"text\",\"never\"]",
+        "version": "fd71aef1-f3e6-4949-a804-25d3b85c17f5",
+        "present": false
+      }
+    ],
+    "reads": [],
+    "writes": []
+  }
+}
