@@ -129,8 +129,8 @@ def prepare(args, ownership):
         env.pop(key, None)
     env.update(JAVA_HOME=str(java_home), PATH=str(java_home / "bin") + os.pathsep + env["PATH"],
                HOME=str(work / "runtime-home"), LEIN_HOME=str(work / "lein-home"),
-               LEIN_JVM_OPTS="-Xmx1024m -Djava.io.tmpdir=" + str(work / "tmp"),
-               JVM_OPTS="-Xmx1024m -Djava.io.tmpdir=" + str(work / "tmp"),
+               LEIN_JVM_OPTS="-Xmx1024m -Djava.io.tmpdir=" + str(work / "tmp") + " -Duser.home=" + str(work / "runtime-home"),
+               JVM_OPTS="-Xmx1024m -Djava.io.tmpdir=" + str(work / "tmp") + " -Duser.home=" + str(work / "runtime-home"),
                TMPDIR=str(work / "tmp"), TMP=str(work / "tmp"), TEMP=str(work / "tmp"),
                GIT_TERMINAL_PROMPT="0", GIT_CONFIG_NOSYSTEM="1",
                GIT_CONFIG_GLOBAL=str(work / "empty-gitconfig"))

@@ -16,7 +16,7 @@ BRANCH = "experiment/elle-v028-hosted"
 WORKFLOW = ".github/workflows/elle-v028-hosted.yml"
 APP = "experiments/elle/v028"
 CORE = "4f9a73a5fe82478d913cb751ab68714d4ba0558c85b45a3933c6eb9a6c3078ef"
-PROVIDER = "7115b93f3e1b021788bad8a3f83281a1691280991ae03200b4ff50eb7e39ac9a"
+PROVIDER = "c5cfdc2f690faf62900936badcdbbd4e832966e19c917886034d3496578ff2a3"
 SOURCE_CLOSURE = "a27f9d17dc41a9c90d1bc851d3fdbb710ead594ce212edf5f86ce5d8f7744b0a"
 LOADER = "import hashlib,sys;from pathlib import Path;p,h=sys.argv[1:3];b=Path(p).read_bytes();assert hashlib.sha256(b).hexdigest()==h;sys.argv=[p,*sys.argv[3:]];exec(compile(b,p,'exec'),{'__name__':'__main__','__file__':p,'__verified_source_sha256__':h})"
 
