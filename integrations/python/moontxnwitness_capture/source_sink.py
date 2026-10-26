@@ -23,8 +23,18 @@ from .journal_v3 import _json, _sync_directory
 class SourceSinkError(RuntimeError): pass
 
 
+def _validate_write_buffer_bytes(value):
+    if type(value) is not int or value != 0 and not 128 <= value <= 256 * 1024:
+        raise ValueError('Source write buffer must be 0 or 128..262144 bytes')
+    return value
+
+
 @dataclass(frozen=True)
 class SourceAppendResult:
+    """Queue admission and the synchronized prefix observed at return time.
+
+    accepted/source_seq do not acknowledge persistence of this record.
+    """
     accepted: bool
     source_seq: int
     durable_seq: int
@@ -33,10 +43,16 @@ class SourceAppendResult:
 
 
 class GroupedSourceSink:
+    """Bounded source writer; explicit flush/close acknowledges durable storage.
+
+    write_buffer_bytes is additional to queue capacity. bytesWritten counts
+    bytes accepted by the file object; durableRecords requires synchronized
+    source data and its index. Neither counter grants source/model coverage.
+    """
     def __init__(self, path, *, max_queue_bytes=4 * 1024 * 1024,
                  max_record_bytes=128 * 1024, max_total_bytes=16 * 1024 * 1024,
                  max_records=16384, flush_bytes=256 * 1024, flush_interval=0.1,
-                 experimental_budget=None):
+                 experimental_budget=None, write_buffer_bytes=0):
         self.experimental_budget = profile(experimental_budget)
         total_ceiling = LIMITS["sourceBytes"] if self.experimental_budget else 1024**3
         count_ceiling = LIMITS["sourceRecords"] if self.experimental_budget else 1000000
@@ -46,6 +62,9 @@ class GroupedSourceSink:
             raise ValueError('Source size/count budgets exceed the supported range')
         if type(flush_interval) not in (float,int) or not 0 < flush_interval <= 60:
             raise ValueError('Flush interval must be in (0,60]')
+        # Opt-in bounded file buffering coalesces small writes, never durability acknowledgments.
+        # The default 0 preserves the existing unbuffered source writer.
+        self.write_buffer_bytes = _validate_write_buffer_bytes(write_buffer_bytes)
         self.path = Path(path).resolve()
         self.index = Path(str(self.path)+'.index.json')
         self.lock_path = Path(str(self.path)+'.writer.lock')
@@ -68,7 +87,7 @@ class GroupedSourceSink:
                     'backpressureNs':0,'maxQueueBytes':0,'fsyncCount':0,'bytesWritten':0,'indexSyncCount':0}
         with self.lock_path.open('xb') as lock:
             lock.write(_json({'writer':self._nonce,'pid':os.getpid()}));lock.flush();os.fsync(lock.fileno())
-        self._file=self.path.open('xb',buffering=0)
+        self._file=self.path.open('xb',buffering=self.write_buffer_bytes)
         self._last_sync=time.monotonic()
         self._thread=threading.Thread(target=self._worker,name='mtw-source-group',daemon=True)
         self._thread.start()
@@ -153,6 +172,7 @@ class GroupedSourceSink:
                                'totalBytes':self.max_total_bytes,'records':self.max_records,
                                'flushBytes':self.flush_bytes,'flushIntervalSeconds':self.flush_interval},
                      'stats':{**self.stats,'durableRecords':self._written_seq,'indexSyncCount':self.stats['indexSyncCount']+1},'completeCapture':False,'coreProofAccepted':False}
+            if self.write_buffer_bytes: payload['writeBufferBytes']=self.write_buffer_bytes
             if self.experimental_budget: payload['experimentalBudget']=self.experimental_budget
             payload['indexSha256']=hashlib.sha256(_json(payload)).hexdigest()
         tmp=Path(str(self.index)+'.'+self._nonce+'.tmp')
@@ -283,6 +303,9 @@ def verify_grouped_source(path, *, experimental_budget=None):
         raise SourceSinkError('Source limits exceed supported bounds')
     if type(limits['flushIntervalSeconds']) not in (int,float) or not 0<limits['flushIntervalSeconds']<=60:
         raise SourceSinkError('Invalid source flush interval')
+    write_buffer_bytes=meta.get('writeBufferBytes',0)
+    if type(write_buffer_bytes) is not int or write_buffer_bytes != 0 and not 128<=write_buffer_bytes<=256*1024:
+        raise SourceSinkError('Invalid source write buffer declaration')
     digest=hashlib.sha256();count=total=0;sealed=False
     allowed={'header','control-query','installation','source-batch','source-gap','final-effect-ledger','seal'}
     with path.open('rb') as source:
@@ -305,6 +328,8 @@ def verify_grouped_source(path, *, experimental_budget=None):
             digest.update(raw)
     if not sealed or count!=meta['durableSourceSeq'] or total!=meta['bytes'] or digest.hexdigest()!=meta['sha256']:
         raise SourceSinkError('Source/index bound mismatch')
-    return {'storageSealed':not meta['gaps'],'records':count,'bytes':total,'sha256':digest.hexdigest(),
+    result={'storageSealed':not meta['gaps'],'records':count,'bytes':total,'sha256':digest.hexdigest(),
             'durableSourceSeq':meta['durableSourceSeq'],'gaps':meta['gaps'],'stats':meta['stats'],
             'completeCapture':False,'coreProofAccepted':False,'actualDatabaseExecution':False}
+    if write_buffer_bytes: result['writeBufferBytes']=write_buffer_bytes
+    return result

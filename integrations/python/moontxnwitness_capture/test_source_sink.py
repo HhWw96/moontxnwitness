@@ -156,6 +156,93 @@ class Tests(unittest.TestCase):
         self.assertLessEqual(sink.stats['maxQueueBytes'],512)
 
 
+
+class BufferedWriteTests(Tests):
+    """Run every existing durability/fault test again with explicit buffering."""
+    def sink(self, **options):
+        options.setdefault('write_buffer_bytes',65536)
+        return super().sink(**options)
+
+    def test_opt_in_configuration_is_declared_and_default_remains_absent(self):
+        buffered=self.sink();status=buffered.close()
+        self.assertEqual(status['writeBufferBytes'],65536)
+        self.assertEqual(json.loads(buffered.index.read_bytes())['writeBufferBytes'],65536)
+        direct=super().sink(write_buffer_bytes=0);old=direct.close()
+        self.assertNotIn('writeBufferBytes',old)
+        self.assertNotIn('writeBufferBytes',json.loads(direct.index.read_bytes()))
+
+    def test_small_records_coalesce_real_raw_write_calls_without_timing_claim(self):
+        counts={}
+        for size in (0,65536):
+            sink=super().sink(write_buffer_bytes=size,flush_interval=60,flush_bytes=1024*1024);sink.flush()
+            raw=sink._file.raw if size else sink._file;original=raw.write;calls=[]
+            def counted(value,original=original,calls=calls):calls.append(len(value));return original(value)
+            raw.write=counted
+            for i in range(100):self.assertTrue(sink.append({'kind':'source-batch','value':i}).accepted)
+            self.assertTrue(sink.close()['storageSealed']);counts[size]=len(calls)
+        self.assertGreaterEqual(counts[0],101);self.assertLessEqual(counts[65536],2)
+        (RUN/'buffer-raw-write-counts.json').write_text(json.dumps({'unbufferedRawWriteCalls':counts[0],
+            'buffered64KiBRawWriteCalls':counts[65536],'sourceRecords':100,'counterOnly':True,
+            'throughputOrLatencyMeasured':False})+'\n',encoding='utf8')
+
+    def test_buffered_and_unbuffered_sealed_source_bytes_match(self):
+        outputs=[]
+        for size in (0,128,65536,262144):
+            sink=super().sink(write_buffer_bytes=size)
+            for value in (None,True,1,'same','中文🙂'):
+                self.assertTrue(sink.append({'kind':'source-batch','value':value}).accepted)
+            self.assertTrue(sink.close()['storageSealed']);outputs.append(sink.path.read_bytes())
+        self.assertTrue(all(value==outputs[0] for value in outputs))
+
+    def test_invalid_buffer_options_fail_before_creating_any_source_files(self):
+        for value in (-1,1,127,262145,True,False,0.5,None,'65536'):
+            path=RUN/('invalid-buffer-'+uuid.uuid4().hex)
+            with self.assertRaises(ValueError):GroupedSourceSink(path,write_buffer_bytes=value)
+            self.assertFalse(any(path.parent.glob(path.name+'*')))
+
+    def test_buffered_flush_failure_never_acknowledges_durability(self):
+        sink=self.sink(flush_interval=60,flush_bytes=1024*1024);sink.flush();old=sink._durable_seq
+        sink.append({'kind':'source-batch','value':'buffered tail'})
+        def disk_full(_):raise OSError(28,'injected buffered data disk-full')
+        sink._file.raw.write=disk_full
+        with self.assertRaises(SourceSinkError):sink.flush()
+        self.assertEqual(sink._durable_seq,old);self.assertTrue(sink.lock_path.exists())
+        with self.assertRaises(SourceSinkError):sink.close()
+        with self.assertRaises(SourceSinkError):verify_grouped_source(sink.path)
+
+    def test_buffered_close_waits_for_data_flush_and_keeps_writer_guard(self):
+        sink=self.sink(flush_interval=60);sink.flush();old=sink._durable_seq
+        sink.append({'kind':'source-batch','value':'tail'})
+        original=sink._file;entered,release=threading.Event(),threading.Event();results=[]
+        class Gate:
+            def flush(self):
+                entered.set()
+                if not release.wait(3):raise OSError('test flush gate timeout')
+                return original.flush()
+            def __getattr__(self,name):return getattr(original,name)
+        sink._file=Gate();thread=threading.Thread(target=lambda:results.append(sink.close()));thread.start()
+        try:
+            self.assertTrue(entered.wait(1));self.assertTrue(thread.is_alive())
+            self.assertTrue(sink.lock_path.exists());self.assertEqual(sink._durable_seq,old)
+        finally:release.set();thread.join(3)
+        self.assertFalse(thread.is_alive());self.assertTrue(results[0]['storageSealed']);self.assertFalse(sink.lock_path.exists())
+
+    def test_buffered_index_failure_preserves_original_failure_guard(self):
+        sink=self.sink(flush_interval=60);sink.flush();old=sink._durable_seq
+        sink.append({'kind':'source-batch','value':2})
+        with mock.patch.object(sink,'_persist_index',side_effect=OSError('injected index full')):
+            with self.assertRaises(SourceSinkError):sink.flush()
+        self.assertEqual(sink._durable_seq,old);self.assertTrue(sink.lock_path.exists())
+        with self.assertRaises(SourceSinkError):sink.close()
+
+    def test_resigned_invalid_buffer_declaration_is_refused(self):
+        sink=self.sink();sink.close();meta=json.loads(sink.index.read_bytes())
+        for value in (True,-1,1,262145,'65536'):
+            changed={**meta,'writeBufferBytes':value};changed.pop('indexSha256')
+            from moontxnwitness_capture.journal_v3 import _json
+            changed['indexSha256']=hashlib.sha256(_json(changed)).hexdigest();sink.index.write_bytes(_json(changed)+b'\n')
+            with self.assertRaises(SourceSinkError):verify_grouped_source(sink.path)
+
 if __name__=='__main__':
     result=unittest.main(verbosity=2,exit=False).result
     receipt={'schema':1,'kind':'shared-queue-grouped-source-io-tests','tests':result.testsRun,

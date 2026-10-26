@@ -12,7 +12,7 @@ import uuid
 from ..instrumentation import Instrumentation,DiagnosticConnection,DiagnosticCursor,_diagnostic_call,_error
 from ..capture_v3 import CapturedV3Cursor
 from ..orm import CoverageRequired
-from ..source_sink import GroupedSourceSink,verify_grouped_source
+from ..source_sink import GroupedSourceSink,verify_grouped_source,_validate_write_buffer_bytes
 from .orm_control import ControlConnection,append_source,native_result,source_parameters
 from .model_sql import ModelScope,PROFILE,FORMAT,plans,ddl,control_sql,validate_parameters
 
@@ -244,12 +244,13 @@ class ModelProfileCapture(Instrumentation):
             'analysisCoverageAccepted':False,'reason':'raw producer only; independent model projection required'}
 
 
-def install_model_profile(setup,scope,output,*,initial=(),**options):
+def install_model_profile(setup,scope,output,*,initial=(),source_write_buffer_bytes=0,**options):
     """Explicit fresh-schema installation; diagnostics never call this migration."""
     if type(scope) is not ModelScope:raise CoverageRequired('Explicit immutable ModelScope required')
+    _validate_write_buffer_bytes(source_write_buffer_bytes)
     from psycopg.types.json import Jsonb
     output=Path(output).resolve();output.mkdir(parents=True,exist_ok=False)
-    sink=GroupedSourceSink(output/'sources.jsonl');control=ControlConnection(setup,sink)
+    sink=GroupedSourceSink(output/'sources.jsonl',write_buffer_bytes=source_write_buffer_bytes);control=ControlConnection(setup,sink)
     start=len(control.query_sequences);statements=ddl(scope)
     try:
         control.execute('BEGIN')

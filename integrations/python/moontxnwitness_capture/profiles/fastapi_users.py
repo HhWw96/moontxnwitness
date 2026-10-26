@@ -12,7 +12,7 @@ from pathlib import Path
 from ..capture_v3 import CaptureV3Session
 from ..instrumentation import Instrumentation,DiagnosticConnection,DiagnosticAsyncConnection
 from ..orm import UserScope,StructuredSQLCache,CoverageRequired,FIELDS,VALUES,PROFILE
-from ..source_sink import GroupedSourceSink,verify_grouped_source
+from ..source_sink import GroupedSourceSink,verify_grouped_source,_validate_write_buffer_bytes
 from .orm_control import ControlConnection,append_source
 from . import orm_install
 from .orm_cursor import ProfileSyncConnection,ProfileAsyncConnection
@@ -127,11 +127,12 @@ class UserProfileCapture(Instrumentation):
                 'analysisCoverageAccepted':False,'reason':'producer package only; independent MoonBit promotion must run'}
 
 
-def install_user_profile(setup,scope,output,**capture_options):
+def install_user_profile(setup,scope,output,*,source_write_buffer_bytes=0,**capture_options):
     """Explicit opt-in migration, never called by diagnostic instrumentation."""
     if type(scope) is not UserScope:raise CoverageRequired('Explicit fixed UserScope required')
+    _validate_write_buffer_bytes(source_write_buffer_bytes)
     output=Path(output).resolve();output.mkdir(parents=True,exist_ok=False)
-    sink=GroupedSourceSink(output/'sources.jsonl')
+    sink=GroupedSourceSink(output/'sources.jsonl',write_buffer_bytes=source_write_buffer_bytes)
     control=ControlConnection(setup,sink)
     try:
         installation=orm_install.install(control,scope,diagnostic_path=output/'initial-relation.json')

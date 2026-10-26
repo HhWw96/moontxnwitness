@@ -45,6 +45,21 @@ to 1 GiB/2,000,000 records. The cost runner uses larger bounded raw limits; it d
 not raise default export/analysis limits or certify that a large file can be
 loaded as one analysis window. Any exhausted budget invalidates that cost cell.
 
+## Opt-in file buffering
+
+`GroupedSourceSink("new-sources.jsonl", write_buffer_bytes=65536)` selects an
+additional 64 KiB binary write buffer. The default is 0; supported nonzero sizes
+are 128..262144 bytes. Queue admission and file-object write counters do not
+acknowledge persistence. Explicit flush and close still synchronize source data
+and its index before acknowledging their target or releasing the writer guard.
+See [the option, executable example and entry-point boundaries](capture-write-buffer-candidate.md).
+The two supported profile installers expose the keyword-only
+`source_write_buffer_bytes=0` setting and validate it before creating output or
+starting database installation; use `source_write_buffer_bytes=65536` to opt in.
+It is passed only to the source sink. This is not an `instrument_engine` or
+local driver connection-factory setting.
+No formal performance improvement or default-adoption result is established.
+
 ## A/B/C cost protocol
 
 `experiments/provenance/full_capture_cost.py` compares:
