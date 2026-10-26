@@ -1,0 +1,353 @@
+{
+  "status": "violation",
+  "complete": true,
+  "gaps": [],
+  "effects": [
+    {
+      "seq": 6,
+      "tx": "transaction-73365f5c24994f8997a582015bdc0d8f",
+      "relation": "business",
+      "key": "1",
+      "action": "update",
+      "version": "7ee74450-d269-4da2-aa50-f75fef16c1cb",
+      "predecessor": "291d71fe-34bc-42dd-8312-622486728463",
+      "values": {
+        "balance": "10",
+        "active": false,
+        "region": "east"
+      },
+      "revertedBy": null
+    },
+    {
+      "seq": 7,
+      "tx": "transaction-d9b850cd4f554554bd355e3c126c0492",
+      "relation": "business",
+      "key": "2",
+      "action": "update",
+      "version": "dd2e60ab-99de-4934-b535-3e513f4bb714",
+      "predecessor": "86679059-9232-4c93-8036-149120daa1f6",
+      "values": {
+        "balance": "20",
+        "active": false,
+        "region": "east"
+      },
+      "revertedBy": null
+    }
+  ],
+  "transactions": [
+    {
+      "id": "transaction-73365f5c24994f8997a582015bdc0d8f",
+      "connection": "connection-917e838ff3df43c5aa6d913a8f38de73",
+      "status": "committed",
+      "beginSeq": 2,
+      "endSeq": 9,
+      "events": [
+        2,
+        3,
+        6,
+        8,
+        9
+      ],
+      "finalWrites": [
+        6
+      ]
+    },
+    {
+      "id": "transaction-d9b850cd4f554554bd355e3c126c0492",
+      "connection": "connection-7102d44b9b6f4272b693f2d21df69484",
+      "status": "committed",
+      "beginSeq": 4,
+      "endSeq": 11,
+      "events": [
+        4,
+        5,
+        7,
+        10,
+        11
+      ],
+      "finalWrites": [
+        7
+      ]
+    }
+  ],
+  "normalization": {
+    "schema": 3,
+    "dataModel": "relation-set-v1",
+    "algorithm": "v3-relation-lifecycle-1",
+    "status": "ready",
+    "coverage": {
+      "complete": true,
+      "gaps": []
+    },
+    "relationSchema": {
+      "business": {
+        "primaryKey": "id",
+        "columns": {
+          "id": "int64",
+          "balance": "int64",
+          "active": "bool",
+          "region": "text"
+        }
+      }
+    },
+    "observations": [
+      {
+        "kind": "snapshot",
+        "initial": {
+          "business": [
+            {
+              "key": "1",
+              "values": {
+                "active": true,
+                "balance": "10",
+                "region": "east"
+              },
+              "version": "291d71fe-34bc-42dd-8312-622486728463"
+            },
+            {
+              "key": "2",
+              "values": {
+                "active": true,
+                "balance": "20",
+                "region": "east"
+              },
+              "version": "86679059-9232-4c93-8036-149120daa1f6"
+            }
+          ]
+        },
+        "consistent": true,
+        "time": 2498126,
+        "seq": 1
+      },
+      {
+        "connection": "connection-917e838ff3df43c5aa6d913a8f38de73",
+        "kind": "begin",
+        "seq": 2,
+        "time": 11122535,
+        "tx": "transaction-73365f5c24994f8997a582015bdc0d8f"
+      },
+      {
+        "kind": "row_read",
+        "tx": "transaction-73365f5c24994f8997a582015bdc0d8f",
+        "relation": "business",
+        "predicate": [
+          {
+            "column": "active",
+            "op": "eq",
+            "value": true
+          },
+          {
+            "column": "balance",
+            "op": "ge",
+            "value": "0"
+          }
+        ],
+        "rows": [
+          {
+            "key": "1",
+            "version": "291d71fe-34bc-42dd-8312-622486728463",
+            "values": {
+              "balance": "10",
+              "active": true,
+              "region": "east"
+            }
+          },
+          {
+            "key": "2",
+            "version": "86679059-9232-4c93-8036-149120daa1f6",
+            "values": {
+              "balance": "20",
+              "active": true,
+              "region": "east"
+            }
+          }
+        ],
+        "complete": true,
+        "time": 12408404,
+        "seq": 3
+      },
+      {
+        "connection": "connection-7102d44b9b6f4272b693f2d21df69484",
+        "kind": "begin",
+        "seq": 4,
+        "time": 12828656,
+        "tx": "transaction-d9b850cd4f554554bd355e3c126c0492"
+      },
+      {
+        "kind": "row_read",
+        "tx": "transaction-d9b850cd4f554554bd355e3c126c0492",
+        "relation": "business",
+        "predicate": [
+          {
+            "column": "active",
+            "op": "eq",
+            "value": true
+          },
+          {
+            "column": "balance",
+            "op": "ge",
+            "value": "0"
+          }
+        ],
+        "rows": [
+          {
+            "key": "1",
+            "version": "291d71fe-34bc-42dd-8312-622486728463",
+            "values": {
+              "balance": "10",
+              "active": true,
+              "region": "east"
+            }
+          },
+          {
+            "key": "2",
+            "version": "86679059-9232-4c93-8036-149120daa1f6",
+            "values": {
+              "balance": "20",
+              "active": true,
+              "region": "east"
+            }
+          }
+        ],
+        "complete": true,
+        "time": 13841238,
+        "seq": 5
+      },
+      {
+        "kind": "row_write",
+        "tx": "transaction-73365f5c24994f8997a582015bdc0d8f",
+        "relation": "business",
+        "key": "1",
+        "action": "update",
+        "version": "7ee74450-d269-4da2-aa50-f75fef16c1cb",
+        "predecessor": "291d71fe-34bc-42dd-8312-622486728463",
+        "values": {
+          "balance": "10",
+          "active": false,
+          "region": "east"
+        },
+        "time": 16502651,
+        "seq": 6
+      },
+      {
+        "kind": "row_write",
+        "tx": "transaction-d9b850cd4f554554bd355e3c126c0492",
+        "relation": "business",
+        "key": "2",
+        "action": "update",
+        "version": "dd2e60ab-99de-4934-b535-3e513f4bb714",
+        "predecessor": "86679059-9232-4c93-8036-149120daa1f6",
+        "values": {
+          "balance": "20",
+          "active": false,
+          "region": "east"
+        },
+        "time": 18764662,
+        "seq": 7
+      },
+      {
+        "kind": "commit_request",
+        "seq": 8,
+        "time": 19196682,
+        "tx": "transaction-73365f5c24994f8997a582015bdc0d8f"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 9,
+        "time": 19631991,
+        "tx": "transaction-73365f5c24994f8997a582015bdc0d8f"
+      },
+      {
+        "kind": "commit_request",
+        "seq": 10,
+        "time": 19797220,
+        "tx": "transaction-d9b850cd4f554554bd355e3c126c0492"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 11,
+        "time": 20114787,
+        "tx": "transaction-d9b850cd4f554554bd355e3c126c0492"
+      }
+    ],
+    "effects": [
+      {
+        "seq": 6,
+        "tx": "transaction-73365f5c24994f8997a582015bdc0d8f",
+        "relation": "business",
+        "key": "1",
+        "action": "update",
+        "version": "7ee74450-d269-4da2-aa50-f75fef16c1cb",
+        "predecessor": "291d71fe-34bc-42dd-8312-622486728463",
+        "values": {
+          "balance": "10",
+          "active": false,
+          "region": "east"
+        },
+        "revertedBy": null
+      },
+      {
+        "seq": 7,
+        "tx": "transaction-d9b850cd4f554554bd355e3c126c0492",
+        "relation": "business",
+        "key": "2",
+        "action": "update",
+        "version": "dd2e60ab-99de-4934-b535-3e513f4bb714",
+        "predecessor": "86679059-9232-4c93-8036-149120daa1f6",
+        "values": {
+          "balance": "20",
+          "active": false,
+          "region": "east"
+        },
+        "revertedBy": null
+      }
+    ],
+    "transactions": [
+      {
+        "id": "transaction-73365f5c24994f8997a582015bdc0d8f",
+        "connection": "connection-917e838ff3df43c5aa6d913a8f38de73",
+        "status": "committed",
+        "beginSeq": 2,
+        "endSeq": 9,
+        "events": [
+          2,
+          3,
+          6,
+          8,
+          9
+        ],
+        "finalWrites": [
+          6
+        ]
+      },
+      {
+        "id": "transaction-d9b850cd4f554554bd355e3c126c0492",
+        "connection": "connection-7102d44b9b6f4272b693f2d21df69484",
+        "status": "committed",
+        "beginSeq": 4,
+        "endSeq": 11,
+        "events": [
+          4,
+          5,
+          7,
+          10,
+          11
+        ],
+        "finalWrites": [
+          7
+        ]
+      }
+    ],
+    "history": null
+  },
+  "limits": {
+    "maxStates": 100000,
+    "maxOperationChecks": 1000000
+  },
+  "metrics": {
+    "states": 4,
+    "operationChecks": 44
+  },
+  "reason": "exhausted",
+  "serialOrder": null
+}
