@@ -57,6 +57,42 @@ Quick runs and incomplete prefixes are ineligible, even if their ratios look
 favorable. The first failure is retained; diagnose and change implementation
 before any new measurement rather than repeating unchanged code until it wins.
 
+## Explicit source write buffer selection
+
+The runner accepts `--source-write-buffer-bytes 65536` for a new, separately
+preregistered measurement. The default is 0; explicit 0 preserves the original
+plan and cell JSON bytes, without adding a configuration field. Nonzero exact
+integer sizes are 128..262144 bytes, additional to the queue budget. No source,
+event, lifecycle, attempt or storage-reserve budget is raised by this option.
+
+With a nonzero setting, the plan declares `sourceWriteBufferBytes` at its top
+level and in each C cell. A/B cells do not carry a nonzero setting and remain
+unchanged. Only C passes the setting to `GroupedSourceSink(write_buffer_bytes=...)`;
+it is not an observer, engine or database connection argument. The worker JSON
+is authoritative: a worker validates it before database connection/DDL and
+rejects nonzero CLI overrides. The controller binds each returned configuration
+to its preregistered cell. Comparisons reject duplicate cells, invalid/A/B
+nonzero settings and mixed C buffer sizes within a workload.
+
+Plan-only preparation is safe without a database:
+
+```text
+python -B experiments/provenance/full_capture_cost.py --output NEW_BUFFERED_PLAN --profile column --plan-only --archive-cells --source-write-buffer-bytes 65536
+```
+
+Use the identical selection for the separately authorized full run. The owned
+wrapper exposes the same flag with default 0; the manual hosted workflow exposes
+`source_write_buffer_bytes` with choices 0/65536 and passes the same option to
+both preregistration and measurement. All 36 cells, 15/60/30 second timing,
+rotation, seeds, limits, failure retention and qualification rules remain.
+Generating this plan or passing pure tests does not execute a measurement.
+
+No new A/B/C result has been obtained for this option. Historical unbuffered C/A
+throughput about 0.11-0.225 and P95 latency ratios about 3.7-7.3 are retained as old
+results; they establish no buffered improvement or target attainment. Real
+measurement requires a separately frozen source/protocol and an exclusive host
+and cluster. Do not use old C cells as buffered measurements.
+
 ## Commands and partial first run
 
 From the repository with a private `MTW_PG_CONNECTION_FILE` referring to the

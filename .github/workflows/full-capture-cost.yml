@@ -11,6 +11,12 @@ on:
         required: true
         type: choice
         options: [column, sidecar]
+      source_write_buffer_bytes:
+        description: Explicit C-source buffer in bytes; 0 preserves the legacy plan
+        required: true
+        type: choice
+        default: '0'
+        options: ['0', '65536']
       experimental_budget:
         description: Explicit measurement-only storage profile; legacy keeps published limits
         required: true
@@ -27,6 +33,7 @@ jobs:
       MTW_COST_SOURCE: ${{ inputs.source_sha }}
       MTW_COST_PROFILE: ${{ inputs.profile }}
       MTW_COST_BUDGET: ${{ inputs.experimental_budget }}
+      MTW_COST_SOURCE_BUFFER: ${{ inputs.source_write_buffer_bytes }}
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONUTF8: '1'
     steps:
@@ -56,9 +63,11 @@ jobs:
           export MTW_JOURNAL_SCRATCH="$MTW_JOURNAL_TEST_ROOT"
           mkdir -p "$MTW_JOURNAL_SCRATCH"
           python -B scripts/persistence-unit-test.py
+          buffer_args=()
+          if [ "$MTW_COST_SOURCE_BUFFER" != "0" ]; then buffer_args=(--source-write-buffer-bytes "$MTW_COST_SOURCE_BUFFER"); fi
           budget_args=()
           if [ "$MTW_COST_BUDGET" != "legacy" ]; then budget_args=(--experimental-budget "$MTW_COST_BUDGET"); fi
-          python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/preregistered --plan-only --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}"
+          python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/preregistered --plan-only --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}" "${buffer_args[@]}"
       - name: Prepare isolated PostgreSQL before measurement
         timeout-minutes: 5
         run: |
@@ -78,6 +87,7 @@ jobs:
                   time.sleep(1)
           out=pathlib.Path('verification/full-capture-cost')
           metadata={'sourceCommit':os.environ['MTW_COST_SOURCE'],'profile':os.environ['MTW_COST_PROFILE'],'python':platform.python_version(),'driver':psycopg.__version__,'platform':platform.platform(),'server':server,'cpu':subprocess.check_output(['lscpu'],text=True),'filesystem':subprocess.check_output(['df','-h','.'],text=True),'filesystemBytes':subprocess.check_output(['df','-B1','.',os.environ['RUNNER_TEMP']],text=True),'memory':pathlib.Path('/proc/meminfo').read_text(encoding='ascii'),'experimentalBudget':os.environ['MTW_COST_BUDGET'],'dockerImageId':subprocess.check_output(['docker','inspect','--format','{{.Image}}','mtw-cost'],text=True).strip(),'environment':'Dedicated GitHub-hosted job and owned PostgreSQL container; underlying physical-host tenancy is not measured','exclusiveTaskWindow':'All downloads, installs and tests complete before timing; no build, packaging or other database suite in this job during measurement','formalResultNotPredetermined':True}
+          if os.environ['MTW_COST_SOURCE_BUFFER']!='0':metadata['sourceWriteBufferBytes']=int(os.environ['MTW_COST_SOURCE_BUFFER'])
           (out/'environment.json').write_text(json.dumps(metadata,indent=2)+'\n',encoding='utf8')
           PY
       - name: Execute all thirty-six preregistered full-duration cells once
@@ -85,9 +95,11 @@ jobs:
         run: |
           export MTW_JOURNAL_SCRATCH="$MTW_JOURNAL_TEST_ROOT"
           mkdir -p "$MTW_JOURNAL_SCRATCH"
+          buffer_args=()
+          if [ "$MTW_COST_SOURCE_BUFFER" != "0" ]; then buffer_args=(--source-write-buffer-bytes "$MTW_COST_SOURCE_BUFFER"); fi
           budget_args=()
           if [ "$MTW_COST_BUDGET" != "legacy" ]; then budget_args=(--experimental-budget "$MTW_COST_BUDGET"); fi
-          python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/measured --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}"
+          python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/measured --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}" "${buffer_args[@]}"
       - name: Retain exact plans and qualification separately from timing completion
         timeout-minutes: 10
         if: always()
@@ -99,6 +111,7 @@ jobs:
           summary=json.loads(receipt.read_text(encoding='utf8')) if receipt.exists() else {}
           plansEqual=before.is_file() and after.is_file() and before.read_bytes()==after.read_bytes()
           result={'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'expectedSourceCommit':os.environ['MTW_COST_SOURCE'],'plansByteIdentical':plansEqual,'planSha256':hashlib.sha256(before.read_bytes()).hexdigest() if before.is_file() else None,'actualDatabaseExecution':summary.get('actualDatabaseExecution',False),'formalProtocolCompleted':summary.get('formalProtocolCompleted',False),'performanceTargetsPassed':summary.get('performanceTargetsPassed',False),'completeCells':summary.get('completeCells',0),'plannedCells':summary.get('plannedCells',36),'performanceSuccessDoesNotFollowFromWorkflowSuccess':True,'experimentalBudget':summary.get('experimentalBudget'),'actualStorageLimits':summary.get('actualStorageLimits'),'capacityChecksBeforeCells':summary.get('capacityChecksBeforeCells',[])}
+          if os.environ['MTW_COST_SOURCE_BUFFER']!='0':result['sourceWriteBufferBytes']=int(os.environ['MTW_COST_SOURCE_BUFFER'])
           (root/'hosted-receipt.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf8')
           if receipt.exists():
               assert plansEqual,'Preregistered plan changed'

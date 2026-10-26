@@ -31,7 +31,7 @@ from moontxnwitness_capture._provenance import install,qualified,identifier
 from moontxnwitness_capture.instrumentation import Instrumentation,verify_lifecycle_storage
 from moontxnwitness_capture._experimental_budget import PROFILE,LIMITS,profile
 from capacity_budget import preparation,scratch_preparation,live_reserve,raw_envelope,required_free,AttemptByteBudget
-from moontxnwitness_capture.source_sink import GroupedSourceSink
+from moontxnwitness_capture.source_sink import GroupedSourceSink,_validate_write_buffer_bytes
 
 WORKLOADS={
  'serial':{'keys':4096,'connections':1,'crud':False,'hot':False},
@@ -108,12 +108,20 @@ def _begin_warmup(connections_ready,start,shared,seconds,timeout):
     return began
 
 
+def _source_write_buffer_bytes(config):
+    value=_validate_write_buffer_bytes(config.get('sourceWriteBufferBytes',0))
+    if value and config.get('mode')!='C':
+        raise ValueError('Nonzero source write buffering applies only to C cells')
+    return value
+
+
 def run_cell(config,output,connect):
     selected=profile(config.get('experimentalBudget'))
     if selected:
         if config.get('storageLimits')!=LIMITS:raise ValueError('Experimental configuration must bind the exact finite storage profile')
         for key,maximum in [('maxAttemptsPerWorker',LIMITS['maxAttemptsPerWorker']),('maxWarmupAttemptsPerWorker',LIMITS['maxWarmupAttemptsPerWorker'])]:
             if type(config.get(key)) is not int or not 1<=config[key]<=maximum:raise ValueError('Experimental attempt ceiling is invalid')
+    source_write_buffer_bytes=_source_write_buffer_bytes(config)
     spec=WORKLOADS[config['workload']];mode=config['mode']
     schema='mtw_provenance_cost_'+uuid.uuid4().hex[:16]
     table=qualified(schema,'items')
@@ -160,7 +168,8 @@ def run_cell(config,output,connect):
                                                      **({'transaction_index_bytes':LIMITS['transactionIndexBytes']} if selected else {})},
                                     experimental_budget=selected)
             sources=GroupedSourceSink(output/'sources.jsonl',max_total_bytes=LIMITS['sourceBytes'] if selected else 1024**3,
-                                      max_records=LIMITS['sourceRecords'] if selected else 1000000,experimental_budget=selected)
+                                      max_records=LIMITS['sourceRecords'] if selected else 1000000,experimental_budget=selected,
+                                      **({'write_buffer_bytes':source_write_buffer_bytes} if source_write_buffer_bytes else {}))
             for key,value in provenance.initial.items():
                 result=sources.append({'kind':'source-batch','phase':'initial','observation':value.as_dict()})
                 if not result.accepted:raise RuntimeError('Initial source budget exhausted')
@@ -445,6 +454,7 @@ def run_cell(config,output,connect):
 
 
 def plan(args):
+    source_write_buffer_bytes=_validate_write_buffer_bytes(getattr(args,'source_write_buffer_bytes',0))
     warmup=.1 if args.quick else 15
     duration=.3 if args.quick else 60
     drain=5 if args.quick else 30
@@ -457,12 +467,16 @@ def plan(args):
                               'seed':args.seed+batch*10000,'warmupSeconds':warmup,
                               'durationSeconds':duration,'drainSeconds':drain,
                               'maxAttemptsPerWorker':100000,'storageReserveBytes':STORAGE_RESERVE_BYTES,'quick':args.quick})
+    if source_write_buffer_bytes:
+        for cell in cells:
+            if cell['mode']=='C':cell['sourceWriteBufferBytes']=source_write_buffer_bytes
     selected=profile(getattr(args,'experimental_budget',None))
     if selected:
         for cell in cells:
             cell.update(experimentalBudget=selected,storageLimits=dict(LIMITS),maxAttemptsPerWorker=LIMITS['maxAttemptsPerWorker'],
                         maxWarmupAttemptsPerWorker=LIMITS['maxWarmupAttemptsPerWorker'],storageReserveBytes=LIMITS['storageReserveBytes'])
     return {'schema':1,'generator':GENERATOR,'profile':args.profile,'seed':args.seed,
+            **({'sourceWriteBufferBytes':source_write_buffer_bytes} if source_write_buffer_bytes else {}),
             **({'experimentalBudget':selected,'protocolVersion':'full-capture-cost/v2-capacity','actualStorageLimits':dict(LIMITS),
                 'diskPreparationRequiredBytes':required_free()} if selected else {}),
             'orders':[list(x) for x in ORDERS],'workloads':WORKLOADS,'cells':cells,
@@ -521,6 +535,18 @@ def compare(cells):
     by={(x['configuration']['workload'],x['configuration']['batch'],x['configuration']['mode']):x for x in cells}
     output={}
     for name in sorted({key[0] for key in by}):
+        matching=[x for x in cells if x['configuration']['workload']==name]
+        keys=[(x['configuration']['batch'],x['configuration']['mode']) for x in matching]
+        if len(keys)!=len(set(keys)):
+            output[name]={'status':'incomplete','eligibleForTargets':False,'reason':'duplicate_cost_cell'};continue
+        try:
+            selected_buffers={_source_write_buffer_bytes(x['configuration']) for x in matching if x['configuration']['mode']=='C'}
+            for x in matching:_source_write_buffer_bytes(x['configuration'])
+        except ValueError:
+            output[name]={'status':'incomplete','eligibleForTargets':False,'reason':'invalid_source_write_buffer_configuration'};continue
+        if len(selected_buffers)>1:
+            output[name]={'status':'incomplete','eligibleForTargets':False,'reason':'mixed_source_write_buffer_configuration'};continue
+        source_write_buffer_bytes=next(iter(selected_buffers),0)
         pairs=[]
         for batch in range(3):
             values=[by.get((name,batch,mode)) for mode in ['A','B','C']]
@@ -538,6 +564,7 @@ def compare(cells):
                             'reasons':target_eligibility_reasons(x)} for x in matching]
             eligible=not any(x['reasons'] for x in qualification) and throughput is not None and p95 is not None
             output[name]={'status':'complete','pairedBatches':pairs,
+                          **({'sourceWriteBufferBytes':source_write_buffer_bytes} if source_write_buffer_bytes else {}),
                           'fullCaptureThroughputCOverA':throughput,'fullCaptureP95COverA':p95,
                           'cellQualification':qualification,
                           'eligibleForTargets':eligible,'performanceTargetsPassed':eligible and throughput>=.90 and p95<=1.15}
@@ -556,13 +583,20 @@ def main():
     parser.add_argument('--exclusive-cluster',action='store_true')
     parser.add_argument('--archive-cells',action='store_true',help='After each child exits, SHA-verify a lossless zip before releasing only its new cell raw files')
     parser.add_argument('--max-cells',type=int,help='Run only a prefix of the full preregistered plan; summary remains partial and ineligible')
+    parser.add_argument('--source-write-buffer-bytes',type=int,default=0,help='Explicit C-source binary buffer: 0 or 128..262144 bytes; default plan bytes remain unchanged')
     parser.add_argument('--worker-config')
     parser.add_argument('--experimental-budget',choices=[PROFILE],help='Explicit finite measurement-only storage limits; legacy defaults remain unchanged')
     args=parser.parse_args()
     if args.max_cells is not None and not 1<=args.max_cells<=36:parser.error('--max-cells must be between 1 and 36')
+    try:_validate_write_buffer_bytes(args.source_write_buffer_bytes)
+    except ValueError as error:parser.error(str(error))
+    if args.worker_config:
+        if args.source_write_buffer_bytes:parser.error('Worker source buffering must come only from preregistered worker JSON')
+        config=json.loads(Path(args.worker_config).read_text(encoding='utf8'))
+        try:_source_write_buffer_bytes(config)
+        except ValueError as error:parser.error(str(error))
     output=Path(args.output).resolve();output.mkdir(parents=True,exist_ok=False)
     if args.worker_config:
-        config=json.loads(Path(args.worker_config).read_text(encoding='utf8'))
         try:import psycopg
         except ImportError:
             write_json(output/'receipt.json',{'status':'not-executed','actualDatabaseExecution':False,'reason':'optional psycopg is missing'});return 3
@@ -579,7 +613,7 @@ def main():
         write_json(output/'receipt.json',result);return 0 if result['status'] in ('passed','smoke-passed') else 1
     frozen=plan(args);write_json(output/'plan.json',frozen)
     if args.plan_only:
-        write_json(output/'receipt.json',{'status':'not-executed','actualDatabaseExecution':False,'reason':'plan-only','cells':len(frozen['cells'])});return 0
+        write_json(output/'receipt.json',{'status':'not-executed','actualDatabaseExecution':False,'reason':'plan-only','cells':len(frozen['cells']),**({'sourceWriteBufferBytes':args.source_write_buffer_bytes} if args.source_write_buffer_bytes else {})});return 0
     if not args.quick and not (args.exclusive_host and args.exclusive_cluster):
         write_json(output/'receipt.json',{'status':'not-executed','actualDatabaseExecution':False,'reason':'formal run requires explicit exclusive host and cluster assertions'});return 3
     results=[];archives=[];capacity_checks=[];complete=True;stop_reason=None
@@ -608,6 +642,12 @@ def main():
         receipt=output/('cell-'+str(i))/'receipt.json'
         if not receipt.is_file():complete=False;break
         value=json.loads(receipt.read_text(encoding='utf8'));results.append(value)
+        if args.source_write_buffer_bytes and json.dumps(value.get('configuration'),sort_keys=True)!=json.dumps(config,sort_keys=True):
+            complete=False;stop_reason='preregistered source buffer configuration mismatch'
+            write_json(output/('cell-'+str(i)+'-source-buffer-configuration-mismatch.json'),
+                       {'status':'failed','expectedConfiguration':config,'observedConfiguration':value.get('configuration'),
+                        'originalWorkerReceiptRetained':True})
+            break
         if args.archive_cells:
             try:
                 from cell_archive import archive_cell,release_cell
@@ -632,6 +672,7 @@ def main():
              'formalPerformanceMeasurement':not args.quick,'formalProtocolCompleted':not args.quick and complete,
              'completeCells':len(results),'plannedCells':len(frozen['cells']),
              'comparison':comparison,'stopReason':stop_reason,'cellArchives':archives,
+             **({'sourceWriteBufferBytes':args.source_write_buffer_bytes} if args.source_write_buffer_bytes else {}),
              'performanceTargetsPassed':bool(complete and comparison and all(x.get('performanceTargetsPassed',False) for x in comparison.values())),
              'fullCaptureComparison':True,'onlySourceCostBOverA':False,'allFirstFailuresRetained':True,
              **({'experimentalBudget':selected,'actualStorageLimits':dict(LIMITS),'capacityChecksBeforeCells':capacity_checks} if selected else {}),

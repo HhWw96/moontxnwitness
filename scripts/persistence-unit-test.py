@@ -8,6 +8,7 @@ ROOT=Path(__file__).resolve().parents[1]
 SUITES=['integrations/python/moontxnwitness_capture/test_source_sink.py',
         'integrations/python/moontxnwitness_capture/test_sync_watermark.py',
         'experiments/provenance/test_full_capture_cost.py',
+        'experiments/provenance/test_source_buffer_cost_options.py',
         'experiments/provenance/test_formal_harness_fix.py',
         'experiments/provenance/test_formal_startup_failure.py',
         'experiments/provenance/test_formal_workflow_contexts.py',
@@ -16,7 +17,9 @@ SUITES=['integrations/python/moontxnwitness_capture/test_source_sink.py',
         'experiments/provenance/test_capacity_budget.py']
 def bindings():
     files=[Path(__file__),*(ROOT/'integrations/python/moontxnwitness_capture').glob('*.py'),
-           *(ROOT/'experiments/provenance').glob('*.py')]
+           *(ROOT/'experiments/provenance').glob('*.py'),
+           ROOT/'experiments/provenance/fixtures/full_capture_default_plans.json',
+           ROOT/'.github/workflows/full-capture-cost.yml']
     return {p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(set(files))}
 def main():
     out=ROOT/'verification/capture-persistence'/('unit-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8]);out.mkdir(parents=True,exist_ok=False)

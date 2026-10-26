@@ -16,16 +16,29 @@ import subprocess
 import sys
 
 ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT/'integrations/python'))
+from moontxnwitness_capture.source_sink import _validate_write_buffer_bytes
+
+def _study_command(args,work):
+    value=_validate_write_buffer_bytes(getattr(args,'source_write_buffer_bytes',0))
+    command=[sys.executable,'-B',str(Path(__file__).with_name('full_capture_cost.py')),'--output',str(work/'study'),
+             '--profile',args.profile,'--exclusive-host','--exclusive-cluster','--archive-cells','--max-cells',str(args.max_cells)]
+    if value:command.extend(['--source-write-buffer-bytes',str(value)])
+    return command
+
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bin',required=True);parser.add_argument('--output',required=True)
     parser.add_argument('--profile',choices=['column','sidecar'],default='column')
     parser.add_argument('--max-cells',type=int,default=3)
+    parser.add_argument('--source-write-buffer-bytes',type=int,default=0,help='Explicit C-source buffer: 0 or 128..262144 bytes')
     parser.add_argument('--exclusive-host',action='store_true')
     args=parser.parse_args()
     if not args.exclusive_host:parser.error('Stop other host workloads and explicitly pass --exclusive-host')
     if not 1<=args.max_cells<=36:parser.error('--max-cells must be in 1..36')
+    try:_validate_write_buffer_bytes(args.source_write_buffer_bytes)
+    except ValueError as error:parser.error(str(error))
     work=Path(args.output).resolve();work.mkdir(parents=True,exist_ok=False)
     if os.name=='nt' and not str(work).isascii():raise ValueError('Use an ASCII owned path on Windows')
     binaries=Path(args.bin).resolve();suffix='.exe' if os.name=='nt' else ''
@@ -34,7 +47,8 @@ def main():
     binding=lambda:{path.relative_to(ROOT).as_posix():hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
     receipt={'schema':1,'kind':'owned-full-capture-cost','status':'not-executed','actualDatabaseExecution':False,
         'fullProtocolCompleted':False,'privateCredentialsPublished':False,'sourceBefore':binding(),
-        'profile':args.profile,'maximumCells':args.max_cells,'quick':False,'archiveOutsideMeasurement':True}
+        'profile':args.profile,'maximumCells':args.max_cells,'quick':False,'archiveOutsideMeasurement':True,
+        **({'sourceWriteBufferBytes':args.source_write_buffer_bytes} if args.source_write_buffer_bytes else {})}
     started=False;returncode=1;data=work/'data'
     try:
         receipt['driver']={name:importlib.metadata.version(name) for name in ['psycopg','psycopg-binary']}
@@ -55,8 +69,7 @@ def main():
             subprocess.run([str(binaries/('pg_ctl'+suffix)),'-D',str(data),'-l',str(work/'server.log'),'-o',options,'-w','start'],stdout=log,stderr=subprocess.STDOUT,check=True)
         started=True
         env=dict(os.environ);env['MTW_PG_CONNECTION_FILE']=str(connection_file);env.pop('MTW_PG_DSN',None)
-        command=[sys.executable,'-B',str(Path(__file__).with_name('full_capture_cost.py')),'--output',str(work/'study'),
-            '--profile',args.profile,'--exclusive-host','--exclusive-cluster','--archive-cells','--max-cells',str(args.max_cells)]
+        command=_study_command(args,work)
         with (work/'study.log').open('xb') as log:child=subprocess.run(command,env=env,stdout=log,stderr=subprocess.STDOUT)
         returncode=child.returncode;receipt['studyExitCode']=returncode
         summary_path=work/'study/receipt.json'
