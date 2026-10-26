@@ -83,7 +83,7 @@ fn compatible_v3_engine(v : Json?) -> Bool {
       s == version() ||
       [
         "0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5", "0.1.6", "0.1.7", "0.1.8", "0.2.0",
-        "0.2.1", "0.2.2", "0.2.3", "0.2.4", "0.2.5", "0.2.6",
+        "0.2.1", "0.2.2", "0.2.3", "0.2.4", "0.2.5", "0.2.6", "0.2.7",
       ].contains(s)
     _ => false
   }
@@ -373,9 +373,8 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
             prune_sql_ledger~,
           )
           checks += 1
-          let candidate_report = v3_analysis(
-            candidate.stringify(),
-            analysis_options,
+          let candidate_report = v3_relation_reduction_candidate(
+            candidate, analysis_options,
           )
           if object_fields(candidate_report, "report").get("status") ==
             Some("violation".to_json()) {
@@ -431,5 +430,37 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
     result.stringify(indent=2)
   } catch {
     e => v3_failure(e.to_string()).stringify(indent=2)
+  }
+}
+
+///|
+// Only relation-set reduction candidates reuse the already guarded JSON value.
+// Other data models retain the original complete textual analysis path.
+fn v3_relation_reduction_candidate(
+  candidate : Json,
+  analysis_options : String,
+) -> Json raise {
+  let text = candidate.stringify()
+  if text.length() > 8388608 {
+    return v3_analysis(text, analysis_options)
+  }
+  match candidate {
+    Object(root) =>
+      match root.get("dataModel") {
+        Some(String("relation-set-v1")) =>
+          relation_v3_analysis(text, analysis_options, v=candidate)
+        _ => v3_analysis(text, analysis_options)
+      }
+    _ => v3_analysis(text, analysis_options)
+  }
+}
+
+///|
+// Private structured values come only from the original guarded capture.
+// Textual calls keep their original duplicate-key, depth and size validation.
+fn v3_guarded_candidate(text : String, value : Json?) -> Json raise {
+  match value {
+    Some(value) => value
+    None => guarded_json(text, limit=8388608)
   }
 }

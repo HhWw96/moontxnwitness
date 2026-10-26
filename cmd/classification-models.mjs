@@ -5,6 +5,7 @@ import {isDeepStrictEqual} from 'node:util';
 import {classify_v3_json,verify_classification_v3_json,version} from './core.mjs';
 
 import {callLegacyV026} from './legacy-v026.mjs';
+import {callLegacyV027} from './legacy-v027.mjs';
 
 const MiB=1024*1024,ALGORITHM='isolation-model-host-1',CORE_ALGORITHM='v3-isolation-model-1';
 const MODELS=Object.freeze(['adya-pl-1-v1','adya-pl-2-v1','adya-pl-2.99-v1','elle-generalized-si-v1','adya-pl-3-v1','strict-pl-ss-v1']);
@@ -90,6 +91,7 @@ export function classifyModelsV3(source,options={}){
 export function verifyModelsClassificationV3(source,supplied,options){
   try{
     const text=bounded(supplied,BUDGETS.reportUtf8Bytes,'model report'),value=JSON.parse(text);
+    if(value?.format==='moontxnwitness-isolation-model-report/v1'&&value.engine?.version==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('verify-models',options===undefined?[source,supplied]:[source,supplied,options]);
     if(value?.format==='moontxnwitness-isolation-model-report/v1'&&value.engine?.version==='0.2.6'&&version()!=='0.2.6')return callLegacyV026('verify-models',options===undefined?[source,supplied]:[source,supplied,options]);
     if(value?.format!=='moontxnwitness-isolation-model-report/v1'||value.algorithm!==ALGORITHM||typeof value.requestOptionsText!=='string')
       return {valid:false,reason:'unsupported-model-classification-report',scope:scope()};
@@ -114,6 +116,7 @@ export function replayModelsClassificationCapsuleV3(text){
   try{
     if(typeof text!=='string')return reject('model-capsule-must-be-original-text');
     bounded(text,BUDGETS.capsuleUtf8Bytes,'model capsule');const value=JSON.parse(text);
+    if(value?.format==='moontxnwitness-isolation-models/v1'&&value.engine?.version==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('replay-models',[text]);
     if(value?.format==='moontxnwitness-isolation-models/v1'&&value.engine?.version==='0.2.6'&&version()!=='0.2.6')return callLegacyV026('replay-models',[text]);
     if(value?.format!=='moontxnwitness-isolation-models/v1'||value.schemaVersion!==1||value.tool!=='MoonTxnWitness'||
        value.algorithm!==ALGORITHM||!isDeepStrictEqual(value.engine,ENGINE)||typeof value.sourceText!=='string'||

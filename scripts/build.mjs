@@ -8,34 +8,33 @@ import {spawnSync} from 'node:child_process';
 import {copyFrozenLegacyV024} from './legacy-v024-runtime.mjs';
 import {copyFrozenLegacyV025} from './legacy-v025-runtime.mjs';
 import {copyFrozenLegacyV026} from './legacy-v026-runtime.mjs';
+import {copyFrozenLegacyV027} from './legacy-v027-runtime.mjs';
+import { resolveMoonRuntimeNotices } from './moon-runtime-notices.mjs';
 
+const runtimeNotices = resolveMoonRuntimeNotices({ root });
+const home = runtimeNotices.home;
+// Bind only this build process to the verified logical toolchain home.
+process.env.MOON_HOME = home;
 runMoon(['build', '--target', 'js', '--release', '--deny-warn', '--jobs', '1']);
 const output = resolve(root, 'dist');
 mkdirSync(output, { recursive: true });
 copyFileSync(resolve(root, '_build/js/release/build/bridge/bridge.js'), resolve(output, 'core.mjs'));
 copyFileSync(resolve(root, '_build/js/release/build/capture_bridge/capture_bridge.js'), resolve(output, 'capture-core.mjs'));
-for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
+for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
 copyFileSync(resolve(root,'cmd/legacy-v024.mjs'),resolve(output,'legacy-v024.mjs'));
 copyFrozenLegacyV024(root,output);
 for(const name of ['legacy-v025.mjs','legacy-v025-runtime.mjs','legacy-v025-worker.mjs','legacy-v025-binding.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
 await copyFrozenLegacyV025(root,output);
 for(const name of ['legacy-v026.mjs','legacy-v026-runtime.mjs','legacy-v026-worker.mjs','legacy-v026-binding.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
 await copyFrozenLegacyV026(root,output);
+for(const name of ['legacy-v027.mjs','legacy-v027-runtime.mjs','legacy-v027-worker.mjs','legacy-v027-binding.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
+await copyFrozenLegacyV027(root,output);
 const core = await import(pathToFileURL(resolve(output, 'core.mjs')).href + `?build=${Date.now()}`);
 const packageVersion = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
 const sourceVersion = readFileSync(resolve(root, 'moon.mod'), 'utf8').match(/^version\s*=\s*"([^"]+)"/m)?.[1];
 if (core.version() !== packageVersion || sourceVersion !== packageVersion) throw new Error('Source, package and compiled core versions differ');
-const local = resolve(root, '.local-toolchain.json');
-const home = process.env.MOON_HOME || (existsSync(local) ? JSON.parse(readFileSync(local, 'utf8')).moonHome : null);
 let notices = 'MoonTxnWitness v' + packageVersion + '\nLicense: Apache-2.0\n\nCompiled with MoonBit. Portions of the compiled runtime use moonbitlang/core (Apache-2.0).\nSource: https://github.com/moonbitlang/core\n';
-let runtimeLicense = false;
-if (home) {
-  const license = resolve(home, 'lib/core/LICENSE');
-  if (existsSync(license)) { notices += '\n' + readFileSync(license, 'utf8'); runtimeLicense = true; }
-  const notice = resolve(home, 'lib/core/NOTICE');
-  if (existsSync(notice)) notices += '\n' + readFileSync(notice, 'utf8');
-}
-if (!runtimeLicense) notices += '\n' + readFileSync(resolve(root, 'LICENSE'), 'utf8');
+notices += '\n' + runtimeNotices.licenseText + '\n' + runtimeNotices.noticeText;
 writeFileSync(resolve(output, 'THIRD_PARTY_NOTICES.txt'), notices);
 function componentVersion(binary,args,pattern){const result=spawnSync(binary,args,{encoding:'utf8',windowsHide:true,env:{...process.env,...(home?{MOON_HOME:home}:{})}});if(result.status!==0)throw Error('Cannot identify compilation toolchain');const match=(result.stdout+result.stderr).match(pattern);if(!match)throw Error('Unexpected toolchain version output');return match[0];}
 const suffix=process.platform==='win32'?'.exe':'';

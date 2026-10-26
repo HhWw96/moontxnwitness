@@ -36,6 +36,7 @@ FIXED_VERIFICATION_FILES = {
     'verification/baselines/0.2.0/manifest.json': 'pinned actual published20 provider and archive identities',
     'verification/releases/0.2.0/published-package-review/public-reproduction/evidence/published-package-210-receipt.json': 'bound anonymous public20 download review receipt',
     'verification/relation-v3/frozen-corpus-promotion.json': 'relation oracle and acceptance read this frozen promotion',
+    'verification/formal-harness-fix/reproduction/original-full-capture-cost.yml.gz': 'npm test: exact original failed workflow input for job-context regression',
     'verification/v3/dislock-explicit-policy-preregistration-2026-10-21.json': 'fingerprint and explicit-policy audit contract',
     'verification/v3/dislock-sql-supplement-preregistration-2026-10-21.json': 'fingerprint and SQL proof supplement provenance',
     'verification/v3/acceptance-2026-10-21T02-10-46-492Z/receipt.json': 'small original failure referenced by active lifecycle acceptance',
@@ -165,6 +166,35 @@ def select_distribution_files(root, public_names, tested_files, version):
                      'scripts/compat-v026-test.mjs', 'scripts/public026-fixture-binding.mjs'):
             require(name, 'fixed public26 freezing, protocol and fresh-consumer exact compatibility')
 
+    public027_compatibility = (tuple(map(int, version.split('.'))) >= (0, 2, 8)
+                               or 'cmd/legacy/v027/manifest.json' in public_names)
+    if public027_compatibility:
+        require_tree('cmd/legacy/v027', 'exact genuine public27 ESM and licence closure for fixed historical worker')
+        for name in ('manifest.json', 'core.mjs', 'orm-profile.mjs', 'classification.mjs',
+                     'classification-models.mjs', 'model-profile.mjs', 'capture-core.mjs', 'legacy-v026.mjs',
+                     'legacy-v026-runtime.mjs', 'legacy-v026-worker.mjs', 'legacy-v026-binding.mjs', 'legacy-v024.mjs', 'legacy-v025.mjs',
+                     'legacy-v025-runtime.mjs', 'legacy-v025-worker.mjs', 'legacy-v025-binding.mjs',
+                     'build-manifest.json', 'LICENSE', 'THIRD_PARTY_NOTICES.txt', 'origin.json'):
+            require('cmd/legacy/v027/' + name, 'mandatory fixed public27 replay and licence bytes')
+        runtime_manifest27 = root / 'cmd/legacy/v027/manifest.json'
+        if runtime_manifest27.is_file():
+            try:
+                runtime_files27 = json.loads(runtime_manifest27.read_text(encoding='utf8')).get('files', {})
+                for name in runtime_files27:
+                    require('cmd/legacy/v027/' + safe_name(name), 'every bound historical27 manifest member')
+            except (ValueError, TypeError, AttributeError):
+                missing.append({'file': 'cmd/legacy/v027/manifest.json', 'problem': 'invalid historical runtime file inventory'})
+        require_tree('fixtures/compat-v027', 'immutable genuine public27 producer reports/capsules and raw runtime provenance')
+        require('fixtures/compat-v027/manifest.json', 'mandatory public27 consumer fixture identity')
+        require_tree('verification/compatibility/public-v027-producer-2026-10-26', 'original anonymous public27 producer transport and provenance')
+        for name in ('legacy-v027.mjs', 'legacy-v027-runtime.mjs', 'legacy-v027-worker.mjs', 'legacy-v027-binding.mjs'):
+            require('cmd/' + name, 'fixed public27 strict verify/replay dispatch')
+            require('dist/' + name, 'installed fixed public27 strict verify/replay dispatch')
+        for name in ('scripts/legacy-v027-runtime.mjs', 'scripts/freeze-public027-runtime.mjs',
+                     'scripts/legacy-v027-worker-test.mjs', 'scripts/public027-worker-smoke.mjs',
+                     'scripts/compat-v027-test.mjs', 'scripts/public027-fixture-binding.mjs'):
+            require(name, 'fixed public27 freezing, protocol and fresh-consumer exact compatibility')
+
     relation_manifest = root / 'fixtures/relation-v3/manifest.json'
     if relation_manifest.is_file():
         for archive in json.loads(relation_manifest.read_text(encoding='utf8'))['historyArchives']:
@@ -182,6 +212,14 @@ def select_distribution_files(root, public_names, tested_files, version):
                      'docs/configured-model-profile.md', 'docs/model-profile-sdk.md',
                      'examples/model-profile-roundtrip.mjs'):
             require(name, 'mandatory configured list/relation source mapping and replay interface')
+
+    diagnosis_available = 'cmd/diagnosis.mjs' in public_names or (root / 'cmd/diagnosis.mjs').is_file()
+    if diagnosis_available:
+        for name in ('cmd/diagnosis.mjs', 'dist/diagnosis.mjs', 'scripts/diagnosis-sdk-test.mjs', 'docs/diagnosis-sdk.md'):
+            require(name, 'mandatory combined diagnosis host, verification and documented scope')
+        require_tree('fixtures/diagnosis-v3', 'immutable original observed histories for diagnosis consumers')
+        for name in ('manifest.json', 'register-0.json', 'register-4.json', 'register-80.json'):
+            require('fixtures/diagnosis-v3/' + name, 'fixed original diagnosis source and provenance bytes')
 
     pg = 'verification/releases/' + safe_name(version) + '/postgres/'
     for name in sorted(public_names):
@@ -276,9 +314,15 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.update(n for n in public_names if n.startswith('fixtures/compat-v026/'))
         portable.add('scripts/compat-v026-test.mjs')
         portable.add('scripts/public026-fixture-binding.mjs')
+    if public027_compatibility:
+        portable.update(n for n in public_names if n.startswith('fixtures/compat-v027/'))
+        portable.add('scripts/compat-v027-test.mjs')
+        portable.add('scripts/public027-fixture-binding.mjs')
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))
+    if diagnosis_available:
+        portable.update(n for n in public_names if n.startswith('fixtures/diagnosis-v3/'))
     for name in sorted(source | portable):
         if not (root / name).is_file() or (root / name).is_symlink():
             missing.append({'file': name, 'problem': 'selected item missing or non-regular'})

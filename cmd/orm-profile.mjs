@@ -9,6 +9,7 @@ const ALGORITHM='orm-profile-host-1';
 const SOURCE_ALGORITHM='v3-orm-profile-source-promotion-1';
 import {callLegacyV025} from './legacy-v025.mjs';
 import {callLegacyV026} from './legacy-v026.mjs';
+import {callLegacyV027} from './legacy-v027.mjs';
 
 const MiB=1024*1024;
 const BUDGETS=Object.freeze({sourceEnvelopeUtf8Bytes:64*MiB,traceUtf8Bytes:8*MiB,
@@ -236,6 +237,7 @@ export function verifyOrmProfileV3(envelope,supplied,options){
   const reject=reason=>({valid:false,reason,scope:scope()});
   try{
     const text=bounded(supplied,BUDGETS.reportUtf8Bytes,'profile report');const parsed=JSON.parse(text);
+    if(parsed?.format==='moontxnwitness-orm-profile-report/v1'&&parsed.engineVersion==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('verify-orm',options===undefined?[envelope,supplied]:[envelope,supplied,options]);
     if(parsed?.format==='moontxnwitness-orm-profile-report/v1'&&parsed.engineVersion==='0.2.6'&&version()!=='0.2.6')return callLegacyV026('verify-orm',options===undefined?[envelope,supplied]:[envelope,supplied,options]);
     if(parsed?.format==='moontxnwitness-orm-profile-report/v1'&&parsed.engineVersion==='0.2.5'&&version()!=='0.2.5')return callLegacyV025('verify-orm',options===undefined?[envelope,supplied]:[envelope,supplied,options]);
     if(parsed?.format==='moontxnwitness-orm-profile-report/v1'&&parsed.engineVersion==='0.2.4'&&version()!=='0.2.4')return getLegacyOrmV024().verifyOrmProfileV3(envelope,supplied,options);
@@ -269,6 +271,7 @@ export function replayOrmProfileCapsuleV3(text){
   try{
     if(typeof text!=='string')return reject('profile-capsule-must-be-text');
     bounded(text,BUDGETS.capsuleUtf8Bytes,'profile capsule');const value=JSON.parse(text);
+    if(value?.format==='moontxnwitness-orm-profile/v1'&&value.engineVersion==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('replay-orm',[text]);
     if(value?.format==='moontxnwitness-orm-profile/v1'&&value.engineVersion==='0.2.6'&&version()!=='0.2.6')return callLegacyV026('replay-orm',[text]);
     if(value?.format==='moontxnwitness-orm-profile/v1'&&value.engineVersion==='0.2.5'&&version()!=='0.2.5')return callLegacyV025('replay-orm',[text]);
     if(value?.format==='moontxnwitness-orm-profile/v1'&&value.engineVersion==='0.2.4'&&version()!=='0.2.4')return getLegacyOrmV024().replayOrmProfileCapsuleV3(text);

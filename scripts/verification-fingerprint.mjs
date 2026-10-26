@@ -17,6 +17,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   for(const folder of ['cmd','src','scripts','integrations','experiments','fixtures',...(includeDist?['dist']:[])])visit(folder);
   if(existsSync(resolve(root,'cmd/legacy/v025')))visit('cmd/legacy/v025',true);
   if(existsSync(resolve(root,'cmd/legacy/v026')))visit('cmd/legacy/v026',true);
+  if(existsSync(resolve(root,'cmd/legacy/v027')))visit('cmd/legacy/v027',true);
   // The independent v3 audits execute these helpers and consume this fixed
   // historical collection. New run receipts stay outside these input paths.
   if(existsSync(resolve(root,'verification/v3/tools')))visit('verification/v3/tools');
@@ -25,6 +26,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   if(existsSync(resolve(root,'verification/model-profile-v3/v027-initial')))visit('verification/model-profile-v3/v027-initial',true);
   for(const name of ['verification/v3/dislock-explicit-policy-preregistration-2026-10-21.json','verification/v3/dislock-sql-supplement-preregistration-2026-10-21.json'])if(existsSync(resolve(root,name)))names.push(name);
   names.push('examples/postgres-requirements.txt');
+  names.push('verification/formal-harness-fix/reproduction/original-full-capture-cost.yml.gz');
   names.push('examples/orm-requirements.txt');
   names.push('examples/list-cycle.json', 'examples/list-roundtrip.mjs');
   names.push('examples/relation-source-closure.json', 'examples/relation-roundtrip.mjs');

@@ -157,6 +157,66 @@ def validate_scoped_acceptance(acceptance, manifest):
         for kind in ('source', 'portable'):
             assert kind + ' explicit model definitions, raw sidecar bindings, applicability gaps and exact model capsule replay' in package['checks']
             assert kind + ' actual public25 21-family ESM worker exact compatibility and tamper controls' in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 8):
+        # These are the actual summary shapes. In particular model-profile has
+        # core/host bindings, not an invented runtimeVersion field, and the
+        # public27 receipt binds its original manifest through its pinned runner.
+        configured_model = summary['configuredModelProfileHostTests']
+        assert configured_model['passed'] is True and configured_model['cases'] >= 50
+        assert configured_model['failures'] == []
+        assert configured_model['compiledCoreSha256'] == manifest['coreSha256']
+        assert configured_model['hostSourceSha256'] == sha256(ROOT / 'dist/model-profile.mjs')
+        assert configured_model['actualDatabaseExecution'] is False
+        assert configured_model['formalPerformanceMeasurement'] is False
+        assert configured_model['sourceClosedReductionClaimed'] is False
+        model_driver = summary['configuredModelProfileDriverTests']
+        assert model_driver['passed'] is True and model_driver['actualDatabaseExecution'] is False
+        original26 = summary['publicV026CompatibilityTests']
+        assert original26['format'] == 'genuine-public026-current-consumer/v1'
+        assert original26['passed'] is True and original26['currentRuntimeVersion'] == VERSION
+        assert original26['currentCoreSha256'] == manifest['coreSha256']
+        assert original26['originalFixtureManifestSha256'] == sha256(ROOT / 'fixtures/compat-v026/manifest.json')
+        assert original26['originalProducerFamilies'] == 35 and original26['originalModelFamilies'] == 14
+        original27 = summary['publicV027CompatibilityTests']
+        assert original27['format'] == 'genuine-public027-current-consumer/v1'
+        assert original27['passed'] is True and original27['currentRuntimeVersion'] == VERSION
+        assert original27['originalProducerFamilies'] == 46 and original27['originalModelProfileFamilies'] == 11
+        assert sha256(ROOT / 'fixtures/compat-v027/manifest.json') == 'f196ee5fc21e3fe78ea75ee3c73e904206e1a0f24dd8e847a0e6fe504461eba8'
+        for compatibility, minimum in ((original26, 623), (original27, 418)):
+            assert compatibility['expectedRegenerated'] is False
+            assert compatibility['normalAnalysisHistoricalWorkersStarted'] == 0
+            assert compatibility['originalReportsAndCapsulesRemainByteIdentical'] is True
+            assert compatibility['verificationResponseOnlyCurrentEngineDeltaAllowedFor'] == ['v1', 'v2']
+            assert compatibility['checkCount'] >= minimum
+            assert len(compatibility['checks']) == compatibility['checkCount']
+            assert all(row['passed'] is True for row in compatibility['checks'])
+        assert any(row['name'] == 'actual current runtime version core and capture manifest bindings'
+                   for row in original27['checks'])
+        for label in ('026', '027'):
+            worker = summary['historicalWorker' + label + 'ProtocolTests']
+            assert worker['format'] == 'synthetic-public' + label.lstrip('0') + '-worker-framework-tests/v1'
+            assert worker['passed'] is True and worker['checks'] > 0 and worker['frameworkOnly'] is True
+            assert worker['actualPublicFixturesExecuted'] is False and worker['realSdkImported'] is False
+        diagnosis = summary['diagnosisHostTests']
+        assert diagnosis['passed'] is True and diagnosis['version'] == VERSION and diagnosis['checks'] >= 66
+        assert len(diagnosis['cases']) == diagnosis['checks'] and all(row['passed'] is True for row in diagnosis['cases'])
+        assert diagnosis['coreSha256'] == manifest['coreSha256']
+        assert diagnosis['captureCoreSha256'] == manifest['captureCoreSha256']
+        assert diagnosis['diagnosisHostSha256'] == sha256(ROOT / 'dist/diagnosis.mjs')
+        assert diagnosis['newDatabaseExecution'] is False and diagnosis['newMoonCompilation'] is False
+        assert diagnosis['formalPerformanceMeasured'] is False
+        assert diagnosis['originalSerialAndModelReportsAndCapsulesPreserved'] is True
+        assert diagnosis['syntheticCases'] == 7
+        assert diagnosis['frozenOriginalCases'] == [
+            {'id': name, 'sha256': sha256(ROOT / ('fixtures/diagnosis-v3/' + name + '.json'))}
+            for name in ('register-0', 'register-4', 'register-80')]
+        for kind in ('source', 'portable'):
+            for description in (
+                    'actual public26 35-family fixed-runtime exact compatibility and tamper controls',
+                    'exact genuine public027 full46 compatibility and configured model-profile replay',
+                    'configured list/relation original-source model projection and complete capsule replay',
+                    'combined diagnosis preserves original unknown analysis and verifies direct INT evidence'):
+                assert kind + ' ' + description in package['checks']
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names
     for item in package['archives']:
@@ -403,6 +463,19 @@ def publish():
             '- Keep full automatic SQL/ORM, six-model classification and complete production integrations on the future roadmap.\n\n'
             'See the [stable scope and examples](https://github.com/' + MODULE + '/blob/' + tag + '/docs/stable-scope.md). '
             'Actual regression, database, independent review, fresh installation and public download receipts are recorded separately; no unmeasured performance figure is claimed here.\n\n'
+            'Install with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for Node.js.\n', encoding='utf8')
+
+    if VERSION == '0.2.8':
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- Add `diagnoseV3` / `verifyDiagnosisV3` and CLI diagnosis/verification, combining the original serial analysis and model checks with independently verifiable direct evidence. Unknown analysis remains visible; INT does not become G2 or a PL3 refutation.\n'
+            '- Reuse parsed relation-reduction candidates while retaining full semantic revalidation, sources and budgets. Fixed relation-candidate workloads measured 1.124x speedup; this is not an overall v0.2.8 SDK or database-throughput claim.\n'
+            '- Replay all 46 genuine public v0.2.7 fixture families through the fixed original runtime, including configured model profiles, and retain the full toolchain licences and NOTICE.\n\n'
+            'Configured register/list/relation profiles, explicit model checks, missing-source gaps and existing budgets remain as documented. '
+            'The MLflow case remains a component-level reproduction; the original HTTP log_batch repair comparison is unfinished.\n\n'
+            'See the [support matrix](https://github.com/' + MODULE + '/blob/' + tag + '/docs/stable-scope.md), '
+            '[diagnosis guide](https://github.com/' + MODULE + '/blob/' + tag + '/docs/diagnosis-sdk.md) and '
+            '[measured performance scope](https://github.com/' + MODULE + '/blob/' + tag + '/docs/performance-v0.2.8-relation.md). '
+            'Actual release, database, fresh-consumer and public-download receipts remain separate from human feedback and organizer decisions.\n\n'
             'Install with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for Node.js.\n', encoding='utf8')
 
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'

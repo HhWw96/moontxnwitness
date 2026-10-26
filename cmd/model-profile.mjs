@@ -2,6 +2,7 @@
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {model_profile_source_v3_json,version} from './core.mjs';
+import {callLegacyV027} from './legacy-v027.mjs';
 
 const PROFILE='pg18-configured-models/1';
 const ALGORITHM='model-profile-host-1';
@@ -70,6 +71,7 @@ export function analyzeModelProfileV3(envelope,options={}){
 export function verifyModelProfileV3(envelope,supplied,options){
   try{
     const text=bounded(supplied,BUDGETS.reportUtf8Bytes,'model report'),parsed=JSON.parse(text);
+    if(parsed?.format==='moontxnwitness-model-profile-report/v1'&&parsed.engine?.version==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('verify-model-profile',options===undefined?[envelope,supplied]:[envelope,supplied,options]);
     if(parsed?.format!=='moontxnwitness-model-profile-report/v1'||parsed.algorithm!==ALGORITHM||
        parsed.sourceAlgorithm!==SOURCE_ALGORITHM||parsed.profile!==PROFILE||typeof parsed.requestOptionsText!=='string')
       return {valid:false,reason:'unsupported-model-profile-report',scope:scope()};
@@ -100,6 +102,7 @@ export function replayModelProfileCapsuleV3(text){
   try{
     if(typeof text!=='string')return reject('model-capsule-must-be-original-text');
     bounded(text,BUDGETS.capsuleUtf8Bytes,'model capsule');const value=JSON.parse(text);
+    if(value?.format==='moontxnwitness-model-profile/v1'&&value.engine?.version==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('replay-model-profile',[text]);
     if(value?.format!=='moontxnwitness-model-profile/v1'||value.schemaVersion!==1||value.tool!=='MoonTxnWitness'||
        value.algorithm!==ALGORITHM||value.sourceAlgorithm!==SOURCE_ALGORITHM||value.profile!==PROFILE||
        JSON.stringify(value.engine)!==JSON.stringify(ENGINE)||typeof value.envelopeText!=='string'||

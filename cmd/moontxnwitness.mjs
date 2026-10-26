@@ -11,6 +11,8 @@ import { classifyModelsV3, verifyModelsClassificationV3, makeModelsClassificatio
 import { classifyV3, reduceClassificationV3, verifyClassificationV3, makeClassificationCapsuleV3,
   makeClassificationReductionCapsuleV3, replayClassificationCapsuleV3 } from './classification.mjs';
 
+import { diagnoseV3, verifyDiagnosisV3 } from './diagnosis.mjs';
+
 import { analyzeModelProfileV3, verifyModelProfileV3, makeModelProfileCapsuleV3,
   replayModelProfileCapsuleV3 } from './model-profile.mjs';
 
@@ -23,6 +25,8 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs ingest TRACE.json [--output COVERAGE.json] [--history HISTORY.json]
   node dist/moontxnwitness.mjs ingest-presence TRACE2.json [--output COVERAGE.json] [--history HISTORY.json]
   node dist/moontxnwitness.mjs replay CAPSULE.json
+  node dist/moontxnwitness.mjs diagnose-v3 TRACE3.json [--options OPTIONS.json] [--output REPORT.json]
+  node dist/moontxnwitness.mjs verify-diagnosis-v3 TRACE3.json REPORT.json [--options OPTIONS.json] [--output VERIFIED.json]
   node dist/moontxnwitness.mjs ingest-v3 TRACE3.json [--output NORMALIZED.json]
   node dist/moontxnwitness.mjs check-v3 TRACE3.json [--output REPORT.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs reduce-v3 TRACE3.json [--output REDUCTION.json] [--capture MINI.json] [--max-checks N]
@@ -145,6 +149,16 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (['diagnose-v3','verify-diagnosis-v3'].includes(args[0])) {
+    const command=args[0],{paths,options}=localArgs(args.slice(1),['--options','--output'],command==='verify-diagnosis-v3'?2:1);
+    const inputs=[...paths,...(options['--options']?[options['--options']]:[])];
+    if(inputs.filter(path=>path==='-').length>1)throw new Error('Only one diagnosis input may use standard input');
+    const source=readBounded(paths[0],8*1024*1024);
+    const requested=options['--options']===undefined?undefined:JSON.parse(readBounded(options['--options'],16384));
+    const result=command==='verify-diagnosis-v3'?
+      verifyDiagnosisV3(source,readBounded(paths[1],160*1024*1024),requested):diagnoseV3(source,requested===undefined?{}:requested);
+    emitJSON(result,options['--output'],inputs);
+    process.exitCode='valid' in result?(result.valid?0:2):result.status==='findings'?1:result.status==='no-findings'?0:result.status==='invalid'?2:3;
   } else if (['classify-models-v3','verify-models-classification-v3','replay-models-classification-v3'].includes(args[0])) {
     const command=args[0],allowed=command==='replay-models-classification-v3'?['--output']:
       command==='verify-models-classification-v3'?['--options','--output']:['--options','--output','--capsule'];

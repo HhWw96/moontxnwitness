@@ -1,3 +1,11 @@
+# v0.2.8 支持矩阵补充
+
+新增 diagnoseV3／verifyDiagnosisV3，将原串行分析、六模型检查、具体证据和覆盖缺口并列保留。入口接受不超过8 MiB的原始 v3 轨迹，报告使用独立格式和 diagnosis-host-1 算法；验证会重算完整报告。INT 不替换成 G2；可靠反证和检查是否完成分开显示。参见[诊断用法与预算](diagnosis-sdk.md)。
+
+关系缩减复用已解析候选，保留原始来源、相同判断和最终完整重验。列表及寄存器维持原实现；固定负载的候选测量为1.1243倍，尚未达到1.25倍目标，[测量范围](performance-v0.2.8-relation.md)与最终版本成本分开。真实公开0.2.7的46类报告及复现包通过原始运行时重放；普通当前分析不启动历史 worker。
+
+本次集成的实际回归、数据库与发布记录存于 verification/releases/0.2.8/，以相应收据的完成状态为准。下面逐版保留已有能力、预算和原版本证据；历史验收不会改标为本版新执行。
+
 # v0.2.7 稳定支持矩阵
 
 新增显式配置化列表与关系来源入口：`install_model_profile()`、`analyzeModelProfileV3`、`verifyModelProfileV3` 与完整来源复现包。从受支持的真实 SQL、参数、数据库返回、实际 fetch 和事务结果映射事实，由 MoonBit 独立核验。见[安装与 SQL 范围](configured-model-profile.md)和[SDK／CLI](model-profile-sdk.md)。

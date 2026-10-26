@@ -2,6 +2,7 @@ import { analyze_json, analyze_options_json, verify_certificate_json, shrink_jso
 import { normalize_capture_json, normalize_presence_json, normalize_capture_v3_json, normalize_capture_v3_options_json, dislock_sql_v3_proof_json, inspect_execution_failures_v3_json, orm_sql_source2_v3_proof_json } from './capture-core.mjs';
 
 export { version };
+export { diagnoseV3, verifyDiagnosisV3 } from './diagnosis.mjs';
 export { analyzeModelProfileV3, verifyModelProfileV3, makeModelProfileCapsuleV3,
   replayModelProfileCapsuleV3 } from './model-profile.mjs';
 export { classifyModelsV3, verifyModelsClassificationV3, makeModelsClassificationCapsuleV3,
@@ -364,7 +365,7 @@ const executionBudgetsV3 = () => ({
 // A future release may add only individually reviewed released engine/algorithm
 // pairs here. No wildcard version migration or rewriting of diagnostic fields.
 const executionEngineSupportedV3 = recorded => recorded === version() ||
-  ['0.1.7', '0.1.8', '0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6'].includes(recorded);
+  ['0.1.7', '0.1.8', '0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6', '0.2.7'].includes(recorded);
 const executionScopeV3 = () => ({
   diagnosticRecomputationOnly: true,
   actualDatabaseExecution: false,

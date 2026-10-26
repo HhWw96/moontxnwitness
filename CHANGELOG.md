@@ -1,3 +1,10 @@
+# 0.2.8 — 2026-10-26
+
+- Added `diagnoseV3` / `verifyDiagnosisV3` and CLI commands that retain full serial/model judgments, verified rule evidence and coverage gaps. INT findings stay distinct from graph anomalies and model applicability.
+- Reused parsed candidates in relation reduction while preserving semantic revalidation, source closure, budgets and the existing list/register paths. Workload measurements are reported separately.
+- Preserved genuine public v0.2.7 reports and replay capsules through fixed original ESM workers, including configured list/relation source profiles.
+- Bound runtime licence and NOTICE output to the actual selected MoonBit toolchain; fixed portable inclusion of the complete public027 consumer inputs.
+
 # 0.2.7 — 2026-10-25
 
 - Add an explicit PostgreSQL list and relation capture profile that derives model facts from original SQL, native results, actual fetch delivery and transaction outcomes.

@@ -273,5 +273,83 @@ class DistributionTests(unittest.TestCase):
             ci.stage(self.root)
 
 
+
+class Public027PortableRegressionTests(unittest.TestCase):
+    """Consumer dependencies must survive the portable inventory, including nested producer files."""
+    @classmethod
+    def setUpClass(cls):
+        # Reuse the existing tiny retained-checkout fixture, without rerunning its tests.
+        fixture_type = type('_Public027InventoryFixture', (DistributionTests,), {})
+        fixture_type.setUpClass()
+        cls.root = fixture_type.root
+        cls.public = set(fixture_type.public)
+        cls.tested = dict(fixture_type.tested)
+
+        def put(name, value='synthetic inventory member\n'):
+            path = cls.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(value if isinstance(value, str) else json.dumps(value), encoding='utf8')
+            cls.public.add(name)
+
+        runtime_names = ('core.mjs', 'capture-core.mjs', 'orm-profile.mjs',
+                         'classification.mjs', 'classification-models.mjs', 'model-profile.mjs',
+                         'legacy-v026.mjs', 'legacy-v026-runtime.mjs', 'legacy-v026-worker.mjs',
+                         'legacy-v026-binding.mjs', 'legacy-v024.mjs', 'legacy-v025.mjs',
+                         'legacy-v025-runtime.mjs', 'legacy-v025-worker.mjs', 'legacy-v025-binding.mjs',
+                         'build-manifest.json', 'LICENSE', 'THIRD_PARTY_NOTICES.txt', 'origin.json')
+        put('cmd/legacy/v027/manifest.json', {'files': {name: {} for name in runtime_names}})
+        for name in runtime_names:
+            put('cmd/legacy/v027/' + name)
+        for name in ('legacy-v027.mjs', 'legacy-v027-runtime.mjs', 'legacy-v027-worker.mjs', 'legacy-v027-binding.mjs'):
+            put('cmd/' + name)
+            put('dist/' + name)
+        for name in ('legacy-v027-runtime.mjs', 'freeze-public027-runtime.mjs', 'legacy-v027-worker-test.mjs',
+                     'public027-worker-smoke.mjs', 'compat-v027-test.mjs', 'public027-fixture-binding.mjs'):
+            put('scripts/' + name)
+        cls.fixture_files = {'fixtures/compat-v027/' + suffix for suffix in
+                             ('manifest.json', 'case.input.json', 'case.report.json', 'case.capsule.json',
+                              'producer-runtime/sdk.mjs', 'producer-runtime/legacy/v026/core.mjs')}
+        for name in cls.fixture_files:
+            put(name, {})
+        put('verification/compatibility/public-v027-producer-2026-10-26/receipt.json',
+            {'syntheticInventoryOnly': True, 'SDKExecuted': False, 'databaseExecuted': False})
+
+    def select(self, omitted=()):
+        # Omitting a name models the public archive inventory losing a consumer dependency.
+        return inventory.select_distribution_files(self.root, self.public - set(omitted), self.tested, '0.1.2')
+
+    def test_public027_portable_keeps_entire_fixture_tree_including_nested_runtime(self):
+        selected = self.select()
+        inventory.assert_complete(selected)
+        self.assertTrue(self.fixture_files.issubset(selected['source']))
+        self.assertTrue(self.fixture_files.issubset(selected['portable']))
+
+    def test_public027_portable_keeps_both_current_consumer_script_dependencies(self):
+        selected = self.select()
+        inventory.assert_complete(selected)
+        for name in ('scripts/compat-v027-test.mjs', 'scripts/public027-fixture-binding.mjs'):
+            self.assertIn(name, selected['portable'])
+
+    def require_refusal(self, name):
+        selected = self.select([name])
+        self.assertTrue(any(row['file'] == name for row in selected['missingInputs']))
+        with self.assertRaises(AssertionError):
+            inventory.assert_complete(selected)
+
+    def test_public027_missing_consumer_test_script_is_explicitly_refused(self):
+        self.require_refusal('scripts/compat-v027-test.mjs')
+
+    def test_public027_missing_fixture_binding_is_explicitly_refused(self):
+        self.require_refusal('scripts/public027-fixture-binding.mjs')
+
+    def test_public027_missing_fixture_manifest_is_explicitly_refused(self):
+        self.require_refusal('fixtures/compat-v027/manifest.json')
+
+    def test_public027_missing_whole_fixture_group_is_explicitly_refused(self):
+        selected = self.select(self.fixture_files)
+        self.assertTrue(any(row['file'] == 'fixtures/compat-v027/' for row in selected['missingInputs']))
+        with self.assertRaises(AssertionError):
+            inventory.assert_complete(selected)
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

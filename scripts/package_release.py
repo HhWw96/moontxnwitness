@@ -35,7 +35,7 @@ current_source = subprocess.check_output([NODE, '--input-type=module', '-e',
 assert current_source == MANIFEST['sourceSha256'], 'MoonBit source changed after the verified build'
 for runtime, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'captureCoreSha256')):
     assert hashlib.sha256((ROOT / 'dist' / runtime).read_bytes()).hexdigest() == MANIFEST[field], 'Compiled runtime changed after build'
-for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'demo.mjs', 'postgres-demo.mjs'):
+for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'demo.mjs', 'postgres-demo.mjs'):
     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
 
 
@@ -47,6 +47,11 @@ for helper in ('legacy-v026.mjs', 'legacy-v026-runtime.mjs', 'legacy-v026-worker
     assert (ROOT / 'cmd' / helper).read_bytes() == (ROOT / 'dist' / helper).read_bytes(), 'Fixed public26 helper changed after build: ' + helper
 subprocess.check_call([NODE, '--input-type=module', '-e',
     "import{verifyPublicV026Runtime as source}from'./cmd/legacy-v026-runtime.mjs';import{verifyPublicV026Runtime as installed}from'./dist/legacy-v026-runtime.mjs';const a=source(),b=installed();if(a.manifestSha256!==b.manifestSha256||a.workerSha256!==b.workerSha256)throw Error('Copied public26 runtime differs');"], cwd=ROOT)
+
+for helper in ('legacy-v027.mjs', 'legacy-v027-runtime.mjs', 'legacy-v027-worker.mjs', 'legacy-v027-binding.mjs'):
+    assert (ROOT / 'cmd' / helper).read_bytes() == (ROOT / 'dist' / helper).read_bytes(), 'Fixed public27 helper changed after build: ' + helper
+subprocess.check_call([NODE, '--input-type=module', '-e',
+    "import{verifyPublicV027Runtime as source}from'./cmd/legacy-v027-runtime.mjs';import{verifyPublicV027Runtime as installed}from'./dist/legacy-v027-runtime.mjs';const a=source(),b=installed();if(a.manifestSha256!==b.manifestSha256||a.workerSha256!==b.workerSha256)throw Error('Copied public27 runtime differs');"], cwd=ROOT)
 
 def archive(files, path):
     home_paths = private_home_paths(
@@ -186,6 +191,12 @@ for kind in ("portable", "source"):
         assert replay['valid'] and replay['report']['result']['reduction']['sourceClosure']['complete']
         checks.append(kind + ' configured ORM explicit-profile source binding, closed reduction and capsule replay')
 
+    if tuple(map(int, VERSION.split('.'))) >= (0, 2, 8):
+        public27_output = work / ('public027-' + kind)
+        public27 = json.loads(run([NODE, 'scripts/compat-v027-test.mjs', str(consumer / 'dist'), str(consumer / 'fixtures/compat-v027'), str(public27_output)], consumer))
+        assert public27['passed'] and public27['families'] == 46 and public27['expectedRegenerated'] is False
+        checks.append(kind + ' exact genuine public027 full46 compatibility and configured model-profile replay')
+
     if tuple(map(int, VERSION.split('.'))) >= (0, 2, 7):
         assert (consumer / 'dist/model-profile.mjs').is_file(), 'Required model-profile runtime missing'
         assert (consumer / 'examples/model-profile-roundtrip.mjs').is_file(), 'Required model-profile example missing'
@@ -205,6 +216,11 @@ for kind in ("portable", "source"):
         replay = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-model-profile-v3', str(directory / 'list-write-skew.capsule.json')], consumer))
         assert replay['valid'] and replay['status'] == 'violation' and replay['analysisCoverageAccepted']
         checks.append(kind + ' configured list/relation original-source model projection and complete capsule replay')
+
+    if (consumer / 'dist/diagnosis.mjs').is_file():
+        diagnostic = json.loads(run([NODE, '--input-type=module', '-e', "import assert from 'node:assert/strict'; import {readFileSync} from 'node:fs'; import {diagnoseV3,verifyDiagnosisV3} from './dist/sdk.mjs'; const source=readFileSync('fixtures/diagnosis-v3/register-0.json','utf8'); const report=diagnoseV3(source); assert.equal(report.analysis.status,'inconclusive'); assert(report.findings.some(f=>f.rule==='INT')); assert.equal(report.models.result.models['adya-pl-3-v1'].status,'inconclusive'); assert.equal(verifyDiagnosisV3(source,report).valid,true); console.log(JSON.stringify({passed:true,status:report.status,diagnosticOnly:report.scope.diagnosticOnly}));"], consumer))
+        assert diagnostic == {'passed': True, 'status': 'findings', 'diagnosticOnly': True}
+        checks.append(kind + ' combined diagnosis preserves original unknown analysis and verifies direct INT evidence')
 
     if (consumer / 'dist/classification-models.mjs').is_file():
         model_demo = json.loads(run([NODE, 'examples/classification-models-roundtrip.mjs', '--out-root', str(work)], consumer))

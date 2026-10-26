@@ -8,7 +8,11 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-## v0.2.7 支持范围
+## v0.2.8 支持范围
+
+新增[统一诊断入口](docs/diagnosis-sdk.md)：`diagnoseV3` 与 `diagnose-v3` 同时保留串行分析、模型检查和证据缺口；`verifyDiagnosisV3` 可重新核对完整报告。事务读错自身写入会明确显示 INT，不会误标成 G2 或改写尚无法判定的其它模型。
+
+关系反例缩减复用已解析的候选结构，并保留完整语义重验、来源、预算和旧接口。寄存器与列表入口继续采用原实现。公开 v0.2.7 证据通过固定旧运行时重放；构建时从实际工具链保留完整许可证与 NOTICE。固定关系候选负载测得 1.124× 提速，完整范围见[性能记录](docs/performance-v0.2.8-relation.md)。
 
 配置化[列表与关系来源采集](docs/configured-model-profile.md)可从实际 SQL、原始返回、fetch 交付和事务结果自动投射模型事实，无需手写历史。[SDK 与命令行](docs/model-profile-sdk.md)提供分析、报告验证和完整原始来源包重放；10 个真实 PostgreSQL 场景覆盖 7 个受支持路径和 3 个明确无法判定的边界。配置化模型来源缩减留待后续版本。
 
@@ -18,7 +22,7 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 
 可靠反证在其它检查预算耗尽时仍成立；缺少来源、完整读取、内部有效性或实时证据时，相关检查保持无法判定。关系六模型分类、模型保持缩减、任意 SQL 和完整认证系统接入仍未支持。重放成功说明证据可复现，不表示采集内容得到数据库真实性认证。
 
-本版的实际构建、回归和公开交付以 `verification/releases/0.2.7/` 收据及[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。默认分析实现继续保留已验证的算法；新增检查的成本与旧版完整分析分别报告。此前未通过性能控制的优化候选及[完整采集成本差距](docs/performance-v0.2.5-candidate.md)继续公开保留，Unicode 流式 JSON 预检查的[固定工作负载成对实验](docs/performance-experiment-streaming-json-guard.md)保留全部原始样本；该实验不等于所有 v0.2.7 调用的统一提速或内存下降。
+本版的实际构建、回归和公开交付以 `verification/releases/0.2.8/` 收据及[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。默认分析实现继续保留已验证的算法；新增检查的成本与旧版完整分析分别报告。此前未通过性能控制的优化候选及[完整采集成本差距](docs/performance-v0.2.5-candidate.md)继续公开保留，Unicode 流式 JSON 预检查的[固定工作负载成对实验](docs/performance-experiment-streaming-json-guard.md)保留全部原始样本；该实验不等于所有当前版本调用的统一提速或内存下降。
 
 ## 运行演示
 
@@ -57,7 +61,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.2.7
+moon add HhWw96/moontxnwitness@0.2.8
 ```
 
 ```javascript
@@ -130,7 +134,7 @@ node examples/relation-roundtrip.mjs
 
 ## 实验与后续
 
-[分段日志与来源窗口](docs/capture-journal-v3.md)、扩展普通表/ORM 来源安装、[dislock 完整生命周期](docs/dislock-v3.md)、六模型与更广 SQL 自动接入仍按各自实验契约推进。受控组件案例不是生产采用证明，不把这些工作作为已经交付的完整应用集成。未支持 SQL 和缺失来源始终可见。
+[分段日志与来源窗口](docs/capture-journal-v3.md)按各自契约使用；更广普通表/ORM 路径、[dislock 完整生命周期](docs/dislock-v3.md)、关系六模型、模型保持缩减及 MLflow 原服务 HTTP 故障闭环继续开发。受控组件案例不是生产采用证明，不把这些工作作为已经交付的完整应用集成。未支持 SQL 和缺失来源始终可见。
 
 ## 开发与验证
 

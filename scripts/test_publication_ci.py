@@ -259,5 +259,228 @@ class PublisherIntegrationTests(unittest.TestCase):
         self.assertEqual(reads, [60,55])
 
 
+def current_release_gate():
+    """Execute only the new publisher gate; no publisher import or external IO."""
+    parsed = ast.parse((HERE/'release.py').read_text(encoding='utf8'))
+    function = next(n for n in parsed.body if isinstance(n, ast.FunctionDef)
+                    and n.name == 'validate_scoped_acceptance')
+    gates = [n for n in function.body if isinstance(n, ast.If)
+             and isinstance(n.test, ast.Compare)
+             and isinstance(n.test.comparators[0], ast.Tuple)
+             and ast.literal_eval(n.test.comparators[0]) == (0, 2, 8)]
+    assert len(gates) == 1
+    return ast.fix_missing_locations(ast.Module(body=gates, type_ignores=[]))
+
+
+def current_release_fixture():
+    # Synthetic receipt-shape fixture, not an executed SDK/DB/package receipt.
+    root = Path('synthetic-release-root')
+    hashes = {str(root/name): value * 64 for name, value in (
+        ('dist/model-profile.mjs', '1'), ('dist/diagnosis.mjs', '2'),
+        ('fixtures/compat-v026/manifest.json', '3'),
+        ('fixtures/diagnosis-v3/register-0.json', '4'),
+        ('fixtures/diagnosis-v3/register-4.json', '5'),
+        ('fixtures/diagnosis-v3/register-80.json', '6'))}
+    hashes[str(root/'fixtures/compat-v027/manifest.json')] = 'f196ee5fc21e3fe78ea75ee3c73e904206e1a0f24dd8e847a0e6fe504461eba8'
+    manifest = {'coreSha256': 'a'*64, 'captureCoreSha256': 'b'*64}
+    compatibility = lambda number, count, families: {
+        'format': 'genuine-public0'+number+'-current-consumer/v1',
+        'passed': True, 'currentRuntimeVersion': '0.2.8',
+        'expectedRegenerated': False, 'normalAnalysisHistoricalWorkersStarted': 0,
+        'originalReportsAndCapsulesRemainByteIdentical': True,
+        'verificationResponseOnlyCurrentEngineDeltaAllowedFor': ['v1', 'v2'],
+        'originalProducerFamilies': families, 'checkCount': count,
+        'checks': [{'name': 'actual current runtime version core and capture manifest bindings'
+                    if i == 0 else 'synthetic-shape-check-'+str(i), 'passed': True}
+                   for i in range(count)]}
+    original26 = compatibility('26', 623, 35)
+    original26.update(currentCoreSha256=manifest['coreSha256'],
+        originalFixtureManifestSha256=hashes[str(root/'fixtures/compat-v026/manifest.json')],
+        originalModelFamilies=14)
+    original27 = compatibility('27', 418, 46)
+    original27['originalModelProfileFamilies'] = 11
+    model = {'passed': True, 'cases': 50, 'failures': [],
+             'compiledCoreSha256': manifest['coreSha256'],
+             'hostSourceSha256': hashes[str(root/'dist/model-profile.mjs')],
+             'actualDatabaseExecution': False, 'formalPerformanceMeasurement': False,
+             'sourceClosedReductionClaimed': False}
+    diagnostic = {'passed': True, 'version': '0.2.8', 'checks': 66,
+                  'cases': [{'name': 'synthetic-shape-check-'+str(i), 'passed': True} for i in range(66)],
+                  'coreSha256': manifest['coreSha256'], 'captureCoreSha256': manifest['captureCoreSha256'],
+                  'diagnosisHostSha256': hashes[str(root/'dist/diagnosis.mjs')],
+                  'newDatabaseExecution': False, 'newMoonCompilation': False,
+                  'formalPerformanceMeasured': False, 'public027BaselineCompared': False,
+                  'originalSerialAndModelReportsAndCapsulesPreserved': True, 'syntheticCases': 7,
+                  'frozenOriginalCases': [{'id': name, 'sha256': hashes[str(root/('fixtures/diagnosis-v3/'+name+'.json'))]}
+                                          for name in ('register-0', 'register-4', 'register-80')]}
+    summary = {'configuredModelProfileHostTests': model,
+               'configuredModelProfileDriverTests': {'passed': True, 'actualDatabaseExecution': False},
+               'publicV026CompatibilityTests': original26, 'publicV027CompatibilityTests': original27,
+               'diagnosisHostTests': diagnostic}
+    for number in ('26', '27'):
+        summary['historicalWorker0'+number+'ProtocolTests'] = {
+            'format': 'synthetic-public'+number+'-worker-framework-tests/v1',
+            'passed': True, 'checks': 42, 'frameworkOnly': True,
+            'actualPublicFixturesExecuted': False, 'realSdkImported': False}
+    descriptions = [
+        'actual public26 35-family fixed-runtime exact compatibility and tamper controls',
+        'exact genuine public027 full46 compatibility and configured model-profile replay',
+        'configured list/relation original-source model projection and complete capsule replay',
+        'combined diagnosis preserves original unknown analysis and verifies direct INT evidence']
+    package = {'checks': [kind+' '+description for kind in ('source', 'portable') for description in descriptions]}
+    return {'VERSION': '0.2.8', 'ROOT': root, 'manifest': manifest,
+            'summary': summary, 'package': package, 'sha256': lambda path: hashes[str(path)]}, hashes
+
+
+def render_publisher_notes(version):
+    tree = ast.parse((HERE/'release.py').read_text(encoding='utf8'))
+    function = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'publish')
+    statements = [n for n in function.body if isinstance(n, ast.If) and any(
+        isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute)
+        and isinstance(call.func.value, ast.Name) and call.func.value.id == 'notes'
+        and call.func.attr == 'write_text' for call in ast.walk(n))]
+    class Notes:
+        def write_text(self, text, **options):
+            self.text = text
+    notes = Notes()
+    namespace = {'VERSION': version, 'MODULE': 'HhWw96/moontxnwitness', 'tag': 'v'+version, 'notes': notes}
+    exec(compile(ast.Module(body=statements, type_ignores=[]), 'publisher-notes-only', 'exec'), namespace)
+    return notes.text
+
+
+class CurrentReleaseGateTests(unittest.TestCase):
+    def execute(self, namespace):
+        exec(compile(current_release_gate(), 'publisher-v028-gate-only', 'exec'), namespace)
+
+    def test_complete_synthetic_shape_passes_without_mutation_or_invented_baseline_requirement(self):
+        namespace, _ = current_release_fixture()
+        before = copy.deepcopy((namespace['summary'], namespace['package'], namespace['manifest']))
+        self.execute(namespace)
+        self.assertEqual((namespace['summary'], namespace['package'], namespace['manifest']), before)
+        self.assertFalse(namespace['summary']['diagnosisHostTests']['public027BaselineCompared'])
+
+    def test_pre028_release_retains_original_gate_behavior(self):
+        self.execute({'VERSION': '0.2.7'})
+
+    def test_every_new_summary_section_is_required(self):
+        namespace, _ = current_release_fixture()
+        for field in list(namespace['summary']):
+            trial, _ = current_release_fixture()
+            del trial['summary'][field]
+            with self.subTest(missing=field), self.assertRaises((KeyError, AssertionError)):
+                self.execute(trial)
+
+    def test_missing_current_version_and_byte_binding_fields_are_rejected(self):
+        fields = {
+            'configuredModelProfileHostTests': ('compiledCoreSha256', 'hostSourceSha256', 'failures'),
+            'publicV026CompatibilityTests': ('currentRuntimeVersion', 'currentCoreSha256', 'originalFixtureManifestSha256'),
+            'publicV027CompatibilityTests': ('currentRuntimeVersion', 'originalProducerFamilies', 'originalModelProfileFamilies'),
+            'diagnosisHostTests': ('version', 'coreSha256', 'captureCoreSha256', 'diagnosisHostSha256', 'frozenOriginalCases')}
+        for section, names in fields.items():
+            for field in names:
+                namespace, _ = current_release_fixture()
+                del namespace['summary'][section][field]
+                with self.subTest(section=section, missing=field), self.assertRaises((KeyError, AssertionError)):
+                    self.execute(namespace)
+
+    def test_altered_core_capture_host_source_and_original_manifest_hashes_are_rejected(self):
+        for section, fields in {
+            'configuredModelProfileHostTests': ('compiledCoreSha256', 'hostSourceSha256'),
+            'publicV026CompatibilityTests': ('currentCoreSha256', 'originalFixtureManifestSha256'),
+            'diagnosisHostTests': ('coreSha256', 'captureCoreSha256', 'diagnosisHostSha256')}.items():
+            for field in fields:
+                namespace, _ = current_release_fixture()
+                namespace['summary'][section][field] = '0'*64
+                with self.subTest(section=section, field=field), self.assertRaises(AssertionError):
+                    self.execute(namespace)
+        namespace, hashes = current_release_fixture()
+        hashes[str(namespace['ROOT']/'fixtures/compat-v027/manifest.json')] = '0'*64
+        with self.assertRaises(AssertionError): self.execute(namespace)
+        for field, value in (('id', 'register-forged'), ('sha256', '0'*64)):
+            namespace, _ = current_release_fixture()
+            namespace['summary']['diagnosisHostTests']['frozenOriginalCases'][0][field] = value
+            with self.subTest(field=field), self.assertRaises(AssertionError): self.execute(namespace)
+
+    def test_compatibility_false_version_regeneration_worker_and_evidence_claims_are_rejected(self):
+        mutations = [('passed', False), ('currentRuntimeVersion', '0.2.7'), ('expectedRegenerated', True),
+                     ('normalAnalysisHistoricalWorkersStarted', 1),
+                     ('originalReportsAndCapsulesRemainByteIdentical', False),
+                     ('verificationResponseOnlyCurrentEngineDeltaAllowedFor', ['v1', 'v2', 'model-profile']),
+                     ('originalProducerFamilies', 1)]
+        for section in ('publicV026CompatibilityTests', 'publicV027CompatibilityTests'):
+            for field, value in mutations:
+                namespace, _ = current_release_fixture()
+                namespace['summary'][section][field] = value
+                with self.subTest(section=section, field=field), self.assertRaises(AssertionError):
+                    self.execute(namespace)
+            namespace, _ = current_release_fixture()
+            namespace['summary'][section]['checks'][1]['passed'] = False
+            with self.assertRaises(AssertionError): self.execute(namespace)
+        namespace, _ = current_release_fixture()
+        namespace['summary']['publicV027CompatibilityTests']['checks'][0]['name'] = 'omitted core binding'
+        with self.assertRaises(AssertionError): self.execute(namespace)
+
+    def test_reduced_check_counts_and_missing_actual_check_rows_are_rejected(self):
+        for section in ('publicV026CompatibilityTests', 'publicV027CompatibilityTests'):
+            for matching_count in (True, False):
+                namespace, _ = current_release_fixture()
+                value = namespace['summary'][section]
+                value['checks'].pop()
+                if matching_count: value['checkCount'] -= 1
+                with self.subTest(section=section, matching_count=matching_count), self.assertRaises(AssertionError):
+                    self.execute(namespace)
+        namespace, _ = current_release_fixture()
+        namespace['summary']['diagnosisHostTests']['checks'] -= 1
+        namespace['summary']['diagnosisHostTests']['cases'].pop()
+        with self.assertRaises(AssertionError): self.execute(namespace)
+        namespace, _ = current_release_fixture()
+        namespace['summary']['configuredModelProfileHostTests']['cases'] = 49
+        with self.assertRaises(AssertionError): self.execute(namespace)
+
+    def test_model_profile_scope_driver_and_failure_claims_are_rejected(self):
+        for section, fields in {
+            'configuredModelProfileHostTests': [('actualDatabaseExecution', True), ('formalPerformanceMeasurement', True),
+                                                ('sourceClosedReductionClaimed', True), ('failures', [{'passed': False}])],
+            'configuredModelProfileDriverTests': [('passed', False), ('actualDatabaseExecution', True)]}.items():
+            for field, value in fields:
+                namespace, _ = current_release_fixture()
+                namespace['summary'][section][field] = value
+                with self.subTest(section=section, field=field), self.assertRaises(AssertionError): self.execute(namespace)
+
+    def test_diagnosis_claims_versions_and_any_failed_case_are_rejected(self):
+        for field, value in [('passed', False), ('version', '0.2.7'), ('newDatabaseExecution', True),
+                             ('newMoonCompilation', True), ('formalPerformanceMeasured', True),
+                             ('originalSerialAndModelReportsAndCapsulesPreserved', False), ('syntheticCases', 0)]:
+            namespace, _ = current_release_fixture()
+            namespace['summary']['diagnosisHostTests'][field] = value
+            with self.subTest(field=field), self.assertRaises(AssertionError): self.execute(namespace)
+        namespace, _ = current_release_fixture()
+        namespace['summary']['diagnosisHostTests']['cases'][0]['passed'] = False
+        with self.assertRaises(AssertionError): self.execute(namespace)
+
+    def test_every_source_and_portable_consumer_marker_is_required(self):
+        namespace, _ = current_release_fixture()
+        for marker in list(namespace['package']['checks']):
+            trial, _ = current_release_fixture()
+            trial['package']['checks'].remove(marker)
+            with self.subTest(missing=marker), self.assertRaises(AssertionError): self.execute(trial)
+
+    def test_synthetic_worker_checks_cannot_replace_actual_compatibility_evidence(self):
+        for section in ('historicalWorker026ProtocolTests', 'historicalWorker027ProtocolTests'):
+            for field, value in [('passed', False), ('checks', 0), ('frameworkOnly', False),
+                                 ('actualPublicFixturesExecuted', True), ('realSdkImported', True), ('format', 'other')]:
+                namespace, _ = current_release_fixture()
+                namespace['summary'][section][field] = value
+                with self.subTest(section=section, field=field), self.assertRaises(AssertionError): self.execute(namespace)
+
+    def test_actual_latest_notes_describe_028_and_keep_pre028_behavior(self):
+        notes = render_publisher_notes('0.2.8')
+        for value in ('diagnoseV3', 'verifyDiagnosisV3', '1.124x', '46 genuine', 'HTTP log_batch',
+                      'Unknown analysis remains visible', 'not an overall v0.2.8 SDK'):
+            self.assertIn(value, notes)
+        self.assertNotIn('on the future roadmap', notes)
+        self.assertIn('six-model classification', render_publisher_notes('0.2.7'))
+
+
 if __name__ == '__main__':
     unittest.main()
