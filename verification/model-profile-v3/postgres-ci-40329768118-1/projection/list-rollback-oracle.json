@@ -1,0 +1,228 @@
+{
+  "independentReference": true,
+  "normalization": "ready",
+  "coverageComplete": true,
+  "issues": [],
+  "normalized": {
+    "status": "ready",
+    "complete": true,
+    "issues": [],
+    "observations": [
+      {
+        "kind": "snapshot",
+        "initial": {
+          "x": [],
+          "y": []
+        },
+        "consistent": true,
+        "time": 19094773,
+        "seq": 1
+      },
+      {
+        "connection": "connection-876f4139bf9b4db8b9f618325aee836c",
+        "kind": "begin",
+        "seq": 2,
+        "time": 25011838,
+        "tx": "transaction-770d38cf1acc496491bbaec1a0a7917d"
+      },
+      {
+        "kind": "append",
+        "tx": "transaction-770d38cf1acc496491bbaec1a0a7917d",
+        "key": "x",
+        "id": "aborted",
+        "value": "v",
+        "time": 28206709,
+        "seq": 3
+      },
+      {
+        "kind": "rollback_ok",
+        "seq": 4,
+        "time": 28921149,
+        "tx": "transaction-770d38cf1acc496491bbaec1a0a7917d"
+      },
+      {
+        "connection": "connection-f75f2ed9625f48ca8a0e05c9b942ad3d",
+        "kind": "begin",
+        "seq": 5,
+        "time": 34579891,
+        "tx": "transaction-5ee2da8b1a684e0fad44a81b258477df"
+      },
+      {
+        "kind": "list_read",
+        "tx": "transaction-5ee2da8b1a684e0fad44a81b258477df",
+        "key": "x",
+        "items": [],
+        "time": 36116663,
+        "seq": 6
+      },
+      {
+        "kind": "commit_request",
+        "seq": 7,
+        "time": 36536724,
+        "tx": "transaction-5ee2da8b1a684e0fad44a81b258477df"
+      },
+      {
+        "kind": "commit_ok",
+        "seq": 8,
+        "time": 36836877,
+        "tx": "transaction-5ee2da8b1a684e0fad44a81b258477df"
+      }
+    ],
+    "effects": [
+      {
+        "seq": 3,
+        "tx": "transaction-770d38cf1acc496491bbaec1a0a7917d",
+        "key": "x",
+        "id": "aborted",
+        "value": "v",
+        "revertedBy": 4
+      }
+    ],
+    "transactions": [
+      {
+        "id": "transaction-770d38cf1acc496491bbaec1a0a7917d",
+        "connection": "connection-876f4139bf9b4db8b9f618325aee836c",
+        "status": "aborted",
+        "beginSeq": 2,
+        "endSeq": 4,
+        "events": [
+          2,
+          3,
+          4
+        ],
+        "finalWrites": []
+      },
+      {
+        "id": "transaction-5ee2da8b1a684e0fad44a81b258477df",
+        "connection": "connection-f75f2ed9625f48ca8a0e05c9b942ad3d",
+        "status": "committed",
+        "beginSeq": 5,
+        "endSeq": 8,
+        "events": [
+          5,
+          6,
+          7,
+          8
+        ],
+        "finalWrites": []
+      }
+    ],
+    "initial": {
+      "x": [],
+      "y": []
+    },
+    "operations": 2,
+    "journals": {
+      "transaction-770d38cf1acc496491bbaec1a0a7917d": {
+        "id": "transaction-770d38cf1acc496491bbaec1a0a7917d",
+        "connection": "connection-876f4139bf9b4db8b9f618325aee836c",
+        "status": "aborted",
+        "beginSeq": 2,
+        "endSeq": 4,
+        "events": [
+          2,
+          3,
+          4
+        ],
+        "active": false,
+        "requested": null,
+        "marks": {},
+        "activeEffects": [],
+        "journal": [
+          {
+            "kind": "append",
+            "tx": "transaction-770d38cf1acc496491bbaec1a0a7917d",
+            "key": "x",
+            "id": "aborted",
+            "value": "v",
+            "time": 28206709,
+            "seq": 3
+          },
+          {
+            "kind": "rollback_ok",
+            "seq": 4,
+            "time": 28921149,
+            "tx": "transaction-770d38cf1acc496491bbaec1a0a7917d"
+          }
+        ]
+      },
+      "transaction-5ee2da8b1a684e0fad44a81b258477df": {
+        "id": "transaction-5ee2da8b1a684e0fad44a81b258477df",
+        "connection": "connection-f75f2ed9625f48ca8a0e05c9b942ad3d",
+        "status": "committed",
+        "beginSeq": 5,
+        "endSeq": 8,
+        "events": [
+          5,
+          6,
+          7,
+          8
+        ],
+        "active": false,
+        "requested": 7,
+        "marks": {},
+        "activeEffects": [],
+        "journal": [
+          {
+            "kind": "list_read",
+            "tx": "transaction-5ee2da8b1a684e0fad44a81b258477df",
+            "key": "x",
+            "items": [],
+            "time": 36116663,
+            "seq": 6
+          },
+          {
+            "kind": "commit_request",
+            "seq": 7,
+            "time": 36536724,
+            "tx": "transaction-5ee2da8b1a684e0fad44a81b258477df"
+          },
+          {
+            "kind": "commit_ok",
+            "seq": 8,
+            "time": 36836877,
+            "tx": "transaction-5ee2da8b1a684e0fad44a81b258477df"
+          }
+        ]
+      }
+    },
+    "reads": [
+      {
+        "seq": 6,
+        "tx": "transaction-5ee2da8b1a684e0fad44a81b258477df",
+        "key": "x",
+        "items": [],
+        "activeEffectsAtRead": []
+      }
+    ],
+    "sources": {
+      "aborted": {
+        "seq": 3,
+        "tx": "transaction-770d38cf1acc496491bbaec1a0a7917d",
+        "key": "x",
+        "id": "aborted",
+        "value": "v",
+        "revertedBy": null,
+        "initial": false,
+        "effect": {
+          "seq": 3,
+          "tx": "transaction-770d38cf1acc496491bbaec1a0a7917d",
+          "key": "x",
+          "id": "aborted",
+          "value": "v",
+          "revertedBy": 4
+        }
+      }
+    }
+  },
+  "analysis": "consistent",
+  "exact": {
+    "status": "consistent",
+    "reason": "serial_witness",
+    "states": 1,
+    "operationChecks": 1,
+    "witness": [
+      "transaction-5ee2da8b1a684e0fad44a81b258477df"
+    ]
+  }
+}

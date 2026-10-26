@@ -4,6 +4,7 @@
 - Reused parsed candidates in relation reduction while preserving semantic revalidation, source closure, budgets and the existing list/register paths. Workload measurements are reported separately.
 - Preserved genuine public v0.2.7 reports and replay capsules through fixed original ESM workers, including configured list/relation source profiles.
 - Bound runtime licence and NOTICE output to the actual selected MoonBit toolchain; fixed portable inclusion of the complete public027 consumer inputs.
+- Executed supplementary diagnosis on 855 frozen generated histories and independently reran every result. INT evidence remains distinct from G2; the original serial-comparison accounting is unchanged. See [scope and evidence](docs/diagnosis-frozen855.md).
 
 # 0.2.7 — 2026-10-25
 

@@ -1,0 +1,108 @@
+{
+  "traceSchema": 2,
+  "clockDomain": "python-monotonic-d3d3945153eb47528223844404ce2d46",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 21575,
+      "initial": {
+        "[\"mtw_provenance_presence_ci.presence_gap_unread\",\"text\",\"a\"]": "7d2965d1-b89b-4d2d-a1ac-ce663da402dd",
+        "[\"mtw_provenance_presence_ci.presence_gap_unread\",\"text\",\"b\"]": "f0ed8500-9c43-4328-869d-f3242a8854ce",
+        "[\"mtw_provenance_presence_ci.presence_gap_unread\",\"text\",\"never\"]": "968878ac-b643-4b51-9fae-27d795f94bcd"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 27020,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 27056,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_presence_ci\".\"presence_gap_unread\" WHERE \"id\"=%s",
+      "parameters": [
+        "never"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 28105,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_9aac330bcab3ef8d_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_presence_ci\".\"presence_gap_unread\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_presence_ci\".\"mtwp_9aac330bcab3ef8d_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 28248,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          false,
+          null,
+          "968878ac-b643-4b51-9fae-27d795f94bcd",
+          false,
+          null
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "sql",
+      "time": 28499,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 7,
+      "kind": "end",
+      "time": 28532,
+      "tx": "tx-1",
+      "status": "committed"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "unconsumed_result",
+      "message": "A mapped point-read result was not fully fetched before another operation or transaction end."
+    }
+  ],
+  "presenceFacts": {
+    "schema": 1,
+    "projection": "column-presence-register-v0.1.2-experimental",
+    "initial": [
+      {
+        "key": "[\"mtw_provenance_presence_ci.presence_gap_unread\",\"text\",\"a\"]",
+        "version": "7d2965d1-b89b-4d2d-a1ac-ce663da402dd",
+        "present": true
+      },
+      {
+        "key": "[\"mtw_provenance_presence_ci.presence_gap_unread\",\"text\",\"b\"]",
+        "version": "f0ed8500-9c43-4328-869d-f3242a8854ce",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_presence_ci.presence_gap_unread\",\"text\",\"never\"]",
+        "version": "968878ac-b643-4b51-9fae-27d795f94bcd",
+        "present": false
+      }
+    ],
+    "reads": [],
+    "writes": []
+  }
+}

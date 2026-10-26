@@ -9,111 +9,111 @@
   "versionOrders": {
     "x": [
       "x0",
-      "x:r0:B:retry",
-      "x:r1:B:retry"
+      "x:r0:B",
+      "x:r1:B"
     ],
     "y": [
       "y0",
-      "y:r0:A",
-      "y:r1:A"
+      "y:r0:A:retry",
+      "y:r1:A:retry"
     ]
   },
   "transactions": [
     {
-      "id": "r0-B",
-      "status": "aborted",
-      "start": 0,
-      "end": 16000,
-      "ops": [
-        {
-          "type": "read",
-          "key": "y",
-          "version": "y0"
-        }
-      ]
-    },
-    {
       "id": "r0-A",
-      "status": "committed",
-      "start": 0,
-      "end": 16000,
+      "status": "aborted",
+      "start": 200,
+      "end": 1818,
       "ops": [
         {
           "type": "read",
           "key": "x",
           "version": "x0"
-        },
-        {
-          "type": "write",
-          "key": "y",
-          "version": "y:r0:A"
         }
       ]
     },
     {
-      "id": "r0-B-retry",
+      "id": "r0-B",
       "status": "committed",
-      "start": 16000,
-      "end": 31000,
+      "start": 350,
+      "end": 2461,
       "ops": [
         {
           "type": "read",
           "key": "y",
-          "version": "y:r0:A"
+          "version": "y0"
         },
         {
           "type": "write",
           "key": "x",
-          "version": "x:r0:B:retry"
+          "version": "x:r0:B"
         }
       ]
     },
     {
-      "id": "r1-B",
-      "status": "aborted",
-      "start": 31000,
-      "end": 63000,
+      "id": "r0-A-retry",
+      "status": "committed",
+      "start": 2765,
+      "end": 3637,
       "ops": [
         {
           "type": "read",
+          "key": "x",
+          "version": "x:r0:B"
+        },
+        {
+          "type": "write",
           "key": "y",
-          "version": "y:r0:A"
+          "version": "y:r0:A:retry"
         }
       ]
     },
     {
       "id": "r1-A",
-      "status": "committed",
-      "start": 31000,
-      "end": 63000,
+      "status": "aborted",
+      "start": 4206,
+      "end": 5706,
       "ops": [
         {
           "type": "read",
           "key": "x",
-          "version": "x:r0:B:retry"
-        },
-        {
-          "type": "write",
-          "key": "y",
-          "version": "y:r1:A"
+          "version": "x:r0:B"
         }
       ]
     },
     {
-      "id": "r1-B-retry",
+      "id": "r1-B",
       "status": "committed",
-      "start": 63000,
-      "end": 78000,
+      "start": 4291,
+      "end": 6338,
       "ops": [
         {
           "type": "read",
           "key": "y",
-          "version": "y:r1:A"
+          "version": "y:r0:A:retry"
         },
         {
           "type": "write",
           "key": "x",
-          "version": "x:r1:B:retry"
+          "version": "x:r1:B"
+        }
+      ]
+    },
+    {
+      "id": "r1-A-retry",
+      "status": "committed",
+      "start": 6643,
+      "end": 7475,
+      "ops": [
+        {
+          "type": "read",
+          "key": "x",
+          "version": "x:r1:B"
+        },
+        {
+          "type": "write",
+          "key": "y",
+          "version": "y:r1:A:retry"
         }
       ]
     }

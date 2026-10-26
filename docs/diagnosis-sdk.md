@@ -13,3 +13,11 @@ CLI exit codes: 1 for a verified rule finding or serial violation; 0 for no find
 新入口把原串行分析与显式模型检查并列输出，保留完整证据和缺口。自身写错读显示为 INT，不替换成 G2，也不把仍无法判定的 PL3 或严格串行模型改成反证。报告验证会重新执行两类检查；摘要或哈希相同不能代替验证。
 
 A reliable refutation can coexist with incomplete required checks. Determinate model verdicts and completed checks are reported separately.
+
+
+Example using the included generated fixture (the first command returns 1 for a finding):
+
+    node dist/moontxnwitness.mjs diagnose-v3 fixtures/diagnosis-v3/register-0.json --output diagnosis.json
+    node dist/moontxnwitness.mjs verify-diagnosis-v3 fixtures/diagnosis-v3/register-0.json diagnosis.json
+
+The report binds the exact compiled cores and host files. Verify with its corresponding runtime; a rebuild with different byte identities requires a newly generated diagnostic. The separate [855-history supplement](diagnosis-frozen855.md) retains its original Windows runtime and does not change the old Elle comparison.

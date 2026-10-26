@@ -2,8 +2,8 @@
   "schema": 1,
   "policy": "scoped-stable-v2",
   "version": "0.2.8",
-  "passed": false,
-  "releaseReady": false,
+  "passed": true,
+  "releaseReady": true,
   "publicReleaseVerified": false,
   "candidateOnly": true,
   "supportedProfiles": [
@@ -23,19 +23,40 @@
     "captureCoreSha256": "b1d7a9bc3b8c9778458be128d4e166fb6f94924295ae40f3a55aac30ed333b3c"
   },
   "databaseEvidence": "database.json",
-  "sourceCommit": "857ba52faad2861da681f19ac7e2f5ca9d312020",
+  "sourceCommit": "27896a39f6c9df9963c0e2bfcb7d398fa8778eb5",
   "tests": {
+    "passed": true,
+    "receipt": "freeze/tests.json",
+    "technicalOnly": true,
     "pendingFinalPackage": true,
     "localWholeRegressionPassed": true,
-    "localSummarySha256": "3244134d088fd8dd0d7cb063813aa8615eb1542888ee208c9c7806d01901e5d2",
-    "platformManifestsMustNotBeMixed": true
+    "localHistoricalWindowsSummarySha256": "3b2eb3ed79341d106c3d5aa4d182394bcea4b815a74f5b6f55f39a1f09264ed0",
+    "frozenLinuxSummarySha256": "8b9bb20a1af0be7aed5e8ca3f488c09cf2ac34b52aa4cab52238ab59ff5bc615",
+    "platformManifestsMustNotBeMixed": true,
+    "fingerprintFiles": 2090
   },
   "independentReview": {
     "passed": true,
-    "scope": "Database evidence only; full release not approved",
-    "receipt": "ci-originals/postgres-857ba52/independent-review.original.json"
+    "scope": "Exact candidate same-code original CI/DB/package evidence and downloaded-runtime SDK audit. Original candidate packages are historical after this evidence freeze; no final source CI or public release is signed.",
+    "receipt": "freeze/independent-evidence.derived.json"
   },
   "performanceEvidence": "../../../docs/performance-v0.2.8-relation.md",
   "newDiagnosticEvidence": "development/frozen855-diagnosis-summary.json",
-  "completionPolicy": "Candidate declaration supplies actual replay input references; passed/releaseReady remain false until the actual remaining package and release checks pass."
+  "completionPolicy": "passed/releaseReady here record completed technical same-code validation only. Final package regeneration, final exact frozen-source CI, public download verification, participant/human actions and organizer acceptance are not completed by this declaration.",
+  "releaseReadyScope": "Completed technical same-code evidence freeze only; final regenerated archives, new frozen-source CI, owner review and public downloads remain separate pending gates.",
+  "finalPackage": {
+    "status": "pending",
+    "reason": "Rebuild source and portable archives after final evidence and metadata edits; verify fresh consumers and final exact SHA256SUMS.",
+    "finalArchiveSha256": null
+  },
+  "finalExactSourceCI": {
+    "status": "pending",
+    "reason": "Create the final frozen-source commit after owner review; require successful exact-head original push general and PostgreSQL CI.",
+    "commit": null
+  },
+  "publicDownload": {
+    "status": "pending",
+    "publiclyPublished": false,
+    "independentlyVerified": false
+  }
 }

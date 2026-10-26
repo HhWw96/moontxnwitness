@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "tool": "MoonTxnWitness",
-  "version": "0.2.6",
+  "version": "0.2.8",
   "status": "consistent",
   "model": "strict-serializable",
   "scope": "versioned point-read/write registers; supplied history and asserted version orders",
@@ -10,7 +10,7 @@
     "transactions": 3,
     "committed": 3,
     "operations": 7,
-    "dependencies": 6
+    "dependencies": 9
   },
   "findings": [],
   "edges": [
@@ -79,6 +79,39 @@
       "fromVersion": "y1",
       "toVersion": "y1",
       "reason": "The reader observes the unique final version written by the source transaction."
+    },
+    {
+      "from": "sql-T1",
+      "to": "sql-T2",
+      "kind": "rt",
+      "key": null,
+      "fromOp": null,
+      "toOp": null,
+      "fromVersion": null,
+      "toVersion": null,
+      "reason": "The source completed before the target began on the asserted common observer clock."
+    },
+    {
+      "from": "sql-T1",
+      "to": "sql-T3",
+      "kind": "rt",
+      "key": null,
+      "fromOp": null,
+      "toOp": null,
+      "fromVersion": null,
+      "toVersion": null,
+      "reason": "The source completed before the target began on the asserted common observer clock."
+    },
+    {
+      "from": "sql-T2",
+      "to": "sql-T3",
+      "kind": "rt",
+      "key": null,
+      "fromOp": null,
+      "toOp": null,
+      "fromVersion": null,
+      "toVersion": null,
+      "reason": "The source completed before the target began on the asserted common observer clock."
     }
   ],
   "witness": null,

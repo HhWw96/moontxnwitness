@@ -1,0 +1,266 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-e23b94904bd44a49b90250eeee1ce5b3",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 3302,
+      "initial": {
+        "[\"mtw_capture_17fa6824507843c386098bc8f5885a4a.registers\",\"text\",\"x\"]": "x0",
+        "[\"mtw_capture_17fa6824507843c386098bc8f5885a4a.registers\",\"text\",\"y\"]": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 13806,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 13892,
+      "phase": "execute-request",
+      "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ",
+      "parameters": null,
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 14337,
+      "phase": "execute-ack",
+      "affectedRows": -1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "begin",
+      "time": 14443,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 6,
+      "kind": "sql",
+      "time": 14491,
+      "phase": "execute-request",
+      "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ",
+      "parameters": null,
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 7,
+      "kind": "sql",
+      "time": 14806,
+      "phase": "execute-ack",
+      "affectedRows": -1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 14893,
+      "phase": "execute-request",
+      "sql": "SELECT value,version FROM \"mtw_capture_17fa6824507843c386098bc8f5885a4a\".registers WHERE key=%s",
+      "parameters": [
+        "x"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 9,
+      "kind": "sql",
+      "time": 15757,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 10,
+      "kind": "sql",
+      "time": 15866,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          1,
+          "x0"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 11,
+      "kind": "op",
+      "time": 15911,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_capture_17fa6824507843c386098bc8f5885a4a.registers\",\"text\",\"x\"]",
+        "version": "x0"
+      }
+    },
+    {
+      "seq": 12,
+      "kind": "sql",
+      "time": 15993,
+      "phase": "execute-request",
+      "sql": "SELECT value,version FROM \"mtw_capture_17fa6824507843c386098bc8f5885a4a\".registers WHERE key=%s",
+      "parameters": [
+        "y"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 13,
+      "kind": "sql",
+      "time": 16674,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 14,
+      "kind": "sql",
+      "time": 16773,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          1,
+          "y0"
+        ]
+      ],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 15,
+      "kind": "op",
+      "time": 16815,
+      "tx": "tx-2",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_capture_17fa6824507843c386098bc8f5885a4a.registers\",\"text\",\"y\"]",
+        "version": "y0"
+      }
+    },
+    {
+      "seq": 16,
+      "kind": "sql",
+      "time": 16898,
+      "phase": "execute-request",
+      "sql": "UPDATE \"mtw_capture_17fa6824507843c386098bc8f5885a4a\".registers SET value=%s,version=%s WHERE key=%s",
+      "parameters": [
+        0,
+        "y1",
+        "y"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 17,
+      "kind": "sql",
+      "time": 17320,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 18,
+      "kind": "op",
+      "time": 17389,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_capture_17fa6824507843c386098bc8f5885a4a.registers\",\"text\",\"y\"]",
+        "version": "y1"
+      }
+    },
+    {
+      "seq": 19,
+      "kind": "sql",
+      "time": 17488,
+      "phase": "execute-request",
+      "sql": "UPDATE \"mtw_capture_17fa6824507843c386098bc8f5885a4a\".registers SET value=%s,version=%s WHERE key=%s",
+      "parameters": [
+        0,
+        "x1",
+        "x"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 20,
+      "kind": "sql",
+      "time": 17873,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 21,
+      "kind": "op",
+      "time": 17957,
+      "tx": "tx-2",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_capture_17fa6824507843c386098bc8f5885a4a.registers\",\"text\",\"x\"]",
+        "version": "x1"
+      }
+    },
+    {
+      "seq": 22,
+      "kind": "sql",
+      "time": 18348,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 23,
+      "kind": "end",
+      "time": 18385,
+      "tx": "tx-1",
+      "status": "committed"
+    },
+    {
+      "seq": 24,
+      "kind": "sql",
+      "time": 18696,
+      "phase": "commit-ack",
+      "tx": "tx-2"
+    },
+    {
+      "seq": 25,
+      "kind": "end",
+      "time": 18743,
+      "tx": "tx-2",
+      "status": "committed"
+    },
+    {
+      "seq": 26,
+      "kind": "sql",
+      "time": 18800,
+      "phase": "commit-ack"
+    },
+    {
+      "seq": 27,
+      "kind": "sql",
+      "time": 18898,
+      "phase": "commit-ack"
+    }
+  ],
+  "gaps": []
+}
