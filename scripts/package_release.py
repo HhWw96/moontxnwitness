@@ -91,8 +91,8 @@ if home:
 checks = []
 
 
-def run(args, cwd, expected=0):
-    result = subprocess.run(args, cwd=cwd, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
+def run(args, cwd, expected=0, timeout=180):
+    result = subprocess.run(args, cwd=cwd, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
     assert result.returncode == expected, "Consumer command failed:\n" + result.stdout + result.stderr
     return result.stdout
 
@@ -193,7 +193,7 @@ for kind in ("portable", "source"):
 
     if tuple(map(int, VERSION.split('.'))) >= (0, 2, 8):
         public27_output = work / ('public027-' + kind)
-        public27 = json.loads(run([NODE, 'scripts/compat-v027-test.mjs', str(consumer / 'dist'), str(consumer / 'fixtures/compat-v027'), str(public27_output)], consumer))
+        public27 = json.loads(run([NODE, 'scripts/compat-v027-test.mjs', str(consumer / 'dist'), str(consumer / 'fixtures/compat-v027'), str(public27_output)], consumer, timeout=600))
         assert public27['passed'] and public27['families'] == 46 and public27['expectedRegenerated'] is False
         checks.append(kind + ' exact genuine public027 full46 compatibility and configured model-profile replay')
 

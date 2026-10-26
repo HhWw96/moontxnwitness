@@ -4,6 +4,8 @@ from contextlib import redirect_stdout
 import copy
 import io
 import json
+import subprocess
+from types import SimpleNamespace
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -480,6 +482,59 @@ class CurrentReleaseGateTests(unittest.TestCase):
             self.assertIn(value, notes)
         self.assertNotIn('on the future roadmap', notes)
         self.assertIn('six-model classification', render_publisher_notes('0.2.7'))
+
+
+class PackageConsumerDeadlineTests(unittest.TestCase):
+    """Execute the real bounded helper with injected IO; never run consumers."""
+    @staticmethod
+    def actual_run(child):
+        parsed = ast.parse((HERE/'package_release.py').read_text(encoding='utf-8'))
+        function = next(node for node in parsed.body if isinstance(node, ast.FunctionDef) and node.name == 'run')
+        namespace = {'subprocess': SimpleNamespace(run=child), 'env': {'fixture': 'injected'}}
+        exec(compile(ast.Module(body=[function], type_ignores=[]), 'package-bounded-run-only', 'exec'), namespace)
+        return namespace['run']
+
+    def test_existing_default_deadline_stays_180_and_explicit_deadline_is_forwarded(self):
+        calls = []
+        def child(args, **options):
+            calls.append((args, options))
+            return SimpleNamespace(returncode=0, stdout='observed output', stderr='')
+        run = self.actual_run(child)
+        self.assertEqual(run(['fixture'], HERE), 'observed output')
+        self.assertEqual(run(['fixture'], HERE, timeout=600), 'observed output')
+        self.assertEqual([options['timeout'] for _, options in calls], [180, 600])
+        self.assertTrue(all(options['env'] == {'fixture': 'injected'} for _, options in calls))
+
+    def test_only_complete_public027_consumer_call_extends_its_deadline(self):
+        parsed = ast.parse((HERE/'package_release.py').read_text(encoding='utf-8'))
+        calls = [node for node in ast.walk(parsed) if isinstance(node, ast.Call)
+                 and isinstance(node.func, ast.Name) and node.func.id == 'run']
+        public27 = [node for node in calls if any(isinstance(part, ast.Constant)
+                    and part.value == 'scripts/compat-v027-test.mjs' for part in ast.walk(node))]
+        overridden = [node for node in calls if any(keyword.arg == 'timeout' for keyword in node.keywords)]
+        self.assertEqual(len(public27), 1)
+        self.assertEqual(overridden, public27)
+        keyword = next(keyword for keyword in public27[0].keywords if keyword.arg == 'timeout')
+        self.assertIsInstance(keyword.value, ast.Constant)
+        self.assertEqual(keyword.value.value, 600)
+
+    def test_timeout_expiry_still_propagates_for_default_and_extended_deadline(self):
+        observed = []
+        def child(args, **options):
+            observed.append(options['timeout'])
+            raise subprocess.TimeoutExpired(args, options['timeout'])
+        run = self.actual_run(child)
+        with self.assertRaises(subprocess.TimeoutExpired): run(['fixture'], HERE)
+        with self.assertRaises(subprocess.TimeoutExpired): run(['fixture'], HERE, timeout=600)
+        self.assertEqual(observed, [180, 600])
+
+    def test_consumer_failure_is_still_rejected_and_original_expected_exit_is_preserved(self):
+        def child(args, **options):
+            return SimpleNamespace(returncode=3, stdout='original stdout', stderr='original stderr')
+        run = self.actual_run(child)
+        with self.assertRaisesRegex(AssertionError, 'original stdoutoriginal stderr'):
+            run(['fixture'], HERE, timeout=600)
+        self.assertEqual(run(['fixture'], HERE, 3), 'original stdout')
 
 
 if __name__ == '__main__':
