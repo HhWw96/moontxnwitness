@@ -15,3 +15,7 @@ Linux 原始 summary 的六个临时 artifacts 引用没有原始子目录/recei
 性能与 855 诊断证据继续使用各自实际运行记录，见 `freeze/development-evidence-bindings.json`、`performance-v0.2.8-relation.md` 和 `diagnosis-frozen855.md`。关系固定工作负载约 1.124× 的结果不扩写成整个 v0.2.8 的统一性能成绩。855 个生成历史仍全部保留原串行 inconclusive，仅额外报告 855 个直接 INT 证据；Windows 原始诊断运行时不冒充新 Linux 855 次执行。
 
 后续必须完成：维护者独立复核冻结变更；重新运行现有打包器生成最终 source/portable、原始消费者回执和 SHA256SUMS；提交最终文档及证据后取得该新提交的通用与 PostgreSQL 原始 push CI；再进行公开发布与独立下载摘要、CRC 和运行核验。当前 artifacts 目录内旧包不代表最终冻结产物。参与者说明、人工验收与主办方状态另行确认。
+
+## Post-freeze CI recording correction
+
+This document retains the original freeze snapshot above. Final push [40364775509](https://github.com/HhWw96/moontxnwitness/actions/runs/40364775509) stopped before database execution because the historical runtime receipt already existed. The workflow now writes each before/after pair in a fresh run/attempt directory, keeps exclusive creation, and uploads only that current pair. Historical records remain unchanged. All 23 extracted-workflow simulation checks passed; this is separate from real PostgreSQL execution. Final archives and exact-commit CI must be completed again after this correction. See `verification/releases/0.2.8/freeze/final-ci-first-failure/` for the original failure and derived correction record.
