@@ -312,7 +312,7 @@ for kind in ("portable", "source"):
 
     if tuple(map(int, VERSION.split('.'))) >= (0, 2, 7):
         original26 = json.loads(run([NODE, 'scripts/compat-v026-test.mjs', 'dist',
-                                     'fixtures/compat-v026', str(work / ('public26-' + kind))], consumer))
+                                     'fixtures/compat-v026', str(work / ('public26-' + kind))], consumer, timeout=600))
         assert original26['passed'] and original26['currentRuntimeVersion'] == VERSION
         assert original26['originalProducerFamilies'] == 35 and original26['checks'] > 0
         assert original26['normalAnalysisHistoricalWorkersStarted'] == 0
