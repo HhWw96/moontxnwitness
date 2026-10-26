@@ -494,8 +494,8 @@ fn relation_v3_invalid(text : String, message : String) -> Json {
 }
 
 ///|
-fn relation_v3_parse(text : String) -> RelationV3Parsed raise {
-  let root = object_fields(guarded_json(text, limit=8388608), "relation trace")
+fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
+  let root = object_fields(v3_guarded_candidate(text, v), "relation trace")
   known_fields(
     root,
     [
@@ -1402,9 +1402,9 @@ fn relation_v3_report(
 }
 
 ///|
-fn relation_v3_analysis(text : String, options_text : String) -> Json raise {
-  let options = list_v3_options(options_text)
-  let parsed = relation_v3_parse(text) catch {
+fn relation_v3_analysis(text : String, o : String, v? : Json) -> Json raise {
+  let options = list_v3_options(o)
+  let parsed = relation_v3_parse(text, v?) catch {
     error =>
       return relation_v3_report(
         relation_v3_invalid(text, error.to_string()),
