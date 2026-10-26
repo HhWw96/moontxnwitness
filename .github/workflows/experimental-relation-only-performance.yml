@@ -1,0 +1,85 @@
+name: Preregistered relation-only v0.2.8 reduction performance
+
+on:
+  push:
+    branches:
+      - experimental/v028-relation-only-performance-20261026
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: v028-relation-only-performance-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  performance:
+    if: github.repository == 'HhWw96/moontxnwitness' && github.event_name == 'push' && github.ref == 'refs/heads/experimental/v028-relation-only-performance-20261026'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    env:
+      MTW_HELPER_SHA: 779006a1ad47ffbccf7fa6b8029f31ba9b9790a41fad42b1d3ba1db8dd7ac148
+    steps:
+      - name: Checkout the exact experimental source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Set up the same Node for both runtimes
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Set up Python for read-only archive preparation
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate exact parent and prepare frozen source files
+        shell: bash
+        run: python -I -B scripts/performance/prepare_v028_relation_only_performance.py preflight
+      - name: Download the single original hosted differential artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          work="$RUNNER_TEMP/moontxnwitness-v028-relation-only-performance-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          test ! -e "$work/artifact-metadata.original.json"
+          test ! -e "$work/original-artifact.zip"
+          gh api --hostname github.com repos/HhWw96/moontxnwitness/actions/artifacts/12639866943 > "$work/artifact-metadata.original.json"
+          gh api --hostname github.com repos/HhWw96/moontxnwitness/actions/artifacts/12639866943/zip > "$work/original-artifact.zip"
+          printf '%s\n' '36fd50a08fc91ac6d1ec40d1baa2bbb3e730e048d2a08f068de39292f7524460  original-artifact.zip' > "$work/original-artifact.expected.sha256"
+          test "$(wc -c < "$work/original-artifact.zip")" -eq 12484783
+          (cd "$work" && sha256sum -c original-artifact.expected.sha256)
+      - name: Validate every member and extract the exact two runtime closures
+        shell: bash
+        run: python -I -B scripts/performance/prepare_v028_relation_only_performance.py extract
+      - name: Run the one serial preregistered measurement
+        shell: bash
+        run: |
+          work="$RUNNER_TEMP/moontxnwitness-v028-relation-only-performance-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          set +e
+          MOONTXN_PERF_EXCLUSIVE_JOB=1 node "$work/bundle/run.mjs" --plan "$work/bundle/plan.json" --expected-plan-sha256 6b85e1ae0dcdc895f2314bd8b6261e25baf3f65a178d68bf65682d260f1c583b --out "$work/results" --execute-exclusive-linux-hosted > "$work/controller.stdout.original" 2> "$work/controller.stderr.original"
+          status=$?
+          printf '%s\n' "$status" > "$work/controller.exit.original"
+          exit "$status"
+      - name: Preserve all original inputs and successful or failed output evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          compression-level: 6
+          path: |
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/original-artifact.zip
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/artifact-metadata.original.json
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/original-artifact.expected.sha256
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/source-attestation.json
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/PREFLIGHT.json
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/runtime-preparation.json
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/*-FIRST-FAILED.json
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/controller.*
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/bundle/*.mjs
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/bundle/plan.json
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/bundle/inputs/
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/bundle/evidence/
+            ${{ runner.temp }}/moontxnwitness-v028-relation-only-performance-${{ github.run_id }}-${{ github.run_attempt }}/results/
