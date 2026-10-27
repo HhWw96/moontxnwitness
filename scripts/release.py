@@ -380,7 +380,7 @@ def publish():
     sha = run(['git', 'rev-parse', 'HEAD'])
     tag = 'v' + VERSION
     assert run(['git', 'rev-list', '-n', '1', tag]) == sha
-    run(['git', '-c', 'core.longpaths=true', '-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential', 'push', 'origin', 'main'])
+    run(['git', '-c', 'core.longpaths=true', '-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential', 'push', 'origin', 'HEAD:refs/heads/main'])
     print('Release candidate pushed; waiting for actual CI before package publication: ' + tag, flush=True)
     wait_for_ci(sha)
     assert run(['git', 'rev-parse', 'HEAD']) == sha and not run(['git', 'status', '--porcelain'])
