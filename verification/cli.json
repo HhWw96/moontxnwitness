@@ -1,6 +1,6 @@
 {
   "tool": "MoonTxnWitness",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "passed": true,
   "checks": 75,
   "names": [
@@ -84,8 +84,8 @@
   "concurrentRuns": [
     {
       "actualDatabaseExecution": true,
-      "sqliteVersion": "3.45.1",
-      "pythonVersion": "3.12.15",
+      "sqliteVersion": "3.45.3",
+      "pythonVersion": "3.12.5",
       "journalMode": "wal",
       "workers": 2,
       "rounds": 2,
@@ -93,7 +93,7 @@
       "aborted": 2,
       "errors": [
         {
-          "transaction": "r0-A",
+          "transaction": "r0-B",
           "sqliteError": "SQLITE_BUSY"
         },
         {
@@ -106,8 +106,30 @@
     },
     {
       "actualDatabaseExecution": true,
-      "sqliteVersion": "3.45.1",
-      "pythonVersion": "3.12.15",
+      "sqliteVersion": "3.45.3",
+      "pythonVersion": "3.12.5",
+      "journalMode": "wal",
+      "workers": 2,
+      "rounds": 2,
+      "committed": 4,
+      "aborted": 2,
+      "errors": [
+        {
+          "transaction": "r0-B",
+          "sqliteError": "SQLITE_BUSY"
+        },
+        {
+          "transaction": "r1-A",
+          "sqliteError": "SQLITE_BUSY"
+        }
+      ],
+      "versionOrderSource": "same-transaction SQLite audit sequence",
+      "claim": "Observed history only; does not certify SQLite globally or reproduce an SQLite vulnerability"
+    },
+    {
+      "actualDatabaseExecution": true,
+      "sqliteVersion": "3.45.3",
+      "pythonVersion": "3.12.5",
       "journalMode": "wal",
       "workers": 2,
       "rounds": 2,
@@ -120,28 +142,6 @@
         },
         {
           "transaction": "r1-B",
-          "sqliteError": "SQLITE_BUSY"
-        }
-      ],
-      "versionOrderSource": "same-transaction SQLite audit sequence",
-      "claim": "Observed history only; does not certify SQLite globally or reproduce an SQLite vulnerability"
-    },
-    {
-      "actualDatabaseExecution": true,
-      "sqliteVersion": "3.45.1",
-      "pythonVersion": "3.12.15",
-      "journalMode": "wal",
-      "workers": 2,
-      "rounds": 2,
-      "committed": 4,
-      "aborted": 2,
-      "errors": [
-        {
-          "transaction": "r0-A",
-          "sqliteError": "SQLITE_BUSY"
-        },
-        {
-          "transaction": "r1-A",
           "sqliteError": "SQLITE_BUSY"
         }
       ],

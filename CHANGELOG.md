@@ -2,6 +2,7 @@
 
 - Deliver the native MLflow HTTP `log-batch` repair comparison: 30 fixed seed pairs, actual PostgreSQL deadlock evidence, 16 real reduction candidates and three fixed-side regressions of the identical final 623-key case. Add an offline SDK example using unchanged real observations; keep `oneMinimal=false` and diagnostic coverage gaps.
 - Add explicit bounded source-write buffering to configured user/model profiles, retaining existing defaults, tail synchronization and seal/index verification. Publish the complete A/B/C experiment results, including unmet targets and ineligible CRUD cells.
+- Apply the original SDK budgets before compatibility header parsing and nested-report decoding. Preserve v1/v2 UTF-16 limits, v3 UTF-8 limits and single object conversion; retain 123 budget regressions alongside original replay fixtures.
 - Replay 156 unchanged public v0.2.8 producer cases across the original portable, NTFS-source and source-filesystem build contexts. Enforce exact runtime identities, bounded historical verification and tamper rejection.
 - Consolidate the existing register/list/relation profiles, category search, six-definition register/list checks and combined diagnosis. Existing analysis limits, unsupported SQL and unknown results remain visible.
 
