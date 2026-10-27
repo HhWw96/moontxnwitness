@@ -1,0 +1,305 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-c4331c173c80401aabc61da9aa699d23",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 32000,
+      "initial": {
+        "[\"mtw_provenance_dislock_8956143bde5f.surface_observed\",\"text\",\"cronjob-lock:lease:importer\"]": "de1a75a7-3b9b-4a73-ae20-e987101954e6",
+        "[\"mtw_provenance_dislock_8956143bde5f.surface_observed\",\"text\",\"cronjob-lock:lease:synchronizer\"]": "03868bec-0c31-4929-9bae-96e3e2c45d33"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 94000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 94000,
+      "phase": "execute-request",
+      "sql": "\n        SELECT expire_at, value\n        FROM \"mtw_provenance_dislock_8956143bde5f\".\"surface_observed\"\n        WHERE key = %s;\n        ",
+      "parameters": [
+        "cronjob-lock:lease:importer"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 94000,
+      "phase": "execute-ack",
+      "sql": "\n        SELECT expire_at, value,\"mtwp_2ad8822439fe1f7a_version\"::text\n        FROM \"mtw_provenance_dislock_8956143bde5f\".\"surface_observed\"\n        WHERE key = %s;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 94000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-27 12:36:00.584535+08:00"
+          },
+          "mtw-dislock:1001",
+          "de1a75a7-3b9b-4a73-ae20-e987101954e6"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "op",
+      "time": 94000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_8956143bde5f.surface_observed\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "de1a75a7-3b9b-4a73-ae20-e987101954e6"
+      }
+    },
+    {
+      "seq": 7,
+      "kind": "sql",
+      "time": 94000,
+      "phase": "execute-request",
+      "sql": "\n        SELECT expire_at, value\n        FROM \"mtw_provenance_dislock_8956143bde5f\".\"surface_plain\"\n        WHERE key = %s;\n        ",
+      "parameters": [
+        "cronjob-lock:lease:importer"
+      ],
+      "mapped": false,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 9,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-27 12:36:00.584535+08:00"
+          },
+          "mtw-dislock:1001"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 10,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "execute-request",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_8956143bde5f\".\"surface_observed\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at;\n        ",
+      "parameters": [
+        120.5,
+        "cronjob-lock:lease:importer",
+        "mtw-dislock:1001"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 11,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "execute-ack",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_8956143bde5f\".\"surface_observed\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at,OLD.\"mtwp_2ad8822439fe1f7a_version\"::text,NEW.\"mtwp_2ad8822439fe1f7a_version\"::text;\n        ",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 12,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-27 12:28:01.186340+08:00"
+          },
+          "de1a75a7-3b9b-4a73-ae20-e987101954e6",
+          "97542724-f123-4032-9e8d-c085c3e4eb71"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 13,
+      "kind": "op",
+      "time": 110000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_dislock_8956143bde5f.surface_observed\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "de1a75a7-3b9b-4a73-ae20-e987101954e6"
+      }
+    },
+    {
+      "seq": 14,
+      "kind": "op",
+      "time": 110000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_dislock_8956143bde5f.surface_observed\",\"text\",\"cronjob-lock:lease:importer\"]",
+        "version": "97542724-f123-4032-9e8d-c085c3e4eb71"
+      }
+    },
+    {
+      "seq": 15,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "execute-request",
+      "sql": "\n        UPDATE \"mtw_provenance_dislock_8956143bde5f\".\"surface_plain\"\n        SET expire_at = NOW() + (%s * INTERVAL '1 second')\n        WHERE key = %s\n          AND value = %s\n        RETURNING expire_at;\n        ",
+      "parameters": [
+        120.5,
+        "cronjob-lock:lease:importer",
+        "mtw-dislock:1001"
+      ],
+      "mapped": false,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 16,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 17,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-27 12:28:01.186340+08:00"
+          }
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 18,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "fetch",
+      "returnedRows": 0,
+      "exhausted": true,
+      "rows": [],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 19,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "fetch",
+      "returnedRows": 0,
+      "exhausted": true,
+      "rows": [],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 20,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "fetch-error",
+      "errorClass": "InterfaceError",
+      "sqlstate": null,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 21,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "execute-request",
+      "sql": "SELECT transaction_timestamp()",
+      "parameters": null,
+      "mapped": false,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 22,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 23,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          {
+            "captureType": "datetime",
+            "value": "2026-10-27 12:26:00.686340+08:00"
+          }
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 24,
+      "kind": "sql",
+      "time": 110000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 25,
+      "kind": "end",
+      "time": 110000,
+      "tx": "tx-1",
+      "status": "committed"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "unsupported_sql",
+      "message": "An SQL statement has no explicit point-read/write mapping."
+    },
+    {
+      "code": "fetch_failed",
+      "message": "A cursor fetch failed; returned observations may be incomplete."
+    }
+  ]
+}
