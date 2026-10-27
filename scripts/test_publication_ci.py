@@ -505,23 +505,23 @@ class PackageConsumerDeadlineTests(unittest.TestCase):
         self.assertEqual([options['timeout'] for _, options in calls], [180, 600])
         self.assertTrue(all(options['env'] == {'fixture': 'injected'} for _, options in calls))
 
-    def test_only_complete_public026_and_public027_consumers_extend_their_deadlines(self):
+    def test_only_complete_public026_public027_and_public028_consumers_extend_their_deadlines(self):
         parsed = ast.parse((HERE/'package_release.py').read_text(encoding='utf-8'))
         calls = [node for node in ast.walk(parsed) if isinstance(node, ast.Call)
                  and isinstance(node.func, ast.Name) and node.func.id == 'run']
         complete = []
-        for script in ('scripts/compat-v026-test.mjs', 'scripts/compat-v027-test.mjs'):
+        for script, deadline in (('scripts/compat-v026-test.mjs', 600), ('scripts/compat-v027-test.mjs', 600), ('scripts/compat-v028-test.mjs', 900)):
             matching = [node for node in calls if any(isinstance(part, ast.Constant)
                         and part.value == script for part in ast.walk(node))]
             self.assertEqual(len(matching), 1)
-            complete.extend(matching)
+            complete.extend((node, deadline) for node in matching)
         overridden = [node for node in calls if any(keyword.arg == 'timeout' for keyword in node.keywords)]
-        self.assertEqual(len(overridden), 2)
-        self.assertCountEqual(overridden, complete)
-        for node in complete:
+        self.assertEqual(len(overridden), 3)
+        self.assertCountEqual(overridden, [node for node, _ in complete])
+        for node, deadline in complete:
             keyword = next(keyword for keyword in node.keywords if keyword.arg == 'timeout')
             self.assertIsInstance(keyword.value, ast.Constant)
-            self.assertEqual(keyword.value.value, 600)
+            self.assertEqual(keyword.value.value, deadline)
 
     def test_timeout_expiry_still_propagates_for_default_and_extended_deadline(self):
         observed = []
