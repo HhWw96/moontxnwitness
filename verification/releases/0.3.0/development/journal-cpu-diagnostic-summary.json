@@ -1,0 +1,226 @@
+{
+  "kind": "journal-local-cpu-optimization-evidence",
+  "implemented": true,
+  "commit": "63050a6219fa4e97778463bf9f5bd0a45872d9f2",
+  "ownedFilesOnly": {
+    "integrations/python/moontxnwitness_capture/journal_v3.py": "e58b0acd6b582d99b0c74a13b7685cca64a32a39eed9b2c131b7903e525a5a50",
+    "integrations/python/moontxnwitness_capture/test_journal_v3.py": "06ca13da1779e0224a0b68e8bb105131d856f5b37e011f2c2a2fb0c1413a8c1e"
+  },
+  "sourceFrozenNoFurtherEdits": true,
+  "baselineCommit": "329df5cf1a2c58f03dd9e913e0621a822c6411ef",
+  "baselineJournalSha256": "4699cf660f3d75cdf925d76bb2aac9614989b51add39c3056722846a3a343efe",
+  "implementation": "Exact built-in ASCII str uses one minimum-cost charge and bounded C regex matches only JSON escape characters. Unicode and str subclasses retain original scalar validation. No cache or full UTF8 allocation is introduced. All original JSON bytes are unchanged.",
+  "withdrawnCandidates": {
+    "notReused": true,
+    "document": "docs/performance-v0.2.1-withdrawal.md",
+    "withdrawnManifestSha256": "12b0b38077703233cf1653df74d14ff0436b3d795946f5c651f576d546fc3219",
+    "withdrawnArchiveSha256": "b80510f80d9f3ce32bd2199b36cfc05ee8e75815dc4eed3cce3362b998725339",
+    "distinction": "Withdrawn MoonBit parse_optimized/scanner/structured counter and historical 21-literal reuse are not enabled or modified; this is independent Python journal JSON preflight byte accounting."
+  },
+  "diagnosticInput": {
+    "syntheticCompleteJournalEvents": 8401,
+    "originalFormalColumnCell2SampleEvents": 8000,
+    "totalEncodingEvents": 16401,
+    "formalArtifactSha256": "2b91dd28ebbc13586df33df8cdc4cc8fd58739f235877d6fb9bd92b8e83711b9",
+    "encodedDatasetSha256": "6b5cfbdc3fe336eb2bd24816647cba1662215b6dc3e7e96b3f50607478efe0c4",
+    "rawSegmentsByteIdenticalAcrossAll8Runs": true
+  },
+  "sameProcessCounterbalancedDiagnostic": {
+    "metrics": {
+      "baseline": {
+        "encodingCpuNs": {
+          "medianSeconds": 0.6171875,
+          "minimumSeconds": 0.59375,
+          "maximumSeconds": 0.65625,
+          "samples": 4
+        },
+        "processCpuNs": {
+          "medianSeconds": 0.953125,
+          "minimumSeconds": 0.90625,
+          "maximumSeconds": 0.984375,
+          "samples": 4
+        },
+        "wallNs": {
+          "medianSeconds": 1.0771362500000001,
+          "minimumSeconds": 1.0506969,
+          "maximumSeconds": 1.0982572,
+          "samples": 4
+        },
+        "appendWallNs": {
+          "medianSeconds": 0.35339615,
+          "minimumSeconds": 0.3431796,
+          "maximumSeconds": 0.3689802,
+          "samples": 4
+        },
+        "closeWallNs": {
+          "medianSeconds": 0.7036397999999999,
+          "minimumSeconds": 0.6780121,
+          "maximumSeconds": 0.7092345,
+          "samples": 4
+        }
+      },
+      "candidate": {
+        "encodingCpuNs": {
+          "medianSeconds": 0.3125,
+          "minimumSeconds": 0.28125,
+          "maximumSeconds": 0.328125,
+          "samples": 4
+        },
+        "processCpuNs": {
+          "medianSeconds": 0.6953125,
+          "minimumSeconds": 0.65625,
+          "maximumSeconds": 0.828125,
+          "samples": 4
+        },
+        "wallNs": {
+          "medianSeconds": 0.81960645,
+          "minimumSeconds": 0.7768139,
+          "maximumSeconds": 0.9239074,
+          "samples": 4
+        },
+        "appendWallNs": {
+          "medianSeconds": 0.24098989999999998,
+          "minimumSeconds": 0.2187044,
+          "maximumSeconds": 0.2740389,
+          "samples": 4
+        },
+        "closeWallNs": {
+          "medianSeconds": 0.55867805,
+          "minimumSeconds": 0.5373435,
+          "maximumSeconds": 0.6221152,
+          "samples": 4
+        }
+      }
+    },
+    "candidateOverBaselineMedians": {
+      "encodingCpuNs": 0.5063291139240507,
+      "processCpuNs": 0.7295081967213115,
+      "wallNs": 0.7609125122286061,
+      "appendWallNs": 0.6819256519913982,
+      "closeWallNs": 0.7939830151733885
+    },
+    "samplesPerVariant": 4,
+    "interference": "Root concurrently auditing Git blobs/HTTP and 156 compatibility records; archive agent concurrently reading A ZIP. CPU/IO load is uncontrolled. These are bounded LOCAL diagnostics, not formal performance or 30x3 acceptance.",
+    "formalPerformance": false
+  },
+  "sqliteAndSyncDiagnostic": {
+    "baseline": {
+      "counts": {
+        "writerCommitCalls": 10,
+        "writerNonemptySQLiteCommits": 9,
+        "writerIdentityAdds": 1200,
+        "readerIdentityAdds": 1200,
+        "readerCommitCalls": 1,
+        "readerNonemptySQLiteCommits": 1
+      },
+      "stats": {
+        "acceptedRecords": 8401,
+        "durableRecords": 8401,
+        "backpressureCount": 0,
+        "backpressureNs": 0,
+        "maxQueueBytes": 2104192,
+        "fsyncCount": 9,
+        "bytesWritten": 1581997,
+        "queueBytes": 0,
+        "durableSeq": 8401,
+        "lastAcceptedSeq": 8401
+      },
+      "timing": {
+        "writerSQLiteCommitWallNs": 79416200,
+        "writerIdentityAddCpuNs": 15625000,
+        "readerIdentityAddCpuNs": 0,
+        "readerSQLiteCommitWallNs": 16116000
+      }
+    },
+    "candidate": {
+      "counts": {
+        "writerCommitCalls": 9,
+        "writerNonemptySQLiteCommits": 8,
+        "writerIdentityAdds": 1200,
+        "readerIdentityAdds": 1200,
+        "readerCommitCalls": 1,
+        "readerNonemptySQLiteCommits": 1
+      },
+      "stats": {
+        "acceptedRecords": 8401,
+        "durableRecords": 8401,
+        "backpressureCount": 0,
+        "backpressureNs": 0,
+        "maxQueueBytes": 2105219,
+        "fsyncCount": 8,
+        "bytesWritten": 1581997,
+        "queueBytes": 0,
+        "durableSeq": 8401,
+        "lastAcceptedSeq": 8401
+      },
+      "timing": {
+        "writerSQLiteCommitWallNs": 66777300,
+        "writerIdentityAddCpuNs": 31250000,
+        "readerIdentityAddCpuNs": 0,
+        "readerSQLiteCommitWallNs": 8505500
+      }
+    },
+    "conclusion": "SQLite INSERT happens on begin; FULL commits are already grouped at unchanged flush boundaries, not per event. Flush/index/fsync policy was not reduced; 8 versus 9 observed groups follows differing runtime scheduling."
+  },
+  "notChanged": [
+    "SQLite DELETE/FULL settings or identity semantics",
+    "fsync/flush/index-close publication and failure guards",
+    "source buffer API",
+    "formal cost protocol, storage budgets or targets",
+    "compat modules, build/package, MoonBit parser",
+    "publication or release"
+  ],
+  "notExecuted": [
+    "PostgreSQL/HTTP execution",
+    "formal local/hosted performance measurement",
+    "new 30x3 run",
+    "cross-target/global package regression (Root owns pending gates)"
+  ],
+  "formalHosted329TargetsRemainFailed": true,
+  "newCodeFormalTargetsPassedClaim": false,
+  "validation": {
+    "allAsciiCodes": 128,
+    "allUnicodeScalars": 1112064,
+    "allSurrogateCodePointsRejected": 2048,
+    "pairedSurrogatesRejected": true,
+    "oneByteBoundaries": true,
+    "nodeAndDepthDifferential": {
+      "passed": true,
+      "reference": "original329 journal _bounded_copy",
+      "candidateSha256": "e58b0acd6b582d99b0c74a13b7685cca64a32a39eed9b2c131b7903e525a5a50",
+      "differentialCases": 3955,
+      "acceptedCases": 1005,
+      "budgetsAndNodeLimitsVaried": true,
+      "depth15Through17Included": true,
+      "oversizedInputCharacters": 8388609,
+      "newAllocationPeakDuringRejection": 2600,
+      "allocationLimit": 65536,
+      "formalPerformance": false,
+      "sourceEdited": false
+    },
+    "syncIndexCloseFailureAndTamperTestsRetained": true,
+    "journalSuite": {
+      "schema": 1,
+      "suite": "v3-segmented-journal-io",
+      "testsRun": 70,
+      "failures": [],
+      "errors": [],
+      "skipped": [
+        {
+          "test": "__main__.JournalTests.test_dangling_invalidation_marker_link_cannot_be_ignored",
+          "reason": "OS does not permit symlink creation for this account"
+        },
+        {
+          "test": "__main__.JournalTests.test_reader_does_not_follow_segment_symlink",
+          "reason": "OS does not permit symlink creation for this account"
+        }
+      ],
+      "passed": true,
+      "actualDatabaseExecution": false,
+      "sourceSha256": "e58b0acd6b582d99b0c74a13b7685cca64a32a39eed9b2c131b7903e525a5a50"
+    }
+  },
+  "originalResultSha256": "d24e807c37740d91359ec2782c59faa680fc6f39de2a20c6f1ef897048696c91",
+  "role": "derived-producer-diagnostic-summary",
+  "independentReview": "recorded separately; this summary does not self-sign technical acceptance"
+}

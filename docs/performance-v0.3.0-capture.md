@@ -29,3 +29,11 @@ profile = install_model_profile(..., source_write_buffer_bytes=65536)
 完整原件见 [column 工作流](https://github.com/HhWw96/moontxnwitness/actions/runs/40383472300)和 [sidecar 工作流](https://github.com/HhWw96/moontxnwitness/actions/runs/40383476670)。[汇总与原件 SHA](../verification/releases/0.3.0/development/capture-cost-buffer-summary.json)保留实际源提交、artifact 身份、资格和失败计数。独立 AI 技术审查逐条重算原 attempt、P50/P95、吞吐分母及三批几何比，校验 72 个内层 ZIP、685 个原始文件和全部 C 单元的持久水位与封存；不等同于真人、生产或赛事审核。
 
 该实验只测上述来源缓冲候选，不把旧机器的数据换算为本次提速，不代表完整 v0.3.0 的正式性能数字。关系缩减的 1.124× 仍仅属于[既有固定负载](performance-v0.2.8-relation.md)。后续 CPU 热点优化与此处原件分别记录，不能改写本轮失败结果。
+
+## 本版采集 CPU 优化
+
+对正式样本中的 8000 个原事件和 8401 个固定生成事件进行函数级诊断，主要开销位于 Python journal 的 JSON 字符串预算检查。原实现对每个字符调用 Python 计费函数；本版对内建 ASCII 字符串按长度计费，再扫描 JSON 转义字符。Unicode、代理字符、字符串子类、字节/节点/深度额度保持原规则，序列化段字节相同。SQLite 本来已批量提交，因此没有减少同步次数或放宽持久性。
+
+本机原版/新版交错各 4 次诊断，编码 CPU 中位数 0.6172→0.3125 秒，完整写入并验证关闭的 CPU 0.9531→0.6953 秒，耗时 1.0771→0.8196 秒。执行时有编译/归档并发干扰；这些是定位热点的诊断数据，**不属于正式 30×3 性能验收，也不能替代上面的 A/B/C 失败结果**。[原始结果摘要](../verification/releases/0.3.0/development/journal-cpu-diagnostic-summary.json)保留输入身份、全部样本统计、原结果 SHA 和未执行项。
+
+实现新增全部 128 个 ASCII 码、1112064 个 Unicode 标量、2048 个代理码点及精确一字节额度边界对照；另有 3955 个节点/深度/预算差分。70 项存储测试保留同步、封存失败及篡改检查，本机两项符号链接测试因宿主权限未执行，Linux CI 另行运行。这是 Python journal 的新字节计费优化，不复用已撤回的 MoonBit 解析器候选。
