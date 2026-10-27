@@ -43,6 +43,7 @@ MAX_INDEX_BYTES = 2 * 1024 * 1024
 MAX_SEGMENTS = 4096
 HARD_RECORD_BYTES = 4 * 1024 * 1024
 _SEGMENT = re.compile(r"segment-[0-9]{6}\.jsonl\Z")
+_ASCII_JSON_ESCAPES = re.compile(r'["\\\x00-\x1f]')
 
 
 class JournalError(RuntimeError):
@@ -97,6 +98,18 @@ def _bounded_copy(value, byte_limit, node_limit=65_536):
             raise ValueError("record byte budget")
 
     def string(text):
+        # Exact built-in ASCII text has one UTF-8 byte per character. Reject
+        # its minimum cost before scanning escapes; no encoded copy or cache
+        # proportional to an untrusted string is allocated. This is JSON byte
+        # accounting only, not a parser or a replacement for scalar validation.
+        if type(text) is str and text.isascii():
+            charge(2 + len(text))
+            for escaped in _ASCII_JSON_ESCAPES.finditer(text):
+                char = escaped.group()
+                charge(1 if char in '\"\\\b\t\n\f\r' else 5)
+            return text
+        # Keep the original per-scalar path for Unicode and str subclasses,
+        # including rejection of every surrogate code point, even paired ones.
         charge(2)
         for char in text:
             code = ord(char)

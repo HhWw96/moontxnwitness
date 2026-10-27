@@ -66,6 +66,65 @@ class JournalTests(unittest.TestCase):
         index["indexSha256"] = hashlib.sha256(j._json(index)).hexdigest()
         path.write_bytes(j._json(index) + b"\n")
 
+    def test_json_string_budget_matches_encoder_for_every_ascii_character(self):
+        values = [chr(code) for code in range(128)]
+        values += ["", "".join(values), 'SELECT "column" FROM "table" WHERE id=%s',
+                   "x" * 4096 + "\\" + "\x00"]
+        for value in values:
+            with self.subTest(value=repr(value[:64])):
+                size = len(j._json(value))
+                self.assertEqual(j._bounded_copy(value, size), value)
+                with self.assertRaises(ValueError):
+                    j._bounded_copy(value, size - 1)
+
+    def test_json_string_budget_keeps_all_unicode_scalars_and_surrogate_rules(self):
+        # Compare against the actual canonical encoder, not another budget
+        # estimator. Bounded chunks cover every Unicode scalar, including the
+        # UTF-8 width boundaries and supplementary planes, at exact/one-less.
+        for start in range(0, 0x110000, 4096):
+            value = "".join(chr(code) for code in range(start, min(start + 4096, 0x110000))
+                            if not 0xD800 <= code <= 0xDFFF)
+            size = len(j._json(value))
+            self.assertEqual(j._bounded_copy(value, size), value)
+            with self.assertRaises(ValueError):
+                j._bounded_copy(value, size - 1)
+        for code in range(0xD800, 0xE000):
+            with self.assertRaises(ValueError):
+                j._bounded_copy("prefix" + chr(code) + "suffix", 128)
+        for value in ("\ud800\udc00", "\udbff\udfff"):
+            with self.assertRaises(ValueError):
+                j._bounded_copy(value, 128)
+        class TextSubclass(str):
+            def isascii(self):
+                raise AssertionError("Subclasses must keep the original scalar path")
+        self.assertEqual(j._bounded_copy(TextSubclass("ascii\t"), 16), "ascii\t")
+
+    def test_ascii_minimum_budget_rejected_before_escape_scan(self):
+        with mock.patch.object(j, "_ASCII_JSON_ESCAPES") as escapes:
+            with self.assertRaises(ValueError):
+                j._bounded_copy("x" * 1024 * 1024 + "\\", 128)
+            escapes.finditer.assert_not_called()
+
+    def test_byte_budget_optimization_preserves_nested_record_and_segment_bytes(self):
+        payload = {"ascii\t": ["quote\"", "slash\\", "\x01", "\b\n", "\x7f"],
+                   "unicode": ["é", "中文", "\u2028", "🙂", "e\u0301"],
+                   "scalars": [None, True, False, 1, -1, 1.25]}
+        size = len(j._json(payload))
+        copied = j._bounded_copy(payload, size)
+        self.assertEqual(copied, payload)
+        with self.assertRaises(ValueError):
+            j._bounded_copy(payload, size - 1)
+        payload["ascii\t"].append("later caller mutation")
+        self.assertNotEqual(copied, payload)
+        writer = self.writer()
+        values = [snapshot(), event(2, payload=copied)]
+        for item in values:
+            self.assertTrue(writer.append(item).accepted)
+        self.assertTrue(writer.close(source_closed=True).complete)
+        raw = b"".join(path.read_bytes() for path in sorted(self.path.glob("segment-*.jsonl")))
+        self.assertEqual(raw, b"".join(j._json(item) + b"\n" for item in values))
+        self.assertEqual(list(j.JournalReader(self.path).iter_events()), values)
+
     def test_roundtrip_lifecycle(self):
         w = self.writer()
         events = [snapshot(), event(2, "begin", tx="t", connection="c"),
