@@ -53,6 +53,11 @@ for helper in ('legacy-v027.mjs', 'legacy-v027-runtime.mjs', 'legacy-v027-worker
 subprocess.check_call([NODE, '--input-type=module', '-e',
     "import{verifyPublicV027Runtime as source}from'./cmd/legacy-v027-runtime.mjs';import{verifyPublicV027Runtime as installed}from'./dist/legacy-v027-runtime.mjs';const a=source(),b=installed();if(a.manifestSha256!==b.manifestSha256||a.workerSha256!==b.workerSha256)throw Error('Copied public27 runtime differs');"], cwd=ROOT)
 
+for helper in ('legacy-v028.mjs', 'legacy-v028-runtime.mjs', 'legacy-v028-worker.mjs', 'legacy-v028-policy.mjs', 'legacy-v028-dispatch.mjs', 'legacy-v028-binding.mjs'):
+    assert (ROOT / 'cmd' / helper).read_bytes() == (ROOT / 'dist' / helper).read_bytes(), 'Fixed public28 helper changed after build: ' + helper
+subprocess.check_call([NODE, '--input-type=module', '-e',
+    "import{verifyPublicV028Runtime as source}from'./cmd/legacy-v028-runtime.mjs';import{verifyPublicV028Runtime as installed}from'./dist/legacy-v028-runtime.mjs';const a=source(),b=installed();if(a.manifestSha256!==b.manifestSha256)throw Error('Copied public28 runtime differs');"], cwd=ROOT)
+
 def archive(files, path):
     home_paths = private_home_paths(
         str(Path.home()), github_actions=os.environ.get('GITHUB_ACTIONS') == 'true',
@@ -190,6 +195,23 @@ for kind in ("portable", "source"):
         replay = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay-orm-profile-v3', str(directory / 'synthetic-closed.capsule.json')], consumer))
         assert replay['valid'] and replay['report']['result']['reduction']['sourceClosure']['complete']
         checks.append(kind + ' configured ORM explicit-profile source binding, closed reduction and capsule replay')
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 0):
+        public28_output = work / ('public028-' + kind)
+        run([NODE, 'scripts/compat-v028-test.mjs', str(consumer / 'dist'), str(consumer / 'fixtures/compat-v028'), str(public28_output)], consumer, timeout=900)
+        public28 = json.loads((public28_output / 'receipt.json').read_text(encoding='utf8'))
+        assert public28['passed'] and public28['currentRuntimeVersion'] == VERSION
+        assert public28['producerCases'] == 156 and public28['variants'] == 3 and public28['cliCases'] == 24
+        assert public28['expectedRegenerated'] is False and public28['originalReportsAndCapsulesRewritten'] is False
+        checks.append(kind + ' genuine public028 three-context 156 original cases and 24 CLI replays')
+        http_demo = json.loads(run([NODE, 'examples/mlflow-http-roundtrip.mjs', '--out-root', str(work)], consumer))
+        assert http_demo['passed'] and http_demo['runtimeVersion'] == VERSION
+        assert http_demo['retainedActualDatabaseObservations'] is True and http_demo['actualDatabaseExecution'] is False
+        assert http_demo['sameCaseSha256'] == '9fddccaffd9d300ab23c1cd5b1bdd1d5f6075a75eabdca13a8a2ec36f127d69d'
+        assert http_demo['caseKeys'] == 623 and http_demo['oneMinimal'] is False
+        assert http_demo['coverageRemainsIncomplete'] is True
+        assert http_demo['observedDifference']['beforeFaults'] == 1 and http_demo['observedDifference']['afterFaults'] == 0
+        checks.append(kind + ' native HTTP same623 real observations, deadlock diagnosis and exact offline replay')
 
     if tuple(map(int, VERSION.split('.'))) >= (0, 2, 8):
         public27_output = work / ('public027-' + kind)

@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "format": "moontxnwitness-instrumentation/v1",
+  "diagnosticOnly": true,
+  "completeAnalysisCoverage": false,
+  "actualDatabaseExecution": false,
+  "lifecycle": {
+    "sealed": true,
+    "records": 3422,
+    "bytes": 1262247,
+    "sha256": "619076d15011ccd2bb869fb63bc3aa93b6b2634c48145ccfd4f11e018202e609"
+  },
+  "journal": {
+    "schema": 1,
+    "status": "incomplete",
+    "valid": true,
+    "complete": false,
+    "closed": true,
+    "sourceClosed": false,
+    "durableSeq": 881,
+    "eventCount": 881,
+    "segmentCount": 1,
+    "bytesVerified": 472131,
+    "indexSha256": "d77f85cbba09a870b140699c2e9d29f7fdc7c80b19cbf8017b4cb0f39e41e638",
+    "gaps": [
+      {
+        "code": "initialization_unproven",
+        "message": "The initial database snapshot has not been established as consistent."
+      },
+      {
+        "code": "diagnostic_instrumentation_only",
+        "message": "No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage."
+      },
+      {
+        "code": "original_http_execution_fault_only",
+        "message": "Raw native service SQL and errors; no verified relation/history mapping or model violation claim."
+      },
+      {
+        "code": "connection_configuration_changed",
+        "message": "Transaction/row factory configuration changed during capture."
+      },
+      {
+        "code": "commit_ack_not_confirmed",
+        "message": "A transaction outcome is unresolved; a later idle rollback cannot prove it aborted."
+      },
+      {
+        "code": "transaction_outcome_unknown",
+        "message": "A connection disappeared while its transaction outcome was unresolved."
+      },
+      {
+        "code": "source_references_active",
+        "message": "Active transactions or unread results still refer to retained evidence."
+      },
+      {
+        "code": "source_unsealed",
+        "message": "Journal and explicit source window have not both been sealed."
+      }
+    ],
+    "actualDatabaseExecution": false
+  }
+}

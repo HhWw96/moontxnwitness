@@ -18,6 +18,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   if(existsSync(resolve(root,'cmd/legacy/v025')))visit('cmd/legacy/v025',true);
   if(existsSync(resolve(root,'cmd/legacy/v026')))visit('cmd/legacy/v026',true);
   if(existsSync(resolve(root,'cmd/legacy/v027')))visit('cmd/legacy/v027',true);
+  if(existsSync(resolve(root,'cmd/legacy/v028')))visit('cmd/legacy/v028',true);
   // The independent v3 audits execute these helpers and consume this fixed
   // historical collection. New run receipts stay outside these input paths.
   if(existsSync(resolve(root,'verification/v3/tools')))visit('verification/v3/tools');
@@ -31,6 +32,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   names.push('examples/list-cycle.json', 'examples/list-roundtrip.mjs');
   names.push('examples/relation-source-closure.json', 'examples/relation-roundtrip.mjs');
   names.push('examples/register-cycle.json', 'examples/register-cycle-roundtrip.mjs');
+  names.push('examples/mlflow-http-roundtrip.mjs');
   names.push('examples/execution-roundtrip.mjs');
   names.push('examples/orm-profile-roundtrip.mjs');
   names.push('examples/model-profile-roundtrip.mjs');

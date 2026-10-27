@@ -195,6 +195,22 @@ def select_distribution_files(root, public_names, tested_files, version):
                      'scripts/compat-v027-test.mjs', 'scripts/public027-fixture-binding.mjs'):
             require(name, 'fixed public27 freezing, protocol and fresh-consumer exact compatibility')
 
+    if tuple(map(int, version.split('.'))) >= (0, 3, 0):
+        require_tree('cmd/legacy/v028', 'exact three genuine public28 runtime contexts and licence closure')
+        require_tree('fixtures/compat-v028', 'all original Linux, NTFS and source-filesystem public28 expectations')
+        for name in ('compat-v028-test.mjs', 'public028-fixture-binding.mjs'):
+            require('scripts/' + name, 'fresh-consumer public28 original fixtures and strict integrity bindings')
+        require('examples/mlflow-http-roundtrip.mjs', 'offline replay of the identical real HTTP final623 case')
+        require_tree('fixtures/execution-v3/mlflow-http-623', 'unchanged actual HTTP before/fixed observations and original case binding')
+        # Full case records remain in Git, rather than multiplying 584 MB of raw
+        # logs into every SDK download. Keep their complete original file index.
+        for name in ('EVIDENCE-INDEX.json', 'ORIGINAL-FILES-MANIFEST.json',
+                     'PUBLIC-COPY-OFFLINE-VERIFY.json', 'independent-review.derived.json',
+                     'reduction-16-candidates/ORIGINAL-FILES-MANIFEST.json',
+                     'final623-fixed-three/ORIGINAL-FILES-MANIFEST.json',
+                     'DELIVERY-STATUS.json', 'PRIVACY-SCAN.json', 'README.md'):
+            require('verification/faults/mlflow-http/' + name, 'native HTTP complete original evidence index; full records available in Git')
+
     relation_manifest = root / 'fixtures/relation-v3/manifest.json'
     if relation_manifest.is_file():
         for archive in json.loads(relation_manifest.read_text(encoding='utf8'))['historyArchives']:
@@ -318,6 +334,9 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.update(n for n in public_names if n.startswith('fixtures/compat-v027/'))
         portable.add('scripts/compat-v027-test.mjs')
         portable.add('scripts/public027-fixture-binding.mjs')
+    if tuple(map(int, version.split('.'))) >= (0, 3, 0):
+        portable.update(n for n in public_names if n.startswith('fixtures/compat-v028/'))
+        portable.update(('scripts/compat-v028-test.mjs', 'scripts/public028-fixture-binding.mjs'))
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))

@@ -1,3 +1,10 @@
+# 0.3.0 — 2026-10-27
+
+- Deliver the native MLflow HTTP `log-batch` repair comparison: 30 fixed seed pairs, actual PostgreSQL deadlock evidence, 16 real reduction candidates and three fixed-side regressions of the identical final 623-key case. Add an offline SDK example using unchanged real observations; keep `oneMinimal=false` and diagnostic coverage gaps.
+- Add explicit bounded source-write buffering to configured user/model profiles, retaining existing defaults, tail synchronization and seal/index verification. Publish the complete A/B/C experiment results, including unmet targets and ineligible CRUD cells.
+- Replay 156 unchanged public v0.2.8 producer cases across the original portable, NTFS-source and source-filesystem build contexts. Enforce exact runtime identities, bounded historical verification and tamper rejection.
+- Consolidate the existing register/list/relation profiles, category search, six-definition register/list checks and combined diagnosis. Existing analysis limits, unsupported SQL and unknown results remain visible.
+
 # 0.2.8 — 2026-10-26
 
 - Added `diagnoseV3` / `verifyDiagnosisV3` and CLI commands that retain full serial/model judgments, verified rule evidence and coverage gaps. INT findings stay distinct from graph anomalies and model applicability.

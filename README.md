@@ -8,6 +8,20 @@ English: An offline MoonBit transaction-history checker with shortest-cycle witn
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
+## v0.3.0
+
+本版收敛自动采集、三种数据模型、逐类别诊断和证据重放，新增[原生 MLflow HTTP 排障案例](docs/mlflow-http-case.md)。真实 `log-batch` 路由的修复前后各运行 30 个固定种子；原生死锁通过 SQLSTATE `40P01` 确认。案例由 1000 个键缩减至 623 个，同一最终请求在修复前连续三次复现、修复后连续三次成功，保留 `oneMinimal=false`。
+
+无需数据库即可查看两份真实采集的差异并重放证据：
+
+```powershell
+node examples/mlflow-http-roundtrip.mjs
+```
+
+[来源日志缓冲](docs/performance-v0.3.0-capture.md)可显式配置，关闭时仍同步尾部并核验封存。正式 A/B/C 采集实验的目标尚未达到，完整结果与失败单元继续保留；不将局部优化或诊断回放耗时写成业务吞吐收益。六模型、关系精确分析和自动 SQL 映射的范围继续见[支持矩阵](docs/stable-scope.md)。
+
+公开 v0.2.8 的原始报告与胶囊保留三个实际构建上下文，共 156 份原始案例；校验使用完整原运行时，不改证据、预算及历史预期。v0.3.0 的最终测试、独立验收与公开安装记录存于 `verification/releases/0.3.0/`，以相应收据为准。
+
 ## v0.2.8 支持范围
 
 新增[统一诊断入口](docs/diagnosis-sdk.md)：`diagnoseV3` 与 `diagnose-v3` 同时保留串行分析、模型检查和证据缺口；`verifyDiagnosisV3` 可重新核对完整报告。事务读错自身写入会明确显示 INT，不会误标成 G2 或改写尚无法判定的其它模型。
@@ -61,7 +75,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.2.8
+moon add HhWw96/moontxnwitness@0.3.0
 ```
 
 ```javascript

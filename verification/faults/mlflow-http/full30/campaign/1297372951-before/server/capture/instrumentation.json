@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "format": "moontxnwitness-instrumentation/v1",
+  "diagnosticOnly": true,
+  "completeAnalysisCoverage": false,
+  "actualDatabaseExecution": false,
+  "lifecycle": {
+    "sealed": true,
+    "records": 5941,
+    "bytes": 2196898,
+    "sha256": "e5ab6ebf3a1d4752832a71278bfcee44cec193431dec9e63785497df9a1042df"
+  },
+  "journal": {
+    "schema": 1,
+    "status": "incomplete",
+    "valid": true,
+    "complete": false,
+    "closed": true,
+    "sourceClosed": false,
+    "durableSeq": 889,
+    "eventCount": 889,
+    "segmentCount": 1,
+    "bytesVerified": 653702,
+    "indexSha256": "67d775531e4d18e1d0c044d0b073e4a34807603144cbba741479920b78bdfa2e",
+    "gaps": [
+      {
+        "code": "initialization_unproven",
+        "message": "The initial database snapshot has not been established as consistent."
+      },
+      {
+        "code": "diagnostic_instrumentation_only",
+        "message": "No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage."
+      },
+      {
+        "code": "original_http_execution_fault_only",
+        "message": "Raw native service SQL and errors; no verified relation/history mapping or model violation claim."
+      },
+      {
+        "code": "connection_configuration_changed",
+        "message": "Transaction/row factory configuration changed during capture."
+      },
+      {
+        "code": "commit_ack_not_confirmed",
+        "message": "A transaction outcome is unresolved; a later idle rollback cannot prove it aborted."
+      },
+      {
+        "code": "transaction_outcome_unknown",
+        "message": "A connection disappeared while its transaction outcome was unresolved."
+      },
+      {
+        "code": "statement_failed",
+        "message": "A business statement raised its original driver exception."
+      },
+      {
+        "code": "source_references_active",
+        "message": "Active transactions or unread results still refer to retained evidence."
+      },
+      {
+        "code": "source_unsealed",
+        "message": "Journal and explicit source window have not both been sealed."
+      }
+    ],
+    "actualDatabaseExecution": false
+  }
+}

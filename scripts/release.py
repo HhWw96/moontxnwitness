@@ -217,6 +217,19 @@ def validate_scoped_acceptance(acceptance, manifest):
                     'configured list/relation original-source model projection and complete capsule replay',
                     'combined diagnosis preserves original unknown analysis and verifies direct INT evidence'):
                 assert kind + ' ' + description in package['checks']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 0):
+        original28 = summary['publicV028CompatibilityTests']
+        assert original28['passed'] and original28['currentRuntimeVersion'] == VERSION
+        assert original28['producerCases'] == 156 and original28['variants'] == 3 and original28['cliCases'] == 24
+        assert original28['expectedRegenerated'] is False and original28['originalReportsAndCapsulesRewritten'] is False
+        assert original28['runtimeManifestSha256'] == sha256(ROOT / 'cmd/legacy/v028/manifest.json')
+        worker28 = summary['historicalWorker028ProtocolTests']
+        assert worker28['passed'] and worker28['checkCount'] == 16 and worker28['actualPublic028Runtime']
+        assert worker28['syntheticResponsesUsed'] is False
+        for kind in ('source', 'portable'):
+            assert kind + ' genuine public028 three-context 156 original cases and 24 CLI replays' in package['checks']
+            assert kind + ' native HTTP same623 real observations, deadlock diagnosis and exact offline replay' in package['checks']
+
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names
     for item in package['archives']:
@@ -476,6 +489,18 @@ def publish():
             '[diagnosis guide](https://github.com/' + MODULE + '/blob/' + tag + '/docs/diagnosis-sdk.md) and '
             '[measured performance scope](https://github.com/' + MODULE + '/blob/' + tag + '/docs/performance-v0.2.8-relation.md). '
             'Actual release, database, fresh-consumer and public-download receipts remain separate from human feedback and organizer decisions.\n\n'
+            'Install with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for Node.js.\n', encoding='utf8')
+
+    if VERSION == '0.3.0':
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- Deliver the native MLflow HTTP log-batch repair case: 30 fixed seed pairs, actual 40P01 evidence, 1000-to-623 key reduction and three fixed-side reruns of the identical final case. `oneMinimal` remains false.\n'
+            '- Run `node examples/mlflow-http-roundtrip.mjs` to diagnose and replay two unchanged real captures without a database. Source gaps and inconclusive model results remain visible.\n'
+            '- Add explicit bounded source-write buffering to configured user/model profiles while preserving legacy defaults, tail synchronization and refusal of incomplete seals.\n'
+            '- Replay 156 original public v0.2.8 cases across three genuine build contexts with fixed runtime identity checks and unchanged original expectations.\n\n'
+            'Formal capture-cost experiments completed, but the throughput/P95 targets were not met; failed CRUD cells remain ineligible. '
+            'The measured scope and raw evidence identities are in the [capture-cost report](https://github.com/' + MODULE + '/blob/' + tag + '/docs/performance-v0.3.0-capture.md).\n\n'
+            'See the [HTTP case and new-run instructions](https://github.com/' + MODULE + '/blob/' + tag + '/docs/mlflow-http-case.md) and '
+            '[support matrix](https://github.com/' + MODULE + '/blob/' + tag + '/docs/stable-scope.md). '
             'Install with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for Node.js.\n', encoding='utf8')
 
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
