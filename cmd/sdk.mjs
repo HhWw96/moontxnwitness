@@ -42,8 +42,9 @@ export function reduceV3(trace, options = {}) {
   return JSON.parse(reduce_v3_json(v3Text(trace, 8 * 1024 * 1024), v3Text(options, 4096)));
 }
 export function verifyV3(trace, report) {
-  const legacy028=routeLegacyV028('verify-v3',[trace,report],version());if(legacy028.matched)return legacy028.result;
-  return JSON.parse(verify_v3_json(v3Text(trace, 8 * 1024 * 1024), v3Text(report, 32 * 1024 * 1024)));
+  const traceText = v3Text(trace, 8 * 1024 * 1024), reportText = v3Text(report, 32 * 1024 * 1024);
+  const legacy028=routeLegacyV028('verify-v3',[traceText,reportText],version());if(legacy028.matched)return legacy028.result;
+  return JSON.parse(verify_v3_json(traceText, reportText));
 }
 export function normalizeCapture(trace) {
   return JSON.parse(normalize_capture_json(typeof trace === 'string' ? trace : JSON.stringify(trace)));
@@ -62,8 +63,10 @@ export function compareModels(history) {
   return JSON.parse(compare_models_json(typeof history === 'string' ? history : JSON.stringify(history)));
 }
 export function replayReport(history, report) {
-  const legacy028=routeLegacyV028('verify-v1v2',[history,report],version());if(legacy028.matched)return legacy028.result;
-  return JSON.parse(replay_report_json(typeof history === 'string' ? history : JSON.stringify(history), typeof report === 'string' ? report : JSON.stringify(report)));
+  const historyText = typeof history === 'string' ? history : JSON.stringify(history);
+  const reportText = typeof report === 'string' ? report : JSON.stringify(report);
+  const legacy028=routeLegacyV028('verify-v1v2',[historyText,reportText],version());if(legacy028.matched)return legacy028.result;
+  return JSON.parse(replay_report_json(historyText, reportText));
 }
 export function shrink(history) {
   return JSON.parse(shrink_json(typeof history === 'string' ? history : JSON.stringify(history)));
@@ -346,10 +349,16 @@ export function verifyRegisterCycleExplanationV3(trace, report, explanation) {
   if (explanation === null || typeof explanation !== 'object' || Array.isArray(explanation)) {
     throw new TypeError('Cycle explanation must be an object; parse saved JSON explicitly');
   }
-  const legacy028=routeLegacyV028('verify-cycle',[trace,report,explanation],version());if(legacy028.matched)return legacy028.result;
   const encoded = v3Text(explanation, 8 * 1024 * 1024);
-  const expected = explainRegisterCycleV3(trace, report);
-  return {valid: expected.verifiedReport && cycleEqualV3(JSON.parse(encoded), expected),
+  const traceText = v3Text(trace, 8 * 1024 * 1024), reportText = v3Text(report, 32 * 1024 * 1024);
+  const decoded = JSON.parse(encoded);
+  // Preserve one caller toJSON conversion and the original object contract.
+  // The historical worker receives only the already bounded JSON value.
+  if (decoded !== null && typeof decoded === 'object' && !Array.isArray(decoded)) {
+    const legacy028=routeLegacyV028('verify-cycle',[traceText,reportText,decoded],version());if(legacy028.matched)return legacy028.result;
+  }
+  const expected = explainRegisterCycleV3(traceText, reportText);
+  return {valid: expected.verifiedReport && cycleEqualV3(decoded, expected),
     status: expected.status, subtype: expected.subtype,
     scope: 'Recomputed derived explanation and verified source report; no source authentication or complete model classification.'};
 }

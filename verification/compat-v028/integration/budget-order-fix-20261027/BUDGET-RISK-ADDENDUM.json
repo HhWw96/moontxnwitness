@@ -1,0 +1,113 @@
+{
+  "format": "moontxnwitness-v030-independent-candidate-budget-risk-addendum/v1",
+  "candidateHead": "3f149c9e3679db7c45db5923b6d858033d58dae5",
+  "generatedAt": "2026-10-27T06:09:31.594815+00:00",
+  "priorCandidateTechnicalAcceptanceStatus": "suspended by newly verified default input-budget regression; original receipt retained unchanged",
+  "releaseBlockingBudgetOrderingRegressionConfirmed": true,
+  "notDemonstrated": "No evidence that oversize inputs finally return valid:true; confirmed issue is unbounded extra host parsing/serialization before original public rejection.",
+  "newAffectedGeneric": [
+    "verifyV3",
+    "verifyListV3/report",
+    "verifyRelationV3/report",
+    "replayCapsuleV3 and typed replay wrappers",
+    "verifyRegisterCycleExplanationV3/report",
+    "replayReport and v1/v2 replayCapsule"
+  ],
+  "newAffectedNestedCapsuleReports": [
+    "replayOrmProfileCapsuleV3/reportText",
+    "replayClassificationCapsuleV3/reportText",
+    "replayModelsClassificationCapsuleV3/reportText",
+    "replayModelProfileCapsuleV3/reportText"
+  ],
+  "inheritedDistinctIssue": "026/027 transport bridges also build JSON.stringify(arguments) before applying384MiB request ceiling; their existing public host report/capsule route probes were already bounded. This does not excuse newly generic028 or nested028 parse regressions.",
+  "alreadyGuardedTopLevel": [
+    "ORM report/capsule",
+    "category report/capsule",
+    "models report/capsule",
+    "model-profile report/capsule",
+    "diagnosis report",
+    "execution capsule"
+  ],
+  "cliGuarded": true,
+  "cliDetail": "readBounded enforces existing file limits before SDK; direct SDK callers remain affected.",
+  "actualUnchangedLimits": {
+    "verify-v1v2": {
+      "history": {
+        "maxUTF16CodeUnits": 1048576
+      },
+      "report": {
+        "maxUTF16CodeUnits": 33554432
+      }
+    },
+    "replay-v1v2": {
+      "capsule": {
+        "maxUTF16CodeUnits": 33554432
+      },
+      "reportText": {
+        "maxUTF16CodeUnits": 33554432
+      }
+    },
+    "verify-v3": {
+      "traceUTF8Bytes": 8388608,
+      "reportUTF8Bytes": 33554432
+    },
+    "replay-v3": {
+      "capsuleUTF8Bytes": 33554432,
+      "reportUTF8Bytes": 33554432
+    },
+    "verify-cycle": {
+      "traceUTF8Bytes": 8388608,
+      "reportUTF8Bytes": 33554432,
+      "explanationUTF8Bytes": 8388608
+    },
+    "orm-profile": {
+      "sourceUTF8Bytes": 67108864,
+      "reportUTF8Bytes": 67108864,
+      "capsuleUTF8Bytes": 134217728,
+      "optionsUTF8Bytes": 4096
+    },
+    "category": {
+      "sourceUTF8Bytes": 8388608,
+      "reportUTF8Bytes": 67108864,
+      "capsuleUTF8Bytes": 134217728,
+      "analysisOptionsUTF8Bytes": 4096,
+      "reductionOptionsUTF8Bytes": 8192
+    },
+    "models": {
+      "sourceUTF8Bytes": 33554432,
+      "reportUTF8Bytes": 100663296,
+      "capsuleUTF8Bytes": 201326592,
+      "optionsUTF8Bytes": 8192
+    },
+    "model-profile": {
+      "sourceUTF8Bytes": 67108864,
+      "reportUTF8Bytes": 67108864,
+      "capsuleUTF8Bytes": 134217728,
+      "optionsUTF8Bytes": 4096
+    },
+    "diagnosis": {
+      "traceUTF8Bytes": 8388608,
+      "reportUTF8Bytes": 167772160,
+      "optionsUTF8Bytes": 16384
+    },
+    "replay-execution": {
+      "capsuleUTF8Bytes": 33554432,
+      "traceUTF8Bytes": 8388608,
+      "diagnosticUTF8Bytes": 33554432
+    },
+    "historicalWorkerTransportUTF8Bytes": 402653184
+  },
+  "minimumFixRecommendations": [
+    "Preflight raw string arguments by operation before targets028 native JSON.parse. For obvious oversized UTF8 strings, code-unit length greater than byte cap is a safe constant-time rejection; otherwise Buffer.byteLength checks actual UTF8 bytes. Return unmatched so original API preserves its rejection.",
+    "Reuse the string preflight in assertOperation028 before JSON.stringify(args);384MiB transport cap is not a replacement for each API default.",
+    "Route every engine()/selectRuntime028() nested reportText parse through a kind-specific bounded parse:32MiB/core,64MiB/ORM/category/modelProfile,96MiB/models; preserve v1/v2 UTF16-unit contract.",
+    "Keep immutable original public028 runtimes/producer expectations unchanged. Update current policy integrity pin and shipped wrapper binding, then rerun targeted preparse rejection tests and unchanged historical consumer checks."
+  ],
+  "evidence": {
+    "BUDGET-ORDER-FINDING.json": "2c76cac1667fc106a81d27848f1311c293692da51a510976e80bf6967dfc2f2f",
+    "NESTED-BUDGET-ORDER-FINDING.json": "97cbd6e0d985c4f8bd92d485a15997b2e07ad304c3d01aa741937c8e219b7ead"
+  },
+  "actualLargeInputsAllocated": false,
+  "sourceOrGitIndexModified": false,
+  "performanceMeasurementsExecuted": false
+}

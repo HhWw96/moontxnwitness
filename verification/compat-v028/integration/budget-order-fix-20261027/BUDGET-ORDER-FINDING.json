@@ -1,0 +1,451 @@
+{
+  "format": "moontxnwitness-v030-independent-preparse-budget-order/v1",
+  "candidateHead": "3f149c9e3679db7c45db5923b6d858033d58dae5",
+  "newBudgetOrderingRegressionConfirmed": true,
+  "issues": [
+    {
+      "name": "verifyV3 report",
+      "currentParsesBeforeBudget": true,
+      "public028ParsesBeforeBudget": false
+    },
+    {
+      "name": "verifyV3 malformed report",
+      "currentParsesBeforeBudget": true,
+      "public028ParsesBeforeBudget": false
+    },
+    {
+      "name": "replayCapsuleV3",
+      "currentParsesBeforeBudget": true,
+      "public028ParsesBeforeBudget": false
+    },
+    {
+      "name": "cycle report",
+      "currentParsesBeforeBudget": true,
+      "public028ParsesBeforeBudget": false
+    }
+  ],
+  "trials": [
+    {
+      "name": "current verifyV3 report",
+      "realInputBytes": 41,
+      "simulatedByteCount": 33554433,
+      "events": [
+        "JSON.parse(marker)",
+        "Buffer.byteLength(marker):simulated 33554433"
+      ],
+      "error": {
+        "type": "RangeError",
+        "message": "v3 input exceeds 33554432 UTF-8 bytes"
+      }
+    },
+    {
+      "name": "current verifyV3 malformed report",
+      "realInputBytes": 31,
+      "simulatedByteCount": 33554433,
+      "events": [
+        "JSON.parse(marker)",
+        "Buffer.byteLength(marker):simulated 33554433"
+      ],
+      "error": {
+        "type": "RangeError",
+        "message": "v3 input exceeds 33554432 UTF-8 bytes"
+      }
+    },
+    {
+      "name": "current replayCapsuleV3",
+      "realInputBytes": 41,
+      "simulatedByteCount": 33554433,
+      "events": [
+        "JSON.parse(marker)",
+        "Buffer.byteLength(marker):simulated 33554433"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "v3 capsule exceeds 32 MiB UTF-8"
+      }
+    },
+    {
+      "name": "current cycle report",
+      "realInputBytes": 41,
+      "simulatedByteCount": 33554433,
+      "events": [
+        "JSON.parse(marker)",
+        "Buffer.byteLength(marker):simulated 33554433"
+      ],
+      "error": {
+        "type": "RangeError",
+        "message": "v3 input exceeds 33554432 UTF-8 bytes"
+      }
+    },
+    {
+      "name": "current model-profile report",
+      "realInputBytes": 41,
+      "simulatedByteCount": 67108865,
+      "events": [
+        "Buffer.byteLength(marker):simulated 67108865"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "model-profile-verification-failed: model report exceeds its explicit UTF-8 budget",
+        "scope": {
+          "configuredNativeSyncFactoryOnly": true,
+          "explicitOwnedSchemaInstallation": true,
+          "originalDiagnosticsRemainPartial": true,
+          "actualDatabaseExecution": false,
+          "serverAuthenticityVerified": false,
+          "eventSegmentPayloadsRehashed": false,
+          "arbitrarySqlSupported": false,
+          "ormSupported": false,
+          "asynchronousSupported": false,
+          "realTimeOrderInferred": false,
+          "sourceClosedReductionAvailable": false
+        }
+      }
+    },
+    {
+      "name": "current model-profile capsule",
+      "realInputBytes": 41,
+      "simulatedByteCount": 134217729,
+      "events": [
+        "Buffer.byteLength(marker):simulated 134217729"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "model-capsule-recomputation-failed: model capsule exceeds its explicit UTF-8 budget",
+        "scope": {
+          "configuredNativeSyncFactoryOnly": true,
+          "explicitOwnedSchemaInstallation": true,
+          "originalDiagnosticsRemainPartial": true,
+          "actualDatabaseExecution": false,
+          "serverAuthenticityVerified": false,
+          "eventSegmentPayloadsRehashed": false,
+          "arbitrarySqlSupported": false,
+          "ormSupported": false,
+          "asynchronousSupported": false,
+          "realTimeOrderInferred": false,
+          "sourceClosedReductionAvailable": false
+        }
+      }
+    },
+    {
+      "name": "current model-classification report",
+      "realInputBytes": 41,
+      "simulatedByteCount": 100663297,
+      "events": [
+        "Buffer.byteLength(marker):simulated 100663297"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "model-classification-verification-failed: model report exceeds its explicit UTF-8 budget",
+        "scope": {
+          "modelDefinitions": [
+            "adya-pl-1-v1",
+            "adya-pl-2-v1",
+            "adya-pl-2.99-v1",
+            "elle-generalized-si-v1",
+            "adya-pl-3-v1",
+            "strict-pl-ss-v1"
+          ],
+          "supportedDataModels": [
+            "point-register-v1",
+            "append-list-v1"
+          ],
+          "relationModelClassificationSupported": false,
+          "modelPreservingReductionSupported": false,
+          "categoryReducerUnchanged": true,
+          "listGraphProfile": "one append per transaction per key, complete captured order, no savepoints",
+          "strictRequiresExplicitClientIntervals": true,
+          "traceTimeInfersRealTime": false,
+          "beginInfersSnapshot": false,
+          "clientEvidenceAuthenticatesCollector": false,
+          "journalSegmentPayloadsRehashed": false,
+          "actualDatabaseExecution": false,
+          "databaseWideCertification": false,
+          "oldAnalyzeAndCapsulesUnchanged": true
+        }
+      }
+    },
+    {
+      "name": "current model-classification capsule",
+      "realInputBytes": 41,
+      "simulatedByteCount": 201326593,
+      "events": [
+        "Buffer.byteLength(marker):simulated 201326593"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "model-classification-capsule-replay-failed: model capsule exceeds its explicit UTF-8 budget",
+        "scope": {
+          "modelDefinitions": [
+            "adya-pl-1-v1",
+            "adya-pl-2-v1",
+            "adya-pl-2.99-v1",
+            "elle-generalized-si-v1",
+            "adya-pl-3-v1",
+            "strict-pl-ss-v1"
+          ],
+          "supportedDataModels": [
+            "point-register-v1",
+            "append-list-v1"
+          ],
+          "relationModelClassificationSupported": false,
+          "modelPreservingReductionSupported": false,
+          "categoryReducerUnchanged": true,
+          "listGraphProfile": "one append per transaction per key, complete captured order, no savepoints",
+          "strictRequiresExplicitClientIntervals": true,
+          "traceTimeInfersRealTime": false,
+          "beginInfersSnapshot": false,
+          "clientEvidenceAuthenticatesCollector": false,
+          "journalSegmentPayloadsRehashed": false,
+          "actualDatabaseExecution": false,
+          "databaseWideCertification": false,
+          "oldAnalyzeAndCapsulesUnchanged": true
+        }
+      }
+    },
+    {
+      "name": "current diagnosis report",
+      "realInputBytes": 41,
+      "simulatedByteCount": 167772161,
+      "events": [
+        "Buffer.byteLength(marker):simulated 167772161"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "diagnosis-verification-failed: diagnosis report exceeds its explicit UTF-8 budget",
+        "scope": {
+          "diagnosticOnly": true,
+          "rawV3TraceOnly": true,
+          "aggregateDoesNotGrantCaptureCoverage": true,
+          "formalModelResultsRemainSeparate": true,
+          "internalConsistencyIsNotG2": true,
+          "realTimeOrderInferred": false,
+          "sourceAuthenticityVerified": false,
+          "databaseWideCertification": false,
+          "actualDatabaseExecution": false,
+          "oldAnalysisAndClassificationMeaningChanged": false,
+          "capsuleSupported": false
+        }
+      }
+    },
+    {
+      "name": "public028 verifyV3 report",
+      "realInputBytes": 41,
+      "simulatedByteCount": 33554433,
+      "events": [
+        "Buffer.byteLength(marker):simulated 33554433"
+      ],
+      "error": {
+        "type": "RangeError",
+        "message": "v3 input exceeds 33554432 UTF-8 bytes"
+      }
+    },
+    {
+      "name": "public028 verifyV3 malformed report",
+      "realInputBytes": 31,
+      "simulatedByteCount": 33554433,
+      "events": [
+        "Buffer.byteLength(marker):simulated 33554433"
+      ],
+      "error": {
+        "type": "RangeError",
+        "message": "v3 input exceeds 33554432 UTF-8 bytes"
+      }
+    },
+    {
+      "name": "public028 replayCapsuleV3",
+      "realInputBytes": 41,
+      "simulatedByteCount": 33554433,
+      "events": [
+        "Buffer.byteLength(marker):simulated 33554433"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "v3 capsule exceeds 32 MiB UTF-8"
+      }
+    },
+    {
+      "name": "public028 cycle report",
+      "realInputBytes": 41,
+      "simulatedByteCount": 33554433,
+      "events": [
+        "Buffer.byteLength(marker):simulated 33554433"
+      ],
+      "error": {
+        "type": "RangeError",
+        "message": "v3 input exceeds 33554432 UTF-8 bytes"
+      }
+    },
+    {
+      "name": "public028 model-profile report",
+      "realInputBytes": 41,
+      "simulatedByteCount": 67108865,
+      "events": [
+        "Buffer.byteLength(marker):simulated 67108865"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "model-profile-verification-failed: model report exceeds its explicit UTF-8 budget",
+        "scope": {
+          "configuredNativeSyncFactoryOnly": true,
+          "explicitOwnedSchemaInstallation": true,
+          "originalDiagnosticsRemainPartial": true,
+          "actualDatabaseExecution": false,
+          "serverAuthenticityVerified": false,
+          "eventSegmentPayloadsRehashed": false,
+          "arbitrarySqlSupported": false,
+          "ormSupported": false,
+          "asynchronousSupported": false,
+          "realTimeOrderInferred": false,
+          "sourceClosedReductionAvailable": false
+        }
+      }
+    },
+    {
+      "name": "public028 model-profile capsule",
+      "realInputBytes": 41,
+      "simulatedByteCount": 134217729,
+      "events": [
+        "Buffer.byteLength(marker):simulated 134217729"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "model-capsule-recomputation-failed: model capsule exceeds its explicit UTF-8 budget",
+        "scope": {
+          "configuredNativeSyncFactoryOnly": true,
+          "explicitOwnedSchemaInstallation": true,
+          "originalDiagnosticsRemainPartial": true,
+          "actualDatabaseExecution": false,
+          "serverAuthenticityVerified": false,
+          "eventSegmentPayloadsRehashed": false,
+          "arbitrarySqlSupported": false,
+          "ormSupported": false,
+          "asynchronousSupported": false,
+          "realTimeOrderInferred": false,
+          "sourceClosedReductionAvailable": false
+        }
+      }
+    },
+    {
+      "name": "public028 model-classification report",
+      "realInputBytes": 41,
+      "simulatedByteCount": 100663297,
+      "events": [
+        "Buffer.byteLength(marker):simulated 100663297"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "model-classification-verification-failed: model report exceeds its explicit UTF-8 budget",
+        "scope": {
+          "modelDefinitions": [
+            "adya-pl-1-v1",
+            "adya-pl-2-v1",
+            "adya-pl-2.99-v1",
+            "elle-generalized-si-v1",
+            "adya-pl-3-v1",
+            "strict-pl-ss-v1"
+          ],
+          "supportedDataModels": [
+            "point-register-v1",
+            "append-list-v1"
+          ],
+          "relationModelClassificationSupported": false,
+          "modelPreservingReductionSupported": false,
+          "categoryReducerUnchanged": true,
+          "listGraphProfile": "one append per transaction per key, complete captured order, no savepoints",
+          "strictRequiresExplicitClientIntervals": true,
+          "traceTimeInfersRealTime": false,
+          "beginInfersSnapshot": false,
+          "clientEvidenceAuthenticatesCollector": false,
+          "journalSegmentPayloadsRehashed": false,
+          "actualDatabaseExecution": false,
+          "databaseWideCertification": false,
+          "oldAnalyzeAndCapsulesUnchanged": true
+        }
+      }
+    },
+    {
+      "name": "public028 model-classification capsule",
+      "realInputBytes": 41,
+      "simulatedByteCount": 201326593,
+      "events": [
+        "Buffer.byteLength(marker):simulated 201326593"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "model-classification-capsule-replay-failed: model capsule exceeds its explicit UTF-8 budget",
+        "scope": {
+          "modelDefinitions": [
+            "adya-pl-1-v1",
+            "adya-pl-2-v1",
+            "adya-pl-2.99-v1",
+            "elle-generalized-si-v1",
+            "adya-pl-3-v1",
+            "strict-pl-ss-v1"
+          ],
+          "supportedDataModels": [
+            "point-register-v1",
+            "append-list-v1"
+          ],
+          "relationModelClassificationSupported": false,
+          "modelPreservingReductionSupported": false,
+          "categoryReducerUnchanged": true,
+          "listGraphProfile": "one append per transaction per key, complete captured order, no savepoints",
+          "strictRequiresExplicitClientIntervals": true,
+          "traceTimeInfersRealTime": false,
+          "beginInfersSnapshot": false,
+          "clientEvidenceAuthenticatesCollector": false,
+          "journalSegmentPayloadsRehashed": false,
+          "actualDatabaseExecution": false,
+          "databaseWideCertification": false,
+          "oldAnalyzeAndCapsulesUnchanged": true
+        }
+      }
+    },
+    {
+      "name": "public028 diagnosis report",
+      "realInputBytes": 41,
+      "simulatedByteCount": 167772161,
+      "events": [
+        "Buffer.byteLength(marker):simulated 167772161"
+      ],
+      "result": {
+        "valid": false,
+        "reason": "diagnosis-verification-failed: diagnosis report exceeds its explicit UTF-8 budget",
+        "scope": {
+          "diagnosticOnly": true,
+          "rawV3TraceOnly": true,
+          "aggregateDoesNotGrantCaptureCoverage": true,
+          "formalModelResultsRemainSeparate": true,
+          "internalConsistencyIsNotG2": true,
+          "realTimeOrderInferred": false,
+          "sourceAuthenticityVerified": false,
+          "databaseWideCertification": false,
+          "actualDatabaseExecution": false,
+          "oldAnalysisAndClassificationMeaningChanged": false,
+          "capsuleSupported": false
+        }
+      }
+    },
+    {
+      "name": "current legacy028 source serialization preflight",
+      "realInputBytes": 41,
+      "simulatedByteCount": 2147483648,
+      "events": [
+        "JSON.stringify(args) before source byte guard"
+      ],
+      "result": {
+        "matched": true,
+        "result": {
+          "valid": false,
+          "reason": "legacy028-unavailable-or-refused: AUDIT_STOP_BEFORE_SERIALIZATION"
+        }
+      }
+    }
+  ],
+  "maximumActuallyAllocatedProbeBytes": 41,
+  "actualLargeInputsAllocated": false,
+  "nodeMaxStringCodeUnits": 536870888,
+  "sourceModified": false,
+  "method": "Actual imported current and immutable public028 APIs; temporary JSON.parse/JSON.stringify/Buffer.byteLength instrumentation restored after each short probe. Real input is under64 bytes, fake byte counts simulate rejected limits."
+}

@@ -224,7 +224,7 @@ def validate_scoped_acceptance(acceptance, manifest):
         assert original28['expectedRegenerated'] is False and original28['originalReportsAndCapsulesRewritten'] is False
         assert original28['runtimeManifestSha256'] == sha256(ROOT / 'cmd/legacy/v028/manifest.json')
         worker28 = summary['historicalWorker028ProtocolTests']
-        assert worker28['passed'] and worker28['checkCount'] == 16 and worker28['actualPublic028Runtime']
+        assert worker28['passed'] and worker28['checkCount'] == 17 and worker28['actualPublic028Runtime']
         assert worker28['syntheticResponsesUsed'] is False
         for kind in ('source', 'portable'):
             assert kind + ' genuine public028 three-context 156 original cases and 24 CLI replays' in package['checks']

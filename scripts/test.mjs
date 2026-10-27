@@ -182,7 +182,7 @@ const historicalWorker028Child=spawnSync(process.execPath,['scripts/legacy-v028-
 if(historicalWorker028Child.error)throw historicalWorker028Child.error;
 if(historicalWorker028Child.status!==0)throw new Error('Fixed public28 worker guards failed: '+historicalWorker028Child.stdout+historicalWorker028Child.stderr);
 const historicalWorker028Protocol=JSON.parse(readFileSync(resolve(historicalWorker028Output,'receipt.json'),'utf8'));
-assert.equal(historicalWorker028Protocol.passed,true);assert.equal(historicalWorker028Protocol.checkCount,16);
+assert.equal(historicalWorker028Protocol.passed,true);assert.equal(historicalWorker028Protocol.checkCount,17);
 assert.equal(historicalWorker028Protocol.actualPublic028Runtime,true);assert.equal(historicalWorker028Protocol.syntheticResponsesUsed,false);
 historicalWorker028Protocol.receipt=relativeEvidencePath(root,resolve(historicalWorker028Output,'receipt.json'));
 const httpExampleParent=mkdtempSync(resolve(root,'verification/mlflow-http-example-'));

@@ -1,4 +1,5 @@
 // Targeted fixed-worker protocol and integrity checks; no fixture generation.
+import {runBudgetChecks} from './legacy-v028-budget-test.mjs';
 import assert from 'node:assert/strict';import fs from 'node:fs';import {resolve} from 'node:path';import {pathToFileURL} from 'node:url';import {spawnSync} from 'node:child_process';
 const [runtimeArg,outputArg,...extra]=process.argv.slice(2);assert.ok(runtimeArg&&outputArg&&!extra.length);const runtime=resolve(runtimeArg),output=resolve(outputArg);fs.mkdirSync(output);const checks=[],check=(name,fn)=>{fn();checks.push({name,passed:true});};
 const receipt={format:'moontxnwitness-fixed028-worker-guards/v1',passed:false,actualPublic028Runtime:true,syntheticResponsesUsed:false,actualDatabaseExecuted:false,formalPerformanceMeasured:false,checks};
@@ -17,6 +18,8 @@ try{
  const bridge=await import(pathToFileURL(resolve(runtime,'legacy-v028.mjs')).href),before=process.env.MTW_FIXED_WORKER_DEPTH;process.env.MTW_FIXED_WORKER_DEPTH='1';try{check('nested historical parent worker refused',()=>assert.throws(()=>bridge.callLegacyV028('verify-v3',['{}',{schemaVersion:3,version:'0.2.8'}]),/Nested historical worker refused/));}finally{if(before===undefined)delete process.env.MTW_FIXED_WORKER_DEPTH;else process.env.MTW_FIXED_WORKER_DEPTH=before;}
  const worker=resolve(runtime,'legacy-v028-worker.mjs'),system=Object.fromEntries(Object.entries(process.env).filter(([k])=>['systemroot','windir','temp','tmp'].includes(k.toLowerCase()))),request=Buffer.from(JSON.stringify({format:policy.FORMAT,id:'1'.repeat(32),operation:'verify-v3',arguments:['{}',{schemaVersion:3,version:'0.2.8'}]})+'\n');
  for(const [label,argv,env,input]of [['missing-depth',[],system,request],['path-selector-argv',['extra'],{...system,MTW_FIXED_WORKER_DEPTH:'1'},request],['old027-outer',[],{...system,MTW_FIXED_WORKER_DEPTH:'1'},Buffer.from(JSON.stringify({format:policy.FORMAT,id:'1'.repeat(32),operation:'verify-v3',arguments:['{}',{schemaVersion:3,version:'0.2.7'}]})+'\n')]])check('actual worker refuses '+label,()=>{const child=spawnSync(process.execPath,['--no-addons',worker,...argv],{input,encoding:'utf8',env,windowsHide:true,timeout:10000,maxBuffer:65536});assert.equal(child.status,2);assert.equal(child.stdout,'');assert.equal(child.stderr,'Fixed public028 worker refused the request.\n');});
+ const budgets=await runBudgetChecks(runtime);receipt.apiBudgetOrder=budgets;
+ check('API default budgets precede routing parse and worker serialization',()=>{assert.equal(budgets.passed,true,JSON.stringify(budgets.checks.filter(c=>!c.passed)));assert.equal(budgets.checkCount,123);});
  receipt.passed=true;
 }catch(error){receipt.failure={name:error.name,message:error.message};process.exitCode=1;}
 receipt.checkCount=checks.length;fs.writeFileSync(resolve(output,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({passed:receipt.passed,checks:checks.length,failure:receipt.failure??null}));

@@ -39,8 +39,8 @@ export function makeCapsuleV3(trace, report) {
 }
 
 export function replayCapsuleV3(text) {
-  const legacy028=routeLegacyV028('replay-v3',[text],version());if(legacy028.matched)return legacy028.result;
   if (Buffer.byteLength(text, 'utf8') > 32 * 1024 * 1024) return {valid:false,reason:'v3 capsule exceeds 32 MiB UTF-8'};
+  const legacy028=routeLegacyV028('replay-v3',[text],version());if(legacy028.matched)return legacy028.result;
   const parsed = JSON.parse(capsule_v3_content_json(text));
   if (!parsed.valid) return parsed;
   const content = parsed.content;
