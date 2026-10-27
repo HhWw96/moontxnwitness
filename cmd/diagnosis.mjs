@@ -1,3 +1,4 @@
+import {routeLegacyV028} from './legacy-v028-dispatch.mjs';
 // Independent diagnostic aggregation. Existing core judgments and model definitions are preserved.
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
@@ -104,6 +105,7 @@ export function verifyDiagnosisV3(source,supplied,options){
   try{
     if(typeof supplied!=='string')safeJson(supplied,'Diagnosis report');
     const text=bounded(supplied,BUDGETS.reportUtf8Bytes,'diagnosis report'),value=JSON.parse(text);
+    const legacy028=routeLegacyV028('verify-diagnosis',options===undefined?[source,supplied]:[source,supplied,options],version());if(legacy028.matched)return legacy028.result;
     if(value?.format!=='moontxnwitness-diagnosis-report/v1'||value.algorithm!==ALGORITHM||typeof value.requestOptionsText!=='string'||
        !isDeepStrictEqual(value.engine,ENGINE))return {valid:false,reason:'unsupported-diagnosis-report',scope:scope()};
     const original=JSON.parse(bounded(value.requestOptionsText,BUDGETS.optionsUtf8Bytes,'original diagnosis options'));

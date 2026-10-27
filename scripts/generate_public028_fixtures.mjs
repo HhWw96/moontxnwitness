@@ -1,0 +1,64 @@
+// Immutable expectations: execute only the two original public028 producers.
+// This program never imports a current030 module or updates existing fixtures.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';import {resolve,dirname} from 'node:path';import {pathToFileURL} from 'node:url';
+import {createHash} from 'node:crypto';import {spawnSync} from 'node:child_process';
+const [baselineArg,repositoryArg,ntfsSourceArg,priorArg,...extra]=process.argv.slice(2);assert.ok(baselineArg&&repositoryArg&&ntfsSourceArg&&priorArg&&!extra.length);
+const base=resolve(baselineArg),root=resolve(repositoryArg),out=resolve(root,'fixtures/compat-v028');assert.equal(fs.existsSync(out),false,'Never regenerate genuine028 expectations');
+const sha=b=>createHash('sha256').update(b).digest('hex'),canonical=v=>JSON.stringify(v,null,2)+'\n';
+const write=(name,value)=>{assert.ok(name&&!name.includes('..')&&!name.includes(':')&&!name.includes(String.fromCharCode(92)));const b=Buffer.isBuffer(value)?value:Buffer.from(typeof value==='string'?value:canonical(value));const p=resolve(out,name);fs.mkdirSync(dirname(p),{recursive:true});fs.writeFileSync(p,b,{flag:'wx'});return {file:name,bytes:b.length,sha256:sha(b)};};
+const selectedRaw=fs.readFileSync(resolve(base,'selected-members.json')),selected=JSON.parse(selectedRaw),suppRaw=fs.readFileSync(resolve(base,'supplemental-source-members.json')),supp=JSON.parse(suppRaw);
+const builds={};const variants=[['linux-public-portable','portable/dist','anonymous-public-portable'],['windows-public-source-rebuild',resolve(ntfsSourceArg,'dist'),'public-source-windows-rebuild']];
+const sourceCommit='bbce5ddbf7159a0ceec821fb8dd6e0c88599f805',sourceFp='c50e5100d5f1ec29ad8951bdfbb18282c12cb6c6e3377006e5ac4340d3d673b7';
+const priorRaw=fs.readFileSync(resolve(priorArg,'manifest.json'));assert.equal(sha(priorRaw),'eec107b975713867f90a13601c7fcbba7d6ef3aae26d3d76f9084b23eda27351');const prior=JSON.parse(priorRaw);
+const public027=JSON.parse(fs.readFileSync(resolve(base,'portable/fixtures/compat-v027/manifest.json')));
+assert.equal(public027.cases.length,46);const cases=[],cliCases=[],operations=new Set();
+const origin=Object.fromEntries(Object.entries(selected.archives).map(([k,v])=>[k,{url:v.url,sha256:v.sha256,bytes:v.bytes,anonymousDownloadVerifiedByOriginalPublicationReceipt:v.anonymousDownloadVerifiedByOriginalPublicationReceipt,selectedMembers:v.selectedMembers}]));
+// All original members remain raw. This derived index omits private machine paths.
+write('provider-origin.json',{format:'moontxnwitness-public028-dual-provider/v1',sourceCommit,sourceFingerprint:sourceFp,archives:origin,supplementalOriginalSourceMembers:supp.selectedMembers,selectedMemberRecordSha256:sha(selectedRaw),supplementalMemberRecordSha256:sha(suppRaw),mtimeOrAclIdentityClaimed:false,actualDatabaseExecuted:false,authorDistRead:false,originalSourceBuildProgramChanged:false,sourceBuildFilesystem:'NTFS preserving canonical src path',retainedAPathCaseFixtureManifestSha256:sha(priorRaw)});
+const apiMap={v3:['verify-v3','replay-v3'],v1:['verify-v1v2','replay-v1v2'],v2:['verify-v1v2','replay-v1v2'],'orm-profile':['verify-orm','replay-orm'],'category-classification':['verify-classification','replay-classification'],'model-classification':['verify-models','replay-models'],'model-profile':['verify-model-profile','replay-model-profile']};
+for(const [runtimeId,runtimeRel,kind]of variants){
+ if(runtimeId==='linux-public-portable'){
+  builds[runtimeId]=prior.variants[runtimeId];
+  const copied=new Set();function copy(row){if(copied.has(row.file))return;const b=fs.readFileSync(resolve(priorArg,row.file));assert.equal(b.length,row.bytes);assert.equal(sha(b),row.sha256);assert.deepEqual(write(row.file,b),row);copied.add(row.file);}
+  for(const row of prior.cases.filter(r=>r.runtimeId===runtimeId)){copy(row.input);copy(row.report);if(row.capsule)copy(row.capsule);for(const call of row.calls){copy(call.arguments);copy(call.expected);operations.add(call.operation);}cases.push(row);}
+  for(const row of prior.cliCases.filter(r=>r.runtimeId===runtimeId)){copy(row.stdout);copy(row.stderr);cliCases.push(row);}
+  console.log(JSON.stringify({runtimeId,originalFrozenCasesReusedWithoutRegeneration:52,sourceFixtureManifestSha256:sha(priorRaw)}));continue;
+ }
+
+ const runtime=resolve(base,runtimeRel),sdk=await import(pathToFileURL(resolve(runtime,'sdk.mjs')).href),evidence=await import(pathToFileURL(resolve(runtime,'evidence.mjs')).href);assert.equal(sdk.version(),'0.2.8');
+ const build=JSON.parse(fs.readFileSync(resolve(runtime,'build-manifest.json')));assert.equal(build.version,'0.2.8');assert.equal(build.sourceSha256,sourceFp);for(const [n,k]of [['core.mjs','coreSha256'],['capture-core.mjs','captureCoreSha256']])assert.equal(sha(fs.readFileSync(resolve(runtime,n))),build[k]);builds[runtimeId]={kind,build,anonymousBinaryProducer:kind==='anonymous-public-portable',publicSourceRebuiltHere:kind==='public-source-windows-rebuild'};
+ const produced=[];
+ async function produce(row,input,inputOrigin){
+  const options=row.requestOptions??{},type=row.type;let report,capsule,replay,verify,verifyArgs,replayArgs;
+  const hosts={ 'model-profile':['analyzeModelProfileV3','makeModelProfileCapsuleV3','replayModelProfileCapsuleV3','verifyModelProfileV3'],'model-classification':['classifyModelsV3','makeModelsClassificationCapsuleV3','replayModelsClassificationCapsuleV3','verifyModelsClassificationV3'],'category-classification':[row.operation==='reduce'?'reduceClassificationV3':'classifyV3',row.operation==='reduce'?'makeClassificationReductionCapsuleV3':'makeClassificationCapsuleV3','replayClassificationCapsuleV3','verifyClassificationV3'],'orm-profile':[row.operation==='reduce'?'reduceOrmProfileV3':'analyzeOrmProfileV3',row.operation==='reduce'?'makeOrmProfileReductionCapsuleV3':'makeOrmProfileCapsuleV3','replayOrmProfileCapsuleV3','verifyOrmProfileV3'] };
+  if(hosts[type]){const [analyze,make,play,check]=hosts[type];report=sdk[analyze](input,options);capsule=sdk[make](input,options);replay=sdk[play](capsule);verify=sdk[check](input,report,options);verifyArgs=[input,report,options];replayArgs=[capsule];}
+  else if(type==='v3'){report=sdk.analyzeV3(input);capsule=sdk.makeCapsuleV3(input,report);replay=sdk.replayCapsuleV3(capsule);verify=sdk.verifyV3(input,report);verifyArgs=[input,report];replayArgs=[capsule];}
+  else if(type==='v1'||type==='v2'){report=type==='v1'?sdk.analyze(input):sdk.analyzeWithOptions(input);capsule=evidence.makeCapsule(input,report);replay=evidence.replayCapsule(capsule);verify=sdk.replayReport(input,report);verifyArgs=[input,report];replayArgs=[capsule];}
+  else if(type==='execution'){report=sdk.inspectExecutionFailuresV3(input);capsule=sdk.makeExecutionCapsuleV3(input);replay=sdk.replayExecutionCapsuleV3(capsule);replayArgs=[capsule];}
+  else if(type==='diagnosis'){report=sdk.diagnoseV3(input,options);verify=sdk.verifyDiagnosisV3(input,report,options);verifyArgs=[input,report,options];}
+  else if(type==='cycle'){report=sdk.analyzeV3(input);const explanation=sdk.explainRegisterCycleV3(input,report);verify=sdk.verifyRegisterCycleExplanationV3(input,report,explanation);verifyArgs=[input,report,explanation];}
+  else throw Error('Unknown case type');
+  if(replay)assert.equal(replay.valid,true,row.name+' original replay');if(verify)assert.equal(verify.valid,true,row.name+' original verify');
+  const prefix=runtimeId+'/'+row.name,record={runtimeId,name:row.name,type,operation:row.operation??'analyze',requestOptions:options,expectedStatus:report.status,inputOrigin,input:write(prefix+'.input.json',input),report:write(prefix+'.report.json',report),calls:[]};
+  if(capsule)record.capsule=write(prefix+'.capsule.json',capsule);
+  const addCall=(op,args,expected,label)=>{operations.add(op);record.calls.push({operation:op,label,arguments:write(prefix+'.'+label+'.arguments.json',args),expected:write(prefix+'.'+label+'.expected.json',expected)});};
+  const [vop,rop]=apiMap[type]??(type==='execution'?[null,'replay-execution']:type==='diagnosis'?['verify-diagnosis',null]:['verify-cycle',null]);
+  if(verify){addCall(vop,verifyArgs,verify,'verify');const bad=structuredClone(verifyArgs);if(type==='cycle')bad[2].subtype='forged';else bad[1].status='forged';const method={'verify-v3':sdk.verifyV3,'verify-v1v2':sdk.replayReport,'verify-orm':sdk.verifyOrmProfileV3,'verify-classification':sdk.verifyClassificationV3,'verify-models':sdk.verifyModelsClassificationV3,'verify-model-profile':sdk.verifyModelProfileV3,'verify-diagnosis':sdk.verifyDiagnosisV3,'verify-cycle':sdk.verifyRegisterCycleExplanationV3}[vop];const negative=method(...bad);assert.equal(negative.valid,false);addCall(vop,bad,negative,'native-invalid');}
+  if(replay)addCall(rop,replayArgs,replay,'replay');
+  produced.push({record,report,input,capsule});cases.push(record);console.log(JSON.stringify({runtimeId,completed:produced.length,name:row.name,status:report.status??null}));
+ }
+ for(const old of public027.cases){const inputFile='fixtures/compat-v027/'+old.input.file,b=fs.readFileSync(resolve(base,'portable',inputFile));assert.equal(b.length,old.input.bytes);assert.equal(sha(b),old.input.sha256);await produce(old,b.toString('utf8'),{kind:'unchanged-raw-input-preserved-in-public028-package',member:'MoonTxnWitness-v0.2.8/'+inputFile,originalInputUnchanged:true,preservedPublishedInputOrigin:old.inputOrigin,actualDatabaseExecutedHere:false});}
+ for(const id of ['register-0','register-4','register-80']){const inputFile='fixtures/diagnosis-v3/'+id+'.json';await produce({name:'diagnosis-'+id,type:'diagnosis'},fs.readFileSync(resolve(base,'portable',inputFile),'utf8'),{kind:'unchanged-published-diagnosis-input',member:'MoonTxnWitness-v0.2.8/'+inputFile,synthetic:true,actualDatabaseExecutedHere:false});}
+ const normal=fs.readFileSync(resolve(base,'portable/fixtures/diagnosis-v3/register-80.json'),'utf8');await produce({name:'diagnosis-selected-subset',type:'diagnosis',requestOptions:{modelOptions:{models:['adya-pl-3-v1']}}},normal,{kind:'published-diagnosis-control-with-explicit-subset',actualDatabaseExecutedHere:false});
+ const register=fs.readFileSync(resolve(base,'portable/fixtures/compat-v027/register.input.json'),'utf8');await produce({name:'register-cycle',type:'cycle'},register,{kind:'unchanged-published-register-input',actualDatabaseExecutedHere:false});
+ const business=register.replaceAll('"x0"','"0.2.7"');assert.notEqual(business,register);await produce({name:'business-version-literal',type:'v3'},business,{kind:'explicitly-derived-synthetic-business-version-literal',changedLiteralFrom:'x0',changedLiteralTo:'0.2.7',sourceMember:'MoonTxnWitness-v0.2.8/fixtures/compat-v027/register.input.json',actualDatabaseExecutedHere:false});
+ // Expected CLI bytes are generated by the exact old CLI in each full producer.
+ for(const [name,command]of [['register-v1','replay'],['register','replay-v3'],['orm-actual-1','replay-orm-profile-v3'],['category-g0','replay-classification-v3'],['model-g0','replay-models-classification-v3'],['model-profile-list-values','replay-model-profile-v3'],['model-profile-relation-write-skew','replay-model-profile-v3'],['diagnosis-register-0','verify-diagnosis-v3']]){
+  const r=produced.find(x=>x.record.name===name).record,args=command==='verify-diagnosis-v3'?[command,resolve(out,r.input.file),resolve(out,r.report.file)]:[command,resolve(out,r.capsule.file)],child=spawnSync(process.execPath,[resolve(runtime,'moontxnwitness.mjs'),...args],{encoding:null,windowsHide:true,timeout:300000,maxBuffer:384*1024*1024});assert.equal(child.error,undefined);assert.equal(child.status,0,child.stderr?.toString());assert.equal(child.stderr.length,0);
+  cliCases.push({runtimeId,name,command,input:r.input,report:command==='verify-diagnosis-v3'?r.report:undefined,capsule:r.capsule,expectedStatus:child.status,stdout:write(runtimeId+'/'+name+'.cli.stdout.original',child.stdout),stderr:write(runtimeId+'/'+name+'.cli.stderr.original',child.stderr)});
+ }
+}
+assert.equal(operations.size,15);assert.equal(cases.length,104);assert.equal(cliCases.length,16);
+const m={format:'moontxnwitness-genuine-public028-dual-producer-fixtures/v1',producerEngineVersion:'0.2.8',sourceCommit,sourceFingerprint:sourceFp,portableSha256:origin.portable.sha256,sourceSha256:origin.source.sha256,providerOrigin: {file:'provider-origin.json',sha256:sha(fs.readFileSync(resolve(out,'provider-origin.json')))},variants:builds,originalModuleBytesUnchanged:true,originalSourceBuildProgramChanged:false,expectedRegeneratedByCurrentConsumer:false,headerRewriting:false,authorDistRead:false,actualDatabaseExecuted:false,formalPerformanceMeasured:false,fixedOperations:[...operations].sort(),casesPerVariant:52,cases,cliCases};
+const pin=write('manifest.json',m);console.log(JSON.stringify({passed:true,fixtures:cases.length,variants:2,operations:15,cli:16,fixtureManifestSha256:pin.sha256}));

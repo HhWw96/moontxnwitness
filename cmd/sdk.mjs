@@ -1,3 +1,4 @@
+import {routeLegacyV028} from './legacy-v028-dispatch.mjs';
 import { analyze_json, analyze_options_json, verify_certificate_json, shrink_json, shrink_options_json, replay_report_json, compare_models_json, version, analyze_v3_json, reduce_v3_json, verify_v3_json } from './core.mjs';
 import { normalize_capture_json, normalize_presence_json, normalize_capture_v3_json, normalize_capture_v3_options_json, dislock_sql_v3_proof_json, inspect_execution_failures_v3_json, orm_sql_source2_v3_proof_json } from './capture-core.mjs';
 
@@ -41,6 +42,7 @@ export function reduceV3(trace, options = {}) {
   return JSON.parse(reduce_v3_json(v3Text(trace, 8 * 1024 * 1024), v3Text(options, 4096)));
 }
 export function verifyV3(trace, report) {
+  const legacy028=routeLegacyV028('verify-v3',[trace,report],version());if(legacy028.matched)return legacy028.result;
   return JSON.parse(verify_v3_json(v3Text(trace, 8 * 1024 * 1024), v3Text(report, 32 * 1024 * 1024)));
 }
 export function normalizeCapture(trace) {
@@ -60,6 +62,7 @@ export function compareModels(history) {
   return JSON.parse(compare_models_json(typeof history === 'string' ? history : JSON.stringify(history)));
 }
 export function replayReport(history, report) {
+  const legacy028=routeLegacyV028('verify-v1v2',[history,report],version());if(legacy028.matched)return legacy028.result;
   return JSON.parse(replay_report_json(typeof history === 'string' ? history : JSON.stringify(history), typeof report === 'string' ? report : JSON.stringify(report)));
 }
 export function shrink(history) {
@@ -343,6 +346,7 @@ export function verifyRegisterCycleExplanationV3(trace, report, explanation) {
   if (explanation === null || typeof explanation !== 'object' || Array.isArray(explanation)) {
     throw new TypeError('Cycle explanation must be an object; parse saved JSON explicitly');
   }
+  const legacy028=routeLegacyV028('verify-cycle',[trace,report,explanation],version());if(legacy028.matched)return legacy028.result;
   const encoded = v3Text(explanation, 8 * 1024 * 1024);
   const expected = explainRegisterCycleV3(trace, report);
   return {valid: expected.verifiedReport && cycleEqualV3(JSON.parse(encoded), expected),
@@ -365,7 +369,7 @@ const executionBudgetsV3 = () => ({
 // A future release may add only individually reviewed released engine/algorithm
 // pairs here. No wildcard version migration or rewriting of diagnostic fields.
 const executionEngineSupportedV3 = recorded => recorded === version() ||
-  ['0.1.7', '0.1.8', '0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6', '0.2.7'].includes(recorded);
+  ['0.1.7', '0.1.8', '0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6', '0.2.7', '0.2.8'].includes(recorded);
 const executionScopeV3 = () => ({
   diagnosticRecomputationOnly: true,
   actualDatabaseExecution: false,
@@ -421,6 +425,7 @@ export function replayExecutionCapsuleV3(text) {
   if (Buffer.byteLength(text, 'utf8') > 32 * 1024 * 1024) return reject('execution-capsule-byte-budget');
   let capsule;
   try {capsule = JSON.parse(text);} catch {return reject('invalid-execution-capsule-json');}
+  const legacy028=routeLegacyV028('replay-execution',[text],version());if(legacy028.matched)return legacy028.result;
   if (capsule === null || typeof capsule !== 'object' || Array.isArray(capsule) ||
       capsule.format !== 'moontxnwitness-execution/v1' || capsule.schemaVersion !== 1 ||
       capsule.tool !== 'MoonTxnWitness' || !executionEngineSupportedV3(capsule.engineVersion) ||

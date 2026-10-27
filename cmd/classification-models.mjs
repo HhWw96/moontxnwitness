@@ -1,3 +1,4 @@
+import {routeLegacyV028} from './legacy-v028-dispatch.mjs';
 // Explicit six-definition model checks. Category SDK/reducer remains separate.
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
@@ -91,6 +92,7 @@ export function classifyModelsV3(source,options={}){
 export function verifyModelsClassificationV3(source,supplied,options){
   try{
     const text=bounded(supplied,BUDGETS.reportUtf8Bytes,'model report'),value=JSON.parse(text);
+    const legacy028=routeLegacyV028('verify-models',options===undefined?[source,supplied]:[source,supplied,options],version());if(legacy028.matched)return legacy028.result;
     if(value?.format==='moontxnwitness-isolation-model-report/v1'&&value.engine?.version==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('verify-models',options===undefined?[source,supplied]:[source,supplied,options]);
     if(value?.format==='moontxnwitness-isolation-model-report/v1'&&value.engine?.version==='0.2.6'&&version()!=='0.2.6')return callLegacyV026('verify-models',options===undefined?[source,supplied]:[source,supplied,options]);
     if(value?.format!=='moontxnwitness-isolation-model-report/v1'||value.algorithm!==ALGORITHM||typeof value.requestOptionsText!=='string')
@@ -116,6 +118,7 @@ export function replayModelsClassificationCapsuleV3(text){
   try{
     if(typeof text!=='string')return reject('model-capsule-must-be-original-text');
     bounded(text,BUDGETS.capsuleUtf8Bytes,'model capsule');const value=JSON.parse(text);
+    const legacy028=routeLegacyV028('replay-models',[text],version());if(legacy028.matched)return legacy028.result;
     if(value?.format==='moontxnwitness-isolation-models/v1'&&value.engine?.version==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('replay-models',[text]);
     if(value?.format==='moontxnwitness-isolation-models/v1'&&value.engine?.version==='0.2.6'&&version()!=='0.2.6')return callLegacyV026('replay-models',[text]);
     if(value?.format!=='moontxnwitness-isolation-models/v1'||value.schemaVersion!==1||value.tool!=='MoonTxnWitness'||

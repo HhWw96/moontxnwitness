@@ -9,6 +9,7 @@ import {copyFrozenLegacyV024} from './legacy-v024-runtime.mjs';
 import {copyFrozenLegacyV025} from './legacy-v025-runtime.mjs';
 import {copyFrozenLegacyV026} from './legacy-v026-runtime.mjs';
 import {copyFrozenLegacyV027} from './legacy-v027-runtime.mjs';
+import {copyFrozenLegacyV028} from './legacy-v028-runtime.mjs';
 import { resolveMoonRuntimeNotices } from './moon-runtime-notices.mjs';
 
 const runtimeNotices = resolveMoonRuntimeNotices({ root });
@@ -29,6 +30,8 @@ for(const name of ['legacy-v026.mjs','legacy-v026-runtime.mjs','legacy-v026-work
 await copyFrozenLegacyV026(root,output);
 for(const name of ['legacy-v027.mjs','legacy-v027-runtime.mjs','legacy-v027-worker.mjs','legacy-v027-binding.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
 await copyFrozenLegacyV027(root,output);
+for(const name of ['legacy-v028.mjs','legacy-v028-runtime.mjs','legacy-v028-worker.mjs','legacy-v028-policy.mjs','legacy-v028-dispatch.mjs','legacy-v028-binding.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
+await copyFrozenLegacyV028(root,output);
 const core = await import(pathToFileURL(resolve(output, 'core.mjs')).href + `?build=${Date.now()}`);
 const packageVersion = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
 const sourceVersion = readFileSync(resolve(root, 'moon.mod'), 'utf8').match(/^version\s*=\s*"([^"]+)"/m)?.[1];

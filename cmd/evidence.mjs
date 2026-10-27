@@ -1,3 +1,4 @@
+import {routeLegacyV028} from './legacy-v028-dispatch.mjs';
 import { createHash } from 'node:crypto';
 import { capsule_content_json, replay_report_json, version, capsule_v3_content_json, analyze_v3_json, verify_v3_json } from './core.mjs';
 
@@ -12,6 +13,7 @@ export function makeCapsule(historyText, report) {
 }
 
 export function replayCapsule(text) {
+  const legacy028=routeLegacyV028('replay-v1v2',[text],version());if(legacy028.matched)return legacy028.result;
   const content = JSON.parse(capsule_content_json(text));
   if (!content.valid) return content;
   if (hash(content.historyText) !== content.historySha256 || hash(content.reportText) !== content.reportSha256) return { valid: false, reason: '复现包内容的 SHA-256 不匹配' };
@@ -37,6 +39,7 @@ export function makeCapsuleV3(trace, report) {
 }
 
 export function replayCapsuleV3(text) {
+  const legacy028=routeLegacyV028('replay-v3',[text],version());if(legacy028.matched)return legacy028.result;
   if (Buffer.byteLength(text, 'utf8') > 32 * 1024 * 1024) return {valid:false,reason:'v3 capsule exceeds 32 MiB UTF-8'};
   const parsed = JSON.parse(capsule_v3_content_json(text));
   if (!parsed.valid) return parsed;

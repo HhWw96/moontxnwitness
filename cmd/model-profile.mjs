@@ -1,3 +1,4 @@
+import {routeLegacyV028} from './legacy-v028-dispatch.mjs';
 // Explicit source-verified synchronous model profile. Old v3/ORM APIs stay separate.
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
@@ -71,6 +72,7 @@ export function analyzeModelProfileV3(envelope,options={}){
 export function verifyModelProfileV3(envelope,supplied,options){
   try{
     const text=bounded(supplied,BUDGETS.reportUtf8Bytes,'model report'),parsed=JSON.parse(text);
+    const legacy028=routeLegacyV028('verify-model-profile',options===undefined?[envelope,supplied]:[envelope,supplied,options],version());if(legacy028.matched)return legacy028.result;
     if(parsed?.format==='moontxnwitness-model-profile-report/v1'&&parsed.engine?.version==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('verify-model-profile',options===undefined?[envelope,supplied]:[envelope,supplied,options]);
     if(parsed?.format!=='moontxnwitness-model-profile-report/v1'||parsed.algorithm!==ALGORITHM||
        parsed.sourceAlgorithm!==SOURCE_ALGORITHM||parsed.profile!==PROFILE||typeof parsed.requestOptionsText!=='string')
@@ -102,6 +104,7 @@ export function replayModelProfileCapsuleV3(text){
   try{
     if(typeof text!=='string')return reject('model-capsule-must-be-original-text');
     bounded(text,BUDGETS.capsuleUtf8Bytes,'model capsule');const value=JSON.parse(text);
+    const legacy028=routeLegacyV028('replay-model-profile',[text],version());if(legacy028.matched)return legacy028.result;
     if(value?.format==='moontxnwitness-model-profile/v1'&&value.engine?.version==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('replay-model-profile',[text]);
     if(value?.format!=='moontxnwitness-model-profile/v1'||value.schemaVersion!==1||value.tool!=='MoonTxnWitness'||
        value.algorithm!==ALGORITHM||value.sourceAlgorithm!==SOURCE_ALGORITHM||value.profile!==PROFILE||

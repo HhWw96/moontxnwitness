@@ -1,3 +1,4 @@
+import {routeLegacyV028} from './legacy-v028-dispatch.mjs';
 // Explicit category classification and source-checked category reduction.
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
@@ -148,6 +149,7 @@ export function reduceClassificationV3(source,options){
 export function verifyClassificationV3(source,supplied,options){
   try{
     const text=bounded(supplied,BUDGETS.reportUtf8Bytes,'classification report'),report=JSON.parse(text);
+    const legacy028=routeLegacyV028('verify-classification',options===undefined?[source,supplied]:[source,supplied,options],version());if(legacy028.matched)return legacy028.result;
     if(report?.format==='moontxnwitness-classification-report/v1'&&report.engine?.version==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('verify-classification',options===undefined?[source,supplied]:[source,supplied,options]);
     if(report?.format==='moontxnwitness-classification-report/v1'&&report.engine?.version==='0.2.6'&&version()!=='0.2.6')return callLegacyV026('verify-classification',options===undefined?[source,supplied]:[source,supplied,options]);
     if(report?.format==='moontxnwitness-classification-report/v1'&&report.engine?.version==='0.2.5'&&version()!=='0.2.5')return callLegacyV025('verify-classification',options===undefined?[source,supplied]:[source,supplied,options]);
@@ -182,6 +184,7 @@ export function replayClassificationCapsuleV3(text){
   try{
     if(typeof text!=='string')return reject('classification-capsule-must-be-original-text');
     bounded(text,BUDGETS.capsuleUtf8Bytes,'classification capsule');const value=JSON.parse(text);
+    const legacy028=routeLegacyV028('replay-classification',[text],version());if(legacy028.matched)return legacy028.result;
     if(value?.format==='moontxnwitness-classification/v1'&&value.engine?.version==='0.2.7'&&version()!=='0.2.7')return callLegacyV027('replay-classification',[text]);
     if(value?.format==='moontxnwitness-classification/v1'&&value.engine?.version==='0.2.6'&&version()!=='0.2.6')return callLegacyV026('replay-classification',[text]);
     if(value?.format==='moontxnwitness-classification/v1'&&value.engine?.version==='0.2.5'&&version()!=='0.2.5')return callLegacyV025('replay-classification',[text]);

@@ -1,0 +1,755 @@
+{
+  "valid": true,
+  "status": "violation",
+  "analysisCoverageAccepted": true,
+  "envelopeText": "{\"format\":\"moontxnwitness-model-profile-source/v1\",\"profile\":\"pg18-configured-models/1\",\"traceText\":\"{\\\"traceSchema\\\":3,\\\"clockDomain\\\":\\\"mtw-v3-67c0d00a217a443c8fb0b382ddf9a80f\\\",\\\"scope\\\":{\\\"exclusiveWriters\\\":false},\\\"sqlProfiles\\\":[],\\\"gaps\\\":[{\\\"code\\\":\\\"initialization_unproven\\\",\\\"message\\\":\\\"The initial database snapshot has not been established as consistent.\\\"},{\\\"code\\\":\\\"diagnostic_instrumentation_only\\\",\\\"message\\\":\\\"No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage.\\\"},{\\\"code\\\":\\\"source_unsealed\\\",\\\"message\\\":\\\"Journal and explicit source window have not both been sealed.\\\"},{\\\"code\\\":\\\"diagnostic_only\\\",\\\"message\\\":\\\"This export is incomplete diagnostic evidence, not a complete analysis input.\\\"}],\\\"events\\\":[{\\\"consistent\\\":false,\\\"initial\\\":{},\\\"kind\\\":\\\"snapshot\\\",\\\"seq\\\":1,\\\"time\\\":15000000},{\\\"connection\\\":\\\"connection-671afa1372e14533b205ba3b43f0a2b3\\\",\\\"kind\\\":\\\"begin\\\",\\\"seq\\\":2,\\\"time\\\":328000000,\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\"},{\\\"executedSql\\\":\\\"SELECT id,balance,active,region,version FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE \\\\\\\"active\\\\\\\"=%s AND \\\\\\\"balance\\\\\\\">=%s ORDER BY id\\\",\\\"kind\\\":\\\"statement\\\",\\\"mappingId\\\":\\\"configured-model/row-read\\\",\\\"parameters\\\":[true,0],\\\"seq\\\":3,\\\"sql\\\":\\\"SELECT id,balance,active,region FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE \\\\\\\"active\\\\\\\"=%s AND \\\\\\\"balance\\\\\\\">=%s ORDER BY id\\\",\\\"time\\\":328000000,\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\"},{\\\"columns\\\":[{\\\"name\\\":\\\"id\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"balance\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"active\\\",\\\"typeCode\\\":16},{\\\"name\\\":\\\"region\\\",\\\"typeCode\\\":25}],\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[[1,10,true,\\\"east\\\"],[2,20,true,\\\"east\\\"]],\\\"seq\\\":4,\\\"statement\\\":3,\\\"time\\\":343000000,\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\"},{\\\"connection\\\":\\\"connection-a485d63a15524f9790f2da1d8925c3b6\\\",\\\"kind\\\":\\\"begin\\\",\\\"seq\\\":5,\\\"time\\\":343000000,\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\"},{\\\"executedSql\\\":\\\"SELECT id,balance,active,region,version FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE \\\\\\\"active\\\\\\\"=%s AND \\\\\\\"balance\\\\\\\">=%s ORDER BY id\\\",\\\"kind\\\":\\\"statement\\\",\\\"mappingId\\\":\\\"configured-model/row-read\\\",\\\"parameters\\\":[true,0],\\\"seq\\\":6,\\\"sql\\\":\\\"SELECT id,balance,active,region FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE \\\\\\\"active\\\\\\\"=%s AND \\\\\\\"balance\\\\\\\">=%s ORDER BY id\\\",\\\"time\\\":343000000,\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\"},{\\\"columns\\\":[{\\\"name\\\":\\\"id\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"balance\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"active\\\",\\\"typeCode\\\":16},{\\\"name\\\":\\\"region\\\",\\\"typeCode\\\":25}],\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[[1,10,true,\\\"east\\\"],[2,20,true,\\\"east\\\"]],\\\"seq\\\":7,\\\"statement\\\":6,\\\"time\\\":359000000,\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\"},{\\\"executedSql\\\":\\\"UPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" SET balance=%s,active=%s,region=%s WHERE id=%s RETURNING WITH (OLD AS o,NEW AS n) n.id,n.balance,n.active,n.region,n.version,o.version\\\",\\\"kind\\\":\\\"statement\\\",\\\"mappingId\\\":\\\"configured-model/row-update\\\",\\\"parameters\\\":[10,false,\\\"east\\\",1],\\\"seq\\\":8,\\\"sql\\\":\\\"UPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" SET balance=%s,active=%s,region=%s WHERE id=%s RETURNING id,balance,active,region\\\",\\\"time\\\":359000000,\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\"},{\\\"columns\\\":[{\\\"name\\\":\\\"id\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"balance\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"active\\\",\\\"typeCode\\\":16},{\\\"name\\\":\\\"region\\\",\\\"typeCode\\\":25}],\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[[1,10,false,\\\"east\\\"]],\\\"seq\\\":9,\\\"statement\\\":8,\\\"time\\\":375000000,\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\"},{\\\"executedSql\\\":\\\"UPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" SET balance=%s,active=%s,region=%s WHERE id=%s RETURNING WITH (OLD AS o,NEW AS n) n.id,n.balance,n.active,n.region,n.version,o.version\\\",\\\"kind\\\":\\\"statement\\\",\\\"mappingId\\\":\\\"configured-model/row-update\\\",\\\"parameters\\\":[20,false,\\\"east\\\",2],\\\"seq\\\":10,\\\"sql\\\":\\\"UPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" SET balance=%s,active=%s,region=%s WHERE id=%s RETURNING id,balance,active,region\\\",\\\"time\\\":375000000,\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\"},{\\\"columns\\\":[{\\\"name\\\":\\\"id\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"balance\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"active\\\",\\\"typeCode\\\":16},{\\\"name\\\":\\\"region\\\",\\\"typeCode\\\":25}],\\\"complete\\\":true,\\\"kind\\\":\\\"rows\\\",\\\"rows\\\":[[2,20,false,\\\"east\\\"]],\\\"seq\\\":11,\\\"statement\\\":10,\\\"time\\\":406000000,\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\"},{\\\"kind\\\":\\\"commit_request\\\",\\\"seq\\\":12,\\\"time\\\":406000000,\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\"},{\\\"kind\\\":\\\"commit_ok\\\",\\\"seq\\\":13,\\\"time\\\":421000000,\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\"},{\\\"kind\\\":\\\"commit_request\\\",\\\"seq\\\":14,\\\"time\\\":421000000,\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\"},{\\\"kind\\\":\\\"commit_ok\\\",\\\"seq\\\":15,\\\"time\\\":421000000,\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\"}]}\\n\",\"sourceJournalText\":\"{\\\"controlSchema\\\":\\\"orm-control-query/1\\\",\\\"coreProofAccepted\\\":false,\\\"kind\\\":\\\"header\\\",\\\"sourceSchema\\\":\\\"orm-source-draft/2\\\",\\\"sourceSeq\\\":1}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"QkVHSU4=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"BEGIN\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":2,\\\"sql\\\":\\\"BEGIN\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"IDLE\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIFNDSEVNQQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE SCHEMA\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":3,\\\"sql\\\":\\\"CREATE SCHEMA \\\\\\\"model_e32d8150f2904eee\\\\\\\"\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIFRBQkxF\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE TABLE\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":4,\\\"sql\\\":\\\"CREATE TABLE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\"(id bigint PRIMARY KEY,balance bigint NOT NULL,active boolean NOT NULL,region text COLLATE \\\\\\\"C\\\\\\\" NOT NULL,version uuid NOT NULL)\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIFRBQkxF\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE TABLE\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":5,\\\"sql\\\":\\\"CREATE TABLE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\"(key bigint PRIMARY KEY,version uuid,present boolean NOT NULL)\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIFRBQkxF\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE TABLE\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":6,\\\"sql\\\":\\\"CREATE TABLE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\"(version uuid PRIMARY KEY,key bigint NOT NULL,predecessor uuid,action text NOT NULL,old_present boolean NOT NULL,new_present boolean NOT NULL,image jsonb)\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIFRBQkxF\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE TABLE\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":7,\\\"sql\\\":\\\"CREATE TABLE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"effects\\\\\\\"(LIKE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" INCLUDING ALL)\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIElOREVY\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE INDEX\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":8,\\\"sql\\\":\\\"CREATE UNIQUE INDEX ON \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"effects\\\\\\\"(predecessor) WHERE predecessor IS NOT NULL\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIEZVTkNUSU9O\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE FUNCTION\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":9,\\\"sql\\\":\\\"CREATE FUNCTION \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"before\\\\\\\"() RETURNS trigger LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path=pg_catalog AS $model$DECLARE k bigint; p uuid; live boolean; v uuid; BEGIN\\\\nIF TG_OP<>'DELETE' AND (NEW.id IS NULL OR NEW.balance IS NULL OR NEW.active IS NULL OR NEW.region IS NULL) THEN RETURN NEW; END IF;\\\\nIF TG_OP='UPDATE' AND NEW.id IS DISTINCT FROM OLD.id THEN RAISE EXCEPTION 'primary key mutation'; END IF;\\\\nk:=CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END;\\\\nSELECT version,present INTO p,live FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" WHERE key=k FOR UPDATE;\\\\nIF NOT FOUND THEN RAISE EXCEPTION 'key outside configured domain'; END IF;\\\\nIF TG_OP<>'INSERT' AND (NOT live OR p IS DISTINCT FROM OLD.version) THEN RAISE EXCEPTION 'source mismatch'; END IF;\\\\nv:=gen_random_uuid();\\\\nINSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" VALUES(v,k,p,TG_OP,live,TG_OP<>'DELETE',CASE WHEN TG_OP='DELETE' THEN NULL ELSE jsonb_build_object('balance',NEW.balance::text,'active',NEW.active,'region',NEW.region) END);\\\\nIF TG_OP='DELETE' THEN RETURN OLD; ELSE NEW.version:=v; RETURN NEW; END IF;\\\\nEND$model$\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIEZVTkNUSU9O\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE FUNCTION\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":10,\\\"sql\\\":\\\"CREATE FUNCTION \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"after\\\\\\\"() RETURNS trigger LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path=pg_catalog AS $model$DECLARE v uuid; c record; n integer; BEGIN\\\\nv:=CASE WHEN TG_OP='DELETE' THEN \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"delete_token\\\\\\\"(OLD.id,OLD.version) ELSE NEW.version END;\\\\nSELECT * INTO c FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v;\\\\nIF NOT FOUND OR c.action<>TG_OP OR c.key IS DISTINCT FROM (CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END) OR c.image IS DISTINCT FROM (CASE WHEN TG_OP='DELETE' THEN NULL ELSE jsonb_build_object('balance',NEW.balance::text,'active',NEW.active,'region',NEW.region) END) THEN RAISE EXCEPTION 'actual effect mismatch'; END IF;\\\\nIF TG_OP='INSERT' AND c.old_present THEN RAISE EXCEPTION 'insert presence mismatch'; END IF;\\\\nUPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" SET version=v,present=(TG_OP<>'DELETE') WHERE key=c.key AND version IS NOT DISTINCT FROM c.predecessor AND present=c.old_present;\\\\nGET DIAGNOSTICS n=ROW_COUNT; IF n<>1 THEN RAISE EXCEPTION 'effect state mismatch'; END IF;\\\\nINSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"effects\\\\\\\" SELECT * FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v;\\\\nIF TG_OP='DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF;\\\\nEND$model$\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIEZVTkNUSU9O\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE FUNCTION\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":11,\\\"sql\\\":\\\"CREATE FUNCTION \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"predecessor\\\\\\\"(v uuid) RETURNS uuid LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path=pg_catalog AS $model$DECLARE n integer; p uuid; BEGIN SELECT count(*),min(predecessor::text)::uuid INTO n,p FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v; IF n<>1 THEN RAISE EXCEPTION 'predecessor not unique'; END IF; RETURN p; END$model$\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIEZVTkNUSU9O\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE FUNCTION\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":12,\\\"sql\\\":\\\"CREATE FUNCTION \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"delete_token\\\\\\\"(k bigint,p uuid) RETURNS uuid LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path=pg_catalog AS $model$DECLARE n integer; v uuid; BEGIN SELECT count(*),min(version::text)::uuid INTO n,v FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE key=k AND predecessor=p AND action='DELETE'; IF n<>1 THEN RAISE EXCEPTION 'delete not unique'; END IF; RETURN v; END$model$\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[1,10,true,\\\"east\\\"],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"SU5TRVJUIDAgMQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":1,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"INSERT 0 1\\\",\\\"complete\\\":true,\\\"rowcount\\\":1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":13,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" VALUES(%s,%s,%s,%s,gen_random_uuid())\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[2,20,true,\\\"east\\\"],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"SU5TRVJUIDAgMQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":1,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"INSERT 0 1\\\",\\\"complete\\\":true,\\\"rowcount\\\":1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":14,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" VALUES(%s,%s,%s,%s,gen_random_uuid())\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[1,1],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"SU5TRVJUIDAgMQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":1,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"INSERT 0 1\\\",\\\"complete\\\":true,\\\"rowcount\\\":1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":15,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" SELECT %s,version,true FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE id=%s\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[1],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"SU5TRVJUIDAgMA==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":0,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"INSERT 0 0\\\",\\\"complete\\\":true,\\\"rowcount\\\":0,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":16,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" VALUES(%s,NULL,false) ON CONFLICT DO NOTHING\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[2,2],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"SU5TRVJUIDAgMQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":1,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"INSERT 0 1\\\",\\\"complete\\\":true,\\\"rowcount\\\":1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":17,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" SELECT %s,version,true FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE id=%s\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[2],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"SU5TRVJUIDAgMA==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":0,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"INSERT 0 0\\\",\\\"complete\\\":true,\\\"rowcount\\\":0,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":18,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" VALUES(%s,NULL,false) ON CONFLICT DO NOTHING\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[3,3],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"SU5TRVJUIDAgMA==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":0,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"INSERT 0 0\\\",\\\"complete\\\":true,\\\"rowcount\\\":0,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":19,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" SELECT %s,version,true FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE id=%s\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[3],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"SU5TRVJUIDAgMQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":1,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"INSERT 0 1\\\",\\\"complete\\\":true,\\\"rowcount\\\":1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":20,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" VALUES(%s,NULL,false) ON CONFLICT DO NOTHING\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[4,4],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"SU5TRVJUIDAgMA==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":0,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"INSERT 0 0\\\",\\\"complete\\\":true,\\\"rowcount\\\":0,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":21,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" SELECT %s,version,true FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE id=%s\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[4],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"SU5TRVJUIDAgMQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":1,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"INSERT 0 1\\\",\\\"complete\\\":true,\\\"rowcount\\\":1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":22,\\\"sql\\\":\\\"INSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" VALUES(%s,NULL,false) ON CONFLICT DO NOTHING\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIFRSSUdHRVI=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE TRIGGER\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":23,\\\"sql\\\":\\\"CREATE TRIGGER model_before BEFORE INSERT OR UPDATE OR DELETE ON \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" FOR EACH ROW EXECUTE FUNCTION \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"before\\\\\\\"()\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q1JFQVRFIFRSSUdHRVI=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"CREATE TRIGGER\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":24,\\\"sql\\\":\\\"CREATE TRIGGER model_after AFTER INSERT OR UPDATE OR DELETE ON \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" FOR EACH ROW EXECUTE FUNCTION \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"after\\\\\\\"()\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q09NTUlU\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"COMMIT\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":25,\\\"sql\\\":\\\"COMMIT\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-1\\\",\\\"transactionStatusAfter\\\":\\\"IDLE\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"QkVHSU4=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"BEGIN\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":26,\\\"sql\\\":\\\"BEGIN\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-2\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"IDLE\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"TE9DSyBUQUJMRQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"LOCK TABLE\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":27,\\\"sql\\\":\\\"LOCK TABLE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\",\\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\",\\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\",\\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"effects\\\\\\\" IN ACCESS EXCLUSIVE MODE\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-2\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDI=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":2,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":2,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"eyJrZXkiOiAiMSIsICJ2YWx1ZXMiOiB7ImFjdGl2ZSI6IHRydWUsICJyZWdpb24iOiAiZWFzdCIsICJiYWxhbmNlIjogIjEwIn0sICJ2ZXJzaW9uIjogIjllMjg1Y2Y5LThmODktNDBjYS1hNmZlLTA2MmQ5OTQ2ZGU3ZSJ9\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJrZXkiOiAiMiIsICJ2YWx1ZXMiOiB7ImFjdGl2ZSI6IHRydWUsICJyZWdpb24iOiAiZWFzdCIsICJiYWxhbmNlIjogIjIwIn0sICJ2ZXJzaW9uIjogIjg1YmQwNzZlLTc4MjAtNDY2NC1iZGFmLWI4MTc5NTY4OWI5NyJ9\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 2\\\",\\\"complete\\\":true,\\\"rowcount\\\":2,\\\"rows\\\":[[{\\\"key\\\":\\\"1\\\",\\\"values\\\":{\\\"active\\\":true,\\\"balance\\\":\\\"10\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"9e285cf9-8f89-40ca-a6fe-062d9946de7e\\\"}],[{\\\"key\\\":\\\"2\\\",\\\"values\\\":{\\\"active\\\":true,\\\"balance\\\":\\\"20\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"85bd076e-7820-4664-bdaf-b81795689b97\\\"}]],\\\"status\\\":2},\\\"sourceSeq\\\":28,\\\"sql\\\":\\\"SELECT jsonb_build_object('key',id::text,'version',version::text,'values',jsonb_build_object('balance',balance::text,'active',active,'region',region)) FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" ORDER BY id\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-2\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDA=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":0,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 0\\\",\\\"complete\\\":true,\\\"rowcount\\\":0,\\\"rows\\\":[],\\\"status\\\":2},\\\"sourceSeq\\\":29,\\\"sql\\\":\\\"SELECT jsonb_build_object('key',key::text,'version',version::text,'predecessor',predecessor::text,'action',action,'oldPresent',old_present,'newPresent',new_present,'values',image) FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"effects\\\\\\\" ORDER BY key,version\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-2\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDQ=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":4,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":4,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"eyJrZXkiOiAiMSIsICJwcmVzZW50IjogdHJ1ZSwgInZlcnNpb24iOiAiOWUyODVjZjktOGY4OS00MGNhLWE2ZmUtMDYyZDk5NDZkZTdlIn0=\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJrZXkiOiAiMiIsICJwcmVzZW50IjogdHJ1ZSwgInZlcnNpb24iOiAiODViZDA3NmUtNzgyMC00NjY0LWJkYWYtYjgxNzk1Njg5Yjk3In0=\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJrZXkiOiAiMyIsICJwcmVzZW50IjogZmFsc2UsICJ2ZXJzaW9uIjogbnVsbH0=\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJrZXkiOiAiNCIsICJwcmVzZW50IjogZmFsc2UsICJ2ZXJzaW9uIjogbnVsbH0=\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 4\\\",\\\"complete\\\":true,\\\"rowcount\\\":4,\\\"rows\\\":[[{\\\"key\\\":\\\"1\\\",\\\"present\\\":true,\\\"version\\\":\\\"9e285cf9-8f89-40ca-a6fe-062d9946de7e\\\"}],[{\\\"key\\\":\\\"2\\\",\\\"present\\\":true,\\\"version\\\":\\\"85bd076e-7820-4664-bdaf-b81795689b97\\\"}],[{\\\"key\\\":\\\"3\\\",\\\"present\\\":false,\\\"version\\\":null}],[{\\\"key\\\":\\\"4\\\",\\\"present\\\":false,\\\"version\\\":null}]],\\\"status\\\":2},\\\"sourceSeq\\\":30,\\\"sql\\\":\\\"SELECT jsonb_build_object('key',key::text,'version',version::text,'present',present) FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" ORDER BY key\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-2\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[\\\"model_e32d8150f2904eee\\\"],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDQ=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":4,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":4,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"eyJib2R5IjogIkRFQ0xBUkUgdiB1dWlkOyBjIHJlY29yZDsgbiBpbnRlZ2VyOyBCRUdJTlxudjo9Q0FTRSBXSEVOIFRHX09QPSdERUxFVEUnIFRIRU4gXCJtb2RlbF9lMzJkODE1MGYyOTA0ZWVlXCIuXCJkZWxldGVfdG9rZW5cIihPTEQuaWQsT0xELnZlcnNpb24pIEVMU0UgTkVXLnZlcnNpb24gRU5EO1xuU0VMRUNUICogSU5UTyBjIEZST00gXCJtb2RlbF9lMzJkODE1MGYyOTA0ZWVlXCIuXCJjYW5kaWRhdGVzXCIgV0hFUkUgdmVyc2lvbj12O1xuSUYgTk9UIEZPVU5EIE9SIGMuYWN0aW9uPD5UR19PUCBPUiBjLmtleSBJUyBESVNUSU5DVCBGUk9NIChDQVNFIFdIRU4gVEdfT1A9J0RFTEVURScgVEhFTiBPTEQuaWQgRUxTRSBORVcuaWQgRU5EKSBPUiBjLmltYWdlIElTIERJU1RJTkNUIEZST00gKENBU0UgV0hFTiBUR19PUD0nREVMRVRFJyBUSEVOIE5VTEwgRUxTRSBqc29uYl9idWlsZF9vYmplY3QoJ2JhbGFuY2UnLE5FVy5iYWxhbmNlOjp0ZXh0LCdhY3RpdmUnLE5FVy5hY3RpdmUsJ3JlZ2lvbicsTkVXLnJlZ2lvbikgRU5EKSBUSEVOIFJBSVNFIEVYQ0VQVElPTiAnYWN0dWFsIGVmZmVjdCBtaXNtYXRjaCc7IEVORCBJRjtcbklGIFRHX09QPSdJTlNFUlQnIEFORCBjLm9sZF9wcmVzZW50IFRIRU4gUkFJU0UgRVhDRVBUSU9OICdpbnNlcnQgcHJlc2VuY2UgbWlzbWF0Y2gnOyBFTkQgSUY7XG5VUERBVEUgXCJtb2RlbF9lMzJkODE1MGYyOTA0ZWVlXCIuXCJzdGF0ZVwiIFNFVCB2ZXJzaW9uPXYscHJlc2VudD0oVEdfT1A8PidERUxFVEUnKSBXSEVSRSBrZXk9Yy5rZXkgQU5EIHZlcnNpb24gSVMgTk9UIERJU1RJTkNUIEZST00gYy5wcmVkZWNlc3NvciBBTkQgcHJlc2VudD1jLm9sZF9wcmVzZW50O1xuR0VUIERJQUdOT1NUSUNTIG49Uk9XX0NPVU5UOyBJRiBuPD4xIFRIRU4gUkFJU0UgRVhDRVBUSU9OICdlZmZlY3Qgc3RhdGUgbWlzbWF0Y2gnOyBFTkQgSUY7XG5JTlNFUlQgSU5UTyBcIm1vZGVsX2UzMmQ4MTUwZjI5MDRlZWVcIi5cImVmZmVjdHNcIiBTRUxFQ1QgKiBGUk9NIFwibW9kZWxfZTMyZDgxNTBmMjkwNGVlZVwiLlwiY2FuZGlkYXRlc1wiIFdIRVJFIHZlcnNpb249djtcbklGIFRHX09QPSdERUxFVEUnIFRIRU4gUkVUVVJOIE9MRDsgRUxTRSBSRVRVUk4gTkVXOyBFTkQgSUY7XG5FTkQiLCAibmFtZSI6ICJhZnRlciIsICJjb25maWciOiBbInNlYXJjaF9wYXRoPXBnX2NhdGFsb2ciXSwgInJldHVybiI6ICJ0cmlnZ2VyIiwgImxhbmd1YWdlIjogInBscGdzcWwiLCAiYXJndW1lbnRzIjogIiIsICJ2b2xhdGlsaXR5IjogInYiLCAic2VjdXJpdHlEZWZpbmVyIjogZmFsc2V9\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJib2R5IjogIkRFQ0xBUkUgayBiaWdpbnQ7IHAgdXVpZDsgbGl2ZSBib29sZWFuOyB2IHV1aWQ7IEJFR0lOXG5JRiBUR19PUDw+J0RFTEVURScgQU5EIChORVcuaWQgSVMgTlVMTCBPUiBORVcuYmFsYW5jZSBJUyBOVUxMIE9SIE5FVy5hY3RpdmUgSVMgTlVMTCBPUiBORVcucmVnaW9uIElTIE5VTEwpIFRIRU4gUkVUVVJOIE5FVzsgRU5EIElGO1xuSUYgVEdfT1A9J1VQREFURScgQU5EIE5FVy5pZCBJUyBESVNUSU5DVCBGUk9NIE9MRC5pZCBUSEVOIFJBSVNFIEVYQ0VQVElPTiAncHJpbWFyeSBrZXkgbXV0YXRpb24nOyBFTkQgSUY7XG5rOj1DQVNFIFdIRU4gVEdfT1A9J0RFTEVURScgVEhFTiBPTEQuaWQgRUxTRSBORVcuaWQgRU5EO1xuU0VMRUNUIHZlcnNpb24scHJlc2VudCBJTlRPIHAsbGl2ZSBGUk9NIFwibW9kZWxfZTMyZDgxNTBmMjkwNGVlZVwiLlwic3RhdGVcIiBXSEVSRSBrZXk9ayBGT1IgVVBEQVRFO1xuSUYgTk9UIEZPVU5EIFRIRU4gUkFJU0UgRVhDRVBUSU9OICdrZXkgb3V0c2lkZSBjb25maWd1cmVkIGRvbWFpbic7IEVORCBJRjtcbklGIFRHX09QPD4nSU5TRVJUJyBBTkQgKE5PVCBsaXZlIE9SIHAgSVMgRElTVElOQ1QgRlJPTSBPTEQudmVyc2lvbikgVEhFTiBSQUlTRSBFWENFUFRJT04gJ3NvdXJjZSBtaXNtYXRjaCc7IEVORCBJRjtcbnY6PWdlbl9yYW5kb21fdXVpZCgpO1xuSU5TRVJUIElOVE8gXCJtb2RlbF9lMzJkODE1MGYyOTA0ZWVlXCIuXCJjYW5kaWRhdGVzXCIgVkFMVUVTKHYsayxwLFRHX09QLGxpdmUsVEdfT1A8PidERUxFVEUnLENBU0UgV0hFTiBUR19PUD0nREVMRVRFJyBUSEVOIE5VTEwgRUxTRSBqc29uYl9idWlsZF9vYmplY3QoJ2JhbGFuY2UnLE5FVy5iYWxhbmNlOjp0ZXh0LCdhY3RpdmUnLE5FVy5hY3RpdmUsJ3JlZ2lvbicsTkVXLnJlZ2lvbikgRU5EKTtcbklGIFRHX09QPSdERUxFVEUnIFRIRU4gUkVUVVJOIE9MRDsgRUxTRSBORVcudmVyc2lvbjo9djsgUkVUVVJOIE5FVzsgRU5EIElGO1xuRU5EIiwgIm5hbWUiOiAiYmVmb3JlIiwgImNvbmZpZyI6IFsic2VhcmNoX3BhdGg9cGdfY2F0YWxvZyJdLCAicmV0dXJuIjogInRyaWdnZXIiLCAibGFuZ3VhZ2UiOiAicGxwZ3NxbCIsICJhcmd1bWVudHMiOiAiIiwgInZvbGF0aWxpdHkiOiAidiIsICJzZWN1cml0eURlZmluZXIiOiBmYWxzZX0=\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJib2R5IjogIkRFQ0xBUkUgbiBpbnRlZ2VyOyB2IHV1aWQ7IEJFR0lOIFNFTEVDVCBjb3VudCgqKSxtaW4odmVyc2lvbjo6dGV4dCk6OnV1aWQgSU5UTyBuLHYgRlJPTSBcIm1vZGVsX2UzMmQ4MTUwZjI5MDRlZWVcIi5cImNhbmRpZGF0ZXNcIiBXSEVSRSBrZXk9ayBBTkQgcHJlZGVjZXNzb3I9cCBBTkQgYWN0aW9uPSdERUxFVEUnOyBJRiBuPD4xIFRIRU4gUkFJU0UgRVhDRVBUSU9OICdkZWxldGUgbm90IHVuaXF1ZSc7IEVORCBJRjsgUkVUVVJOIHY7IEVORCIsICJuYW1lIjogImRlbGV0ZV90b2tlbiIsICJjb25maWciOiBbInNlYXJjaF9wYXRoPXBnX2NhdGFsb2ciXSwgInJldHVybiI6ICJ1dWlkIiwgImxhbmd1YWdlIjogInBscGdzcWwiLCAiYXJndW1lbnRzIjogImsgYmlnaW50LCBwIHV1aWQiLCAidm9sYXRpbGl0eSI6ICJ2IiwgInNlY3VyaXR5RGVmaW5lciI6IGZhbHNlfQ==\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJib2R5IjogIkRFQ0xBUkUgbiBpbnRlZ2VyOyBwIHV1aWQ7IEJFR0lOIFNFTEVDVCBjb3VudCgqKSxtaW4ocHJlZGVjZXNzb3I6OnRleHQpOjp1dWlkIElOVE8gbixwIEZST00gXCJtb2RlbF9lMzJkODE1MGYyOTA0ZWVlXCIuXCJjYW5kaWRhdGVzXCIgV0hFUkUgdmVyc2lvbj12OyBJRiBuPD4xIFRIRU4gUkFJU0UgRVhDRVBUSU9OICdwcmVkZWNlc3NvciBub3QgdW5pcXVlJzsgRU5EIElGOyBSRVRVUk4gcDsgRU5EIiwgIm5hbWUiOiAicHJlZGVjZXNzb3IiLCAiY29uZmlnIjogWyJzZWFyY2hfcGF0aD1wZ19jYXRhbG9nIl0sICJyZXR1cm4iOiAidXVpZCIsICJsYW5ndWFnZSI6ICJwbHBnc3FsIiwgImFyZ3VtZW50cyI6ICJ2IHV1aWQiLCAidm9sYXRpbGl0eSI6ICJ2IiwgInNlY3VyaXR5RGVmaW5lciI6IGZhbHNlfQ==\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 4\\\",\\\"complete\\\":true,\\\"rowcount\\\":4,\\\"rows\\\":[[{\\\"arguments\\\":\\\"\\\",\\\"body\\\":\\\"DECLARE v uuid; c record; n integer; BEGIN\\\\nv:=CASE WHEN TG_OP='DELETE' THEN \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"delete_token\\\\\\\"(OLD.id,OLD.version) ELSE NEW.version END;\\\\nSELECT * INTO c FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v;\\\\nIF NOT FOUND OR c.action<>TG_OP OR c.key IS DISTINCT FROM (CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END) OR c.image IS DISTINCT FROM (CASE WHEN TG_OP='DELETE' THEN NULL ELSE jsonb_build_object('balance',NEW.balance::text,'active',NEW.active,'region',NEW.region) END) THEN RAISE EXCEPTION 'actual effect mismatch'; END IF;\\\\nIF TG_OP='INSERT' AND c.old_present THEN RAISE EXCEPTION 'insert presence mismatch'; END IF;\\\\nUPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" SET version=v,present=(TG_OP<>'DELETE') WHERE key=c.key AND version IS NOT DISTINCT FROM c.predecessor AND present=c.old_present;\\\\nGET DIAGNOSTICS n=ROW_COUNT; IF n<>1 THEN RAISE EXCEPTION 'effect state mismatch'; END IF;\\\\nINSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"effects\\\\\\\" SELECT * FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v;\\\\nIF TG_OP='DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF;\\\\nEND\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"after\\\",\\\"return\\\":\\\"trigger\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"\\\",\\\"body\\\":\\\"DECLARE k bigint; p uuid; live boolean; v uuid; BEGIN\\\\nIF TG_OP<>'DELETE' AND (NEW.id IS NULL OR NEW.balance IS NULL OR NEW.active IS NULL OR NEW.region IS NULL) THEN RETURN NEW; END IF;\\\\nIF TG_OP='UPDATE' AND NEW.id IS DISTINCT FROM OLD.id THEN RAISE EXCEPTION 'primary key mutation'; END IF;\\\\nk:=CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END;\\\\nSELECT version,present INTO p,live FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" WHERE key=k FOR UPDATE;\\\\nIF NOT FOUND THEN RAISE EXCEPTION 'key outside configured domain'; END IF;\\\\nIF TG_OP<>'INSERT' AND (NOT live OR p IS DISTINCT FROM OLD.version) THEN RAISE EXCEPTION 'source mismatch'; END IF;\\\\nv:=gen_random_uuid();\\\\nINSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" VALUES(v,k,p,TG_OP,live,TG_OP<>'DELETE',CASE WHEN TG_OP='DELETE' THEN NULL ELSE jsonb_build_object('balance',NEW.balance::text,'active',NEW.active,'region',NEW.region) END);\\\\nIF TG_OP='DELETE' THEN RETURN OLD; ELSE NEW.version:=v; RETURN NEW; END IF;\\\\nEND\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"before\\\",\\\"return\\\":\\\"trigger\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"k bigint, p uuid\\\",\\\"body\\\":\\\"DECLARE n integer; v uuid; BEGIN SELECT count(*),min(version::text)::uuid INTO n,v FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE key=k AND predecessor=p AND action='DELETE'; IF n<>1 THEN RAISE EXCEPTION 'delete not unique'; END IF; RETURN v; END\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"delete_token\\\",\\\"return\\\":\\\"uuid\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"v uuid\\\",\\\"body\\\":\\\"DECLARE n integer; p uuid; BEGIN SELECT count(*),min(predecessor::text)::uuid INTO n,p FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v; IF n<>1 THEN RAISE EXCEPTION 'predecessor not unique'; END IF; RETURN p; END\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"predecessor\\\",\\\"return\\\":\\\"uuid\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}]],\\\"status\\\":2},\\\"sourceSeq\\\":31,\\\"sql\\\":\\\"SELECT jsonb_build_object('name',p.proname,'body',p.prosrc,'securityDefiner',p.prosecdef,'volatility',p.provolatile,'config',p.proconfig,'arguments',pg_get_function_identity_arguments(p.oid),'return',p.prorettype::regtype::text,'language',l.lanname) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace JOIN pg_language l ON l.oid=p.prolang WHERE n.nspname=%s ORDER BY p.proname\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-2\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[\\\"\\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\"\\\"],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDI=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":2,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":2,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"eyJhcmdzIjogIiIsICJuYW1lIjogIm1vZGVsX2FmdGVyIiwgInR5cGUiOiAyOSwgImVuYWJsZWQiOiAiTyIsICJmdW5jdGlvbiI6ICJhZnRlciIsICJpbnRlcm5hbCI6IGZhbHNlLCAibm9QcmVkaWNhdGUiOiB0cnVlfQ==\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJhcmdzIjogIiIsICJuYW1lIjogIm1vZGVsX2JlZm9yZSIsICJ0eXBlIjogMzEsICJlbmFibGVkIjogIk8iLCAiZnVuY3Rpb24iOiAiYmVmb3JlIiwgImludGVybmFsIjogZmFsc2UsICJub1ByZWRpY2F0ZSI6IHRydWV9\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 2\\\",\\\"complete\\\":true,\\\"rowcount\\\":2,\\\"rows\\\":[[{\\\"args\\\":\\\"\\\",\\\"enabled\\\":\\\"O\\\",\\\"function\\\":\\\"after\\\",\\\"internal\\\":false,\\\"name\\\":\\\"model_after\\\",\\\"noPredicate\\\":true,\\\"type\\\":29}],[{\\\"args\\\":\\\"\\\",\\\"enabled\\\":\\\"O\\\",\\\"function\\\":\\\"before\\\",\\\"internal\\\":false,\\\"name\\\":\\\"model_before\\\",\\\"noPredicate\\\":true,\\\"type\\\":31}]],\\\"status\\\":2},\\\"sourceSeq\\\":32,\\\"sql\\\":\\\"SELECT jsonb_build_object('name',t.tgname,'function',p.proname,'type',t.tgtype,'enabled',t.tgenabled,'args',encode(t.tgargs,'hex'),'internal',t.tgisinternal,'noPredicate',t.tgqual IS NULL) FROM pg_trigger t JOIN pg_proc p ON p.oid=t.tgfoid WHERE t.tgrelid=%s::regclass ORDER BY t.tgname\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-2\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDE=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":1,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":1,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"eyJjdHlwZSI6ICJDIiwgImNvbGxhdGUiOiAiQyJ9\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 1\\\",\\\"complete\\\":true,\\\"rowcount\\\":1,\\\"rows\\\":[[{\\\"collate\\\":\\\"C\\\",\\\"ctype\\\":\\\"C\\\"}]],\\\"status\\\":2},\\\"sourceSeq\\\":33,\\\"sql\\\":\\\"SELECT jsonb_build_object('collate',datcollate,'ctype',datctype) FROM pg_database WHERE datname=current_database()\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-2\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q09NTUlU\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"COMMIT\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":34,\\\"sql\\\":\\\"COMMIT\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-2\\\",\\\"transactionStatusAfter\\\":\\\"IDLE\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"config\\\":{\\\"keys\\\":[1,2,3,4],\\\"model\\\":\\\"relation-set-v1\\\",\\\"predicates\\\":[[[\\\"active\\\",\\\"eq\\\"],[\\\"balance\\\",\\\"ge\\\"]],[[\\\"region\\\",\\\"eq\\\"]]],\\\"schema\\\":\\\"model_e32d8150f2904eee\\\"},\\\"installationQueries\\\":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],\\\"kind\\\":\\\"installation\\\",\\\"nonce\\\":\\\"25f5f1f7805f49ba9cbc7a592d99fcf3\\\",\\\"profile\\\":\\\"pg18-configured-models/1\\\",\\\"sourceSeq\\\":35,\\\"window\\\":{\\\"catalog\\\":31,\\\"catalogRows\\\":[[{\\\"arguments\\\":\\\"\\\",\\\"body\\\":\\\"DECLARE v uuid; c record; n integer; BEGIN\\\\nv:=CASE WHEN TG_OP='DELETE' THEN \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"delete_token\\\\\\\"(OLD.id,OLD.version) ELSE NEW.version END;\\\\nSELECT * INTO c FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v;\\\\nIF NOT FOUND OR c.action<>TG_OP OR c.key IS DISTINCT FROM (CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END) OR c.image IS DISTINCT FROM (CASE WHEN TG_OP='DELETE' THEN NULL ELSE jsonb_build_object('balance',NEW.balance::text,'active',NEW.active,'region',NEW.region) END) THEN RAISE EXCEPTION 'actual effect mismatch'; END IF;\\\\nIF TG_OP='INSERT' AND c.old_present THEN RAISE EXCEPTION 'insert presence mismatch'; END IF;\\\\nUPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" SET version=v,present=(TG_OP<>'DELETE') WHERE key=c.key AND version IS NOT DISTINCT FROM c.predecessor AND present=c.old_present;\\\\nGET DIAGNOSTICS n=ROW_COUNT; IF n<>1 THEN RAISE EXCEPTION 'effect state mismatch'; END IF;\\\\nINSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"effects\\\\\\\" SELECT * FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v;\\\\nIF TG_OP='DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF;\\\\nEND\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"after\\\",\\\"return\\\":\\\"trigger\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"\\\",\\\"body\\\":\\\"DECLARE k bigint; p uuid; live boolean; v uuid; BEGIN\\\\nIF TG_OP<>'DELETE' AND (NEW.id IS NULL OR NEW.balance IS NULL OR NEW.active IS NULL OR NEW.region IS NULL) THEN RETURN NEW; END IF;\\\\nIF TG_OP='UPDATE' AND NEW.id IS DISTINCT FROM OLD.id THEN RAISE EXCEPTION 'primary key mutation'; END IF;\\\\nk:=CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END;\\\\nSELECT version,present INTO p,live FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" WHERE key=k FOR UPDATE;\\\\nIF NOT FOUND THEN RAISE EXCEPTION 'key outside configured domain'; END IF;\\\\nIF TG_OP<>'INSERT' AND (NOT live OR p IS DISTINCT FROM OLD.version) THEN RAISE EXCEPTION 'source mismatch'; END IF;\\\\nv:=gen_random_uuid();\\\\nINSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" VALUES(v,k,p,TG_OP,live,TG_OP<>'DELETE',CASE WHEN TG_OP='DELETE' THEN NULL ELSE jsonb_build_object('balance',NEW.balance::text,'active',NEW.active,'region',NEW.region) END);\\\\nIF TG_OP='DELETE' THEN RETURN OLD; ELSE NEW.version:=v; RETURN NEW; END IF;\\\\nEND\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"before\\\",\\\"return\\\":\\\"trigger\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"k bigint, p uuid\\\",\\\"body\\\":\\\"DECLARE n integer; v uuid; BEGIN SELECT count(*),min(version::text)::uuid INTO n,v FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE key=k AND predecessor=p AND action='DELETE'; IF n<>1 THEN RAISE EXCEPTION 'delete not unique'; END IF; RETURN v; END\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"delete_token\\\",\\\"return\\\":\\\"uuid\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"v uuid\\\",\\\"body\\\":\\\"DECLARE n integer; p uuid; BEGIN SELECT count(*),min(predecessor::text)::uuid INTO n,p FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v; IF n<>1 THEN RAISE EXCEPTION 'predecessor not unique'; END IF; RETURN p; END\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"predecessor\\\",\\\"return\\\":\\\"uuid\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}]],\\\"ledger\\\":29,\\\"ledgerRows\\\":[],\\\"locale\\\":33,\\\"localeRows\\\":[[{\\\"collate\\\":\\\"C\\\",\\\"ctype\\\":\\\"C\\\"}]],\\\"phase\\\":\\\"initial\\\",\\\"queries\\\":[26,27,28,29,30,31,32,33,34],\\\"snapshot\\\":28,\\\"snapshotRows\\\":[[{\\\"key\\\":\\\"1\\\",\\\"values\\\":{\\\"active\\\":true,\\\"balance\\\":\\\"10\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"9e285cf9-8f89-40ca-a6fe-062d9946de7e\\\"}],[{\\\"key\\\":\\\"2\\\",\\\"values\\\":{\\\"active\\\":true,\\\"balance\\\":\\\"20\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"85bd076e-7820-4664-bdaf-b81795689b97\\\"}]],\\\"state\\\":30,\\\"stateRows\\\":[[{\\\"key\\\":\\\"1\\\",\\\"present\\\":true,\\\"version\\\":\\\"9e285cf9-8f89-40ca-a6fe-062d9946de7e\\\"}],[{\\\"key\\\":\\\"2\\\",\\\"present\\\":true,\\\"version\\\":\\\"85bd076e-7820-4664-bdaf-b81795689b97\\\"}],[{\\\"key\\\":\\\"3\\\",\\\"present\\\":false,\\\"version\\\":null}],[{\\\"key\\\":\\\"4\\\",\\\"present\\\":false,\\\"version\\\":null}]],\\\"triggerRows\\\":[[{\\\"args\\\":\\\"\\\",\\\"enabled\\\":\\\"O\\\",\\\"function\\\":\\\"after\\\",\\\"internal\\\":false,\\\"name\\\":\\\"model_after\\\",\\\"noPredicate\\\":true,\\\"type\\\":29}],[{\\\"args\\\":\\\"\\\",\\\"enabled\\\":\\\"O\\\",\\\"function\\\":\\\"before\\\",\\\"internal\\\":false,\\\"name\\\":\\\"model_before\\\",\\\"noPredicate\\\":true,\\\"type\\\":31}]],\\\"triggers\\\":32}}\\n{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDI=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":2,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":20,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":20,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":16,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":25,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":2950,\\\"typmod\\\":-1}],\\\"nfields\\\":5,\\\"ntuples\\\":2,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"MQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"MTA=\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"dA==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"ZWFzdA==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"OWUyODVjZjktOGY4OS00MGNhLWE2ZmUtMDYyZDk5NDZkZTdl\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"Mg==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"MjA=\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"dA==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"ZWFzdA==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"ODViZDA3NmUtNzgyMC00NjY0LWJkYWYtYjgxNzk1Njg5Yjk3\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"businessColumns\\\":[{\\\"name\\\":\\\"id\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"balance\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"active\\\",\\\"typeCode\\\":16},{\\\"name\\\":\\\"region\\\",\\\"typeCode\\\":25}],\\\"businessRowsEvents\\\":[4],\\\"commandTag\\\":\\\"SELECT 2\\\",\\\"deliveredRows\\\":2,\\\"executedSql\\\":\\\"SELECT id,balance,active,region,version FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE \\\\\\\"active\\\\\\\"=%s AND \\\\\\\"balance\\\\\\\">=%s ORDER BY id\\\",\\\"kind\\\":\\\"source-batch\\\",\\\"operation\\\":\\\"row-read\\\",\\\"originalSql\\\":\\\"SELECT id,balance,active,region FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE \\\\\\\"active\\\\\\\"=%s AND \\\\\\\"balance\\\\\\\">=%s ORDER BY id\\\",\\\"parameters\\\":[true,0],\\\"resultComplete\\\":true,\\\"rowcount\\\":2,\\\"sourceSeq\\\":36,\\\"statement\\\":3,\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\"}\\n{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDI=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":2,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":20,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":20,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":16,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":25,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":2950,\\\"typmod\\\":-1}],\\\"nfields\\\":5,\\\"ntuples\\\":2,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"MQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"MTA=\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"dA==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"ZWFzdA==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"OWUyODVjZjktOGY4OS00MGNhLWE2ZmUtMDYyZDk5NDZkZTdl\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"Mg==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"MjA=\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"dA==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"ZWFzdA==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"ODViZDA3NmUtNzgyMC00NjY0LWJkYWYtYjgxNzk1Njg5Yjk3\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"businessColumns\\\":[{\\\"name\\\":\\\"id\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"balance\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"active\\\",\\\"typeCode\\\":16},{\\\"name\\\":\\\"region\\\",\\\"typeCode\\\":25}],\\\"businessRowsEvents\\\":[7],\\\"commandTag\\\":\\\"SELECT 2\\\",\\\"deliveredRows\\\":2,\\\"executedSql\\\":\\\"SELECT id,balance,active,region,version FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE \\\\\\\"active\\\\\\\"=%s AND \\\\\\\"balance\\\\\\\">=%s ORDER BY id\\\",\\\"kind\\\":\\\"source-batch\\\",\\\"operation\\\":\\\"row-read\\\",\\\"originalSql\\\":\\\"SELECT id,balance,active,region FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" WHERE \\\\\\\"active\\\\\\\"=%s AND \\\\\\\"balance\\\\\\\">=%s ORDER BY id\\\",\\\"parameters\\\":[true,0],\\\"resultComplete\\\":true,\\\"rowcount\\\":2,\\\"sourceSeq\\\":37,\\\"statement\\\":6,\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\"}\\n{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"VVBEQVRFIDE=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":1,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":20,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":20,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":16,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":25,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":2950,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":2950,\\\"typmod\\\":-1}],\\\"nfields\\\":6,\\\"ntuples\\\":1,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"MQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"MTA=\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"Zg==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"ZWFzdA==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"MjBmMTBiMTAtOTMwYy00MmFlLWI3ZTgtMWNjMjAzN2JiZTZj\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"OWUyODVjZjktOGY4OS00MGNhLWE2ZmUtMDYyZDk5NDZkZTdl\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"businessColumns\\\":[{\\\"name\\\":\\\"id\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"balance\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"active\\\",\\\"typeCode\\\":16},{\\\"name\\\":\\\"region\\\",\\\"typeCode\\\":25}],\\\"businessRowsEvents\\\":[9],\\\"commandTag\\\":\\\"UPDATE 1\\\",\\\"deliveredRows\\\":1,\\\"executedSql\\\":\\\"UPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" SET balance=%s,active=%s,region=%s WHERE id=%s RETURNING WITH (OLD AS o,NEW AS n) n.id,n.balance,n.active,n.region,n.version,o.version\\\",\\\"kind\\\":\\\"source-batch\\\",\\\"operation\\\":\\\"row-update\\\",\\\"originalSql\\\":\\\"UPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" SET balance=%s,active=%s,region=%s WHERE id=%s RETURNING id,balance,active,region\\\",\\\"parameters\\\":[10,false,\\\"east\\\",1],\\\"resultComplete\\\":true,\\\"rowcount\\\":1,\\\"sourceSeq\\\":38,\\\"statement\\\":8,\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\"}\\n{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"VVBEQVRFIDE=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":1,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":20,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":20,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":16,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":25,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":2950,\\\"typmod\\\":-1},{\\\"format\\\":0,\\\"oid\\\":2950,\\\"typmod\\\":-1}],\\\"nfields\\\":6,\\\"ntuples\\\":1,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"Mg==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"MjA=\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"Zg==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"ZWFzdA==\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"YTdiNTBlZmItZDQzYS00M2E0LWE2ZTYtNDRjMjU2ZGU0OTM5\\\",\\\"captureType\\\":\\\"bytes\\\"},{\\\"base64\\\":\\\"ODViZDA3NmUtNzgyMC00NjY0LWJkYWYtYjgxNzk1Njg5Yjk3\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"businessColumns\\\":[{\\\"name\\\":\\\"id\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"balance\\\",\\\"typeCode\\\":20},{\\\"name\\\":\\\"active\\\",\\\"typeCode\\\":16},{\\\"name\\\":\\\"region\\\",\\\"typeCode\\\":25}],\\\"businessRowsEvents\\\":[11],\\\"commandTag\\\":\\\"UPDATE 1\\\",\\\"deliveredRows\\\":1,\\\"executedSql\\\":\\\"UPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" SET balance=%s,active=%s,region=%s WHERE id=%s RETURNING WITH (OLD AS o,NEW AS n) n.id,n.balance,n.active,n.region,n.version,o.version\\\",\\\"kind\\\":\\\"source-batch\\\",\\\"operation\\\":\\\"row-update\\\",\\\"originalSql\\\":\\\"UPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" SET balance=%s,active=%s,region=%s WHERE id=%s RETURNING id,balance,active,region\\\",\\\"parameters\\\":[20,false,\\\"east\\\",2],\\\"resultComplete\\\":true,\\\"rowcount\\\":1,\\\"sourceSeq\\\":39,\\\"statement\\\":10,\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"QkVHSU4=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"BEGIN\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":40,\\\"sql\\\":\\\"BEGIN\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-3\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"IDLE\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"TE9DSyBUQUJMRQ==\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"LOCK TABLE\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":41,\\\"sql\\\":\\\"LOCK TABLE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\",\\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\",\\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\",\\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"effects\\\\\\\" IN ACCESS EXCLUSIVE MODE\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-3\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDI=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":2,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":2,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"eyJrZXkiOiAiMSIsICJ2YWx1ZXMiOiB7ImFjdGl2ZSI6IGZhbHNlLCAicmVnaW9uIjogImVhc3QiLCAiYmFsYW5jZSI6ICIxMCJ9LCAidmVyc2lvbiI6ICIyMGYxMGIxMC05MzBjLTQyYWUtYjdlOC0xY2MyMDM3YmJlNmMifQ==\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJrZXkiOiAiMiIsICJ2YWx1ZXMiOiB7ImFjdGl2ZSI6IGZhbHNlLCAicmVnaW9uIjogImVhc3QiLCAiYmFsYW5jZSI6ICIyMCJ9LCAidmVyc2lvbiI6ICJhN2I1MGVmYi1kNDNhLTQzYTQtYTZlNi00NGMyNTZkZTQ5MzkifQ==\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 2\\\",\\\"complete\\\":true,\\\"rowcount\\\":2,\\\"rows\\\":[[{\\\"key\\\":\\\"1\\\",\\\"values\\\":{\\\"active\\\":false,\\\"balance\\\":\\\"10\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"20f10b10-930c-42ae-b7e8-1cc2037bbe6c\\\"}],[{\\\"key\\\":\\\"2\\\",\\\"values\\\":{\\\"active\\\":false,\\\"balance\\\":\\\"20\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"a7b50efb-d43a-43a4-a6e6-44c256de4939\\\"}]],\\\"status\\\":2},\\\"sourceSeq\\\":42,\\\"sql\\\":\\\"SELECT jsonb_build_object('key',id::text,'version',version::text,'values',jsonb_build_object('balance',balance::text,'active',active,'region',region)) FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\" ORDER BY id\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-3\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDI=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":2,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":2,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"eyJrZXkiOiAiMSIsICJhY3Rpb24iOiAiVVBEQVRFIiwgInZhbHVlcyI6IHsiYWN0aXZlIjogZmFsc2UsICJyZWdpb24iOiAiZWFzdCIsICJiYWxhbmNlIjogIjEwIn0sICJ2ZXJzaW9uIjogIjIwZjEwYjEwLTkzMGMtNDJhZS1iN2U4LTFjYzIwMzdiYmU2YyIsICJuZXdQcmVzZW50IjogdHJ1ZSwgIm9sZFByZXNlbnQiOiB0cnVlLCAicHJlZGVjZXNzb3IiOiAiOWUyODVjZjktOGY4OS00MGNhLWE2ZmUtMDYyZDk5NDZkZTdlIn0=\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJrZXkiOiAiMiIsICJhY3Rpb24iOiAiVVBEQVRFIiwgInZhbHVlcyI6IHsiYWN0aXZlIjogZmFsc2UsICJyZWdpb24iOiAiZWFzdCIsICJiYWxhbmNlIjogIjIwIn0sICJ2ZXJzaW9uIjogImE3YjUwZWZiLWQ0M2EtNDNhNC1hNmU2LTQ0YzI1NmRlNDkzOSIsICJuZXdQcmVzZW50IjogdHJ1ZSwgIm9sZFByZXNlbnQiOiB0cnVlLCAicHJlZGVjZXNzb3IiOiAiODViZDA3NmUtNzgyMC00NjY0LWJkYWYtYjgxNzk1Njg5Yjk3In0=\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 2\\\",\\\"complete\\\":true,\\\"rowcount\\\":2,\\\"rows\\\":[[{\\\"action\\\":\\\"UPDATE\\\",\\\"key\\\":\\\"1\\\",\\\"newPresent\\\":true,\\\"oldPresent\\\":true,\\\"predecessor\\\":\\\"9e285cf9-8f89-40ca-a6fe-062d9946de7e\\\",\\\"values\\\":{\\\"active\\\":false,\\\"balance\\\":\\\"10\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"20f10b10-930c-42ae-b7e8-1cc2037bbe6c\\\"}],[{\\\"action\\\":\\\"UPDATE\\\",\\\"key\\\":\\\"2\\\",\\\"newPresent\\\":true,\\\"oldPresent\\\":true,\\\"predecessor\\\":\\\"85bd076e-7820-4664-bdaf-b81795689b97\\\",\\\"values\\\":{\\\"active\\\":false,\\\"balance\\\":\\\"20\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"a7b50efb-d43a-43a4-a6e6-44c256de4939\\\"}]],\\\"status\\\":2},\\\"sourceSeq\\\":43,\\\"sql\\\":\\\"SELECT jsonb_build_object('key',key::text,'version',version::text,'predecessor',predecessor::text,'action',action,'oldPresent',old_present,'newPresent',new_present,'values',image) FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"effects\\\\\\\" ORDER BY key,version\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-3\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDQ=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":4,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":4,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"eyJrZXkiOiAiMSIsICJwcmVzZW50IjogdHJ1ZSwgInZlcnNpb24iOiAiMjBmMTBiMTAtOTMwYy00MmFlLWI3ZTgtMWNjMjAzN2JiZTZjIn0=\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJrZXkiOiAiMiIsICJwcmVzZW50IjogdHJ1ZSwgInZlcnNpb24iOiAiYTdiNTBlZmItZDQzYS00M2E0LWE2ZTYtNDRjMjU2ZGU0OTM5In0=\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJrZXkiOiAiMyIsICJwcmVzZW50IjogZmFsc2UsICJ2ZXJzaW9uIjogbnVsbH0=\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJrZXkiOiAiNCIsICJwcmVzZW50IjogZmFsc2UsICJ2ZXJzaW9uIjogbnVsbH0=\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 4\\\",\\\"complete\\\":true,\\\"rowcount\\\":4,\\\"rows\\\":[[{\\\"key\\\":\\\"1\\\",\\\"present\\\":true,\\\"version\\\":\\\"20f10b10-930c-42ae-b7e8-1cc2037bbe6c\\\"}],[{\\\"key\\\":\\\"2\\\",\\\"present\\\":true,\\\"version\\\":\\\"a7b50efb-d43a-43a4-a6e6-44c256de4939\\\"}],[{\\\"key\\\":\\\"3\\\",\\\"present\\\":false,\\\"version\\\":null}],[{\\\"key\\\":\\\"4\\\",\\\"present\\\":false,\\\"version\\\":null}]],\\\"status\\\":2},\\\"sourceSeq\\\":44,\\\"sql\\\":\\\"SELECT jsonb_build_object('key',key::text,'version',version::text,'present',present) FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" ORDER BY key\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-3\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[\\\"model_e32d8150f2904eee\\\"],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDQ=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":4,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":4,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"eyJib2R5IjogIkRFQ0xBUkUgdiB1dWlkOyBjIHJlY29yZDsgbiBpbnRlZ2VyOyBCRUdJTlxudjo9Q0FTRSBXSEVOIFRHX09QPSdERUxFVEUnIFRIRU4gXCJtb2RlbF9lMzJkODE1MGYyOTA0ZWVlXCIuXCJkZWxldGVfdG9rZW5cIihPTEQuaWQsT0xELnZlcnNpb24pIEVMU0UgTkVXLnZlcnNpb24gRU5EO1xuU0VMRUNUICogSU5UTyBjIEZST00gXCJtb2RlbF9lMzJkODE1MGYyOTA0ZWVlXCIuXCJjYW5kaWRhdGVzXCIgV0hFUkUgdmVyc2lvbj12O1xuSUYgTk9UIEZPVU5EIE9SIGMuYWN0aW9uPD5UR19PUCBPUiBjLmtleSBJUyBESVNUSU5DVCBGUk9NIChDQVNFIFdIRU4gVEdfT1A9J0RFTEVURScgVEhFTiBPTEQuaWQgRUxTRSBORVcuaWQgRU5EKSBPUiBjLmltYWdlIElTIERJU1RJTkNUIEZST00gKENBU0UgV0hFTiBUR19PUD0nREVMRVRFJyBUSEVOIE5VTEwgRUxTRSBqc29uYl9idWlsZF9vYmplY3QoJ2JhbGFuY2UnLE5FVy5iYWxhbmNlOjp0ZXh0LCdhY3RpdmUnLE5FVy5hY3RpdmUsJ3JlZ2lvbicsTkVXLnJlZ2lvbikgRU5EKSBUSEVOIFJBSVNFIEVYQ0VQVElPTiAnYWN0dWFsIGVmZmVjdCBtaXNtYXRjaCc7IEVORCBJRjtcbklGIFRHX09QPSdJTlNFUlQnIEFORCBjLm9sZF9wcmVzZW50IFRIRU4gUkFJU0UgRVhDRVBUSU9OICdpbnNlcnQgcHJlc2VuY2UgbWlzbWF0Y2gnOyBFTkQgSUY7XG5VUERBVEUgXCJtb2RlbF9lMzJkODE1MGYyOTA0ZWVlXCIuXCJzdGF0ZVwiIFNFVCB2ZXJzaW9uPXYscHJlc2VudD0oVEdfT1A8PidERUxFVEUnKSBXSEVSRSBrZXk9Yy5rZXkgQU5EIHZlcnNpb24gSVMgTk9UIERJU1RJTkNUIEZST00gYy5wcmVkZWNlc3NvciBBTkQgcHJlc2VudD1jLm9sZF9wcmVzZW50O1xuR0VUIERJQUdOT1NUSUNTIG49Uk9XX0NPVU5UOyBJRiBuPD4xIFRIRU4gUkFJU0UgRVhDRVBUSU9OICdlZmZlY3Qgc3RhdGUgbWlzbWF0Y2gnOyBFTkQgSUY7XG5JTlNFUlQgSU5UTyBcIm1vZGVsX2UzMmQ4MTUwZjI5MDRlZWVcIi5cImVmZmVjdHNcIiBTRUxFQ1QgKiBGUk9NIFwibW9kZWxfZTMyZDgxNTBmMjkwNGVlZVwiLlwiY2FuZGlkYXRlc1wiIFdIRVJFIHZlcnNpb249djtcbklGIFRHX09QPSdERUxFVEUnIFRIRU4gUkVUVVJOIE9MRDsgRUxTRSBSRVRVUk4gTkVXOyBFTkQgSUY7XG5FTkQiLCAibmFtZSI6ICJhZnRlciIsICJjb25maWciOiBbInNlYXJjaF9wYXRoPXBnX2NhdGFsb2ciXSwgInJldHVybiI6ICJ0cmlnZ2VyIiwgImxhbmd1YWdlIjogInBscGdzcWwiLCAiYXJndW1lbnRzIjogIiIsICJ2b2xhdGlsaXR5IjogInYiLCAic2VjdXJpdHlEZWZpbmVyIjogZmFsc2V9\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJib2R5IjogIkRFQ0xBUkUgayBiaWdpbnQ7IHAgdXVpZDsgbGl2ZSBib29sZWFuOyB2IHV1aWQ7IEJFR0lOXG5JRiBUR19PUDw+J0RFTEVURScgQU5EIChORVcuaWQgSVMgTlVMTCBPUiBORVcuYmFsYW5jZSBJUyBOVUxMIE9SIE5FVy5hY3RpdmUgSVMgTlVMTCBPUiBORVcucmVnaW9uIElTIE5VTEwpIFRIRU4gUkVUVVJOIE5FVzsgRU5EIElGO1xuSUYgVEdfT1A9J1VQREFURScgQU5EIE5FVy5pZCBJUyBESVNUSU5DVCBGUk9NIE9MRC5pZCBUSEVOIFJBSVNFIEVYQ0VQVElPTiAncHJpbWFyeSBrZXkgbXV0YXRpb24nOyBFTkQgSUY7XG5rOj1DQVNFIFdIRU4gVEdfT1A9J0RFTEVURScgVEhFTiBPTEQuaWQgRUxTRSBORVcuaWQgRU5EO1xuU0VMRUNUIHZlcnNpb24scHJlc2VudCBJTlRPIHAsbGl2ZSBGUk9NIFwibW9kZWxfZTMyZDgxNTBmMjkwNGVlZVwiLlwic3RhdGVcIiBXSEVSRSBrZXk9ayBGT1IgVVBEQVRFO1xuSUYgTk9UIEZPVU5EIFRIRU4gUkFJU0UgRVhDRVBUSU9OICdrZXkgb3V0c2lkZSBjb25maWd1cmVkIGRvbWFpbic7IEVORCBJRjtcbklGIFRHX09QPD4nSU5TRVJUJyBBTkQgKE5PVCBsaXZlIE9SIHAgSVMgRElTVElOQ1QgRlJPTSBPTEQudmVyc2lvbikgVEhFTiBSQUlTRSBFWENFUFRJT04gJ3NvdXJjZSBtaXNtYXRjaCc7IEVORCBJRjtcbnY6PWdlbl9yYW5kb21fdXVpZCgpO1xuSU5TRVJUIElOVE8gXCJtb2RlbF9lMzJkODE1MGYyOTA0ZWVlXCIuXCJjYW5kaWRhdGVzXCIgVkFMVUVTKHYsayxwLFRHX09QLGxpdmUsVEdfT1A8PidERUxFVEUnLENBU0UgV0hFTiBUR19PUD0nREVMRVRFJyBUSEVOIE5VTEwgRUxTRSBqc29uYl9idWlsZF9vYmplY3QoJ2JhbGFuY2UnLE5FVy5iYWxhbmNlOjp0ZXh0LCdhY3RpdmUnLE5FVy5hY3RpdmUsJ3JlZ2lvbicsTkVXLnJlZ2lvbikgRU5EKTtcbklGIFRHX09QPSdERUxFVEUnIFRIRU4gUkVUVVJOIE9MRDsgRUxTRSBORVcudmVyc2lvbjo9djsgUkVUVVJOIE5FVzsgRU5EIElGO1xuRU5EIiwgIm5hbWUiOiAiYmVmb3JlIiwgImNvbmZpZyI6IFsic2VhcmNoX3BhdGg9cGdfY2F0YWxvZyJdLCAicmV0dXJuIjogInRyaWdnZXIiLCAibGFuZ3VhZ2UiOiAicGxwZ3NxbCIsICJhcmd1bWVudHMiOiAiIiwgInZvbGF0aWxpdHkiOiAidiIsICJzZWN1cml0eURlZmluZXIiOiBmYWxzZX0=\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJib2R5IjogIkRFQ0xBUkUgbiBpbnRlZ2VyOyB2IHV1aWQ7IEJFR0lOIFNFTEVDVCBjb3VudCgqKSxtaW4odmVyc2lvbjo6dGV4dCk6OnV1aWQgSU5UTyBuLHYgRlJPTSBcIm1vZGVsX2UzMmQ4MTUwZjI5MDRlZWVcIi5cImNhbmRpZGF0ZXNcIiBXSEVSRSBrZXk9ayBBTkQgcHJlZGVjZXNzb3I9cCBBTkQgYWN0aW9uPSdERUxFVEUnOyBJRiBuPD4xIFRIRU4gUkFJU0UgRVhDRVBUSU9OICdkZWxldGUgbm90IHVuaXF1ZSc7IEVORCBJRjsgUkVUVVJOIHY7IEVORCIsICJuYW1lIjogImRlbGV0ZV90b2tlbiIsICJjb25maWciOiBbInNlYXJjaF9wYXRoPXBnX2NhdGFsb2ciXSwgInJldHVybiI6ICJ1dWlkIiwgImxhbmd1YWdlIjogInBscGdzcWwiLCAiYXJndW1lbnRzIjogImsgYmlnaW50LCBwIHV1aWQiLCAidm9sYXRpbGl0eSI6ICJ2IiwgInNlY3VyaXR5RGVmaW5lciI6IGZhbHNlfQ==\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJib2R5IjogIkRFQ0xBUkUgbiBpbnRlZ2VyOyBwIHV1aWQ7IEJFR0lOIFNFTEVDVCBjb3VudCgqKSxtaW4ocHJlZGVjZXNzb3I6OnRleHQpOjp1dWlkIElOVE8gbixwIEZST00gXCJtb2RlbF9lMzJkODE1MGYyOTA0ZWVlXCIuXCJjYW5kaWRhdGVzXCIgV0hFUkUgdmVyc2lvbj12OyBJRiBuPD4xIFRIRU4gUkFJU0UgRVhDRVBUSU9OICdwcmVkZWNlc3NvciBub3QgdW5pcXVlJzsgRU5EIElGOyBSRVRVUk4gcDsgRU5EIiwgIm5hbWUiOiAicHJlZGVjZXNzb3IiLCAiY29uZmlnIjogWyJzZWFyY2hfcGF0aD1wZ19jYXRhbG9nIl0sICJyZXR1cm4iOiAidXVpZCIsICJsYW5ndWFnZSI6ICJwbHBnc3FsIiwgImFyZ3VtZW50cyI6ICJ2IHV1aWQiLCAidm9sYXRpbGl0eSI6ICJ2IiwgInNlY3VyaXR5RGVmaW5lciI6IGZhbHNlfQ==\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 4\\\",\\\"complete\\\":true,\\\"rowcount\\\":4,\\\"rows\\\":[[{\\\"arguments\\\":\\\"\\\",\\\"body\\\":\\\"DECLARE v uuid; c record; n integer; BEGIN\\\\nv:=CASE WHEN TG_OP='DELETE' THEN \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"delete_token\\\\\\\"(OLD.id,OLD.version) ELSE NEW.version END;\\\\nSELECT * INTO c FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v;\\\\nIF NOT FOUND OR c.action<>TG_OP OR c.key IS DISTINCT FROM (CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END) OR c.image IS DISTINCT FROM (CASE WHEN TG_OP='DELETE' THEN NULL ELSE jsonb_build_object('balance',NEW.balance::text,'active',NEW.active,'region',NEW.region) END) THEN RAISE EXCEPTION 'actual effect mismatch'; END IF;\\\\nIF TG_OP='INSERT' AND c.old_present THEN RAISE EXCEPTION 'insert presence mismatch'; END IF;\\\\nUPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" SET version=v,present=(TG_OP<>'DELETE') WHERE key=c.key AND version IS NOT DISTINCT FROM c.predecessor AND present=c.old_present;\\\\nGET DIAGNOSTICS n=ROW_COUNT; IF n<>1 THEN RAISE EXCEPTION 'effect state mismatch'; END IF;\\\\nINSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"effects\\\\\\\" SELECT * FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v;\\\\nIF TG_OP='DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF;\\\\nEND\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"after\\\",\\\"return\\\":\\\"trigger\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"\\\",\\\"body\\\":\\\"DECLARE k bigint; p uuid; live boolean; v uuid; BEGIN\\\\nIF TG_OP<>'DELETE' AND (NEW.id IS NULL OR NEW.balance IS NULL OR NEW.active IS NULL OR NEW.region IS NULL) THEN RETURN NEW; END IF;\\\\nIF TG_OP='UPDATE' AND NEW.id IS DISTINCT FROM OLD.id THEN RAISE EXCEPTION 'primary key mutation'; END IF;\\\\nk:=CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END;\\\\nSELECT version,present INTO p,live FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" WHERE key=k FOR UPDATE;\\\\nIF NOT FOUND THEN RAISE EXCEPTION 'key outside configured domain'; END IF;\\\\nIF TG_OP<>'INSERT' AND (NOT live OR p IS DISTINCT FROM OLD.version) THEN RAISE EXCEPTION 'source mismatch'; END IF;\\\\nv:=gen_random_uuid();\\\\nINSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" VALUES(v,k,p,TG_OP,live,TG_OP<>'DELETE',CASE WHEN TG_OP='DELETE' THEN NULL ELSE jsonb_build_object('balance',NEW.balance::text,'active',NEW.active,'region',NEW.region) END);\\\\nIF TG_OP='DELETE' THEN RETURN OLD; ELSE NEW.version:=v; RETURN NEW; END IF;\\\\nEND\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"before\\\",\\\"return\\\":\\\"trigger\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"k bigint, p uuid\\\",\\\"body\\\":\\\"DECLARE n integer; v uuid; BEGIN SELECT count(*),min(version::text)::uuid INTO n,v FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE key=k AND predecessor=p AND action='DELETE'; IF n<>1 THEN RAISE EXCEPTION 'delete not unique'; END IF; RETURN v; END\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"delete_token\\\",\\\"return\\\":\\\"uuid\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"v uuid\\\",\\\"body\\\":\\\"DECLARE n integer; p uuid; BEGIN SELECT count(*),min(predecessor::text)::uuid INTO n,p FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v; IF n<>1 THEN RAISE EXCEPTION 'predecessor not unique'; END IF; RETURN p; END\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"predecessor\\\",\\\"return\\\":\\\"uuid\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}]],\\\"status\\\":2},\\\"sourceSeq\\\":45,\\\"sql\\\":\\\"SELECT jsonb_build_object('name',p.proname,'body',p.prosrc,'securityDefiner',p.prosecdef,'volatility',p.provolatile,'config',p.proconfig,'arguments',pg_get_function_identity_arguments(p.oid),'return',p.prorettype::regtype::text,'language',l.lanname) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace JOIN pg_language l ON l.oid=p.prolang WHERE n.nspname=%s ORDER BY p.proname\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-3\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":[\\\"\\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"business\\\\\\\"\\\"],\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDI=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":2,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":2,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"eyJhcmdzIjogIiIsICJuYW1lIjogIm1vZGVsX2FmdGVyIiwgInR5cGUiOiAyOSwgImVuYWJsZWQiOiAiTyIsICJmdW5jdGlvbiI6ICJhZnRlciIsICJpbnRlcm5hbCI6IGZhbHNlLCAibm9QcmVkaWNhdGUiOiB0cnVlfQ==\\\",\\\"captureType\\\":\\\"bytes\\\"}],[{\\\"base64\\\":\\\"eyJhcmdzIjogIiIsICJuYW1lIjogIm1vZGVsX2JlZm9yZSIsICJ0eXBlIjogMzEsICJlbmFibGVkIjogIk8iLCAiZnVuY3Rpb24iOiAiYmVmb3JlIiwgImludGVybmFsIjogZmFsc2UsICJub1ByZWRpY2F0ZSI6IHRydWV9\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 2\\\",\\\"complete\\\":true,\\\"rowcount\\\":2,\\\"rows\\\":[[{\\\"args\\\":\\\"\\\",\\\"enabled\\\":\\\"O\\\",\\\"function\\\":\\\"after\\\",\\\"internal\\\":false,\\\"name\\\":\\\"model_after\\\",\\\"noPredicate\\\":true,\\\"type\\\":29}],[{\\\"args\\\":\\\"\\\",\\\"enabled\\\":\\\"O\\\",\\\"function\\\":\\\"before\\\",\\\"internal\\\":false,\\\"name\\\":\\\"model_before\\\",\\\"noPredicate\\\":true,\\\"type\\\":31}]],\\\"status\\\":2},\\\"sourceSeq\\\":46,\\\"sql\\\":\\\"SELECT jsonb_build_object('name',t.tgname,'function',p.proname,'type',t.tgtype,'enabled',t.tgenabled,'args',encode(t.tgargs,'hex'),'internal',t.tgisinternal,'noPredicate',t.tgqual IS NULL) FROM pg_trigger t JOIN pg_proc p ON p.oid=t.tgfoid WHERE t.tgrelid=%s::regclass ORDER BY t.tgname\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-3\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"U0VMRUNUIDE=\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":1,\\\"fields\\\":[{\\\"format\\\":0,\\\"oid\\\":3802,\\\"typmod\\\":-1}],\\\"nfields\\\":1,\\\"ntuples\\\":1,\\\"rawRows\\\":[[{\\\"base64\\\":\\\"eyJjdHlwZSI6ICJDIiwgImNvbGxhdGUiOiAiQyJ9\\\",\\\"captureType\\\":\\\"bytes\\\"}]],\\\"status\\\":2},\\\"columns\\\":[{\\\"name\\\":\\\"jsonb_build_object\\\",\\\"typeCode\\\":3802}],\\\"commandTag\\\":\\\"SELECT 1\\\",\\\"complete\\\":true,\\\"rowcount\\\":1,\\\"rows\\\":[[{\\\"collate\\\":\\\"C\\\",\\\"ctype\\\":\\\"C\\\"}]],\\\"status\\\":2},\\\"sourceSeq\\\":47,\\\"sql\\\":\\\"SELECT jsonb_build_object('collate',datcollate,'ctype',datctype) FROM pg_database WHERE datname=current_database()\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-3\\\",\\\"transactionStatusAfter\\\":\\\"INTRANS\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"backendPid\\\":106620,\\\"connection\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601\\\",\\\"kind\\\":\\\"control-query\\\",\\\"parameters\\\":null,\\\"result\\\":{\\\"actualPGresult\\\":{\\\"commandTag\\\":{\\\"base64\\\":\\\"Q09NTUlU\\\",\\\"captureType\\\":\\\"bytes\\\"},\\\"commandTuples\\\":null,\\\"fields\\\":[],\\\"nfields\\\":0,\\\"ntuples\\\":0,\\\"rawRows\\\":[],\\\"status\\\":1},\\\"columns\\\":null,\\\"commandTag\\\":\\\"COMMIT\\\",\\\"complete\\\":true,\\\"rowcount\\\":-1,\\\"rows\\\":[],\\\"status\\\":1},\\\"sourceSeq\\\":48,\\\"sql\\\":\\\"COMMIT\\\",\\\"transaction\\\":\\\"setup-d03ad293cff04dd5ab45e731f30a3601-tx-3\\\",\\\"transactionStatusAfter\\\":\\\"IDLE\\\",\\\"transactionStatusBefore\\\":\\\"INTRANS\\\"}\\n{\\\"kind\\\":\\\"final-effect-ledger\\\",\\\"nonce\\\":\\\"25f5f1f7805f49ba9cbc7a592d99fcf3\\\",\\\"profile\\\":\\\"pg18-configured-models/1\\\",\\\"sourceSeq\\\":49,\\\"window\\\":{\\\"catalog\\\":45,\\\"catalogRows\\\":[[{\\\"arguments\\\":\\\"\\\",\\\"body\\\":\\\"DECLARE v uuid; c record; n integer; BEGIN\\\\nv:=CASE WHEN TG_OP='DELETE' THEN \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"delete_token\\\\\\\"(OLD.id,OLD.version) ELSE NEW.version END;\\\\nSELECT * INTO c FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v;\\\\nIF NOT FOUND OR c.action<>TG_OP OR c.key IS DISTINCT FROM (CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END) OR c.image IS DISTINCT FROM (CASE WHEN TG_OP='DELETE' THEN NULL ELSE jsonb_build_object('balance',NEW.balance::text,'active',NEW.active,'region',NEW.region) END) THEN RAISE EXCEPTION 'actual effect mismatch'; END IF;\\\\nIF TG_OP='INSERT' AND c.old_present THEN RAISE EXCEPTION 'insert presence mismatch'; END IF;\\\\nUPDATE \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" SET version=v,present=(TG_OP<>'DELETE') WHERE key=c.key AND version IS NOT DISTINCT FROM c.predecessor AND present=c.old_present;\\\\nGET DIAGNOSTICS n=ROW_COUNT; IF n<>1 THEN RAISE EXCEPTION 'effect state mismatch'; END IF;\\\\nINSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"effects\\\\\\\" SELECT * FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v;\\\\nIF TG_OP='DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF;\\\\nEND\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"after\\\",\\\"return\\\":\\\"trigger\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"\\\",\\\"body\\\":\\\"DECLARE k bigint; p uuid; live boolean; v uuid; BEGIN\\\\nIF TG_OP<>'DELETE' AND (NEW.id IS NULL OR NEW.balance IS NULL OR NEW.active IS NULL OR NEW.region IS NULL) THEN RETURN NEW; END IF;\\\\nIF TG_OP='UPDATE' AND NEW.id IS DISTINCT FROM OLD.id THEN RAISE EXCEPTION 'primary key mutation'; END IF;\\\\nk:=CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END;\\\\nSELECT version,present INTO p,live FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"state\\\\\\\" WHERE key=k FOR UPDATE;\\\\nIF NOT FOUND THEN RAISE EXCEPTION 'key outside configured domain'; END IF;\\\\nIF TG_OP<>'INSERT' AND (NOT live OR p IS DISTINCT FROM OLD.version) THEN RAISE EXCEPTION 'source mismatch'; END IF;\\\\nv:=gen_random_uuid();\\\\nINSERT INTO \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" VALUES(v,k,p,TG_OP,live,TG_OP<>'DELETE',CASE WHEN TG_OP='DELETE' THEN NULL ELSE jsonb_build_object('balance',NEW.balance::text,'active',NEW.active,'region',NEW.region) END);\\\\nIF TG_OP='DELETE' THEN RETURN OLD; ELSE NEW.version:=v; RETURN NEW; END IF;\\\\nEND\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"before\\\",\\\"return\\\":\\\"trigger\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"k bigint, p uuid\\\",\\\"body\\\":\\\"DECLARE n integer; v uuid; BEGIN SELECT count(*),min(version::text)::uuid INTO n,v FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE key=k AND predecessor=p AND action='DELETE'; IF n<>1 THEN RAISE EXCEPTION 'delete not unique'; END IF; RETURN v; END\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"delete_token\\\",\\\"return\\\":\\\"uuid\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}],[{\\\"arguments\\\":\\\"v uuid\\\",\\\"body\\\":\\\"DECLARE n integer; p uuid; BEGIN SELECT count(*),min(predecessor::text)::uuid INTO n,p FROM \\\\\\\"model_e32d8150f2904eee\\\\\\\".\\\\\\\"candidates\\\\\\\" WHERE version=v; IF n<>1 THEN RAISE EXCEPTION 'predecessor not unique'; END IF; RETURN p; END\\\",\\\"config\\\":[\\\"search_path=pg_catalog\\\"],\\\"language\\\":\\\"plpgsql\\\",\\\"name\\\":\\\"predecessor\\\",\\\"return\\\":\\\"uuid\\\",\\\"securityDefiner\\\":false,\\\"volatility\\\":\\\"v\\\"}]],\\\"ledger\\\":43,\\\"ledgerRows\\\":[[{\\\"action\\\":\\\"UPDATE\\\",\\\"key\\\":\\\"1\\\",\\\"newPresent\\\":true,\\\"oldPresent\\\":true,\\\"predecessor\\\":\\\"9e285cf9-8f89-40ca-a6fe-062d9946de7e\\\",\\\"values\\\":{\\\"active\\\":false,\\\"balance\\\":\\\"10\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"20f10b10-930c-42ae-b7e8-1cc2037bbe6c\\\"}],[{\\\"action\\\":\\\"UPDATE\\\",\\\"key\\\":\\\"2\\\",\\\"newPresent\\\":true,\\\"oldPresent\\\":true,\\\"predecessor\\\":\\\"85bd076e-7820-4664-bdaf-b81795689b97\\\",\\\"values\\\":{\\\"active\\\":false,\\\"balance\\\":\\\"20\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"a7b50efb-d43a-43a4-a6e6-44c256de4939\\\"}]],\\\"locale\\\":47,\\\"localeRows\\\":[[{\\\"collate\\\":\\\"C\\\",\\\"ctype\\\":\\\"C\\\"}]],\\\"phase\\\":\\\"final\\\",\\\"queries\\\":[40,41,42,43,44,45,46,47,48],\\\"snapshot\\\":42,\\\"snapshotRows\\\":[[{\\\"key\\\":\\\"1\\\",\\\"values\\\":{\\\"active\\\":false,\\\"balance\\\":\\\"10\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"20f10b10-930c-42ae-b7e8-1cc2037bbe6c\\\"}],[{\\\"key\\\":\\\"2\\\",\\\"values\\\":{\\\"active\\\":false,\\\"balance\\\":\\\"20\\\",\\\"region\\\":\\\"east\\\"},\\\"version\\\":\\\"a7b50efb-d43a-43a4-a6e6-44c256de4939\\\"}]],\\\"state\\\":44,\\\"stateRows\\\":[[{\\\"key\\\":\\\"1\\\",\\\"present\\\":true,\\\"version\\\":\\\"20f10b10-930c-42ae-b7e8-1cc2037bbe6c\\\"}],[{\\\"key\\\":\\\"2\\\",\\\"present\\\":true,\\\"version\\\":\\\"a7b50efb-d43a-43a4-a6e6-44c256de4939\\\"}],[{\\\"key\\\":\\\"3\\\",\\\"present\\\":false,\\\"version\\\":null}],[{\\\"key\\\":\\\"4\\\",\\\"present\\\":false,\\\"version\\\":null}]],\\\"triggerRows\\\":[[{\\\"args\\\":\\\"\\\",\\\"enabled\\\":\\\"O\\\",\\\"function\\\":\\\"after\\\",\\\"internal\\\":false,\\\"name\\\":\\\"model_after\\\",\\\"noPredicate\\\":true,\\\"type\\\":29}],[{\\\"args\\\":\\\"\\\",\\\"enabled\\\":\\\"O\\\",\\\"function\\\":\\\"before\\\",\\\"internal\\\":false,\\\"name\\\":\\\"model_before\\\",\\\"noPredicate\\\":true,\\\"type\\\":31}]],\\\"triggers\\\":46}}\\n{\\\"kind\\\":\\\"seal\\\",\\\"prefixSha256\\\":\\\"f00455c51bd1912bd128289be0fec6d296d25e120cb352d7150210df371a2089\\\",\\\"sourceRecords\\\":49,\\\"sourceSeq\\\":50}\\n\",\"lifecycleText\":\"{\\\"seq\\\":1,\\\"kind\\\":\\\"header\\\",\\\"format\\\":\\\"moontxnwitness-instrumentation/v1\\\",\\\"diagnosticOnly\\\":true,\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\"}\\n{\\\"seq\\\":2,\\\"kind\\\":\\\"model-window-open\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107917765000000\\\",\\\"profile\\\":\\\"pg18-configured-models/1\\\",\\\"installationNonce\\\":\\\"25f5f1f7805f49ba9cbc7a592d99fcf3\\\",\\\"initialSourceSeq\\\":35}\\n{\\\"seq\\\":3,\\\"kind\\\":\\\"model-factory-attached\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107917765000000\\\",\\\"asynchronous\\\":false}\\n{\\\"seq\\\":4,\\\"kind\\\":\\\"connect\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107917968000000\\\",\\\"connection\\\":\\\"connection-671afa1372e14533b205ba3b43f0a2b3\\\",\\\"asynchronous\\\":false}\\n{\\\"seq\\\":5,\\\"kind\\\":\\\"connect\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918078000000\\\",\\\"connection\\\":\\\"connection-a485d63a15524f9790f2da1d8925c3b6\\\",\\\"asynchronous\\\":false}\\n{\\\"seq\\\":6,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918078000000\\\",\\\"callId\\\":\\\"call-8f807d3f5ae04fbb8300b0f394fa2cb7\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-671afa1372e14533b205ba3b43f0a2b3\\\",\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":7,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918093000000\\\",\\\"callId\\\":\\\"call-8f807d3f5ae04fbb8300b0f394fa2cb7\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-671afa1372e14533b205ba3b43f0a2b3\\\",\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":3,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":8,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918093000000\\\",\\\"callId\\\":\\\"call-fc1cc1da063141a7b5bcd0fe0a4fb436\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-a485d63a15524f9790f2da1d8925c3b6\\\",\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":5}}\\n{\\\"seq\\\":9,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918109000000\\\",\\\"callId\\\":\\\"call-fc1cc1da063141a7b5bcd0fe0a4fb436\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-a485d63a15524f9790f2da1d8925c3b6\\\",\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":6,\\\"journalEventSeqs\\\":{\\\"begin\\\":5}}\\n{\\\"seq\\\":10,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918109000000\\\",\\\"callId\\\":\\\"call-75fda25ebf564b6fb0b3c69d4f8941a5\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-671afa1372e14533b205ba3b43f0a2b3\\\",\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":11,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918125000000\\\",\\\"callId\\\":\\\"call-75fda25ebf564b6fb0b3c69d4f8941a5\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-671afa1372e14533b205ba3b43f0a2b3\\\",\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":8,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":12,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918125000000\\\",\\\"callId\\\":\\\"call-dec3484956fc4f22876bba40b4c592dc\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-a485d63a15524f9790f2da1d8925c3b6\\\",\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":5}}\\n{\\\"seq\\\":13,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918156000000\\\",\\\"callId\\\":\\\"call-dec3484956fc4f22876bba40b4c592dc\\\",\\\"method\\\":\\\"execute\\\",\\\"connection\\\":\\\"connection-a485d63a15524f9790f2da1d8925c3b6\\\",\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":10,\\\"journalEventSeqs\\\":{\\\"begin\\\":5}}\\n{\\\"seq\\\":14,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918156000000\\\",\\\"callId\\\":\\\"call-cb16a803997a4a0eacb7c6dfb1e7b837\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-671afa1372e14533b205ba3b43f0a2b3\\\",\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2}}\\n{\\\"seq\\\":15,\\\"kind\\\":\\\"commit-response\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918171000000\\\",\\\"connection\\\":\\\"connection-671afa1372e14533b205ba3b43f0a2b3\\\",\\\"request\\\":12,\\\"commandTag\\\":\\\"COMMIT\\\",\\\"transactionStatus\\\":0}\\n{\\\"seq\\\":16,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918171000000\\\",\\\"callId\\\":\\\"call-cb16a803997a4a0eacb7c6dfb1e7b837\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-671afa1372e14533b205ba3b43f0a2b3\\\",\\\"tx\\\":\\\"transaction-3a0c7271103d4b8db0f4c39b8439b061\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":2,\\\"commit_request\\\":12,\\\"commit_ok\\\":13},\\\"nativeCommandTag\\\":\\\"COMMIT\\\"}\\n{\\\"seq\\\":17,\\\"kind\\\":\\\"call-start\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918171000000\\\",\\\"callId\\\":\\\"call-1897e6daedaf420d880f66f2e1cdfa25\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-a485d63a15524f9790f2da1d8925c3b6\\\",\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\",\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":5}}\\n{\\\"seq\\\":18,\\\"kind\\\":\\\"commit-response\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918171000000\\\",\\\"connection\\\":\\\"connection-a485d63a15524f9790f2da1d8925c3b6\\\",\\\"request\\\":14,\\\"commandTag\\\":\\\"COMMIT\\\",\\\"transactionStatus\\\":0}\\n{\\\"seq\\\":19,\\\"kind\\\":\\\"call-end\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918171000000\\\",\\\"callId\\\":\\\"call-1897e6daedaf420d880f66f2e1cdfa25\\\",\\\"method\\\":\\\"commit\\\",\\\"connection\\\":\\\"connection-a485d63a15524f9790f2da1d8925c3b6\\\",\\\"tx\\\":\\\"transaction-52d2f6104deb4757aa9860afe2f8ddfb\\\",\\\"succeeded\\\":true,\\\"statementSeq\\\":null,\\\"journalEventSeqs\\\":{\\\"begin\\\":5,\\\"commit_request\\\":14,\\\"commit_ok\\\":15},\\\"nativeCommandTag\\\":\\\"COMMIT\\\"}\\n{\\\"seq\\\":20,\\\"kind\\\":\\\"connection-close\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918171000000\\\",\\\"connection\\\":\\\"connection-671afa1372e14533b205ba3b43f0a2b3\\\"}\\n{\\\"seq\\\":21,\\\"kind\\\":\\\"connection-close\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918171000000\\\",\\\"connection\\\":\\\"connection-a485d63a15524f9790f2da1d8925c3b6\\\"}\\n{\\\"seq\\\":22,\\\"kind\\\":\\\"model-window-quiesced\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918171000000\\\",\\\"profile\\\":\\\"pg18-configured-models/1\\\",\\\"installationNonce\\\":\\\"25f5f1f7805f49ba9cbc7a592d99fcf3\\\"}\\n{\\\"seq\\\":23,\\\"kind\\\":\\\"model-window-close\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918203000000\\\",\\\"profile\\\":\\\"pg18-configured-models/1\\\",\\\"installationNonce\\\":\\\"25f5f1f7805f49ba9cbc7a592d99fcf3\\\",\\\"finalSourceSeq\\\":49}\\n{\\\"seq\\\":24,\\\"kind\\\":\\\"instrumentation-detached\\\",\\\"processMonotonicDomain\\\":\\\"mtw-process-dcd859f1315c4c3f8eb6369345499767\\\",\\\"monotonicNs\\\":\\\"107918250000000\\\",\\\"borrowedConnections\\\":0}\\n{\\\"seq\\\":25,\\\"kind\\\":\\\"seal\\\",\\\"prefixSha256\\\":\\\"9f44fe7291aaabd27fd0a4bbd6e9d890fe68b77702d4e38d34bd03e09f90ae1d\\\",\\\"records\\\":24}\\n\",\"journalIndexText\":\"{\\\"activeTransactions\\\":[],\\\"closed\\\":true,\\\"commitRequests\\\":[],\\\"directorySync\\\":\\\"not-available-in-Windows-stdlib\\\",\\\"durableSeq\\\":15,\\\"eventCount\\\":15,\\\"gaps\\\":[{\\\"code\\\":\\\"initialization_unproven\\\",\\\"message\\\":\\\"The initial database snapshot has not been established as consistent.\\\"},{\\\"code\\\":\\\"diagnostic_instrumentation_only\\\",\\\"message\\\":\\\"No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage.\\\"}],\\\"indexSchema\\\":1,\\\"indexSha256\\\":\\\"44fb556e5c12d7d55e8dad2e4f345646954698b98609eb946eccbab124e39051\\\",\\\"lastTime\\\":421000000,\\\"limits\\\":{\\\"flushBytes\\\":262144,\\\"flushIntervalSeconds\\\":0.1,\\\"queueBytes\\\":4194304,\\\"recordBytes\\\":524288,\\\"segmentBytes\\\":16777216,\\\"totalBytes\\\":1073741824},\\\"references\\\":{\\\"activeTransactions\\\":[],\\\"unreadResults\\\":[],\\\"versionSources\\\":[]},\\\"retention\\\":{\\\"deletionImplemented\\\":false,\\\"policy\\\":\\\"retain all source/version-chain records\\\"},\\\"segments\\\":[{\\\"bytes\\\":3899,\\\"eventCount\\\":15,\\\"firstSeq\\\":1,\\\"lastSeq\\\":15,\\\"name\\\":\\\"segment-000001.jsonl\\\",\\\"sha256\\\":\\\"3a7e36e4dac5f2d1c8bf6bb209cdeee596cd07c60890596a4170e8e85ece7963\\\"}],\\\"sourceClosed\\\":false,\\\"stats\\\":{\\\"acceptedRecords\\\":15,\\\"backpressureCount\\\":0,\\\"backpressureNs\\\":0,\\\"bytesWritten\\\":3899,\\\"durableRecords\\\":15,\\\"fsyncCount\\\":4,\\\"maxQueueBytes\\\":525198},\\\"traceSchema\\\":3,\\\"transactionIndex\\\":{\\\"authoritative\\\":false,\\\"durableThroughSeq\\\":15,\\\"entries\\\":2,\\\"journalMode\\\":\\\"DELETE\\\",\\\"name\\\":\\\"transactions.sqlite3\\\",\\\"synchronous\\\":\\\"FULL\\\"}}\\n\"}\n",
+  "sourceBindings": {
+    "envelopeSha256": "b42ad844ca66445c07385aafae0da4e9071ccaea905d7960e9ace327514f2557",
+    "traceSha256": "4f1469335ab433f4df4b0b5d1439e8bd38e58f1c131ec4e27981c72df97b5d72",
+    "sourceJournalSha256": "35d7b031ba03e5a01f726041b5e717457566d63154b2f96cdffb4cbd6c54e7c5",
+    "lifecycleSha256": "01215abf3b18b67fcd38e43233d3e7225b4384d81101bfbe95638e87d60722b4",
+    "journalIndexSha256": "a19dd6745005490b6b7dec9663714be1e863760e8d3a9f678942681855076bad"
+  },
+  "report": {
+    "format": "moontxnwitness-model-profile-report/v1",
+    "schemaVersion": 1,
+    "tool": "MoonTxnWitness",
+    "algorithm": "model-profile-host-1",
+    "sourceAlgorithm": "v3-configured-model-source-projection-1",
+    "profile": "pg18-configured-models/1",
+    "engine": {
+      "version": "0.2.8",
+      "coreSha256": "6be7e6bc89f330e7e42f21082578d64f227f7cd335fc4737e4d43b1f5db60a59",
+      "hostSha256": "aeaa99f413a6dd86dbe204d2b0e4e259d8576f962e5c0f75da891d3e2eeb77f5"
+    },
+    "status": "violation",
+    "analysisCoverageAccepted": true,
+    "requestOptionsText": "{}",
+    "sourceBindings": {
+      "envelopeSha256": "b42ad844ca66445c07385aafae0da4e9071ccaea905d7960e9ace327514f2557",
+      "traceSha256": "4f1469335ab433f4df4b0b5d1439e8bd38e58f1c131ec4e27981c72df97b5d72",
+      "sourceJournalSha256": "35d7b031ba03e5a01f726041b5e717457566d63154b2f96cdffb4cbd6c54e7c5",
+      "lifecycleSha256": "01215abf3b18b67fcd38e43233d3e7225b4384d81101bfbe95638e87d60722b4",
+      "journalIndexSha256": "a19dd6745005490b6b7dec9663714be1e863760e8d3a9f678942681855076bad"
+    },
+    "budgets": {
+      "sourceEnvelopeUtf8Bytes": 67108864,
+      "traceUtf8Bytes": 8388608,
+      "sourceJournalUtf8Bytes": 16777216,
+      "lifecycleUtf8Bytes": 8388608,
+      "journalIndexUtf8Bytes": 2097152,
+      "optionsUtf8Bytes": 4096,
+      "reportUtf8Bytes": 67108864,
+      "capsuleUtf8Bytes": 134217728,
+      "exactSearchTransactions": 6,
+      "exactSearchOperations": 128,
+      "maxStates": 100000,
+      "maxOperationChecks": 1000000
+    },
+    "scope": {
+      "configuredNativeSyncFactoryOnly": true,
+      "explicitOwnedSchemaInstallation": true,
+      "originalDiagnosticsRemainPartial": true,
+      "actualDatabaseExecution": false,
+      "serverAuthenticityVerified": false,
+      "eventSegmentPayloadsRehashed": false,
+      "arbitrarySqlSupported": false,
+      "ormSupported": false,
+      "asynchronousSupported": false,
+      "realTimeOrderInferred": false,
+      "sourceClosedReductionAvailable": false
+    },
+    "result": {
+      "schemaVersion": 3,
+      "tool": "MoonTxnWitness",
+      "version": "0.2.8",
+      "algorithm": "v3-configured-model-source-projection-1",
+      "profile": "pg18-configured-models/1",
+      "status": "violation",
+      "analysisCoverageAccepted": true,
+      "originalDiagnosticCoverage": {
+        "complete": false,
+        "gaps": [
+          {
+            "code": "writer_scope_unproven",
+            "message": "Other writers have not been excluded"
+          },
+          {
+            "code": "initialization_unproven",
+            "message": "The initial database snapshot has not been established as consistent."
+          },
+          {
+            "code": "diagnostic_instrumentation_only",
+            "message": "No verified initial/version/predicate mapping; raw observations never grant complete analysis coverage."
+          },
+          {
+            "code": "source_unsealed",
+            "message": "Journal and explicit source window have not both been sealed."
+          },
+          {
+            "code": "diagnostic_only",
+            "message": "This export is incomplete diagnostic evidence, not a complete analysis input."
+          },
+          {
+            "code": "inconsistent_snapshot",
+            "message": "Initial state is not a consistent captured snapshot"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          },
+          {
+            "code": "unmapped_statement",
+            "message": "Raw SQL has no verified versioned statement mapping"
+          }
+        ]
+      },
+      "derivedTrace": {
+        "traceSchema": 3,
+        "dataModel": "relation-set-v1",
+        "clockDomain": "mtw-v3-67c0d00a217a443c8fb0b382ddf9a80f",
+        "scope": {
+          "exclusiveWriters": true,
+          "completeSnapshotTables": [
+            "business"
+          ]
+        },
+        "events": [
+          {
+            "kind": "snapshot",
+            "initial": {
+              "business": [
+                {
+                  "key": "1",
+                  "values": {
+                    "active": true,
+                    "balance": "10",
+                    "region": "east"
+                  },
+                  "version": "9e285cf9-8f89-40ca-a6fe-062d9946de7e"
+                },
+                {
+                  "key": "2",
+                  "values": {
+                    "active": true,
+                    "balance": "20",
+                    "region": "east"
+                  },
+                  "version": "85bd076e-7820-4664-bdaf-b81795689b97"
+                }
+              ]
+            },
+            "consistent": true,
+            "time": 15000000,
+            "seq": 1
+          },
+          {
+            "connection": "connection-671afa1372e14533b205ba3b43f0a2b3",
+            "kind": "begin",
+            "seq": 2,
+            "time": 328000000,
+            "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061"
+          },
+          {
+            "kind": "row_read",
+            "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061",
+            "relation": "business",
+            "predicate": [
+              {
+                "column": "active",
+                "op": "eq",
+                "value": true
+              },
+              {
+                "column": "balance",
+                "op": "ge",
+                "value": "0"
+              }
+            ],
+            "rows": [
+              {
+                "key": "1",
+                "version": "9e285cf9-8f89-40ca-a6fe-062d9946de7e",
+                "values": {
+                  "balance": "10",
+                  "active": true,
+                  "region": "east"
+                }
+              },
+              {
+                "key": "2",
+                "version": "85bd076e-7820-4664-bdaf-b81795689b97",
+                "values": {
+                  "balance": "20",
+                  "active": true,
+                  "region": "east"
+                }
+              }
+            ],
+            "complete": true,
+            "time": 343000000,
+            "seq": 3
+          },
+          {
+            "connection": "connection-a485d63a15524f9790f2da1d8925c3b6",
+            "kind": "begin",
+            "seq": 4,
+            "time": 343000000,
+            "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb"
+          },
+          {
+            "kind": "row_read",
+            "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb",
+            "relation": "business",
+            "predicate": [
+              {
+                "column": "active",
+                "op": "eq",
+                "value": true
+              },
+              {
+                "column": "balance",
+                "op": "ge",
+                "value": "0"
+              }
+            ],
+            "rows": [
+              {
+                "key": "1",
+                "version": "9e285cf9-8f89-40ca-a6fe-062d9946de7e",
+                "values": {
+                  "balance": "10",
+                  "active": true,
+                  "region": "east"
+                }
+              },
+              {
+                "key": "2",
+                "version": "85bd076e-7820-4664-bdaf-b81795689b97",
+                "values": {
+                  "balance": "20",
+                  "active": true,
+                  "region": "east"
+                }
+              }
+            ],
+            "complete": true,
+            "time": 359000000,
+            "seq": 5
+          },
+          {
+            "kind": "row_write",
+            "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061",
+            "relation": "business",
+            "key": "1",
+            "action": "update",
+            "version": "20f10b10-930c-42ae-b7e8-1cc2037bbe6c",
+            "predecessor": "9e285cf9-8f89-40ca-a6fe-062d9946de7e",
+            "values": {
+              "balance": "10",
+              "active": false,
+              "region": "east"
+            },
+            "time": 375000000,
+            "seq": 6
+          },
+          {
+            "kind": "row_write",
+            "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb",
+            "relation": "business",
+            "key": "2",
+            "action": "update",
+            "version": "a7b50efb-d43a-43a4-a6e6-44c256de4939",
+            "predecessor": "85bd076e-7820-4664-bdaf-b81795689b97",
+            "values": {
+              "balance": "20",
+              "active": false,
+              "region": "east"
+            },
+            "time": 406000000,
+            "seq": 7
+          },
+          {
+            "kind": "commit_request",
+            "seq": 8,
+            "time": 406000000,
+            "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061"
+          },
+          {
+            "kind": "commit_ok",
+            "seq": 9,
+            "time": 421000000,
+            "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061"
+          },
+          {
+            "kind": "commit_request",
+            "seq": 10,
+            "time": 421000000,
+            "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb"
+          },
+          {
+            "kind": "commit_ok",
+            "seq": 11,
+            "time": 421000000,
+            "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb"
+          }
+        ],
+        "gaps": [],
+        "relationSchema": {
+          "business": {
+            "primaryKey": "id",
+            "columns": {
+              "id": "int64",
+              "balance": "int64",
+              "active": "bool",
+              "region": "text"
+            }
+          }
+        }
+      },
+      "retainedOriginalSeq": [
+        1,
+        2,
+        4,
+        5,
+        7,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "analysis": {
+        "schemaVersion": 3,
+        "tool": "MoonTxnWitness",
+        "version": "0.2.8",
+        "algorithm": "v3-relation-1",
+        "status": "violation",
+        "modelDefinition": {
+          "id": "relation-set-serializable-v1",
+          "scope": "complete relation snapshots and committed full row-query/write/savepoint journals; no SQL mapping, opacity, isolation-level classification or real-time claim"
+        },
+        "coverage": {
+          "complete": true,
+          "gaps": []
+        },
+        "normalized": {
+          "schema": 3,
+          "dataModel": "relation-set-v1",
+          "algorithm": "v3-relation-lifecycle-1",
+          "status": "ready",
+          "relationSchema": {
+            "business": {
+              "primaryKey": "id",
+              "columns": {
+                "id": "int64",
+                "balance": "int64",
+                "active": "bool",
+                "region": "text"
+              }
+            }
+          },
+          "coverage": {
+            "complete": true,
+            "gaps": []
+          },
+          "observations": [
+            {
+              "kind": "snapshot",
+              "initial": {
+                "business": [
+                  {
+                    "key": "1",
+                    "values": {
+                      "active": true,
+                      "balance": "10",
+                      "region": "east"
+                    },
+                    "version": "9e285cf9-8f89-40ca-a6fe-062d9946de7e"
+                  },
+                  {
+                    "key": "2",
+                    "values": {
+                      "active": true,
+                      "balance": "20",
+                      "region": "east"
+                    },
+                    "version": "85bd076e-7820-4664-bdaf-b81795689b97"
+                  }
+                ]
+              },
+              "consistent": true,
+              "time": 15000000,
+              "seq": 1
+            },
+            {
+              "connection": "connection-671afa1372e14533b205ba3b43f0a2b3",
+              "kind": "begin",
+              "seq": 2,
+              "time": 328000000,
+              "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061"
+            },
+            {
+              "kind": "row_read",
+              "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061",
+              "relation": "business",
+              "predicate": [
+                {
+                  "column": "active",
+                  "op": "eq",
+                  "value": true
+                },
+                {
+                  "column": "balance",
+                  "op": "ge",
+                  "value": "0"
+                }
+              ],
+              "rows": [
+                {
+                  "key": "1",
+                  "version": "9e285cf9-8f89-40ca-a6fe-062d9946de7e",
+                  "values": {
+                    "balance": "10",
+                    "active": true,
+                    "region": "east"
+                  }
+                },
+                {
+                  "key": "2",
+                  "version": "85bd076e-7820-4664-bdaf-b81795689b97",
+                  "values": {
+                    "balance": "20",
+                    "active": true,
+                    "region": "east"
+                  }
+                }
+              ],
+              "complete": true,
+              "time": 343000000,
+              "seq": 3
+            },
+            {
+              "connection": "connection-a485d63a15524f9790f2da1d8925c3b6",
+              "kind": "begin",
+              "seq": 4,
+              "time": 343000000,
+              "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb"
+            },
+            {
+              "kind": "row_read",
+              "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb",
+              "relation": "business",
+              "predicate": [
+                {
+                  "column": "active",
+                  "op": "eq",
+                  "value": true
+                },
+                {
+                  "column": "balance",
+                  "op": "ge",
+                  "value": "0"
+                }
+              ],
+              "rows": [
+                {
+                  "key": "1",
+                  "version": "9e285cf9-8f89-40ca-a6fe-062d9946de7e",
+                  "values": {
+                    "balance": "10",
+                    "active": true,
+                    "region": "east"
+                  }
+                },
+                {
+                  "key": "2",
+                  "version": "85bd076e-7820-4664-bdaf-b81795689b97",
+                  "values": {
+                    "balance": "20",
+                    "active": true,
+                    "region": "east"
+                  }
+                }
+              ],
+              "complete": true,
+              "time": 359000000,
+              "seq": 5
+            },
+            {
+              "kind": "row_write",
+              "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061",
+              "relation": "business",
+              "key": "1",
+              "action": "update",
+              "version": "20f10b10-930c-42ae-b7e8-1cc2037bbe6c",
+              "predecessor": "9e285cf9-8f89-40ca-a6fe-062d9946de7e",
+              "values": {
+                "balance": "10",
+                "active": false,
+                "region": "east"
+              },
+              "time": 375000000,
+              "seq": 6
+            },
+            {
+              "kind": "row_write",
+              "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb",
+              "relation": "business",
+              "key": "2",
+              "action": "update",
+              "version": "a7b50efb-d43a-43a4-a6e6-44c256de4939",
+              "predecessor": "85bd076e-7820-4664-bdaf-b81795689b97",
+              "values": {
+                "balance": "20",
+                "active": false,
+                "region": "east"
+              },
+              "time": 406000000,
+              "seq": 7
+            },
+            {
+              "kind": "commit_request",
+              "seq": 8,
+              "time": 406000000,
+              "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061"
+            },
+            {
+              "kind": "commit_ok",
+              "seq": 9,
+              "time": 421000000,
+              "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061"
+            },
+            {
+              "kind": "commit_request",
+              "seq": 10,
+              "time": 421000000,
+              "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb"
+            },
+            {
+              "kind": "commit_ok",
+              "seq": 11,
+              "time": 421000000,
+              "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb"
+            }
+          ],
+          "effects": [
+            {
+              "seq": 6,
+              "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061",
+              "relation": "business",
+              "key": "1",
+              "action": "update",
+              "version": "20f10b10-930c-42ae-b7e8-1cc2037bbe6c",
+              "predecessor": "9e285cf9-8f89-40ca-a6fe-062d9946de7e",
+              "values": {
+                "balance": "10",
+                "active": false,
+                "region": "east"
+              },
+              "revertedBy": null
+            },
+            {
+              "seq": 7,
+              "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb",
+              "relation": "business",
+              "key": "2",
+              "action": "update",
+              "version": "a7b50efb-d43a-43a4-a6e6-44c256de4939",
+              "predecessor": "85bd076e-7820-4664-bdaf-b81795689b97",
+              "values": {
+                "balance": "20",
+                "active": false,
+                "region": "east"
+              },
+              "revertedBy": null
+            }
+          ],
+          "transactions": [
+            {
+              "id": "transaction-3a0c7271103d4b8db0f4c39b8439b061",
+              "connection": "connection-671afa1372e14533b205ba3b43f0a2b3",
+              "status": "committed",
+              "beginSeq": 2,
+              "endSeq": 9,
+              "events": [
+                2,
+                3,
+                6,
+                8,
+                9
+              ],
+              "finalWrites": [
+                6
+              ]
+            },
+            {
+              "id": "transaction-52d2f6104deb4757aa9860afe2f8ddfb",
+              "connection": "connection-a485d63a15524f9790f2da1d8925c3b6",
+              "status": "committed",
+              "beginSeq": 4,
+              "endSeq": 11,
+              "events": [
+                4,
+                5,
+                7,
+                10,
+                11
+              ],
+              "finalWrites": [
+                7
+              ]
+            }
+          ],
+          "history": null
+        },
+        "evidence": {
+          "kind": "bounded-serial-exhaustion",
+          "code": "no_serial_relation_execution",
+          "sampleBlockers": [
+            {
+              "tx": "transaction-52d2f6104deb4757aa9860afe2f8ddfb",
+              "seq": 5,
+              "code": "query_result_length_mismatch"
+            },
+            {
+              "tx": "transaction-3a0c7271103d4b8db0f4c39b8439b061",
+              "seq": 3,
+              "code": "query_result_length_mismatch"
+            }
+          ],
+          "sourceEvidence": [
+            {
+              "relation": "business",
+              "key": "1",
+              "version": "9e285cf9-8f89-40ca-a6fe-062d9946de7e",
+              "values": {
+                "balance": "10",
+                "active": true,
+                "region": "east"
+              },
+              "action": "snapshot",
+              "predecessor": null,
+              "sourceSeq": 1,
+              "writer": null,
+              "revertedBy": null
+            },
+            {
+              "relation": "business",
+              "key": "2",
+              "version": "85bd076e-7820-4664-bdaf-b81795689b97",
+              "values": {
+                "balance": "20",
+                "active": true,
+                "region": "east"
+              },
+              "action": "snapshot",
+              "predecessor": null,
+              "sourceSeq": 1,
+              "writer": null,
+              "revertedBy": null
+            },
+            {
+              "relation": "business",
+              "key": "1",
+              "version": "20f10b10-930c-42ae-b7e8-1cc2037bbe6c",
+              "values": {
+                "balance": "10",
+                "active": false,
+                "region": "east"
+              },
+              "action": "update",
+              "predecessor": "9e285cf9-8f89-40ca-a6fe-062d9946de7e",
+              "sourceSeq": 6,
+              "writer": "transaction-3a0c7271103d4b8db0f4c39b8439b061",
+              "revertedBy": null
+            },
+            {
+              "relation": "business",
+              "key": "2",
+              "version": "a7b50efb-d43a-43a4-a6e6-44c256de4939",
+              "values": {
+                "balance": "20",
+                "active": false,
+                "region": "east"
+              },
+              "action": "update",
+              "predecessor": "85bd076e-7820-4664-bdaf-b81795689b97",
+              "sourceSeq": 7,
+              "writer": "transaction-52d2f6104deb4757aa9860afe2f8ddfb",
+              "revertedBy": null
+            }
+          ]
+        },
+        "execution": {
+          "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
+          "analysisOptions": {
+            "maxStates": 100000,
+            "maxOperationChecks": 1000000
+          },
+          "effectiveLimits": {
+            "committedTransactions": 6,
+            "operations": 128,
+            "states": 100000,
+            "operationChecks": 1000000,
+            "budgetScope": "serial-search-only",
+            "relations": 8,
+            "columns": 16,
+            "inputUtf16Units": 8388608,
+            "transactions": 512,
+            "events": 65536,
+            "semanticOperations": 10000,
+            "distinctKeys": 1024,
+            "returnedRowReferences": 100000
+          },
+          "metrics": {
+            "states": 4,
+            "operationChecks": 44,
+            "complete": true,
+            "reason": "exhausted"
+          }
+        }
+      },
+      "mappingCoverage": {
+        "complete": true,
+        "gaps": [],
+        "actualCalls": {
+          "pairedCalls": 6,
+          "confirmedTransactions": 2,
+          "statementCalls": 4
+        },
+        "sourceWindowsChecked": true,
+        "committedEffectsChecked": 2
+      },
+      "sourceBindings": {
+        "traceSha256": "4f1469335ab433f4df4b0b5d1439e8bd38e58f1c131ec4e27981c72df97b5d72",
+        "sourceJournalSha256": "35d7b031ba03e5a01f726041b5e717457566d63154b2f96cdffb4cbd6c54e7c5",
+        "lifecycleSha256": "01215abf3b18b67fcd38e43233d3e7225b4384d81101bfbe95638e87d60722b4",
+        "journalIndexSha256": "a19dd6745005490b6b7dec9663714be1e863760e8d3a9f678942681855076bad"
+      },
+      "scope": "Explicit new controlled PostgreSQL18 schema and one startup synchronous psycopg factory; exact registered list append/point read or relation point CRUD/AND SELECT only. RETURNING is not a predicate read. Original raw gaps remain incomplete; source/driver observations are independently projected. Source checks bind the supplied index self-checksum/descriptors, not absent segment payloads. Hashes do not authenticate the server or exclusive writer declaration. No ORM, async, savepoint, arbitrary SQL/table, mixed model, isolation-level or real-time claim."
+    }
+  },
+  "scope": {
+    "configuredNativeSyncFactoryOnly": true,
+    "explicitOwnedSchemaInstallation": true,
+    "originalDiagnosticsRemainPartial": true,
+    "actualDatabaseExecution": false,
+    "serverAuthenticityVerified": false,
+    "eventSegmentPayloadsRehashed": false,
+    "arbitrarySqlSupported": false,
+    "ormSupported": false,
+    "asynchronousSupported": false,
+    "realTimeOrderInferred": false,
+    "sourceClosedReductionAvailable": false
+  }
+}
