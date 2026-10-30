@@ -1,0 +1,185 @@
+{
+  "traceSchema": 1,
+  "clockDomain": "python-monotonic-533b29810ba647aa94c58c3b94306035",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 0,
+      "initial": {
+        "[\"mtw_capture_e0e8f00969b3401594edc12705fd4498.registers\",\"text\",\"x\"]": "x0",
+        "[\"mtw_capture_e0e8f00969b3401594edc12705fd4498.registers\",\"text\",\"y\"]": "y0"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 63000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 63000,
+      "phase": "execute-request",
+      "sql": "SELECT value,version FROM \"mtw_capture_e0e8f00969b3401594edc12705fd4498\".registers WHERE key=%s",
+      "parameters": [
+        "x"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 63000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 63000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": false,
+      "rows": [
+        [
+          1,
+          "x0"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "op",
+      "time": 63000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_capture_e0e8f00969b3401594edc12705fd4498.registers\",\"text\",\"x\"]",
+        "version": "x0"
+      }
+    },
+    {
+      "seq": 7,
+      "kind": "sql",
+      "time": 63000,
+      "phase": "execute-request",
+      "sql": "UPDATE \"mtw_capture_e0e8f00969b3401594edc12705fd4498\".registers SET value=%s,version=%s WHERE key=%s",
+      "parameters": [
+        2,
+        "x-async",
+        "x"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 63000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 9,
+      "kind": "op",
+      "time": 63000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_capture_e0e8f00969b3401594edc12705fd4498.registers\",\"text\",\"x\"]",
+        "version": "x-async"
+      }
+    },
+    {
+      "seq": 10,
+      "kind": "sql",
+      "time": 63000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 11,
+      "kind": "end",
+      "time": 63000,
+      "tx": "tx-1",
+      "status": "committed"
+    },
+    {
+      "seq": 12,
+      "kind": "begin",
+      "time": 125000,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 13,
+      "kind": "sql",
+      "time": 125000,
+      "phase": "execute-request",
+      "sql": "SELECT value,version FROM \"mtw_capture_e0e8f00969b3401594edc12705fd4498\".registers WHERE key=%s",
+      "parameters": [
+        "x"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 14,
+      "kind": "sql",
+      "time": 125000,
+      "phase": "execute-ack",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 15,
+      "kind": "sql",
+      "time": 125000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          2,
+          "x-async"
+        ]
+      ],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 16,
+      "kind": "op",
+      "time": 125000,
+      "tx": "tx-2",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_capture_e0e8f00969b3401594edc12705fd4498.registers\",\"text\",\"x\"]",
+        "version": "x-async"
+      }
+    },
+    {
+      "seq": 17,
+      "kind": "sql",
+      "time": 125000,
+      "phase": "commit-ack",
+      "tx": "tx-2"
+    },
+    {
+      "seq": 18,
+      "kind": "end",
+      "time": 125000,
+      "tx": "tx-2",
+      "status": "committed"
+    }
+  ],
+  "gaps": []
+}
