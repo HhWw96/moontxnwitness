@@ -138,6 +138,10 @@ for kind in ("portable", "source"):
         typed_v4 = json.loads(run([NODE, 'scripts/v4-sdk-test.mjs'], consumer))
         assert typed_v4['passed'] and typed_v4['failed'] == 0 and typed_v4['legacyWorkers'] == 0
         checks.append(kind + ' v4 typed analysis, explicit reduction and independently budgeted replay')
+        direct_category = json.loads(run([NODE, 'scripts/register-direct-v4-audit.mjs',
+            '--runtime', str(consumer / 'dist'), '--output-root', str(work / ('direct-category-' + kind))], consumer))
+        assert direct_category['passed'] is True and direct_category['checks'] >= 6 and direct_category['failed'] == 0
+        checks.append(kind + ' independent direct-register category SDK reference and witness audit')
     public024 = json.loads(run([NODE,'scripts/compat-v024-test.mjs',str(consumer/'dist'),str(consumer/'fixtures/compat-v024'),str(work/('public024-'+kind))],consumer))
     assert public024['passed'] and public024['currentRuntimeVersion'] == VERSION and public024['checks'] == 107
     checks.append(kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay')

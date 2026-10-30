@@ -27,6 +27,16 @@ def validate_public031_compatibility_receipt(summary, version):
     return original31
 
 
+def validate_register_direct_category_audit(summary, version):
+    audit = summary['registerDirectCategoryAudit']
+    assert audit['passed'] is True and audit['failed'] == 0 and audit['checks'] >= 6
+    assert audit['version'] == version and audit['runtimeUnchanged'] is True
+    assert {'G0', 'G1c', 'G2-item'}.issubset(audit['checkedCategories'])
+    assert audit['testedFileSha256Before'] == audit['testedFileSha256After']
+    assert audit['testedFileSha256Before']['core.mjs'] == summary['buildManifest']['coreSha256']
+    return audit
+
+
 def validate_scoped_acceptance(acceptance, manifest):
     """Validate the declared stable profiles, without promoting preview goals."""
     assert acceptance['policy'] in ('scoped-stable-v1', 'scoped-stable-v2')
@@ -246,9 +256,11 @@ def validate_scoped_acceptance(acceptance, manifest):
         v4 = summary['v4HostTests']
         assert v4['passed'] and v4['checks'] >= 73 and v4['legacyWorkers'] == 0
         validate_public031_compatibility_receipt(summary, VERSION)
+        validate_register_direct_category_audit(summary, VERSION)
         for kind in ('source', 'portable'):
             assert kind + ' public031 original SDK/capsules and corrupted runtime refusal' in package['checks']
             assert kind + ' v4 typed analysis, explicit reduction and independently budgeted replay' in package['checks']
+            assert kind + ' independent direct-register category SDK reference and witness audit' in package['checks']
 
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names
@@ -558,6 +570,7 @@ if __name__ == '__main__':
         assert summary['passed'] is True and summary['version'] == VERSION
         if tuple(map(int, VERSION.split('.'))) >= (0, 3, 2):
             validate_public031_compatibility_receipt(summary, VERSION)
+            validate_register_direct_category_audit(summary, VERSION)
         print('Current integration compatibility receipt contract passed: ' + VERSION)
     else:
         publish()

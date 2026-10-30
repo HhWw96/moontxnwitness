@@ -4,11 +4,11 @@
 
 The [stable support matrix](stable-scope.md) defines the declared register, fixed-key presence, SQL-template/cache, list, relation, selected-cycle and execution-capsule interfaces. Each capability retains explicit inputs, budgets, coverage gaps and replay rules. Actual release acceptance comes from its versioned receipts; a source candidate or old database replay is not a new database execution.
 
-The [current iteration arrangement](remaining-execution-plan.md) allows installable stable subsets. Full automatic SQL/ORM, six-model classification, complete production integrations and broader performance/scale remain future work. The [original 30–40 day plan](remaining-execution-plan-2026-10-21.md) is retained verbatim as history, not a joint prerequisite for every stable release. No unmeasured speedup or RSS result is claimed for v0.2.0.
+The [current iteration arrangement](remaining-execution-plan.md) allows installable stable subsets. Full automatic SQL/ORM, six-model classification, complete production integrations and broader performance/scale remain future work. The [original 30–40 day plan](remaining-execution-plan-2026-10-21.md) is retained as a technical reference, rather than a joint prerequisite for every stable release. No unmeasured speedup or RSS result is claimed for v0.2.0.
 
 ## Historical v0.0.7–v0.1.0 notes
 
-The following text describes its original versions, engineering targets and evidence. It is not the current v0.2.0 support or release policy. Historical organizer references and participant steps are not fresh confirmation of present contest rules or acceptance.
+The following text describes its original versions, engineering targets and evidence. It is not the current v0.2.0 support or release policy. Dated engineering targets and measurements remain linked to their original records.
 
 ## v0.0.7 through v0.1.0 delivery history
 
@@ -16,13 +16,7 @@ Accepted scope: v0.0.7 performance evidence, v0.0.8 graph/allocation improvement
 v0.0.9 bounded optimized completion and v2 evidence, v0.0.10 large reduction,
 v0.0.11 actual PostgreSQL capture, then v0.1.0 API stabilization.
 
-The October 2026 official public page requires MoonBit as the primary language,
-traceable public development, runnable examples/tests, substantive new work,
-open-source compliance and explainable AI assistance:
-https://moonbitlang.github.io/Hackathon2026/
-
-These performance goals are our engineering goals, not organizer scoring weights.
-No award, organizer acceptance or registration is inferred from a release.
+These measurements track implementation behavior, reproducibility, correctness and open-source compatibility. Performance targets remain engineering goals.
 
 ## Reproduce measurements
 
