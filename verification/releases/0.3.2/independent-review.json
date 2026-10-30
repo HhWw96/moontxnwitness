@@ -1,13 +1,12 @@
 {
   "format": "moontxnwitness-independent-technical-review/v1",
   "targetVersion": "0.3.2",
-  "reviewedAtUtc": "2026-10-30T16:12:53.037854+00:00",
+  "reviewedAtUtc": "2026-10-30T16:39:54.970830+00:00",
   "baseCommit": "44e768d0bdd4a51b2c41179494798ea89f4cc57f",
-  "sourceState": "local frozen development tree; source hashes below identify the reviewed files",
-  "status": "scoped-checks-passed-third-full-validation-in-progress",
-  "passed": null,
+  "sourceState": "Reviewed committed source tree; local scoped executions and main integration original receipts are distinguished below.",
+  "status": "scoped-technical-review-passed",
+  "passed": true,
   "scopeChecksPassed": true,
-  "releaseReady": false,
   "scope": [
     "v4 typed core and SDK semantic boundaries",
     "source-closed reduction minimality",
@@ -216,28 +215,6 @@
     "fingerprintCoverage": "All non-artifacts frozen inputs are checked against pinned hashes; artifacts compatibility cache copies are excluded from the source map and executed dist is separately bound.",
     "sourceConsumerCache": "The fresh source consumer may reuse only checksum-pinned public input blobs. It rebuilds current compiled code from its extracted sources, with the external toolchain; it does not reuse author dist."
   },
-  "notExecuted": [
-    {
-      "item": "complete v0.3.2 integration suite final result",
-      "reason": "Main integration run is still executing; its final outcome is outside this scoped review."
-    },
-    {
-      "item": "Linux Native and Linux real file-symlink integration",
-      "reason": "This independent run used Windows; file symlink creation was unavailable locally."
-    },
-    {
-      "item": "database scenarios and formal performance measurements",
-      "reason": "Not repeated for this code-review task."
-    },
-    {
-      "item": "v0.3.2 candidate archive installation and public download/registry installation",
-      "reason": "No v0.3.2 archive or public release was independently tested in this review."
-    },
-    {
-      "item": "independent rehash of every payload directly from both original archive streams",
-      "reason": "Archive hashes and ZIP member metadata were checked; cache tests use synthetic isolated inputs."
-    }
-  ],
   "unresolvedBlockingFindings": [],
   "reviewedFileSha256": {
     "src/types_v4.mbt": "c64c5788ef73f39d81bbc0a16fc1d711528f1649b2605242ea9b43678225d976",
@@ -266,12 +243,12 @@
     "scripts/input-cache.mjs": "6519f47fdb385200f97d731ae838745203e900e50f6091efb8b58ac3c74a62c7"
   },
   "evidenceDirectory": ".\\artifacts\\independent-v032-review-20261030-233643-6b1424",
-  "revision": "package-deadline-adjustments-3",
+  "revision": "final-integration-receipts-observed-4",
   "finalAdjustments": {
     "sourceExampleException": "Only exact Git blobs for examples/core-v4/main.mbt and moon.mod are allowed; extra or changed unreviewed source remains refused.",
     "sdk": "Current cmd/v4.mjs re-read and retested against newly built dist; prior result is preserved separately.",
-    "firstFullRun": "Interrupted attempt retained by main integration; not used as final full-run evidence.",
-    "secondFullRun": "Built marker observed; final integration and current-fingerprint database evidence remain pending in this scoped review.",
+    "firstFullRun": "Interrupted attempt retained by main integration and excluded from final integration evidence.",
+    "secondFullRun": "Original package deadline assertion failed; the retained failure was fixed without changing its expectations and is not final integration evidence.",
     "packageConsumers": {
       "defaultTimeoutSeconds": 180,
       "extendedOnlyFor": {
@@ -282,6 +259,126 @@
       "warmPublicCache": "setdefault only; no author dist; each public blob still hash-verified",
       "originalTestsUnchanged": true
     },
-    "thirdFullRun": "In progress; prior interrupted runs and prior database execution are not final full-fingerprint evidence."
-  }
+    "thirdFullRun": "Completed successfully; final tests/database original receipts and full fingerprint equality are recorded in observedIntegration."
+  },
+  "targetCommit": "18937c6a29d35a92416cee2d2ebc3006ced2b5a0",
+  "publicationVerified": false,
+  "observedIntegration": {
+    "observationMethod": "Read and validate the original final receipts produced by main integration; the reviewer did not independently rerun the full suite or database scenarios.",
+    "sourceCommit": "18937c6a29d35a92416cee2d2ebc3006ced2b5a0",
+    "tests": {
+      "path": "verification/releases/0.3.2/tests.json.gz",
+      "sha256": "b5ffd2abf32f3452c5699bcb1fdad9d735df4a020ea1a76e1212ea25371558b0",
+      "bytes": 372513,
+      "summary": {
+        "path": "verification/summary.json",
+        "sha256": "cadcd453476a2f42a5fa6aa945398ffeea40dcbfe307760b086e395dcb628e74",
+        "bytes": 2108271
+      },
+      "passed": true,
+      "compressedReceiptEqualsEntireSummary": true,
+      "coreTestsPerExecutedTarget": 830,
+      "executedTargets": [
+        "js",
+        "wasm-gc",
+        "wasm"
+      ],
+      "checkedButNotExecutedTarget": "native",
+      "independentHistoryChecks": 10320,
+      "verifiedCycleCertificates": 6373,
+      "fingerprintEntries": 10528,
+      "reviewerReranFullSuite": false
+    },
+    "database": {
+      "path": "verification/releases/0.3.2/database.json.gz",
+      "sha256": "f82d07a56f8336462592ee2d6f4432b6864bf200128330dc95ce274da12b2302",
+      "bytes": 693528,
+      "passed": true,
+      "actualDatabaseExecution": true,
+      "exitCode": 0,
+      "fingerprintBeforeEntries": 10528,
+      "fingerprintAfterEntries": 10528,
+      "beforeMatchesTestsExactly": true,
+      "afterMatchesTestsExactly": true,
+      "beforeAfterBuildManifestsMatchTests": true,
+      "scope": "Actual PostgreSQL 18 point capture, ordinary-table presence and initialization checks for typed-v4 integration with compiler 0.10.16; controlled fixture schemas.",
+      "subreceipts": {
+        "presence": {
+          "path": "verification/provenance-presence/run-fed2cb175fc1401fad0fcd0ce4331113/presence-receipt.json",
+          "sha256": "5acfab2b90d4c5ac0461ec6d5867c60afb9f04633d82e231f849457090cebc1c",
+          "bytes": 18301,
+          "bindingMatches": true,
+          "passed": true,
+          "actualDatabaseExecution": true,
+          "scope": "controlled generated text-key CRUD fixture; no existing-application or arbitrary-SQL claim",
+          "reviewerReranScenario": false
+        },
+        "initialization": {
+          "path": "verification/provenance-presence/run-fed2cb175fc1401fad0fcd0ce4331113/initialization/initialization-receipt.json",
+          "sha256": "e592d425fa47263becc7104e767d6ef1ecc223c087bf06b2163e4ec2de038a27",
+          "bytes": 7343,
+          "bindingMatches": true,
+          "passed": true,
+          "actualDatabaseExecution": true,
+          "scope": null,
+          "reviewerReranScenario": false
+        },
+        "legacy": {
+          "path": "verification/releases/0.3.2/postgres/receipt.json",
+          "sha256": "d62f39029435846815009f9b9f4ae700e78d2838c05d8289f5898d580ad12ef8",
+          "bytes": 10131,
+          "bindingMatches": true,
+          "passed": true,
+          "actualDatabaseExecution": true,
+          "scope": "Controlled RR serialization anomaly and Serializable abort/retry; not a PostgreSQL vulnerability or database-wide certification",
+          "reviewerReranScenario": false
+        },
+        "capture": {
+          "path": "verification/releases/0.3.2/capture/2026-10-30T16-11-15-555Z/receipt.json",
+          "sha256": "6c55f033598fee2add1b9121c2eba9219a22f148ce22eaaeb888211b15e626ff",
+          "bytes": 1927,
+          "bindingMatches": true,
+          "passed": true,
+          "actualDatabaseExecution": true,
+          "scope": "controlled capture integration fixtures; not independent business adoption",
+          "reviewerReranScenario": false
+        }
+      },
+      "reviewerReranDatabase": false
+    },
+    "buildManifestMatchesCurrentDist": true,
+    "matchingFingerprintMapSha256": "759f27fb9507aceccfd51ad3993a06b27706a476880dd690ec9505e865d837e5",
+    "matching": "Complete mapping equality; no fingerprint entries filtered before comparison."
+  },
+  "notExecutedByReviewer": [
+    {
+      "item": "Complete 830-test suite on each of JS/Wasm GC/Wasm plus 10320 independent histories and 6373 cycle certificates",
+      "mainIntegrationExecuted": true,
+      "originalReceiptReviewed": true,
+      "reference": "observedIntegration.tests"
+    },
+    {
+      "item": "Actual PostgreSQL scenarios",
+      "mainIntegrationExecuted": true,
+      "originalReceiptReviewed": true,
+      "reference": "observedIntegration.database"
+    },
+    {
+      "item": "Linux Native and Linux real file-symlink integration",
+      "mainIntegrationNativeExecutionInTheseReceipts": false,
+      "reason": "The observed local summary checks native but executes only JS/Wasm GC/Wasm; independent local file-symlink test was skipped for missing Windows privileges."
+    },
+    {
+      "item": "Formal performance measurements",
+      "reason": "Not repeated as part of this technical code review."
+    },
+    {
+      "item": "v0.3.2 fresh source/portable package consumers and public download/registry installation",
+      "reason": "Separate packaging/publication evidence is required; publicationVerified remains false for this review."
+    },
+    {
+      "item": "Rehash every payload directly from both original public archive streams",
+      "reason": "Public archive hashes and ZIP member metadata were checked; the reviewer also checked non-artifacts frozen inputs through the full source fingerprint, but did not independently stream-verify every archive payload."
+    }
+  ]
 }
