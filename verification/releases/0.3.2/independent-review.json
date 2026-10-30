@@ -1,9 +1,9 @@
 {
   "format": "moontxnwitness-independent-technical-review/v1",
   "targetVersion": "0.3.2",
-  "reviewedAtUtc": "2026-10-30T19:58:54.701777+00:00",
+  "reviewedAtUtc": "2026-10-30T21:53:12.319781+00:00",
   "baseCommit": "44e768d0bdd4a51b2c41179494798ea89f4cc57f",
-  "sourceState": "Main integration ran at HEAD 30ba37c with explicitly hashed uncommitted publisher-validator and distribution-test changes. All 10528 tested source/runtime hashes match current files. The CI workflow change is statically reviewed and hashed; hosted execution and public installation are separate pending checks.",
+  "sourceState": "Current execution remains HEAD 2d270b75 plus the explicitly hashed uncommitted direct-category adapter/test/gate files. Complete full/database source/runtime fingerprints and the assembled tests gzip are verified. Documentation and final review metadata require the announced source-tree fixpoint recomputation before commit. Hosted CI and public installation are not verified.",
   "status": "scoped-technical-review-passed",
   "passed": true,
   "scopeChecksPassed": true,
@@ -255,8 +255,28 @@
       "priority": "P1",
       "problem": "Publisher read publicV031CompatibilityTests while the integration runner writes public031CompatibilityTests, blocking a valid release at preflight.",
       "fix": "Use the actual integration field through one strict pure validator; no invented alias fallback. Add unit failures and an actual-receipt CI check after package consumers.",
-      "status": "scoped-code-and-regressions-passed-full-integration-pending",
+      "status": "fixed-and-earlier-local-full-integration-observed; superseded-source-state-covered-by-PUBLISH-002",
       "reviewerChangedImplementationOrExpectedResults": false
+    },
+    {
+      "id": "PUBLISH-002",
+      "priority": "P1",
+      "problem": "The old register-category adapter reused transitive RW serialization constraints as formal direct item anti-dependencies. A read of x0 followed by its own installed x1 incorrectly jumped to another transaction x2, adding G2-item and, in the later development profile, G-single to a genuine G1c history. Old self-verification recomputed the same erroneous category.",
+      "originalEvidence": {
+        "artifact": "independent-register-rw-validation.json",
+        "sha256": "0bdf0d1f2d8fa54b1d79a5aa45050260a282eb80c83652658fd2da65b0032efd",
+        "cases": 6,
+        "disagreeingRuntimeCases": 2,
+        "fullElleCheckerExecuted": false
+      },
+      "previousCandidate": {
+        "commit": "2d270b75fa6d2802ee1967972d1f12ccc73ccb11",
+        "hostedCiAnd134ConsumersPassed": "reported by main integration; no publication occurred",
+        "publicationBlockedBy": "independent formal direct-category counterexample"
+      },
+      "fix": "Only the v4 register-category adapter filters RW to the resolved immediate installed successor and requires matching source/operation metadata. Unknown order/source metadata produces uncertainty. Legacy raw analysis and v1-v3 code remain unchanged.",
+      "status": "fixed-and-scoped-sdk-tests-passed-current-local-full-and-database-receipts-observed; hosted-and-public-evidence-pending",
+      "reviewerChangedImplementationOrOriginalExpectedResults": false
     }
   ],
   "confirmedBoundaries": {
@@ -274,7 +294,7 @@
   "reviewedFileSha256": {
     "src/types_v4.mbt": "c64c5788ef73f39d81bbc0a16fc1d711528f1649b2605242ea9b43678225d976",
     "src/analysis_v4.mbt": "d6540659c4538bf34274fd51815081f3c957f4c0e621c0b850014df89e0e807f",
-    "src/classification_v4.mbt": "14516fdde486f788214c02394be9be950bd7868f0c2e8993805877c53eb90616",
+    "src/classification_v4.mbt": "8d9eab39502d24f3377bc69a6bd2e982ab0ab9502ee5cc8cc5cf25522ceb7655",
     "src/reduction_v4.mbt": "cc5e23f37ca6b5531e860b5fda4c978a2f2b497a21b4090a41dc49ffd46d2acf",
     "src/api_v4.mbt": "5ba367402eb3ec4207ce79f24849909d610b81a8ec6783233613688cca3cd6a6",
     "cmd/v4.mjs": "2f51446133ef63d27bdaebb095209942aba44e2ec1cba7d55f5de4186bc30c3e",
@@ -286,25 +306,30 @@
     "scripts/verification-fingerprint.mjs": "1bf800b52fd887ff8f46454724a522b2895a0b0d2b98df4bd45561a9ad614cd8",
     "scripts/verify_business_evidence.py": "3f2364b455cde7a59951dd49cb19a514db0f6778eecc48d1fc55a125e10f7dbd",
     "dist/v4.mjs": "2f51446133ef63d27bdaebb095209942aba44e2ec1cba7d55f5de4186bc30c3e",
-    "dist/core.mjs": "4b9a3933fbfabd03949db4af2aa631d574d265ecea2a09f075fd359555750a7a",
+    "dist/core.mjs": "b06cd069532a8cf139dc613258894163925f78f4764e587ebac679cce397340f",
     "scripts/repository-policy.json": "09260a5ee4bb1e6108d2b28711c0a096150b207d55e971ec32f602b4d7949031",
     "scripts/repository_hygiene.py": "a1aeea90cd13568f23c5a60b9fc3866017163a931fc2570f20e96083a2ec2e53",
     "examples/core-v4/main.mbt": "f89df1922f4f3bb009285df94ad10787091b5a720b6af0dddf8ff172fbd99ea6",
     "examples/core-v4/moon.mod": "fd072532ae6bb3d84f4db4a098810170f2171ecb86358949bc40217dea0926a1",
     "examples/core-v4/moon.pkg": "94d729c99e78a74897ed81b7fd0f2b385dc1742b7b43837d152047f36f27dd94",
     "examples/core-v4/README.md": "202ea8b0ce3f685c119ec6a16280ae08b23c6908872d8a29f03f5cd4c9563684",
-    "scripts/package_release.py": "39de6a023e4f2cf17aed6f644d367d44383fb7dc7b71bb098a6e5d22dd5fee88",
+    "scripts/package_release.py": "e5f683fca12e85c8518ab8d7b454d50c9c8bdc9c86c1757712a5781b2a5ba93c",
     "scripts/test_publication_ci.py": "c73801f68148f2dc7d2741cb43c4b64be5ded38048477b06c7d5b2adc885fe78",
     "scripts/input-cache.mjs": "6519f47fdb385200f97d731ae838745203e900e50f6091efb8b58ac3c74a62c7",
     "scripts/stage_ci_evidence.py": "23e6c08eb8db51562d49b4ad9c8f0e12b58f5018ba7caba69ab549dd9e12aea5",
-    "scripts/test_distribution.py": "d80d3c5d900cbbdc41c052a7808c7ff186fd950357eeb6f6aff30584176bfde8",
+    "scripts/test_distribution.py": "60ba5fd489206d80652857ecf8d619ca69abae2967284ce2bd85176c45a50d72",
     "package.json": "7bc44a8f37100148fcc45f435566c9ad08fe0141639d987ff39a06d429cfbd51",
     "scripts/frozen-inputs.json": "a8aeb81e4af25c308bbb0ab10c3b90ff4ed596ec92fc87720c8f9629a00d7042",
-    "scripts/release.py": "58981701de7378499d50da4c30de27be4ec205e8ba4c75dd41e6dd38e49cd325",
-    ".github/workflows/ci.yml": "ab5988af00dbd28495b4996b41061824d4ba3543bcf79a4fece1a4c351dfef31"
+    "scripts/release.py": "063ed06376beefd55cabed173b7ff095f146e9911a2d3b292ab76b01f810ae31",
+    ".github/workflows/ci.yml": "ab5988af00dbd28495b4996b41061824d4ba3543bcf79a4fece1a4c351dfef31",
+    "src/register_direct_category_v4_wbtest.mbt": "71cebd2633bf2f6c12e21560eb976126f3851047967cc22c8abd02535286d4ef",
+    "scripts/register-direct-v4-audit.mjs": "bfb03da9156f2d321f4388a4c5bd4e0cf75827a63703af141f1d114799be0c0c",
+    "scripts/test.mjs": "9bbcdbcb69494b2ebf4c3451efd9cfbc3884f3cdf07ff35b724554da9727059f",
+    "docs/ROADMAP.md": "beadb9f956dbb47a637e8fe9d8e8558b46f0920d00ac389702565c6f62d8a453",
+    "docs/remaining-execution-plan-2026-10-21.md": "f980b8c3198e9ebba5b0efcd244d15c0530372838a0176d131a312e7764e5880"
   },
   "evidenceDirectory": ".\\artifacts\\independent-v032-review-20261030-233643-6b1424",
-  "revision": "publisher-fix-final-assembled-integration-observed-8",
+  "revision": "direct-category-final-assembled-integration-observed-11",
   "finalAdjustments": {
     "sourceExampleException": "Only exact Git blobs for examples/core-v4/main.mbt and moon.mod are allowed; extra or changed unreviewed source remains refused.",
     "sdk": "Current cmd/v4.mjs re-read and retested against newly built dist; prior result is preserved separately.",
@@ -323,25 +348,63 @@
     "thirdFullRun": "Previously completed local run retained; superseded by the final canonical-byte run now bound in observedIntegration.",
     "canonicalByteFinalRun": "Original canonical-byte integration remains preserved under historicalObservedIntegration; superseded by the current publisher-fix local run.",
     "ciEvidenceRetention": "Two exact ignored current-version receipts may be retained; bool false is preserved. Private paths and old/malformed receipts are not promoted.",
-    "publisherFixFinalRun": "Main full suite and actual database receipts passed; all 10528 source/runtime fingerprints independently rehashed and matched. The assembled tests gzip was independently decompressed and equals the entire current summary. Exact-commit hosted CI and public installation remain separate pending checks."
+    "publisherFixFinalRun": "Main full suite and actual database receipts passed; all 10528 source/runtime fingerprints independently rehashed and matched. The assembled tests gzip was independently decompressed and equals the entire current summary. Exact-commit hosted CI and public installation remain separate pending checks.",
+    "directCategoryFix": "The current six-case SDK run, four receipt-unit tests, local full/database original receipts, actual current-summary CLI and assembled gzip were verified. Final source-tree recomputation after review metadata copy, exact-commit hosted CI and public installation remain separate."
   },
   "publicationVerified": false,
   "observedIntegration": {
-    "observationMethod": "Read and validate complete original main-integration receipts; independently rehash all 10528 current fingerprint files and four database subreceipts. This is not an independent rerun of the full suite or database scenarios.",
-    "headAtExecution": "30ba37c3c095fa4cc9a6bc4757b08f2ec1e9ac3a",
+    "observationMethod": "Read and validate complete original main-integration receipts; independently rehash all 10530 current source/runtime files and four database subreceipts. The six direct-category SDK cases were independently rerun earlier against the same runtime bytes; this is not an independent rerun of the entire full suite or database scenarios.",
+    "headAtExecution": "2d270b75fa6d2802ee1967972d1f12ccc73ccb11",
     "executionIncludesUncommittedCode": true,
     "executedCodeOverrides": {
-      "scripts/release.py": {
-        "sha256": "58981701de7378499d50da4c30de27be4ec205e8ba4c75dd41e6dd38e49cd325",
+      "src/classification_v4.mbt": {
+        "sha256": "8d9eab39502d24f3377bc69a6bd2e982ab0ab9502ee5cc8cc5cf25522ceb7655",
         "matchesExecutedFingerprint": true,
         "differsFromHeadBlob": true,
-        "headBlobSha256": "3d30723ee61e91022415612d7d2142a5b30670178505b8d2c4555e45f14ebfd2"
+        "headBlobSha256": "14516fdde486f788214c02394be9be950bd7868f0c2e8993805877c53eb90616",
+        "newFileAtExecution": false
+      },
+      "src/register_direct_category_v4_wbtest.mbt": {
+        "sha256": "71cebd2633bf2f6c12e21560eb976126f3851047967cc22c8abd02535286d4ef",
+        "matchesExecutedFingerprint": true,
+        "differsFromHeadBlob": true,
+        "headBlobSha256": null,
+        "newFileAtExecution": true
+      },
+      "scripts/register-direct-v4-audit.mjs": {
+        "sha256": "bfb03da9156f2d321f4388a4c5bd4e0cf75827a63703af141f1d114799be0c0c",
+        "matchesExecutedFingerprint": true,
+        "differsFromHeadBlob": true,
+        "headBlobSha256": null,
+        "newFileAtExecution": true
+      },
+      "scripts/test.mjs": {
+        "sha256": "9bbcdbcb69494b2ebf4c3451efd9cfbc3884f3cdf07ff35b724554da9727059f",
+        "matchesExecutedFingerprint": true,
+        "differsFromHeadBlob": true,
+        "headBlobSha256": "b47ce4a18133f4f5dad50054e7079322f9e3e15d99fb1fa07b7125390fe2c811",
+        "newFileAtExecution": false
+      },
+      "scripts/package_release.py": {
+        "sha256": "e5f683fca12e85c8518ab8d7b454d50c9c8bdc9c86c1757712a5781b2a5ba93c",
+        "matchesExecutedFingerprint": true,
+        "differsFromHeadBlob": true,
+        "headBlobSha256": "39de6a023e4f2cf17aed6f644d367d44383fb7dc7b71bb098a6e5d22dd5fee88",
+        "newFileAtExecution": false
+      },
+      "scripts/release.py": {
+        "sha256": "063ed06376beefd55cabed173b7ff095f146e9911a2d3b292ab76b01f810ae31",
+        "matchesExecutedFingerprint": true,
+        "differsFromHeadBlob": true,
+        "headBlobSha256": "58981701de7378499d50da4c30de27be4ec205e8ba4c75dd41e6dd38e49cd325",
+        "newFileAtExecution": false
       },
       "scripts/test_distribution.py": {
-        "sha256": "d80d3c5d900cbbdc41c052a7808c7ff186fd950357eeb6f6aff30584176bfde8",
+        "sha256": "60ba5fd489206d80652857ecf8d619ca69abae2967284ce2bd85176c45a50d72",
         "matchesExecutedFingerprint": true,
         "differsFromHeadBlob": true,
-        "headBlobSha256": "24c478fd193691431dbc551ae197ff397eb7b83be4010091e838ab8787f1031b"
+        "headBlobSha256": "d80d3c5d900cbbdc41c052a7808c7ff186fd950357eeb6f6aff30584176bfde8",
+        "newFileAtExecution": false
       }
     },
     "canonicalJsonBytes": {
@@ -363,11 +426,11 @@
     },
     "tests": {
       "path": "verification/releases/0.3.2/tests.json.gz",
-      "bytes": 372499,
-      "sha256": "fc76328e4e3dadd4c6dc0fc48f6999cfd44282d40e9b7ebdd94721800fa5979a",
-      "generatedAt": "2026-10-30T19:52:39.059Z",
+      "bytes": 376487,
+      "sha256": "b03c6b0882c4a17bbd11843b29e77c1db0822daaeb6976d4876f9abefd736ebc",
+      "generatedAt": "2026-10-30T21:25:12.594Z",
       "passed": true,
-      "coreTestsPerExecutedTarget": 830,
+      "coreTestsPerExecutedTarget": 841,
       "executedTargets": [
         "js",
         "wasm-gc",
@@ -376,45 +439,47 @@
       "checkedButNotExecutedTarget": "native",
       "independentHistoryChecks": 10320,
       "verifiedCycleCertificates": 6373,
-      "fingerprintEntries": 10528,
+      "registerDirectCategoryChecks": 6,
+      "directAuditMatchesIndependentlyExecutedCases": true,
+      "fingerprintEntries": 10530,
       "allCurrentFilesIndependentlyRehashed": true,
       "currentFileHashMismatches": 0,
       "reviewerReranFullSuite": false,
-      "mainLog": "artifacts/v032-publisher-fix-full-tests.log",
+      "mainLog": "artifacts/v032-direct-category-full-tests.log",
       "releaseCompressedCopy": {
         "path": "verification/releases/0.3.2/tests.json.gz",
-        "sha256": "fc76328e4e3dadd4c6dc0fc48f6999cfd44282d40e9b7ebdd94721800fa5979a",
-        "bytes": 372499,
-        "generatedAt": "2026-10-30T19:52:39.059Z",
+        "sha256": "b03c6b0882c4a17bbd11843b29e77c1db0822daaeb6976d4876f9abefd736ebc",
+        "bytes": 376487,
+        "generatedAt": "2026-10-30T21:25:12.594Z",
         "equalsCurrentSummary": true,
         "assemblyPending": false
       },
       "summary": {
         "path": "verification/summary.json",
-        "bytes": 2108271,
-        "sha256": "677367baf3e2ef520bcbbba338393cce1570a535021844b1095726ebc9043252"
+        "bytes": 2166034,
+        "sha256": "cc0f6e6a255192b04f8cff5095c117af63f4662642ff9ef3d388311f16ee9e17"
       },
       "compressedReceiptEqualsEntireSummary": true,
       "assemblyPending": false
     },
     "database": {
       "path": "verification/releases/0.3.2/database.json.gz",
-      "bytes": 693522,
-      "sha256": "e0b1055e5b98ac5ba27516bbf2de41bb137fbe823ec1699aefb532a9fff2926d",
+      "bytes": 693730,
+      "sha256": "f87a673d87f22592ad0245e86b8fbf111c8555427dbab325f1a64e4e307ad0a5",
       "passed": true,
       "actualDatabaseExecution": true,
       "exitCode": 0,
-      "fingerprintBeforeEntries": 10528,
-      "fingerprintAfterEntries": 10528,
+      "fingerprintBeforeEntries": 10530,
+      "fingerprintAfterEntries": 10530,
       "beforeMatchesTestsExactly": true,
       "afterMatchesTestsExactly": true,
       "beforeAfterBuildManifestsMatchTests": true,
       "scope": "Actual PostgreSQL 18 point capture, ordinary-table presence and initialization checks for typed-v4 integration with compiler 0.10.16; controlled fixture schemas.",
       "subreceipts": {
         "presence": {
-          "path": "verification/provenance-presence/run-6b6ad2f8ff9f404984576f330b2f799a/presence-receipt.json",
+          "path": "verification/provenance-presence/run-710ead35eef047799cc8a159b3f0d75f/presence-receipt.json",
           "bytes": 18301,
-          "sha256": "89b95fd46412f5cdada6ea06bfa61b8b7af0c76e2d7423dc7f780c3dc8d03a53",
+          "sha256": "9d88fc843be011c9076209cd1b4fbfc1b98af99189ce1a7382d0f23c825ec6bd",
           "bindingMatches": true,
           "passed": true,
           "actualDatabaseExecution": true,
@@ -422,7 +487,7 @@
           "reviewerReranScenario": false
         },
         "initialization": {
-          "path": "verification/provenance-presence/run-6b6ad2f8ff9f404984576f330b2f799a/initialization/initialization-receipt.json",
+          "path": "verification/provenance-presence/run-710ead35eef047799cc8a159b3f0d75f/initialization/initialization-receipt.json",
           "bytes": 7343,
           "sha256": "e592d425fa47263becc7104e767d6ef1ecc223c087bf06b2163e4ec2de038a27",
           "bindingMatches": true,
@@ -434,7 +499,7 @@
         "legacy": {
           "path": "verification/releases/0.3.2/postgres/receipt.json",
           "bytes": 10131,
-          "sha256": "ba287f5fd9deb9599d1137085058d80cea709a62761f4f016954199bb685c50d",
+          "sha256": "b9bb552731a9bb1c0cf916023d2022924d3bd1093c65e78bc5b2b14f54cd112b",
           "bindingMatches": true,
           "passed": true,
           "actualDatabaseExecution": true,
@@ -442,9 +507,9 @@
           "reviewerReranScenario": false
         },
         "capture": {
-          "path": "verification/releases/0.3.2/capture/2026-10-30T19-41-20-200Z/receipt.json",
+          "path": "verification/releases/0.3.2/capture/2026-10-30T21-11-35-997Z/receipt.json",
           "bytes": 1927,
-          "sha256": "96dfb047d0d86e5e5cfeb7567087a3254b064d0935a011c0488e04e5059f7848",
+          "sha256": "a6fdcef78126ce66417978f9d836f3a0602fe0b7a5715e7c231b82a761cf92a1",
           "bindingMatches": true,
           "passed": true,
           "actualDatabaseExecution": true,
@@ -455,14 +520,15 @@
       "reviewerReranDatabase": false
     },
     "buildManifestMatchesCurrentDist": true,
-    "matchingFingerprintMapSha256": "437ec074b4a2020e348b7df2a22e19ff28c6772be211e73ab3fdc5f89b36b879",
+    "matchingFingerprintMapSha256": "3defb25f3a713568fbdc811888e809e60fa8ffc81009686bedec61ce93a028a9",
     "matching": "Complete mapping equality; no fingerprint entries filtered before comparison.",
     "currentForLatestPublisherFix": true,
+    "currentForLatestDirectCategoryFix": true,
     "hostedCiAndPublicationObserved": false
   },
   "notExecutedByReviewer": [
     {
-      "item": "Complete 830-test suite on each of JS/Wasm GC/Wasm plus 10320 independent histories and 6373 cycle certificates",
+      "item": "Complete 841-test suite on each executed JS/Wasm GC/Wasm target plus 10320 independent histories and 6373 cycle certificates",
       "mainIntegrationExecuted": true,
       "originalReceiptReviewed": true,
       "reference": "observedIntegration.tests"
@@ -497,21 +563,62 @@
     {
       "item": "Exact final-commit hosted CI and public installation for the publisher-receipt fix",
       "reason": "The reviewer observed current local full-suite/database receipts and rechecked the actual summary validator; fresh hosted CI and publication have not been observed."
+    },
+    {
+      "item": "Current direct-category fix exact-commit hosted CI and public installation",
+      "reason": "The reviewer independently ran six SDK cases, four receipt-unit tests and the current-summary CLI, and observed complete main full/database receipts. Hosted CI and public installation are not verified here."
     }
   ],
-  "headAtExecution": "30ba37c3c095fa4cc9a6bc4757b08f2ec1e9ac3a",
+  "headAtExecution": "2d270b75fa6d2802ee1967972d1f12ccc73ccb11",
   "executedCodeOverrides": {
-    "scripts/release.py": {
-      "sha256": "58981701de7378499d50da4c30de27be4ec205e8ba4c75dd41e6dd38e49cd325",
+    "src/classification_v4.mbt": {
+      "sha256": "8d9eab39502d24f3377bc69a6bd2e982ab0ab9502ee5cc8cc5cf25522ceb7655",
       "matchesExecutedFingerprint": true,
       "differsFromHeadBlob": true,
-      "headBlobSha256": "3d30723ee61e91022415612d7d2142a5b30670178505b8d2c4555e45f14ebfd2"
+      "headBlobSha256": "14516fdde486f788214c02394be9be950bd7868f0c2e8993805877c53eb90616",
+      "newFileAtExecution": false
+    },
+    "src/register_direct_category_v4_wbtest.mbt": {
+      "sha256": "71cebd2633bf2f6c12e21560eb976126f3851047967cc22c8abd02535286d4ef",
+      "matchesExecutedFingerprint": true,
+      "differsFromHeadBlob": true,
+      "headBlobSha256": null,
+      "newFileAtExecution": true
+    },
+    "scripts/register-direct-v4-audit.mjs": {
+      "sha256": "bfb03da9156f2d321f4388a4c5bd4e0cf75827a63703af141f1d114799be0c0c",
+      "matchesExecutedFingerprint": true,
+      "differsFromHeadBlob": true,
+      "headBlobSha256": null,
+      "newFileAtExecution": true
+    },
+    "scripts/test.mjs": {
+      "sha256": "9bbcdbcb69494b2ebf4c3451efd9cfbc3884f3cdf07ff35b724554da9727059f",
+      "matchesExecutedFingerprint": true,
+      "differsFromHeadBlob": true,
+      "headBlobSha256": "b47ce4a18133f4f5dad50054e7079322f9e3e15d99fb1fa07b7125390fe2c811",
+      "newFileAtExecution": false
+    },
+    "scripts/package_release.py": {
+      "sha256": "e5f683fca12e85c8518ab8d7b454d50c9c8bdc9c86c1757712a5781b2a5ba93c",
+      "matchesExecutedFingerprint": true,
+      "differsFromHeadBlob": true,
+      "headBlobSha256": "39de6a023e4f2cf17aed6f644d367d44383fb7dc7b71bb098a6e5d22dd5fee88",
+      "newFileAtExecution": false
+    },
+    "scripts/release.py": {
+      "sha256": "063ed06376beefd55cabed173b7ff095f146e9911a2d3b292ab76b01f810ae31",
+      "matchesExecutedFingerprint": true,
+      "differsFromHeadBlob": true,
+      "headBlobSha256": "58981701de7378499d50da4c30de27be4ec205e8ba4c75dd41e6dd38e49cd325",
+      "newFileAtExecution": false
     },
     "scripts/test_distribution.py": {
-      "sha256": "d80d3c5d900cbbdc41c052a7808c7ff186fd950357eeb6f6aff30584176bfde8",
+      "sha256": "60ba5fd489206d80652857ecf8d619ca69abae2967284ce2bd85176c45a50d72",
       "matchesExecutedFingerprint": true,
       "differsFromHeadBlob": true,
-      "headBlobSha256": "24c478fd193691431dbc551ae197ff397eb7b83be4010091e838ab8787f1031b"
+      "headBlobSha256": "d80d3c5d900cbbdc41c052a7808c7ff186fd950357eeb6f6aff30584176bfde8",
+      "newFileAtExecution": false
     }
   },
   "canonicalJsonBytes": {
@@ -531,7 +638,7 @@
       "equalsCanonicalHeadBlob": true
     }
   },
-  "headAtReview": "30ba37c3c095fa4cc9a6bc4757b08f2ec1e9ac3a",
+  "headAtReview": "2d270b75fa6d2802ee1967972d1f12ccc73ccb11",
   "integrationEvidenceCurrent": true,
   "publisherFixReview": {
     "headAtScopedExecution": "30ba37c3c095fa4cc9a6bc4757b08f2ec1e9ac3a",
@@ -606,7 +713,8 @@
     "ciWorkflow": "Actual compatibility receipt validation now follows fresh source/portable consumers and precedes always-run staging; no failure suppression was added.",
     "fullIntegrationForChangedBytes": "passed; main original summary observed and all current tested files independently rehashed",
     "databaseForChangedFingerprint": "passed; before and after complete fingerprint maps equal current full-suite map",
-    "exactCommitCiAndPublicInstall": "pending; not observed in this review"
+    "exactCommitCiAndPublicInstall": "pending; not observed in this review",
+    "supersededBy": "directCategoryFixReview; earlier publisher-fix integration evidence remains historical for its original bytes"
   },
   "historicalObservedIntegration": [
     {
@@ -732,6 +840,312 @@
       "matching": "Complete mapping equality; no fingerprint entries filtered before comparison.",
       "currentForLatestPublisherFix": false,
       "supersededBy": "publisherFixReview.codeFiles; new full suite, database fingerprint and exact-commit CI have not yet been observed by this reviewer."
+    },
+    {
+      "observationMethod": "Read and validate complete original main-integration receipts; independently rehash all 10528 current fingerprint files and four database subreceipts. This is not an independent rerun of the full suite or database scenarios.",
+      "headAtExecution": "30ba37c3c095fa4cc9a6bc4757b08f2ec1e9ac3a",
+      "executionIncludesUncommittedCode": true,
+      "executedCodeOverrides": {
+        "scripts/release.py": {
+          "sha256": "58981701de7378499d50da4c30de27be4ec205e8ba4c75dd41e6dd38e49cd325",
+          "matchesExecutedFingerprint": true,
+          "differsFromHeadBlob": true,
+          "headBlobSha256": "3d30723ee61e91022415612d7d2142a5b30670178505b8d2c4555e45f14ebfd2"
+        },
+        "scripts/test_distribution.py": {
+          "sha256": "d80d3c5d900cbbdc41c052a7808c7ff186fd950357eeb6f6aff30584176bfde8",
+          "matchesExecutedFingerprint": true,
+          "differsFromHeadBlob": true,
+          "headBlobSha256": "24c478fd193691431dbc551ae197ff397eb7b83be4010091e838ab8787f1031b"
+        }
+      },
+      "canonicalJsonBytes": {
+        "package.json": {
+          "sha256": "7bc44a8f37100148fcc45f435566c9ad08fe0141639d987ff39a06d429cfbd51",
+          "matchesExecutedFingerprint": true,
+          "equalsCanonicalHeadBlob": true
+        },
+        "scripts/frozen-inputs.json": {
+          "sha256": "a8aeb81e4af25c308bbb0ab10c3b90ff4ed596ec92fc87720c8f9629a00d7042",
+          "matchesExecutedFingerprint": true,
+          "equalsCanonicalHeadBlob": true
+        },
+        "scripts/repository-policy.json": {
+          "sha256": "09260a5ee4bb1e6108d2b28711c0a096150b207d55e971ec32f602b4d7949031",
+          "matchesExecutedFingerprint": true,
+          "equalsCanonicalHeadBlob": true
+        }
+      },
+      "tests": {
+        "path": "verification/releases/0.3.2/tests.json.gz",
+        "bytes": 372499,
+        "sha256": "fc76328e4e3dadd4c6dc0fc48f6999cfd44282d40e9b7ebdd94721800fa5979a",
+        "generatedAt": "2026-10-30T19:52:39.059Z",
+        "passed": true,
+        "coreTestsPerExecutedTarget": 830,
+        "executedTargets": [
+          "js",
+          "wasm-gc",
+          "wasm"
+        ],
+        "checkedButNotExecutedTarget": "native",
+        "independentHistoryChecks": 10320,
+        "verifiedCycleCertificates": 6373,
+        "fingerprintEntries": 10528,
+        "allCurrentFilesIndependentlyRehashed": true,
+        "currentFileHashMismatches": 0,
+        "reviewerReranFullSuite": false,
+        "mainLog": "artifacts/v032-publisher-fix-full-tests.log",
+        "releaseCompressedCopy": {
+          "path": "verification/releases/0.3.2/tests.json.gz",
+          "sha256": "fc76328e4e3dadd4c6dc0fc48f6999cfd44282d40e9b7ebdd94721800fa5979a",
+          "bytes": 372499,
+          "generatedAt": "2026-10-30T19:52:39.059Z",
+          "equalsCurrentSummary": true,
+          "assemblyPending": false
+        },
+        "summary": {
+          "path": "verification/summary.json",
+          "bytes": 2108271,
+          "sha256": "677367baf3e2ef520bcbbba338393cce1570a535021844b1095726ebc9043252"
+        },
+        "compressedReceiptEqualsEntireSummary": true,
+        "assemblyPending": false
+      },
+      "database": {
+        "path": "verification/releases/0.3.2/database.json.gz",
+        "bytes": 693522,
+        "sha256": "e0b1055e5b98ac5ba27516bbf2de41bb137fbe823ec1699aefb532a9fff2926d",
+        "passed": true,
+        "actualDatabaseExecution": true,
+        "exitCode": 0,
+        "fingerprintBeforeEntries": 10528,
+        "fingerprintAfterEntries": 10528,
+        "beforeMatchesTestsExactly": true,
+        "afterMatchesTestsExactly": true,
+        "beforeAfterBuildManifestsMatchTests": true,
+        "scope": "Actual PostgreSQL 18 point capture, ordinary-table presence and initialization checks for typed-v4 integration with compiler 0.10.16; controlled fixture schemas.",
+        "subreceipts": {
+          "presence": {
+            "path": "verification/provenance-presence/run-6b6ad2f8ff9f404984576f330b2f799a/presence-receipt.json",
+            "bytes": 18301,
+            "sha256": "89b95fd46412f5cdada6ea06bfa61b8b7af0c76e2d7423dc7f780c3dc8d03a53",
+            "bindingMatches": true,
+            "passed": true,
+            "actualDatabaseExecution": true,
+            "scope": "controlled generated text-key CRUD fixture; no existing-application or arbitrary-SQL claim",
+            "reviewerReranScenario": false
+          },
+          "initialization": {
+            "path": "verification/provenance-presence/run-6b6ad2f8ff9f404984576f330b2f799a/initialization/initialization-receipt.json",
+            "bytes": 7343,
+            "sha256": "e592d425fa47263becc7104e767d6ef1ecc223c087bf06b2163e4ec2de038a27",
+            "bindingMatches": true,
+            "passed": true,
+            "actualDatabaseExecution": true,
+            "scope": null,
+            "reviewerReranScenario": false
+          },
+          "legacy": {
+            "path": "verification/releases/0.3.2/postgres/receipt.json",
+            "bytes": 10131,
+            "sha256": "ba287f5fd9deb9599d1137085058d80cea709a62761f4f016954199bb685c50d",
+            "bindingMatches": true,
+            "passed": true,
+            "actualDatabaseExecution": true,
+            "scope": "Controlled RR serialization anomaly and Serializable abort/retry; not a PostgreSQL vulnerability or database-wide certification",
+            "reviewerReranScenario": false
+          },
+          "capture": {
+            "path": "verification/releases/0.3.2/capture/2026-10-30T19-41-20-200Z/receipt.json",
+            "bytes": 1927,
+            "sha256": "96dfb047d0d86e5e5cfeb7567087a3254b064d0935a011c0488e04e5059f7848",
+            "bindingMatches": true,
+            "passed": true,
+            "actualDatabaseExecution": true,
+            "scope": "controlled capture integration fixtures; not independent business adoption",
+            "reviewerReranScenario": false
+          }
+        },
+        "reviewerReranDatabase": false
+      },
+      "buildManifestMatchesCurrentDist": true,
+      "matchingFingerprintMapSha256": "437ec074b4a2020e348b7df2a22e19ff28c6772be211e73ab3fdc5f89b36b879",
+      "matching": "Complete mapping equality; no fingerprint entries filtered before comparison.",
+      "currentForLatestPublisherFix": true,
+      "hostedCiAndPublicationObserved": false,
+      "currentForLatestDirectCategoryFix": false,
+      "supersededBy": "directCategoryFixReview.codeFiles; previous full/database evidence is historical for the newly changed adapter and scripts"
     }
-  ]
+  ],
+  "directCategoryFixReview": {
+    "headAtScopedExecution": "2d270b75fa6d2802ee1967972d1f12ccc73ccb11",
+    "codeFiles": {
+      "src/classification_v4.mbt": "8d9eab39502d24f3377bc69a6bd2e982ab0ab9502ee5cc8cc5cf25522ceb7655",
+      "src/register_direct_category_v4_wbtest.mbt": "71cebd2633bf2f6c12e21560eb976126f3851047967cc22c8abd02535286d4ef",
+      "scripts/register-direct-v4-audit.mjs": "bfb03da9156f2d321f4388a4c5bd4e0cf75827a63703af141f1d114799be0c0c",
+      "scripts/test.mjs": "9bbcdbcb69494b2ebf4c3451efd9cfbc3884f3cdf07ff35b724554da9727059f",
+      "scripts/package_release.py": "e5f683fca12e85c8518ab8d7b454d50c9c8bdc9c86c1757712a5781b2a5ba93c",
+      "scripts/release.py": "063ed06376beefd55cabed173b7ff095f146e9911a2d3b292ab76b01f810ae31",
+      "scripts/test_distribution.py": "60ba5fd489206d80652857ecf8d619ca69abae2967284ce2bd85176c45a50d72"
+    },
+    "onlyTrackedCoreSourceChanged": "src/classification_v4.mbt",
+    "newCoreTests": "src/register_direct_category_v4_wbtest.mbt; 11 new cases, no original expected result edits",
+    "unchangedLegacyAndRawApiFiles": {
+      "src/analyze.mbt": {
+        "sha256": "ad77cbe65950b936c2b8421f7073fc08f01ce2275c990c45e8e06bbac8c288ec",
+        "equalsHeadBlob": true
+      },
+      "src/api_v4.mbt": {
+        "sha256": "5ba367402eb3ec4207ce79f24849909d610b81a8ec6783233613688cca3cd6a6",
+        "equalsHeadBlob": true
+      },
+      "src/reduction_v4.mbt": {
+        "sha256": "cc5e23f37ca6b5531e860b5fda4c978a2f2b497a21b4090a41dc49ffd46d2acf",
+        "equalsHeadBlob": true
+      },
+      "src/analysis_v4.mbt": {
+        "sha256": "d6540659c4538bf34274fd51815081f3c957f4c0e621c0b850014df89e0e807f",
+        "equalsHeadBlob": true
+      },
+      "src/capture_v3.mbt": {
+        "sha256": "6048c913899d89ef10563c6fc37a361b68466e66146ede068753cf0256e4518a",
+        "equalsHeadBlob": true
+      },
+      "cmd/sdk.mjs": {
+        "sha256": "d742ecee5a06514ab680506cfce73bffec855fed1d49d13e0d42335f2525b22c",
+        "equalsHeadBlob": true
+      },
+      "cmd/evidence.mjs": {
+        "sha256": "d10e293d16e7e4b02ba5738e68e4024f9b9b1c456afa5faeff8a3a70fd0a3c5e",
+        "equalsHeadBlob": true
+      },
+      "cmd/v4.mjs": {
+        "sha256": "2f51446133ef63d27bdaebb095209942aba44e2ec1cba7d55f5de4186bc30c3e",
+        "equalsHeadBlob": true
+      }
+    },
+    "staticConclusions": [
+      "RW source/target transaction, outcome, operation index, key and version metadata must match actual supplied operations.",
+      "Only resolved rank successor survives; an own successor removed as a self edge is not skipped.",
+      "Missing order/version/source metadata adds an uncertainty gap and prevents check-complete status.",
+      "Independent known G0/G1c cycles remain reportable when an unrelated order is missing.",
+      "Raw analyzer/report/shortest-cycle code and old host defaults are unchanged.",
+      "The SDK gate runs after a fresh build; both source and portable fresh consumers invoke the same independent script.",
+      "The release validator requires the actual registerDirectCategoryAudit field, matching version, complete category scope, unchanged runtime hashes and current compiled-core binding."
+    ],
+    "independentlyExecuted": {
+      "sdkCases": {
+        "path": "artifacts/independent-v032-review-20261030-233643-6b1424/direct-rw-fixed-run/register-direct-v4-audit.json",
+        "sha256": "c558120b35bde444200e8506c26474fb7a7d20bcb8350ec44829b87a838b338a",
+        "passed": true,
+        "checks": 6,
+        "transports": [
+          "object",
+          "json-text"
+        ],
+        "frozenInputAndExpectedEdgeDigestsUnchanged": true,
+        "runtimeFiles": {
+          "sdk.mjs": "d742ecee5a06514ab680506cfce73bffec855fed1d49d13e0d42335f2525b22c",
+          "v4.mjs": "2f51446133ef63d27bdaebb095209942aba44e2ec1cba7d55f5de4186bc30c3e",
+          "core.mjs": "b06cd069532a8cf139dc613258894163925f78f4764e587ebac679cce397340f",
+          "capture-core.mjs": "cafc972208f450ae26781c9910393ea6a87a409f7fa41ca5cf0938883289e932",
+          "build-manifest.json": "4d5ab52ea725449ad4655007425794da5565f67eb68926ee881bc10903a11316"
+        },
+        "coreWasRebuiltByReviewer": false
+      },
+      "receiptUnitTests": {
+        "command": [
+          "python",
+          "-B",
+          "-X",
+          "utf8",
+          "scripts/test_distribution.py",
+          "DirectCategoryReleaseReceiptTests"
+        ],
+        "tests": 4,
+        "passed": true,
+        "durationSeconds": 0.228,
+        "realCurrentReceiptCliExecuted": false
+      }
+    },
+    "fullIntegrationForChangedBytes": "passed; complete original summary observed and all 10530 current tested files independently rehashed",
+    "actualDatabaseForChangedFingerprint": "passed; complete before/after fingerprint maps and build manifests equal current full summary and actual dist",
+    "realCurrentReceiptCli": {
+      "passed": true,
+      "exitCode": 0,
+      "command": [
+        "python",
+        "-B",
+        "-X",
+        "utf8",
+        "scripts/release.py",
+        "--check-compatibility-receipt"
+      ],
+      "summarySha256": "cc0f6e6a255192b04f8cff5095c117af63f4662642ff9ef3d388311f16ee9e17",
+      "summaryGeneratedAt": "2026-10-30T21:25:12.594Z",
+      "publishedAnything": false
+    },
+    "exactCommitHostedCiAndPublicInstall": "pending; not observed by this reviewer",
+    "public032CompatibilityFinalCommit": "not bound; 2d candidate was not published",
+    "assembledReceipts": {
+      "tests": {
+        "path": "verification/releases/0.3.2/tests.json.gz",
+        "sha256": "b03c6b0882c4a17bbd11843b29e77c1db0822daaeb6976d4876f9abefd736ebc",
+        "bytes": 376487,
+        "completeRoundtripEqualsSummary": true
+      },
+      "database": {
+        "path": "verification/releases/0.3.2/database.json.gz",
+        "sha256": "f87a673d87f22592ad0245e86b8fbf111c8555427dbab325f1a64e4e307ad0a5",
+        "beforeAfterEntireFingerprintAndManifestMatch": true
+      },
+      "sdkAudit": {
+        "path": "verification/releases/0.3.2/register-direct-audit.json",
+        "sha256": "7a86c20f12239014e10ba396e9dd21a278d432799d21b2e4d8f01c5c269ab24a",
+        "allFieldsExceptRuntimeMetadataEqualSummary": true,
+        "runtimePathsResolveToSameDirectory": true,
+        "standaloneRuntimeSpelling": ".\\dist",
+        "summaryRuntimeSpelling": "dist"
+      },
+      "coreFocusedTests": {
+        "path": "verification/releases/0.3.2/register-direct-core.json",
+        "sha256": "f0fc499b1199fe4a889e49e629725da56341f613c0e47d76c740f10268b0d02f",
+        "passed": true,
+        "checkExitCode": 0,
+        "allTestExitCodes": 0,
+        "sourceBindingsMatchCurrentAndFullSummary": true,
+        "reviewerIndependentlyReranFocusedCoreTests": false
+      }
+    }
+  },
+  "sourceIndexObservation": {
+    "scope": "Git index blobs at this review checkpoint, not .git disk use or the future final commit",
+    "indexListingSha256": "73f363caf5cae206f584a967340024d55a35c0c0b7eef963d95600d2b18dbb85",
+    "files": 682,
+    "bytes": 13209428,
+    "repositoryPolicyPassed": true,
+    "stagedExecutedFileHashesChecked": 438,
+    "stagedExecutedFingerprintConflicts": 0,
+    "sourceTreeReceipt": {
+      "path": "verification/releases/0.3.2/source-tree.json",
+      "sha256": "36a46018d63616ed67765c105888ebfef334149d95ae675b18e862a987bab64c",
+      "claimedFiles": 682,
+      "claimedBytes": 13209611,
+      "matchesCurrentIndex": false
+    },
+    "reconciliationPending": true,
+    "reason": "Two documentation files were staged after the previous tree receipt (-183 bytes). Integration will copy this final review and recompute the source-tree fixpoint before committing.",
+    "indexRemovedHistoricalReceiptFiles": 66,
+    "allIndexRemovedFilesRetainedOnDiskWithOriginalHeadBytes": true,
+    "historyRewritten": false
+  },
+  "nonExecutableDocumentation": {
+    "paths": [
+      "docs/ROADMAP.md",
+      "docs/remaining-execution-plan-2026-10-21.md"
+    ],
+    "presentInExecutionFingerprint": false,
+    "reviewedCurrentHashesRecorded": true
+  }
 }

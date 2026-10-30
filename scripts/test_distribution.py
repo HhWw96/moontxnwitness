@@ -504,5 +504,51 @@ class CompatibilityReleaseReceiptTests(unittest.TestCase):
                     validate_public031_compatibility_receipt(receipt, '0.3.2')
 
 
+class DirectCategoryReleaseReceiptTests(unittest.TestCase):
+    def fixture(self):
+        return {'buildManifest': {'coreSha256': 'a' * 64}, 'registerDirectCategoryAudit': {
+            'passed': True, 'failed': 0, 'checks': 6, 'version': '0.3.2', 'runtimeUnchanged': True,
+            'checkedCategories': ['G0', 'G1c', 'G2-item'],
+            'testedFileSha256Before': {'core.mjs': 'a' * 64},
+            'testedFileSha256After': {'core.mjs': 'a' * 64}}}
+
+    def test_actual_direct_audit_receipt_is_bound_to_runtime(self):
+        from release import validate_register_direct_category_audit
+        value = self.fixture()
+        self.assertIs(validate_register_direct_category_audit(value, '0.3.2'), value['registerDirectCategoryAudit'])
+
+    def test_failed_stale_or_incomplete_direct_audit_is_rejected(self):
+        from release import validate_register_direct_category_audit
+        for key, value in [('passed', False), ('passed', 1), ('failed', 1), ('checks', 5),
+                           ('version', '0.3.1'), ('runtimeUnchanged', False), ('checkedCategories', ['G0'])]:
+            with self.subTest(field=key, value=value):
+                receipt = self.fixture(); receipt['registerDirectCategoryAudit'][key] = value
+                with self.assertRaises(AssertionError): validate_register_direct_category_audit(receipt, '0.3.2')
+
+    def test_receipt_cli_preserves_the_contract_version_floor(self):
+        import shutil
+        import sys
+        parent = ROOT / 'artifacts/distribution-tests'
+        parent.mkdir(parents=True, exist_ok=True)
+        work = Path(tempfile.mkdtemp(prefix='receipt-cli-', dir=parent))
+        (work / 'scripts').mkdir(); (work / 'verification').mkdir()
+        for name in ('release.py', 'package_archive.py', 'evidence_json.py', 'publication_ci.py'):
+            shutil.copyfile(ROOT / 'scripts' / name, work / 'scripts' / name)
+        (work / 'package.json').write_text('{"version":"0.3.1"}', encoding='utf8')
+        (work / 'verification/summary.json').write_text('{"version":"0.3.1","passed":true}', encoding='utf8')
+        run = subprocess.run([sys.executable, '-X', 'utf8', str(work / 'scripts/release.py'), '--check-compatibility-receipt'],
+                             cwd=work, capture_output=True, text=True, encoding='utf8', timeout=20)
+        self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+        self.assertIn('0.3.1', run.stdout)
+
+    def test_changed_execution_bytes_or_manifest_are_rejected(self):
+        from release import validate_register_direct_category_audit
+        for change in ['after', 'manifest']:
+            receipt = self.fixture()
+            if change == 'after': receipt['registerDirectCategoryAudit']['testedFileSha256After']['core.mjs'] = 'b' * 64
+            else: receipt['buildManifest']['coreSha256'] = 'b' * 64
+            with self.assertRaises(AssertionError): validate_register_direct_category_audit(receipt, '0.3.2')
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

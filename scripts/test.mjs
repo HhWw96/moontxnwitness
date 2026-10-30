@@ -39,6 +39,10 @@ if(v4Check.error||v4Check.status!==0)throw Error('V4 SDK failed: '+v4Check.stdou
 const v4Audit=spawnSync(process.execPath,['scripts/v4-independent-audit-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:4*1024*1024});
 if(v4Audit.error||v4Audit.status!==0)throw Error('Independent V4 audit failed: '+v4Audit.stdout+v4Audit.stderr);
 const v4IndependentAudit=JSON.parse(v4Audit.stdout);assert.equal(v4IndependentAudit.passed,true);
+const directCategoryChild=spawnSync(process.execPath,['scripts/register-direct-v4-audit.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:4*1024*1024});
+if(directCategoryChild.error||directCategoryChild.status!==0)throw Error('Independent direct-category audit failed: '+directCategoryChild.stdout+directCategoryChild.stderr);
+const directCategoryAudit=JSON.parse(directCategoryChild.stdout);assert.equal(directCategoryAudit.passed,true);
+directCategoryAudit.runtime=relativeEvidencePath(root,directCategoryAudit.runtime);
 const parser = (await import('./parser-test.mjs')).runParserTests();
 const oracle = (await import('./oracle.mjs')).runOracle();
 const cli = (await import('./cli-test.mjs')).runCliTests();
@@ -303,6 +307,7 @@ const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resol
 mkdirSync(resolve(root, 'verification'), { recursive: true });
 receipt.v4HostTests = JSON.parse(v4Check.stdout);
 receipt.v4IndependentAudit = v4IndependentAudit;
+receipt.registerDirectCategoryAudit = directCategoryAudit;
 receipt.public031CompatibilityTests = public031Compatibility;
 receipt.captureCliChecks = capture.checks;
 receipt.experimentalPresenceCliChecks = presence.checks;
