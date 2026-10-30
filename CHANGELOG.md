@@ -1,3 +1,11 @@
+# Unreleased - 0.3.3
+
+- Add an explicit effective-list classification profile for multiple appends, intermediate own reads and reverted effects, with independent construction budgets and preserved legacy defaults.
+- Add separate source-bound register lost-update inspection, verification, capsules and CLI; retain actual read/final-write identities and incomplete provenance.
+- Add explicit G-single category checks and separate source-anomaly inspection without changing the v4 default categories.
+- Fix v4 CLI option validation for analyze, classify, reduce, verify, inspection and replay: duplicate JSON keys, including Unicode-escaped aliases, are rejected before host parsing can erase them. Valid option files retain their existing semantics.
+- Preserve a proved source finding when earlier unknown gaps fill the bounded report; retain explicit truncation and incomplete coverage.
+
 # 0.3.2 — 2026-10-30
 
 - Add typed v4 register, append-list and relation analysis, explicit-model reduction and independent report verification, with SDK and CLI entry points.

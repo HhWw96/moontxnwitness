@@ -238,3 +238,117 @@ test "v4 wire capsule duplicate keys rejected before host inspection" {
     Json("invalid"),
   )
 }
+
+///|
+test "v033 wire 01 explicit G-single and four categories preserve old default identities" {
+  let source = history_json(
+    hist(
+      [
+        tx("A", [read_op("x", "x0"), write_op("x", "x1")]),
+        tx("B", [read_op("x", "x0"), write_op("x", "x2")]),
+      ],
+      orders={ "x": ["x0", "x1", "x2"] },
+    ),
+  ).stringify()
+  let requested = "{\"categories\":[\"G0\",\"G1c\",\"G2-item\",\"G-single\"]}"
+  let report = wire_test_json(classify_v4_json(source, requested))
+  assert_eq(
+    capture_field(report, "algorithm"),
+    Json("v4-source-bound-category-g-single-1"),
+  )
+  assert_eq(
+    v4_test_at(report, [
+      "judgment", "rules", "G-single", "evidence", "rwEdgeCount",
+    ]),
+    Json(1),
+  )
+  assert_eq(
+    v4_test_at(
+      wire_test_json(
+        verify_classification_v4_json(source, report.stringify(), requested),
+      ),
+      ["valid"],
+    ),
+    Json(true),
+  )
+  assert_eq(
+    capture_field(wire_test_json(classify_v4_json(source, "{}")), "algorithm"),
+    Json("v4-source-bound-category-bfs-1"),
+  )
+}
+
+///|
+test "v033 wire 02 inspection uses explicit independent budget" {
+  let source = history_json(
+    hist([tx("A", [read_op("x", "x1"), write_op("x", "x1")])]),
+  ).stringify()
+  let report = inspect_anomalies_v4_json(source, "{}")
+  assert_eq(capture_field(wire_test_json(report), "status"), Json("findings"))
+  assert_eq(
+    v4_test_at(wire_test_json(verify_anomalies_v4_json(source, report, "{}")), [
+      "valid",
+    ]),
+    Json(true),
+  )
+  assert_eq(
+    v4_test_at(
+      wire_test_json(
+        verify_anomalies_v4_json(source, report, "{\"maxChecks\":0}"),
+      ),
+      ["valid"],
+    ),
+    Json(false),
+  )
+}
+
+///|
+test "v033 wire 03 inspection rejects duplicate unknown and over-budget options" {
+  let source = history_json(skew()).stringify()
+  for
+    options in [
+      "{\"maxChecks\":1000001}", "{\"maxChecks\":-1}", "{\"maxChecks\":1.5}", "{\"model\":\"serializable\"}",
+      "{\"maxChecks\":0,\"maxChecks\":1000000}",
+    ] {
+    assert_eq(
+      capture_field(
+        wire_test_json(inspect_anomalies_v4_json(source, options)),
+        "status",
+      ),
+      Json("invalid"),
+    )
+  }
+}
+
+///|
+test "v033 wire 04 CLI option guard rejects Unicode-equivalent duplicate keys" {
+  assert_eq(
+    capture_field(
+      wire_test_json(
+        options_v4_content_json("{\"maxChecks\":1,\"max\\u0043hecks\":2}"),
+      ),
+      "status",
+    ),
+    Json("invalid"),
+  )
+  assert_eq(
+    v4_test_at(wire_test_json(options_v4_content_json("{\"maxChecks\":0}")), [
+      "options", "maxChecks",
+    ]),
+    Json(0),
+  )
+}
+
+///|
+test "v033 wire 05 constructor rejection remains visible instead of an empty diagnosis" {
+  let source = v4_test_model_complete(AppendListV4, [
+    { "kind": "append", "tx": "A", "key": "x", "id": "same", "value": "first" },
+    { "kind": "append", "tx": "A", "key": "x", "id": "same", "value": "second" },
+  ]).stringify()
+  assert_eq(
+    capture_field(
+      wire_test_json(inspect_anomalies_v4_json(source, "{}")),
+      "status",
+    ),
+    Json("invalid"),
+  )
+}

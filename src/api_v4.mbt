@@ -35,21 +35,21 @@ fn wire_v4_analysis_options(value : Json) -> AnalysisOptionsV4 raise {
 ///|
 fn wire_v4_classification_options(
   value : Json,
-) -> (Array[String], Int32, Int32) raise {
+) -> (Array[String], Int32, Int32, String, Int32) raise {
   let fields = object_fields(value, "classification options v4")
   known_fields(
     fields,
-    ["categories", "maxStates", "maxEdgeChecks"],
+    wire_v4_classification_field_names(),
     "classification options v4",
   )
   let seen : Map[String, Bool] = Map([])
   let categories = match fields.get("categories") {
     None => ["G0", "G1c", "G2-item"]
-    Some(Array(values)) if !values.is_empty() && values.length() <= 3 =>
+    Some(Array(values)) if !values.is_empty() && values.length() <= 4 =>
       values.map(value => {
         let category = match value {
-          String(s) if ["G0", "G1c", "G2-item"].contains(s) && !seen.contains(s) =>
-            s
+          String(s) if ["G0", "G1c", "G2-item", "G-single"].contains(s) &&
+            !seen.contains(s) => s
           _ => fail("categories must be distinct supported category names")
         }
         seen[category] = true
@@ -60,10 +60,24 @@ fn wire_v4_classification_options(
         "categories must be a nonempty array of distinct supported categories",
       )
   }
+  let list_graph = match fields.get("listGraph") {
+    None => "legacy"
+    Some(String(profile)) if ["legacy", "effective-v1"].contains(profile) =>
+      profile
+    _ => fail("listGraph must be legacy or effective-v1")
+  }
+  let max_list_graph_checks = wire_v4_int(
+    fields, "maxListGraphChecks", 1000000, 1000000,
+  )
+  if list_graph == "legacy" && max_list_graph_checks != 1000000 {
+    fail("maxListGraphChecks requires listGraph effective-v1")
+  }
   (
     categories,
     wire_v4_int(fields, "maxStates", 100000, 100000),
     wire_v4_int(fields, "maxEdgeChecks", 1000000, 1000000),
+    list_graph,
+    max_list_graph_checks,
   )
 }
 
@@ -126,15 +140,21 @@ pub fn analyze_v4_json(text : String, options_text : String) -> String {
 ///|
 pub fn classify_v4_json(text : String, options_text : String) -> String {
   try {
-    let (categories, max_states, max_edge_checks) = wire_v4_classification_options(
-      guarded_json(options_text, limit=8192),
-    )
+    let (
+      categories,
+      max_states,
+      max_edge_checks,
+      list_graph,
+      max_list_graph_checks,
+    ) = wire_v4_classification_options(guarded_json(options_text, limit=8192))
     render_classification_v4(
       classify_v4(
         wire_v4_history(text),
         categories~,
         max_states~,
         max_edge_checks~,
+        list_graph~,
+        max_list_graph_checks~,
       ),
     )
   } catch {
@@ -195,9 +215,13 @@ pub fn verify_classification_v4_json(
   options_text : String,
 ) -> String {
   try {
-    let (categories, max_states, max_edge_checks) = wire_v4_classification_options(
-      guarded_json(options_text, limit=8192),
-    )
+    let (
+      categories,
+      max_states,
+      max_edge_checks,
+      list_graph,
+      max_list_graph_checks,
+    ) = wire_v4_classification_options(guarded_json(options_text, limit=8192))
     wire_v4_verified(
       verify_classification_v4(
         wire_v4_history(text),
@@ -205,6 +229,8 @@ pub fn verify_classification_v4_json(
         categories~,
         max_states~,
         max_edge_checks~,
+        list_graph~,
+        max_list_graph_checks~,
       ),
     )
   } catch {
@@ -286,4 +312,102 @@ pub fn capsule_v4_content_json(text : String) -> String {
   } catch {
     error => wire_v4_failure(error.to_string())
   }
+}
+
+///|
+fn wire_v4_anomaly_options(text : String) -> Int32 raise {
+  let fields = object_fields(
+    guarded_json(text, limit=8192),
+    "anomaly inspection options v4",
+  )
+  known_fields(fields, ["maxChecks"], "anomaly inspection options v4")
+  wire_v4_int(fields, "maxChecks", 1000000, 1000000)
+}
+
+///|
+pub fn inspect_anomalies_v4_json(
+  text : String,
+  options_text : String,
+) -> String {
+  try {
+    let max_checks = wire_v4_anomaly_options(options_text)
+    inspect_anomalies_v4(wire_v4_history(text), max_checks~).stringify(indent=2)
+  } catch {
+    error => wire_v4_failure(error.to_string())
+  }
+}
+
+///|
+pub fn verify_anomalies_v4_json(
+  text : String,
+  report_text : String,
+  options_text : String,
+) -> String {
+  try {
+    let max_checks = wire_v4_anomaly_options(options_text)
+    wire_v4_verified(
+      verify_anomalies_v4(
+        wire_v4_history(text),
+        guarded_json(report_text, limit=33554432),
+        max_checks~,
+      ),
+    )
+  } catch {
+    _ => wire_v4_verified(false)
+  }
+}
+
+///|
+/// CLI options retain duplicate-key rejection before becoming host objects.
+pub fn options_v4_content_json(text : String) -> String {
+  try {
+    let options = guarded_json(text, limit=8192)
+    let _ = object_fields(options, "v4 options")
+    let result : Json = { "valid": true, "options": options }
+    result.stringify()
+  } catch {
+    error => wire_v4_failure(error.to_string())
+  }
+}
+
+///|
+pub fn inspect_lost_updates_v4_json(
+  text : String,
+  options_text : String,
+) -> String {
+  try {
+    let max_checks = wire_v4_anomaly_options(options_text)
+    inspect_lost_updates_v4(wire_v4_history(text), max_checks~).stringify(
+      indent=2,
+    )
+  } catch {
+    error => wire_v4_failure(error.to_string())
+  }
+}
+
+///|
+pub fn verify_lost_updates_v4_json(
+  text : String,
+  report_text : String,
+  options_text : String,
+) -> String {
+  try {
+    let max_checks = wire_v4_anomaly_options(options_text)
+    wire_v4_verified(
+      verify_lost_updates_v4(
+        wire_v4_history(text),
+        guarded_json(report_text, limit=33554432),
+        max_checks~,
+      ),
+    )
+  } catch {
+    _ => wire_v4_verified(false)
+  }
+}
+
+///|
+fn wire_v4_classification_field_names() -> Array[String] {
+  [
+    "categories", "maxStates", "maxEdgeChecks", "listGraph", "maxListGraphChecks",
+  ]
 }

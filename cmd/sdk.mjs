@@ -462,4 +462,5 @@ export function replayExecutionCapsuleV3(text) {
 }
 
 export {analyzeV4, classifyV4, reduceV4, verifyV4, verifyClassificationV4, verifyReductionV4,
-  makeCapsuleV4, makeClassificationCapsuleV4, makeReductionCapsuleV4, replayCapsuleV4, V4_LIMITS} from './v4.mjs';
+  makeCapsuleV4, makeClassificationCapsuleV4, makeReductionCapsuleV4, replayCapsuleV4, V4_LIMITS,
+  inspectAnomaliesV4, verifyAnomaliesV4, makeAnomaliesCapsuleV4, inspectLostUpdatesV4, verifyLostUpdatesV4, makeLostUpdatesCapsuleV4} from './v4.mjs';

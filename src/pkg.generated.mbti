@@ -38,6 +38,8 @@ pub fn benchmark_search(History, Report) -> Int32
 
 pub fn benchmark_search_balanced(History, Report) -> Int32
 
+pub fn build_list_graph_effective_v4(HistoryV4, max_checks? : Int32) -> Result[EffectiveListGraphV4, String]
+
 pub fn capsule_content_json(String) -> String
 
 pub fn capsule_v3_content_json(String) -> String
@@ -48,7 +50,7 @@ pub fn classification_v4_json(ClassificationV4) -> Json
 
 pub fn classify_v3_json(String, String) -> String
 
-pub fn classify_v4(HistoryV4, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32) -> ClassificationV4
+pub fn classify_v4(HistoryV4, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, list_graph? : String, max_list_graph_checks? : Int32) -> ClassificationV4
 
 pub fn classify_v4_json(String, String) -> String
 
@@ -62,7 +64,15 @@ pub fn history_json(History) -> Json
 
 pub fn history_v4_json(HistoryV4) -> Json
 
+pub fn inspect_anomalies_v4(HistoryV4, max_checks? : Int32) -> Json
+
+pub fn inspect_anomalies_v4_json(String, String) -> String
+
 pub fn inspect_execution_failures_v3_json(String) -> String
+
+pub fn inspect_lost_updates_v4(HistoryV4, max_checks? : Int32) -> Json
+
+pub fn list_graph_effective_v4_json(EffectiveListGraphV4) -> Json
 
 pub fn model_profile_source_v3_json(String, String) -> String
 
@@ -77,6 +87,8 @@ pub fn normalize_list_capture_v3_json(String) -> String
 pub fn normalize_presence_capture_json(String) -> String
 
 pub fn normalize_relation_capture_v3_json(String) -> String
+
+pub fn options_v4_content_json(String) -> String
 
 pub fn orm_profile_source_v3_json(String, String) -> String
 
@@ -132,15 +144,21 @@ pub fn shrink_json(String) -> String
 
 pub fn shrink_options_json(String, String) -> String
 
+pub fn verify_anomalies_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
+
+pub fn verify_anomalies_v4_json(String, String, String) -> String
+
 pub fn verify_certificate_json(String, String) -> String
 
 pub fn verify_classification_v3_json(String, String) -> String
 
-pub fn verify_classification_v4(HistoryV4, Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32) -> Bool
+pub fn verify_classification_v4(HistoryV4, Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, list_graph? : String, max_list_graph_checks? : Int32) -> Bool
 
 pub fn verify_classification_v4_json(String, String, String) -> String
 
 pub fn verify_cycle(History, Array[Edge]) -> Bool
+
+pub fn verify_lost_updates_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
 
 pub fn verify_reduction_v4(HistoryV4, Json, preserve~ : Model, max_checks? : Int32, options? : AnalysisOptionsV4) -> Bool
 
@@ -228,6 +246,10 @@ pub fn Edge::equal(Self, Self) -> Bool
 pub fn Edge::hash(Self) -> Int32
 pub fn Edge::hash_combine(Self, Hasher) -> Unit
 pub fn Edge::not_equal(Self, Self) -> Bool
+
+pub struct EffectiveListGraphV4 {
+  // private fields
+}
 
 pub(all) struct Finding {
   code : String

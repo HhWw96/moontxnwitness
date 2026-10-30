@@ -228,3 +228,41 @@ pub fn verify_reduction_v4_json(
 pub fn capsule_v4_content_json(text : String) -> String {
   @txn.capsule_v4_content_json(text)
 }
+
+///|
+#export_name("inspect_anomalies_v4_json")
+pub fn inspect_anomalies_v4_json(text : String, options : String) -> String {
+  @txn.inspect_anomalies_v4_json(text, options)
+}
+
+///|
+#export_name("verify_anomalies_v4_json")
+pub fn verify_anomalies_v4_json(
+  text : String,
+  report : String,
+  options : String,
+) -> String {
+  @txn.verify_anomalies_v4_json(text, report, options)
+}
+
+///|
+#export_name("options_v4_content_json")
+pub fn options_v4_content_json(text : String) -> String {
+  @txn.options_v4_content_json(text)
+}
+
+///|
+#export_name("inspect_lost_updates_v4_json")
+pub fn inspect_lost_updates_v4_json(text : String, options : String) -> String {
+  @txn.inspect_lost_updates_v4_json(text, options)
+}
+
+///|
+#export_name("verify_lost_updates_v4_json")
+pub fn verify_lost_updates_v4_json(
+  text : String,
+  report : String,
+  options : String,
+) -> String {
+  @txn.verify_lost_updates_v4_json(text, report, options)
+}
