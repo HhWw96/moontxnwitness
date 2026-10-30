@@ -1,0 +1,287 @@
+{
+  "format": "moontxnwitness-independent-technical-review/v1",
+  "targetVersion": "0.3.2",
+  "reviewedAtUtc": "2026-10-30T16:12:53.037854+00:00",
+  "baseCommit": "44e768d0bdd4a51b2c41179494798ea89f4cc57f",
+  "sourceState": "local frozen development tree; source hashes below identify the reviewed files",
+  "status": "scoped-checks-passed-third-full-validation-in-progress",
+  "passed": null,
+  "scopeChecksPassed": true,
+  "releaseReady": false,
+  "scope": [
+    "v4 typed core and SDK semantic boundaries",
+    "source-closed reduction minimality",
+    "frozen input cache failure behavior",
+    "full receipt JSON gzip storage fidelity"
+  ],
+  "executed": [
+    {
+      "name": "independent v4 SDK semantic boundaries",
+      "checks": 10,
+      "passed": true,
+      "exitCode": 0,
+      "results": [
+        {
+          "name": "list source-closed unknown deletion prevents oneMinimal",
+          "passed": true
+        },
+        {
+          "name": "relation source-closed unknown deletion prevents oneMinimal",
+          "passed": true
+        },
+        {
+          "name": "declared register unknown singleton deletions prevent oneMinimal",
+          "passed": true
+        },
+        {
+          "name": "adequate budgets still prove source-closed transaction minimality",
+          "passed": true
+        },
+        {
+          "name": "missing list writer remains unknown and cannot be accepted as complete",
+          "passed": true
+        },
+        {
+          "name": "reduction retains the required list source writer",
+          "passed": true
+        },
+        {
+          "name": "reduction capsules require independent model and budget",
+          "passed": true
+        },
+        {
+          "name": "capsule cannot authorize an over-limit budget with a recomputed digest",
+          "passed": true
+        },
+        {
+          "name": "forged semantic identifiers remain invalid with matching envelope and report hashes",
+          "passed": true
+        },
+        {
+          "name": "relation unsupported classification cannot be forged into a complete check",
+          "passed": true
+        }
+      ],
+      "evidence": "v4-independent-final-results.json"
+    },
+    {
+      "name": "isolated input cache fault tests",
+      "tests": 28,
+      "passedTests": 27,
+      "skippedTests": 1,
+      "failures": 0,
+      "exitCode": 0,
+      "realSharedCacheModified": false,
+      "temporaryRoot": ".\\artifacts",
+      "skippedReason": "Windows process lacks permission to create a file symlink; real directory junction and file reparse-metadata rejection were exercised",
+      "evidence": "input-cache.stderr.txt"
+    },
+    {
+      "name": "receipt JSON gzip fault tests",
+      "tests": 4,
+      "passed": true,
+      "exitCode": 0,
+      "cases": [
+        "deterministic complete roundtrip",
+        "plain JSON compatibility and duplicate-key refusal",
+        "corrupt/truncated gzip refusal",
+        "compressed expansion and plain input budgets"
+      ],
+      "evidence": "evidence-json.stderr.txt"
+    },
+    {
+      "name": "actual source fingerprint gzip roundtrip",
+      "passed": true,
+      "fingerprintEntries": 9517,
+      "nonArtifactPinnedEntries": 9081,
+      "excludedArtifactCacheEntries": 870,
+      "allNonArtifactPinnedHashesMatch": true,
+      "roundtripPreservesEveryField": true,
+      "compressedBytes": 337037,
+      "uncompressedJsonBytes": 1644012,
+      "proofFile": ".\\artifacts\\independent-v032-review-20261030-233643-6b1424\\full-source-fingerprint-roundtrip.json.gz",
+      "evidence": "fingerprint-storage-probe.json"
+    },
+    {
+      "name": "fixed archive index coherence",
+      "passed": true,
+      "indexedFiles": 9951,
+      "logicalBytes": 690394883,
+      "distinctContentHashes": 5395,
+      "publicArchiveSha256AndLengthsChecked": true,
+      "allIndexedZipMemberNamesAndSizesChecked": true,
+      "allArchivePayloadHashesRecomputedHere": false
+    },
+    {
+      "name": "reviewed source consumer exact-blob policy",
+      "passed": true,
+      "trackedFiles": 582,
+      "trackedBytes": 10366124,
+      "exactReviewedBlobs": {
+        "examples/core-v4/main.mbt": "842e5e3f33324e792d684493ba2154d6d1a7e5d8",
+        "examples/core-v4/moon.mod": "fa290cae5474796b27b7d214adc0459604ee63ca"
+      },
+      "unreviewedNestedSourceRejected": true,
+      "changedReviewedBlobRejected": true,
+      "directoryWildcardExemptionAdded": false,
+      "fourFileConsumerReviewed": true,
+      "sdkReReadAssessment": "Current SDK budget, model, schema and replay boundaries reviewed; final 10 regression checks passed.",
+      "evidence": "final-adjustment-policy-check.json"
+    },
+    {
+      "name": "original package consumer deadline tests",
+      "tests": 4,
+      "passed": true,
+      "exitCode": 0,
+      "expectedTestsModified": false,
+      "cases": [
+        "default 180 seconds and explicit timeout forwarding",
+        "only original public026/public027/public028 extend timeout",
+        "timeout expiry propagates",
+        "unexpected exit fails and original expected exit stays supported"
+      ],
+      "evidence": "package-deadline.stderr.txt"
+    }
+  ],
+  "findings": [
+    {
+      "id": "V4-REDUCE-001",
+      "priority": "P1",
+      "problem": "Source-closed list/relation singleton deletion could exhaust analysis budget while oneMinimal remained true.",
+      "originalReproduction": "Writer P commits one identity; reader A returns the same identity with a different value. maxStates=0 keeps the direct anomaly, but deleting A produces a source-complete undecided history.",
+      "fix": "Undecided source-closed candidates are recorded and prevent a minimality claim. Source-missing deletions remain outside the source-closed predicate.",
+      "status": "fixed-and-independently-retested",
+      "independentChecks": [
+        "list source-closed unknown deletion prevents oneMinimal",
+        "relation source-closed unknown deletion prevents oneMinimal"
+      ]
+    },
+    {
+      "id": "V4-REDUCE-002",
+      "priority": "P1",
+      "problem": "The v4 declared-register wrapper inherited oneMinimal from the legacy balanced reducer even when required singleton deletions were undecided.",
+      "originalReproduction": "Three transactions form an RW cycle and all write z without a declared z order. maxAttempts=0 leaves each source-closed singleton deletion undecided.",
+      "fix": "The new v4 wrapper independently rechecks final deletions within the remaining maxChecks budget and records unresolved candidates. Existing v3 behavior and evidence are unchanged.",
+      "status": "fixed-and-independently-retested",
+      "independentChecks": [
+        "declared register unknown singleton deletions prevent oneMinimal",
+        "adequate budgets still prove source-closed transaction minimality"
+      ]
+    },
+    {
+      "id": "CACHE-001",
+      "priority": "P2",
+      "problem": "Concurrent first directory creation could fail with FileExistsError.",
+      "fix": "Concurrent creation rechecks the directory and preparation is serialized by an OS lock.",
+      "status": "fixed-and-independently-retested"
+    },
+    {
+      "id": "CACHE-002",
+      "priority": "P2",
+      "problem": "Materialization could overwrite different bytes created after its final check.",
+      "fix": "Existing files are verified without replacement; publication is exclusive and non-overwriting.",
+      "status": "fixed-and-independently-retested"
+    },
+    {
+      "id": "CACHE-003",
+      "priority": "P2",
+      "problem": "A complete content-addressed blob set still required an archive ZIP for offline preparation.",
+      "fix": "Archives are opened lazily only for missing blobs.",
+      "status": "fixed-and-independently-retested"
+    },
+    {
+      "id": "CACHE-004",
+      "priority": "P2",
+      "problem": "Cache publication lacked a safe fallback on filesystems without hardlinks.",
+      "fix": "Serialized exclusive-copy fallback verifies the result and cleans its own partial publication after failures; unrelated files are preserved.",
+      "status": "fixed-and-independently-retested"
+    },
+    {
+      "id": "PACK-001",
+      "priority": "P2",
+      "problem": "New package consumers added explicit timeout overrides beyond the original three allowed complete legacy suites.",
+      "fix": "031, v4 and source preparation now use the unchanged 180-second default. Source consumers may reuse the declared public content-addressed cache while every input remains checksum-verified.",
+      "status": "fixed-and-independently-retested",
+      "originalExpectedTestsModified": false
+    }
+  ],
+  "confirmedBoundaries": {
+    "budgets": "Verification and capsule replay require independent caller options; reports and digests do not grant higher budgets.",
+    "reductionModel": "Reduction requires an explicit matching serializable or strict-serializable preservation target; captures/list/relation do not gain strict-model support.",
+    "classification": "v4 category classification checks selected G0/G1c/G2-item categories for registers/lists; relation category classification remains explicitly unsupported.",
+    "sourceClosure": "Missing captured writers remain visible coverage gaps; inferred orders are not promoted to capture observations.",
+    "evidenceIdentity": "Schema, semantic contract, algorithm and counter identities bind replay; self-consistent forged digests cannot authorize a changed conclusion.",
+    "producerMetadata": "Producer product version is metadata; semantic identifiers and recomputation determine support.",
+    "receiptCompression": "Gzip stores the complete supplied receipt. The actual 9517-entry source fingerprint roundtrip preserved every field.",
+    "fingerprintCoverage": "All non-artifacts frozen inputs are checked against pinned hashes; artifacts compatibility cache copies are excluded from the source map and executed dist is separately bound.",
+    "sourceConsumerCache": "The fresh source consumer may reuse only checksum-pinned public input blobs. It rebuilds current compiled code from its extracted sources, with the external toolchain; it does not reuse author dist."
+  },
+  "notExecuted": [
+    {
+      "item": "complete v0.3.2 integration suite final result",
+      "reason": "Main integration run is still executing; its final outcome is outside this scoped review."
+    },
+    {
+      "item": "Linux Native and Linux real file-symlink integration",
+      "reason": "This independent run used Windows; file symlink creation was unavailable locally."
+    },
+    {
+      "item": "database scenarios and formal performance measurements",
+      "reason": "Not repeated for this code-review task."
+    },
+    {
+      "item": "v0.3.2 candidate archive installation and public download/registry installation",
+      "reason": "No v0.3.2 archive or public release was independently tested in this review."
+    },
+    {
+      "item": "independent rehash of every payload directly from both original archive streams",
+      "reason": "Archive hashes and ZIP member metadata were checked; cache tests use synthetic isolated inputs."
+    }
+  ],
+  "unresolvedBlockingFindings": [],
+  "reviewedFileSha256": {
+    "src/types_v4.mbt": "c64c5788ef73f39d81bbc0a16fc1d711528f1649b2605242ea9b43678225d976",
+    "src/analysis_v4.mbt": "d6540659c4538bf34274fd51815081f3c957f4c0e621c0b850014df89e0e807f",
+    "src/classification_v4.mbt": "14516fdde486f788214c02394be9be950bd7868f0c2e8993805877c53eb90616",
+    "src/reduction_v4.mbt": "cc5e23f37ca6b5531e860b5fda4c978a2f2b497a21b4090a41dc49ffd46d2acf",
+    "src/api_v4.mbt": "5ba367402eb3ec4207ce79f24849909d610b81a8ec6783233613688cca3cd6a6",
+    "cmd/v4.mjs": "2f51446133ef63d27bdaebb095209942aba44e2ec1cba7d55f5de4186bc30c3e",
+    "scripts/v4-independent-audit-test.mjs": "82f21a4c44a7264f470cef3b01dd0fd3e3b0d72b23027fd0eaa6d22dfbfdb9f1",
+    "scripts/input_cache.py": "40674eab341ad1d7588c9c8cdff95682ee5bb498e0f7b2f100304e9f009126c4",
+    "scripts/test_input_cache.py": "aef8cf12b501ddeff971f86cf6cea5957bb76009c792c548341098f14e4a5606",
+    "scripts/evidence_json.py": "fdddf436ff5e6b09b986d14aa996e0f86af8b8cc3c629b4d65036bbe8a1908e4",
+    "scripts/test_evidence_json.py": "c88149ebb5b40306a5d42a24322deb8460f54af9d7418e425009e95f7d8e9442",
+    "scripts/verification-fingerprint.mjs": "1bf800b52fd887ff8f46454724a522b2895a0b0d2b98df4bd45561a9ad614cd8",
+    "scripts/verify_business_evidence.py": "3f2364b455cde7a59951dd49cb19a514db0f6778eecc48d1fc55a125e10f7dbd",
+    "dist/v4.mjs": "2f51446133ef63d27bdaebb095209942aba44e2ec1cba7d55f5de4186bc30c3e",
+    "dist/core.mjs": "4b9a3933fbfabd03949db4af2aa631d574d265ecea2a09f075fd359555750a7a",
+    "scripts/repository-policy.json": "fccb2f99993382191b1bb14f8cbefa3c572ee18b464287bfce83469e08dcd7b7",
+    "scripts/repository_hygiene.py": "a1aeea90cd13568f23c5a60b9fc3866017163a931fc2570f20e96083a2ec2e53",
+    "examples/core-v4/main.mbt": "f89df1922f4f3bb009285df94ad10787091b5a720b6af0dddf8ff172fbd99ea6",
+    "examples/core-v4/moon.mod": "fd072532ae6bb3d84f4db4a098810170f2171ecb86358949bc40217dea0926a1",
+    "examples/core-v4/moon.pkg": "94d729c99e78a74897ed81b7fd0f2b385dc1742b7b43837d152047f36f27dd94",
+    "examples/core-v4/README.md": "202ea8b0ce3f685c119ec6a16280ae08b23c6908872d8a29f03f5cd4c9563684",
+    "scripts/package_release.py": "39de6a023e4f2cf17aed6f644d367d44383fb7dc7b71bb098a6e5d22dd5fee88",
+    "scripts/test_publication_ci.py": "c73801f68148f2dc7d2741cb43c4b64be5ded38048477b06c7d5b2adc885fe78",
+    "scripts/input-cache.mjs": "6519f47fdb385200f97d731ae838745203e900e50f6091efb8b58ac3c74a62c7"
+  },
+  "evidenceDirectory": ".\\artifacts\\independent-v032-review-20261030-233643-6b1424",
+  "revision": "package-deadline-adjustments-3",
+  "finalAdjustments": {
+    "sourceExampleException": "Only exact Git blobs for examples/core-v4/main.mbt and moon.mod are allowed; extra or changed unreviewed source remains refused.",
+    "sdk": "Current cmd/v4.mjs re-read and retested against newly built dist; prior result is preserved separately.",
+    "firstFullRun": "Interrupted attempt retained by main integration; not used as final full-run evidence.",
+    "secondFullRun": "Built marker observed; final integration and current-fingerprint database evidence remain pending in this scoped review.",
+    "packageConsumers": {
+      "defaultTimeoutSeconds": 180,
+      "extendedOnlyFor": {
+        "public026": 600,
+        "public027": 600,
+        "public028": 900
+      },
+      "warmPublicCache": "setdefault only; no author dist; each public blob still hash-verified",
+      "originalTestsUnchanged": true
+    },
+    "thirdFullRun": "In progress; prior interrupted runs and prior database execution are not final full-fingerprint evidence."
+  }
+}

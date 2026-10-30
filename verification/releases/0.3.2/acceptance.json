@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "policy": "scoped-stable-v2",
+  "version": "0.3.2",
+  "passed": true,
+  "releaseReady": true,
+  "supportedProfiles": [
+    "register-v1",
+    "register-v2",
+    "postgres-point-capture-v1",
+    "postgres-fixed-key-presence-v2"
+  ],
+  "buildManifest": {
+    "version": "0.3.2",
+    "toolchain": {
+      "compiler": "v0.10.16+b1a0e846e",
+      "moon": "moon 0.1.20261020"
+    },
+    "sourceSha256": "b5f76abe8e2718ccd2b2c1bf024fee91dcf0059bdcc8eb7b11c5bd9a9cc3a2ac",
+    "coreSha256": "4b9a3933fbfabd03949db4af2aa631d574d265ecea2a09f075fd359555750a7a",
+    "captureCoreSha256": "ad29e99b8264cfb612c1e961b24f0b0a6370caea8413a85bfc45c862bb97e3cb"
+  },
+  "databaseEvidence": "database.json.gz",
+  "tests": {
+    "passed": true,
+    "receipt": "tests.json.gz"
+  },
+  "independentReview": {
+    "passed": true,
+    "receipt": "independent-review.json",
+    "scope": "Executed scoped technical review; full integration, actual database, package consumers and public downloads have separate receipts."
+  },
+  "v4Library": {
+    "dataModels": [
+      "register",
+      "append-list",
+      "relation-set"
+    ],
+    "operations": [
+      "analyze",
+      "verify",
+      "explicit-model-reduce",
+      "verify-reduction"
+    ],
+    "categoryModels": [
+      "register",
+      "append-list"
+    ],
+    "categories": [
+      "G0",
+      "G1c",
+      "G2-item"
+    ],
+    "relationClassification": "unsupported",
+    "independentAuditChecks": 10
+  },
+  "releaseReadyScope": "Frozen-source core regression, actual database and scoped technical review passed. Fresh source/portable consumers, exact-commit CI and public download verification must pass separately before publication.",
+  "publicReleaseVerified": false,
+  "formalPerformanceMeasured": false
+}

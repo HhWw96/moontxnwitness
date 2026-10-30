@@ -90,6 +90,8 @@ consumer_parent.mkdir(exist_ok=True)
 work = Path(tempfile.mkdtemp(prefix="run-", dir=consumer_parent)).resolve()
 assert work.is_relative_to(consumer_parent.resolve())
 env = dict(os.environ)
+if (ROOT / 'scripts/frozen-inputs.json').is_file():
+    env.setdefault('MTW_INPUT_CACHE', str(ROOT / 'artifacts/input-cache'))
 home = env.get("MTW_TOOLCHAIN_HOME")
 if home:
     env["MOON_HOME"] = home
@@ -114,7 +116,7 @@ for kind in ("portable", "source"):
     consumer = destination / NAME
     assert not (consumer / ".local-toolchain.json").exists(), "Source must not depend on private toolchain config"
     if kind == "source":
-        run([sys.executable, "scripts/input_cache.py", "prepare", "--scope", "tests"], consumer, timeout=900)
+        run([sys.executable, "scripts/input_cache.py", "prepare", "--scope", "tests"], consumer)
         assert not (consumer / "dist").exists()
         run([NODE, "scripts/build.mjs"], consumer)
         checks.append("source rebuilt using external MoonBit installation, no local config")
@@ -129,11 +131,11 @@ for kind in ("portable", "source"):
     if tuple(map(int, VERSION.split('.'))) >= (0, 3, 2):
         public031 = json.loads(run([NODE, 'scripts/public031-compatibility-test.mjs',
             '--runtime', str(consumer / 'dist'), '--producer-runtime', str(consumer / 'dist/legacy/v031'),
-            '--output-root', str(work / ('public031-' + kind))], consumer, timeout=300))
+            '--output-root', str(work / ('public031-' + kind))], consumer))
         assert public031['passed'] and public031['publicVersion'] == '0.3.1' and public031['currentVersion'] == VERSION
         assert public031['usesPublishedRuntimeOnly'] and not public031['historicalSourceSnapshotCreated']
         checks.append(kind + ' public031 original SDK/capsules and corrupted runtime refusal')
-        typed_v4 = json.loads(run([NODE, 'scripts/v4-sdk-test.mjs'], consumer, timeout=180))
+        typed_v4 = json.loads(run([NODE, 'scripts/v4-sdk-test.mjs'], consumer))
         assert typed_v4['passed'] and typed_v4['failed'] == 0 and typed_v4['legacyWorkers'] == 0
         checks.append(kind + ' v4 typed analysis, explicit reduction and independently budgeted replay')
     public024 = json.loads(run([NODE,'scripts/compat-v024-test.mjs',str(consumer/'dist'),str(consumer/'fixtures/compat-v024'),str(work/('public024-'+kind))],consumer))

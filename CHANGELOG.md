@@ -1,4 +1,4 @@
-# 0.3.2 — 2026-10-30
+# 0.3.2 — 2026-10-31
 
 - Add typed v4 register, append-list and relation analysis, explicit-model reduction and independent report verification, with SDK and CLI entry points.
 - Add bounded category checks for register/list histories; relation category classification remains explicitly unsupported in this version.
