@@ -473,6 +473,29 @@ class IgnoredCurrentCiReceiptTests(unittest.TestCase):
         copied = json.loads((self.root/'artifacts/ci-evidence/verification/summary.json').read_text())
         self.assertIs(copied['passed'], False)
 
+class DirectCategoryPortableInventoryTests(unittest.TestCase):
+    setUpClass = classmethod(DistributionTests.setUpClass.__func__)
+    run_git = classmethod(DistributionTests.run_git.__func__)
+    def test_direct_audit_is_in_both_public_downloads(self):
+        name = 'scripts/register-direct-v4-audit.mjs'
+        target = self.root / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text('// independent consumer audit fixture\n', encoding='utf8')
+        public = self.public | {name}
+        selected = inventory.select_distribution_files(self.root, public, self.tested, '0.3.2')
+        for kind in ('source', 'portable'):
+            self.assertIn(name, selected[kind])
+        self.assertIn(name, selected['requiredInputs'])
+        self.assertFalse(any(row['file'] == name for row in selected['missingInputs']))
+
+    def test_missing_or_unlisted_direct_audit_refuses_complete_inventory(self):
+        name = 'scripts/register-direct-v4-audit.mjs'
+        selected = inventory.select_distribution_files(self.root, self.public - {name}, self.tested, '0.3.2')
+        self.assertTrue(any(row['file'] == name for row in selected['missingInputs']))
+        with self.assertRaises(AssertionError):
+            inventory.assert_complete(selected)
+
+
 class CompatibilityReleaseReceiptTests(unittest.TestCase):
     def fixture(self):
         return {'public031CompatibilityTests': {
