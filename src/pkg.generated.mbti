@@ -38,13 +38,19 @@ pub fn benchmark_search(History, Report) -> Int32
 
 pub fn benchmark_search_balanced(History, Report) -> Int32
 
+pub fn build_relation_point_graph_v4(HistoryV4, max_checks? : Int32) -> Result[RelationPointGraphV4, String]
+
 pub fn capsule_content_json(String) -> String
 
 pub fn capsule_v3_content_json(String) -> String
 
 pub fn capsule_v4_content_json(String) -> String
 
+pub fn capture_anomalies_v4_json(CaptureAnomaliesV4) -> Json
+
 pub fn classification_v4_json(ClassificationV4) -> Json
+
+pub fn classify_relation_point_v4(HistoryV4, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> RelationClassificationV4
 
 pub fn classify_v3_json(String, String) -> String
 
@@ -62,7 +68,13 @@ pub fn history_json(History) -> Json
 
 pub fn history_v4_json(HistoryV4) -> Json
 
+pub fn inspect_capture_anomalies_v4(HistoryV4, max_checks? : Int32) -> CaptureAnomaliesV4
+
 pub fn inspect_execution_failures_v3_json(String) -> String
+
+pub fn inspect_internal_consistency_v4(HistoryV4, max_checks? : Int32) -> InternalConsistencyV4
+
+pub fn internal_consistency_v4_json(InternalConsistencyV4) -> Json
 
 pub fn model_profile_source_v3_json(String, String) -> String
 
@@ -112,11 +124,17 @@ pub fn reduction_v4_json(ReductionV4) -> Json
 
 pub fn register_history_v4(History) -> Result[HistoryV4, String]
 
+pub fn relation_classification_v4_json(RelationClassificationV4) -> Json
+
+pub fn relation_point_graph_v4_json(RelationPointGraphV4) -> Json
+
 pub fn render_analysis_v4(AnalysisV4) -> String
 
 pub fn render_classification_v4(ClassificationV4) -> String
 
 pub fn render_reduction_v4(ReductionV4) -> String
+
+pub fn render_relation_classification_v4(RelationClassificationV4) -> String
 
 pub fn render_report(Report, String) -> String
 
@@ -142,9 +160,13 @@ pub fn verify_classification_v4_json(String, String, String) -> String
 
 pub fn verify_cycle(History, Array[Edge]) -> Bool
 
+pub fn verify_internal_consistency_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
+
 pub fn verify_reduction_v4(HistoryV4, Json, preserve~ : Model, max_checks? : Int32, options? : AnalysisOptionsV4) -> Bool
 
 pub fn verify_reduction_v4_json(String, String, String) -> String
+
+pub fn verify_relation_classification_v4(HistoryV4, Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> Bool
 
 pub fn verify_v3_json(String, String) -> String
 
@@ -188,6 +210,10 @@ pub struct AnalysisV4 {
 }
 pub fn AnalysisV4::data_model(Self) -> DataModelV4
 pub fn AnalysisV4::outcome(Self) -> Outcome
+
+pub struct CaptureAnomaliesV4 {
+  // private fields
+}
 
 pub struct ClassificationV4 {
   // private fields
@@ -266,6 +292,10 @@ pub struct HistoryV4 {
 pub fn HistoryV4::data_model(Self) -> DataModelV4
 pub fn HistoryV4::source_text(Self) -> String
 
+pub struct InternalConsistencyV4 {
+  // private fields
+}
+
 pub(all) struct KeyCoverage {
   key : String
   committed_reads : Int32
@@ -342,6 +372,15 @@ pub fn ReductionV4::checks(Self) -> Int32
 pub fn ReductionV4::history(Self) -> HistoryV4
 pub fn ReductionV4::one_minimal(Self) -> Bool
 pub fn ReductionV4::status(Self) -> String
+
+pub struct RelationClassificationV4 {
+  // private fields
+}
+pub fn RelationClassificationV4::status(Self) -> String
+
+pub struct RelationPointGraphV4 {
+  // private fields
+}
 
 pub(all) struct Report {
   outcome : Outcome
