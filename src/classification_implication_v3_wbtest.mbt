@@ -10,16 +10,16 @@ fn classification_implication_trace() -> Json raise {
 ///|
 fn classification_implication_report(
   models : Array[String],
-  states : Int,
-  edges : Int,
+  states : Int32,
+  edges : Int32,
 ) -> Json raise {
   classification26_test_report(
     classification_implication_trace(),
     options=(
       {
-        "models": models.to_json(),
-        "maxStates": states.to_json(),
-        "maxEdgeChecks": edges.to_json(),
+        "models": Json(models),
+        "maxStates": Json(states),
+        "maxEdgeChecks": Json(edges),
       } : Json).stringify(),
   )
 }
@@ -30,32 +30,27 @@ fn classification_implication_assert(
   model_name : String,
 ) -> Unit raise {
   let own = classification_test_rule(report, "G2-item")
-  assert_eq(capture_field(own, "status"), "unknown".to_json())
-  assert_eq(capture_field(own, "states"), (3).to_json())
-  assert_eq(capture_field(own, "edgeChecks"), (10).to_json())
+  assert_eq(capture_field(own, "status"), Json("unknown"))
+  assert_eq(capture_field(own, "states"), Json(3))
+  assert_eq(capture_field(own, "edgeChecks"), Json(10))
   assert_eq(capture_field(own, "evidence"), Json::null())
   let source = classification_test_rule(report, "G-nonadjacent")
-  assert_eq(capture_field(source, "status"), "refuted".to_json())
+  assert_eq(capture_field(source, "status"), Json("refuted"))
   assert_true(capture_field(source, "evidence") != Json::null())
   let model = classification26_test_model(report, model_name)
-  assert_eq(capture_field(model, "status"), "refuted".to_json())
-  assert_eq(capture_field(model, "refutedBy"), ["G-nonadjacent"].to_json())
-  assert_true(
-    v3_test_items(model, "incompleteRules").contains("G2-item".to_json()),
-  )
+  assert_eq(capture_field(model, "status"), Json("refuted"))
+  assert_eq(capture_field(model, "refutedBy"), Json(["G-nonadjacent"]))
+  assert_true(v3_test_items(model, "incompleteRules").contains(Json("G2-item")))
   let proof = v3_test_items(model, "refutationWitnesses").filter(p => {
-      capture_field(p, "requiredRule") == "G2-item".to_json()
+      capture_field(p, "requiredRule") == Json("G2-item")
     })[0]
-  assert_eq(capture_field(proof, "provedBy"), "G-nonadjacent".to_json())
-  assert_eq(
-    capture_field(proof, "specificAnomaly"),
-    "G-nonadjacent-item".to_json(),
-  )
+  assert_eq(capture_field(proof, "provedBy"), Json("G-nonadjacent"))
+  assert_eq(capture_field(proof, "specificAnomaly"), Json("G-nonadjacent-item"))
   assert_eq(
     capture_field(proof, "sourceEvidencePath"),
-    ["rules", "G-nonadjacent", "evidence"].to_json(),
+    Json(["rules", "G-nonadjacent", "evidence"]),
   )
-  assert_eq(capture_field(proof, "requiredRuleStatus"), "unknown".to_json())
+  assert_eq(capture_field(proof, "requiredRuleStatus"), Json("unknown"))
 }
 
 ///|
@@ -92,15 +87,15 @@ test "classification implication multiple models preserve independent statuses a
   classification_implication_assert(report, "adya-pl-3-v1")
   classification_implication_assert(report, "adya-pl-2.99-v1")
   let si = classification26_test_model(report, "elle-generalized-si-v1")
-  assert_eq(capture_field(si, "status"), "refuted".to_json())
-  assert_eq(capture_field(si, "refutedBy"), ["G-nonadjacent"].to_json())
+  assert_eq(capture_field(si, "status"), Json("refuted"))
+  assert_eq(capture_field(si, "refutedBy"), Json(["G-nonadjacent"]))
 }
 
 ///|
 test "classification implication no state budget cannot invent a refutation" {
   let report = classification_implication_report(["adya-pl-3-v1"], 0, 100)
   let model = classification26_test_model(report, "adya-pl-3-v1")
-  assert_eq(capture_field(model, "status"), "inconclusive".to_json())
+  assert_eq(capture_field(model, "status"), Json("inconclusive"))
   assert_true(v3_test_items(model, "refutationWitnesses").is_empty())
 }
 
@@ -108,7 +103,7 @@ test "classification implication no state budget cannot invent a refutation" {
 test "classification implication no edge budget cannot invent a refutation" {
   let report = classification_implication_report(["adya-pl-3-v1"], 100, 0)
   let model = classification26_test_model(report, "adya-pl-3-v1")
-  assert_eq(capture_field(model, "status"), "inconclusive".to_json())
+  assert_eq(capture_field(model, "status"), Json("inconclusive"))
   assert_true(v3_test_items(model, "refutationWitnesses").is_empty())
 }
 
@@ -118,13 +113,13 @@ test "classification implication G0 keeps its specific label and original eviden
     classification_test_cycle_trace("G0"),
   )
   let model = classification26_test_model(report, "adya-pl-2-v1")
-  assert_eq(capture_field(model, "refutedBy"), ["G0"].to_json())
+  assert_eq(capture_field(model, "refutedBy"), Json(["G0"]))
   for proof in v3_test_items(model, "refutationWitnesses") {
-    assert_eq(capture_field(proof, "specificAnomaly"), "G0".to_json())
-    assert_eq(capture_field(proof, "provedBy"), "G0".to_json())
+    assert_eq(capture_field(proof, "specificAnomaly"), Json("G0"))
+    assert_eq(capture_field(proof, "provedBy"), Json("G0"))
     assert_eq(
       capture_field(proof, "sourceEvidencePath"),
-      ["rules", "G0", "evidence"].to_json(),
+      Json(["rules", "G0", "evidence"]),
     )
   }
 }

@@ -46,12 +46,12 @@ fn orm_equal(actual : Json, expected : Json, label : String) -> Unit raise {
 }
 
 ///|
-fn orm_utf8_size(text : String) -> Int {
+fn orm_utf8_size(text : String) -> Int32 {
   @utf8.encode(text[:]).length()
 }
 
 ///|
-fn orm_nodes(value : Json, depth : Int) -> Int raise {
+fn orm_nodes(value : Json, depth : Int32) -> Int32 raise {
   orm_assert(depth <= 64, "ORM JSON nesting exceeds 64")
   let mut count = 1
   match value {
@@ -78,7 +78,7 @@ fn orm_exact(value : Json, fields : Array[String]) -> Map[String, Json] raise {
 }
 
 ///|
-fn orm_native_text(value : Json, maximum : Int) -> String raise {
+fn orm_native_text(value : Json, maximum : Int32) -> String raise {
   let text = orm_text(value)
   let mut count = 0
   for ch in text.iter() {
@@ -103,11 +103,7 @@ fn orm_bound_uuid(value : Json) -> String raise {
     String(_) => orm_uuid(value)
     _ => {
       let obj = orm_exact(value, ["captureType", "value"])
-      orm_equal(
-        required(obj, "captureType", "UUID"),
-        "UUID".to_json(),
-        "UUID type",
-      )
+      orm_equal(required(obj, "captureType", "UUID"), Json("UUID"), "UUID type")
       orm_uuid(required(obj, "value", "UUID"))
     }
   }
@@ -170,7 +166,7 @@ fn orm_plan(
   schema : String,
   table : String,
   operation : String,
-  mask : Int,
+  mask : Int32,
   pk : String,
 ) -> OrmPlan raise {
   let names = [
@@ -317,12 +313,12 @@ fn orm_match_plan(
   )
   orm_equal(
     required(batch, "originalSql", "batch"),
-    plan.original.to_json(),
+    Json(plan.original),
     "original SQL",
   )
   orm_equal(
     required(batch, "executedSql", "batch"),
-    plan.executed.to_json(),
+    Json(plan.executed),
     "executed SQL",
   )
   let allowed = if operation == "create" {
@@ -370,7 +366,7 @@ fn orm_raw_text(raw : Json) -> Json raise {
   let obj = orm_exact(raw, ["captureType", "base64"])
   orm_equal(
     required(obj, "captureType", "raw"),
-    "bytes".to_json(),
+    Json("bytes"),
     "raw bytes type",
   )
   let encoded = orm_text(required(obj, "base64", "raw"))
@@ -382,7 +378,7 @@ fn orm_raw_text(raw : Json) -> Json raise {
     orm_utf8_size(text) <= 50 * 1024,
     "Raw PGresult source cell exceeds bound",
   )
-  text.to_json()
+  Json(text)
 }
 
 ///|
@@ -391,13 +387,9 @@ fn orm_pg_cells(result : Json, operation : String) -> Array[Json] raise {
     "status", "ntuples", "commandTuples", "commandTag", "fields",
   ])
   for name in ["ntuples", "commandTuples"] {
-    orm_equal(
-      required(obj, name, "result"),
-      (1).to_json(),
-      "actual one-row result",
-    )
+    orm_equal(required(obj, name, "result"), Json(1), "actual one-row result")
   }
-  orm_equal(required(obj, "status", "result"), (2).to_json(), "TUPLES_OK")
+  orm_equal(required(obj, "status", "result"), Json(2), "TUPLES_OK")
   let tag = match operation {
     "get" => "SELECT 1"
     "create" => "INSERT 0 1"
@@ -407,7 +399,7 @@ fn orm_pg_cells(result : Json, operation : String) -> Array[Json] raise {
   }
   orm_equal(
     orm_raw_text(required(obj, "commandTag", "result")),
-    tag.to_json(),
+    Json(tag),
     "actual server command tag",
   )
   let fields = orm_array(required(obj, "fields", "result"))
@@ -423,16 +415,8 @@ fn orm_pg_cells(result : Json, operation : String) -> Array[Json] raise {
   let cells : Array[Json] = []
   for i in 0..<8 {
     let field = orm_exact(fields[i], ["oid", "format", "typmod", "raw"])
-    orm_equal(
-      required(field, "oid", "field"),
-      oids[i].to_json(),
-      "PG field OID",
-    )
-    orm_equal(
-      required(field, "format", "field"),
-      (0).to_json(),
-      "text wire format",
-    )
+    orm_equal(required(field, "oid", "field"), Json(oids[i]), "PG field OID")
+    orm_equal(required(field, "format", "field"), Json(0), "text wire format")
     let typmod = if operation == "get" {
       if i == 1 {
         324
@@ -448,7 +432,7 @@ fn orm_pg_cells(result : Json, operation : String) -> Array[Json] raise {
     }
     orm_equal(
       required(field, "typmod", "field"),
-      typmod.to_json(),
+      Json(typmod),
       "PG bounded typmod",
     )
     let raw = orm_raw_text(required(field, "raw", "field"))
@@ -461,15 +445,15 @@ fn orm_pg_cells(result : Json, operation : String) -> Array[Json] raise {
       cells.push(raw)
     } else if bool_cell {
       match orm_text(raw) {
-        "t" => cells.push(true.to_json())
-        "f" => cells.push(false.to_json())
+        "t" => cells.push(Json(true))
+        "f" => cells.push(Json(false))
         _ => fail("Invalid PostgreSQL boolean text")
       }
     } else if operation != "get" && (i == 5 || i == 6) {
       cells.push(guarded_json(orm_text(raw), limit=50176))
     } else if operation == "get" && i == 0 {
       let id = orm_uuid(raw)
-      cells.push({ "captureType": "UUID", "value": id.to_json() })
+      cells.push({ "captureType": "UUID", "value": Json(id) })
     } else {
       cells.push(raw)
     }
@@ -480,13 +464,13 @@ fn orm_pg_cells(result : Json, operation : String) -> Array[Json] raise {
 ///|
 fn orm_command(
   tag : String,
-  count : Int,
+  count : Int32,
   description : Json,
   position : Json,
 ) -> Json {
   {
-    "tag": tag.to_json(),
-    "rowcount": count.to_json(),
+    "tag": Json(tag),
+    "rowcount": Json(count),
     "description": description,
     "rownumber": position,
   }
@@ -503,10 +487,10 @@ fn orm_verify_batch(
   let tx = required(batch, "tx", "batch")
   orm_equal(
     required(statement, "kind", "statement"),
-    "statement".to_json(),
+    Json("statement"),
     "statement kind",
   )
-  orm_equal(required(row, "kind", "rows"), "rows".to_json(), "rows kind")
+  orm_equal(required(row, "kind", "rows"), Json("rows"), "rows kind")
   for event in [statement, row] {
     orm_equal(required(event, "tx", "event"), tx, "same transaction")
   }
@@ -530,7 +514,7 @@ fn orm_verify_batch(
   )
   orm_equal(
     required(row, "complete", "rows"),
-    true.to_json(),
+    Json(true),
     "actual business EOF/delivery",
   )
   let observation = object_fields(
@@ -539,17 +523,17 @@ fn orm_verify_batch(
   )
   orm_equal(
     required(observation, "profile", "observation"),
-    "fastapi-users-sqlalchemy-7.0.0-pg18/1".to_json(),
+    Json("fastapi-users-sqlalchemy-7.0.0-pg18/1"),
     "observation profile",
   )
   orm_equal(
     required(observation, "mappingId", "observation"),
-    plan.mapping.to_json(),
+    Json(plan.mapping),
     "observation mapping",
   )
   orm_equal(
     required(observation, "proposedWireOnly", "observation"),
-    true.to_json(),
+    Json(true),
     "diagnostic-only source carrier",
   )
   let params = object_fields(required(batch, "parameters", "batch"), "params")
@@ -566,28 +550,24 @@ fn orm_verify_batch(
     let source = orm_exact(required(observation, "source", "get"), [
       "key", "version", "present",
     ])
-    orm_equal(
-      required(source, "key", "source"),
-      key.to_json(),
-      "GET source key",
-    )
+    orm_equal(required(source, "key", "source"), Json(key), "GET source key")
     version = orm_uuid(required(source, "version", "source"))
-    orm_equal(cells[6], version.to_json(), "GET raw version")
+    orm_equal(cells[6], Json(version), "GET raw version")
     orm_equal(
       cells[7],
       required(source, "present", "source"),
       "GET actual presence",
     )
-    let present = cells[7] == true.to_json()
+    let present = cells[7] == Json(true)
     orm_assert(
-      present || cells[7] == false.to_json(),
+      present || cells[7] == Json(false),
       "Presence flag must be boolean",
     )
     let rows = orm_array(required(observation, "rows", "get"))
-    orm_equal(required(row, "rows", "rows"), rows.to_json(), "business rows")
+    orm_equal(required(row, "rows", "rows"), Json(rows), "business rows")
     orm_equal(
       required(observation, "complete", "get"),
-      true.to_json(),
+      Json(true),
       "GET complete",
     )
     orm_equal(
@@ -605,7 +585,7 @@ fn orm_verify_batch(
       }
       orm_equal(
         required(observation, "serverRows", "get"),
-        [cells.to_json()].to_json(),
+        Json([Json(cells)]),
         "positive internal row",
       )
       orm_equal(
@@ -619,11 +599,11 @@ fn orm_verify_batch(
       )
       orm_equal(
         business[0],
-        { "captureType": "UUID", "value": key.to_json() },
+        { "captureType": "UUID", "value": Json(key) },
         "business UUID",
       )
       image = {
-        "id": key.to_json(),
+        "id": Json(key),
         "email": business[1],
         "hashed_password": business[2],
         "is_active": business[3],
@@ -641,7 +621,7 @@ fn orm_verify_batch(
       }
       orm_equal(
         required(observation, "presenceRows", "get"),
-        [cells.to_json()].to_json(),
+        Json([Json(cells)]),
         "negative source row",
       )
       orm_assert(
@@ -657,22 +637,22 @@ fn orm_verify_batch(
         "SELECT " + count.to_string(),
         count,
         orm_business_columns(),
-        count.to_json(),
+        Json(count),
       ),
       "business SELECT facade",
     )
     kind = "read"
     data = {
-      "key": key.to_json(),
-      "version": version.to_json(),
-      "present": present.to_json(),
+      "key": Json(key),
+      "version": Json(version),
+      "present": Json(present),
       "image": image,
     }
   } else {
     let effects = orm_array(required(observation, "effectRows", "command"))
     orm_equal(
-      effects.to_json(),
-      [cells.to_json()].to_json(),
+      Json(effects),
+      Json([Json(cells)]),
       "decoded effect row and actual result",
     )
     orm_equal(
@@ -691,7 +671,7 @@ fn orm_verify_batch(
       !row.contains("columns"),
       "Command cannot expose private metadata as business columns",
     )
-    orm_equal(cells[0], key.to_json(), "DML bound key")
+    orm_equal(cells[0], Json(key), "DML bound key")
     let predecessor = orm_uuid(cells[1])
     version = orm_uuid(cells[2])
     orm_assert(version != predecessor, "Write source identity must change")
@@ -700,11 +680,11 @@ fn orm_verify_batch(
       "update" => "UPDATE"
       _ => "DELETE"
     }
-    orm_equal(cells[7], action.to_json(), "DML action")
+    orm_equal(cells[7], Json(action), "DML action")
     let old_present = plan.operation != "create"
     let new_present = plan.operation != "delete"
-    orm_equal(cells[3], old_present.to_json(), "DML OLD presence")
-    orm_equal(cells[4], new_present.to_json(), "DML NEW presence")
+    orm_equal(cells[3], Json(old_present), "DML OLD presence")
+    orm_equal(cells[4], Json(new_present), "DML NEW presence")
     orm_image(cells[5], key, old_present)
     orm_image(cells[6], key, new_present)
     if new_present {
@@ -752,18 +732,18 @@ fn orm_verify_batch(
     )
     kind = "write"
     data = {
-      "key": key.to_json(),
-      "version": version.to_json(),
-      "predecessor": predecessor.to_json(),
-      "action": action.to_json(),
-      "oldPresent": old_present.to_json(),
-      "newPresent": new_present.to_json(),
+      "key": Json(key),
+      "version": Json(version),
+      "predecessor": Json(predecessor),
+      "action": Json(action),
+      "oldPresent": Json(old_present),
+      "newPresent": Json(new_present),
       "oldImage": cells[5],
       "newImage": cells[6],
     }
   }
   {
-    "kind": kind.to_json(),
+    "kind": Json(kind),
     "sourceSeq": required(batch, "sourceSeq", "batch"),
     "statement": required(batch, "statement", "batch"),
     "rows": required(batch, "businessRowsEvent", "batch"),
@@ -775,5 +755,5 @@ fn orm_verify_batch(
 ///|
 fn orm_empty() -> Json {
   let items : Array[Json] = []
-  items.to_json()
+  Json(items)
 }

@@ -15,7 +15,7 @@ priv struct OrmControl2 {
 ///|
 priv struct OrmControlCursor2 {
   controls : Array[OrmControl2]
-  mut at : Int
+  mut at : Int32
   verified : Array[Json]
 }
 
@@ -51,11 +51,11 @@ fn orm2_text_integer(text : String) -> Json raise {
     value >= -9007199254740991L && value <= 9007199254740991L,
     "Native integer exceeds exact JSON range",
   )
-  value.to_double().to_json()
+  Json(value.to_double())
 }
 
 ///|
-fn orm2_array_cell(text : String, element : Int) -> Json raise {
+fn orm2_array_cell(text : String, element : Int32) -> Json raise {
   let chars = text.iter().to_array()
   orm_assert(
     chars.length() >= 2 && chars[0] == '{' && chars[chars.length() - 1] == '}',
@@ -120,8 +120,8 @@ fn orm2_array_cell(text : String, element : Int) -> Json raise {
       Json::null()
     } else if element == 16 {
       match token {
-        "t" => true.to_json()
-        "f" => false.to_json()
+        "t" => Json(true)
+        "f" => Json(false)
         _ => fail("Invalid PostgreSQL boolean array item")
       }
     } else if element == 21 {
@@ -130,7 +130,7 @@ fn orm2_array_cell(text : String, element : Int) -> Json raise {
       orm_assert(value >= -32768L && value <= 32767L, "smallint array overflow")
       number
     } else {
-      token.to_json()
+      Json(token)
     }
     out.push(cell)
     orm_assert(out.length() <= 512, "PostgreSQL array item budget")
@@ -140,11 +140,11 @@ fn orm2_array_cell(text : String, element : Int) -> Json raise {
       orm_assert(i < end, "Trailing PostgreSQL array delimiter")
     }
   }
-  out.to_json()
+  Json(out)
 }
 
 ///|
-fn orm2_decode_cell(raw : Json, oid : Int) -> Json raise {
+fn orm2_decode_cell(raw : Json, oid : Int32) -> Json raise {
   let value = orm_raw_text(raw)
   if value == Json::null() {
     return value
@@ -153,8 +153,8 @@ fn orm2_decode_cell(raw : Json, oid : Int) -> Json raise {
   match oid {
     16 =>
       match text {
-        "t" => true.to_json()
-        "f" => false.to_json()
+        "t" => Json(true)
+        "f" => Json(false)
         _ => fail("Invalid PostgreSQL boolean cell")
       }
     18 | 19 | 25 => value
@@ -188,7 +188,7 @@ fn orm2_control(value : Json) -> OrmControl2 raise {
   ])
   orm_equal(
     required(record, "kind", "control"),
-    "control-query".to_json(),
+    Json("control-query"),
     "control kind",
   )
   let result = orm_exact(required(record, "result", "control"), [
@@ -196,7 +196,7 @@ fn orm2_control(value : Json) -> OrmControl2 raise {
   ])
   orm_equal(
     required(result, "complete", "result"),
-    true.to_json(),
+    Json(true),
     "complete control result",
   )
   let actual = orm_exact(required(result, "actualPGresult", "result"), [
@@ -213,12 +213,12 @@ fn orm2_control(value : Json) -> OrmControl2 raise {
   )
   orm_equal(
     required(actual, "ntuples", "PGresult"),
-    rows.length().to_json(),
+    Json(rows.length()),
     "raw/native tuple count",
   )
   orm_equal(
     required(actual, "nfields", "PGresult"),
-    fields.length().to_json(),
+    Json(fields.length()),
     "raw/native field count",
   )
   orm_assert(raw_rows.length() == rows.length(), "raw/native row count")
@@ -236,18 +236,10 @@ fn orm2_control(value : Json) -> OrmControl2 raise {
   let mut raw_size = 0
   if fields.length() == 0 {
     orm_equal(columns, Json::null(), "command columns")
-    orm_equal(
-      required(actual, "status", "PGresult"),
-      (1).to_json(),
-      "COMMAND_OK",
-    )
+    orm_equal(required(actual, "status", "PGresult"), Json(1), "COMMAND_OK")
     orm_assert(rows.is_empty(), "Command must not fabricate native rows")
   } else {
-    orm_equal(
-      required(actual, "status", "PGresult"),
-      (2).to_json(),
-      "TUPLES_OK",
-    )
+    orm_equal(required(actual, "status", "PGresult"), Json(2), "TUPLES_OK")
     let descriptions = orm_array(columns)
     orm_assert(
       descriptions.length() == fields.length(),
@@ -259,12 +251,12 @@ fn orm2_control(value : Json) -> OrmControl2 raise {
       ignore(orm_native_text(required(description, "name", "column"), 128))
       orm_equal(
         required(field, "format", "field"),
-        (0).to_json(),
+        Json(0),
         "Control text field format",
       )
       orm_equal(
         required(field, "typmod", "field"),
-        (-1).to_json(),
+        Json(-1),
         "Control catalog typmod",
       )
       orm_equal(
@@ -347,7 +339,7 @@ fn orm2_control(value : Json) -> OrmControl2 raise {
 ///|
 fn orm2_journal(
   text : String,
-) -> (Array[Json], Int, Array[OrmControl2], Array[OrmControl2]) raise {
+) -> (Array[Json], Int32, Array[OrmControl2], Array[OrmControl2]) raise {
   orm_assert(
     orm_utf8_size(text) <= 16777216 && text.has_suffix("\n"),
     "Complete bounded sourceSchema2 JSONL required",
@@ -376,7 +368,7 @@ fn orm2_journal(
     let obj = object_fields(value, "sourceSchema2 record")
     orm_equal(
       required(obj, "sourceSeq", "record"),
-      (i + 1).to_json(),
+      Json(i + 1),
       "SourceSchema2 sequence",
     )
     let kind = orm_text(required(obj, "kind", "record"))
@@ -398,12 +390,12 @@ fn orm2_journal(
       orm_assert(kind == "seal", "Terminal sourceSchema2 seal required")
       orm_equal(
         required(obj, "sourceRecords", "seal"),
-        i.to_json(),
+        Json(i),
         "SourceSchema2 seal count",
       )
       orm_equal(
         required(obj, "prefixSha256", "seal"),
-        v3_dislock_sha256(prefix.to_string()).to_json(),
+        Json(v3_dislock_sha256(prefix.to_string())),
         "Original sourceSchema2 prefix bytes",
       )
     } else if i == lines.length() - 3 {
@@ -475,8 +467,8 @@ fn orm2_take(
     "Control window connection/backend/transaction mismatch",
   )
   cursor.verified.push({
-    "sourceSeq": value.seq.to_double().to_json(),
-    "sqlSha256": v3_dislock_sha256(sql).to_json(),
+    "sourceSeq": Json(value.seq.to_double()),
+    "sqlSha256": Json(v3_dislock_sha256(sql)),
   })
   value
 }
@@ -487,17 +479,17 @@ fn orm2_command(
   sql : String,
   parameters : Json,
   tag : String,
-  count : Int?,
+  count : Int32?,
 ) -> OrmControl2 raise {
   let value = orm2_take(cursor, sql, parameters)
   orm_equal(
     required(value.result, "status", "result"),
-    (1).to_json(),
+    Json(1),
     "Actual control COMMAND_OK",
   )
   orm_equal(
     required(value.result, "commandTag", "result"),
-    tag.to_json(),
+    Json(tag),
     "Expected control ACK",
   )
   let actual = object_fields(
@@ -505,7 +497,7 @@ fn orm2_command(
     "PGresult",
   )
   let expected_count = match count {
-    Some(n) => n.to_json()
+    Some(n) => Json(n)
     None => Json::null()
   }
   orm_equal(
@@ -516,8 +508,8 @@ fn orm2_command(
   orm_equal(
     required(value.result, "rowcount", "result"),
     match count {
-      Some(n) => n.to_json()
-      None => (-1).to_json()
+      Some(n) => Json(n)
+      None => Json(-1)
     },
     "Control command rowcount",
   )
@@ -546,7 +538,7 @@ fn orm2_select(
   sql : String,
   parameters : Json,
   names : Array[String],
-  oids : Array[Int],
+  oids : Array[Int32],
 ) -> OrmControl2 raise {
   let value = orm2_take(cursor, sql, parameters)
   orm_assert(
@@ -555,17 +547,17 @@ fn orm2_select(
   )
   orm_equal(
     required(value.result, "status", "result"),
-    (2).to_json(),
+    Json(2),
     "Actual metadata TUPLES_OK",
   )
   orm_equal(
     required(value.result, "commandTag", "result"),
-    ("SELECT " + value.rows.length().to_string()).to_json(),
+    Json("SELECT " + value.rows.length().to_string()),
     "Actual metadata SELECT tag",
   )
   orm_equal(
     required(value.result, "rowcount", "result"),
-    value.rows.length().to_json(),
+    Json(value.rows.length()),
     "Actual metadata rowcount",
   )
   let actual = object_fields(
@@ -574,7 +566,7 @@ fn orm2_select(
   )
   orm_equal(
     required(actual, "commandTuples", "PGresult"),
-    value.rows.length().to_json(),
+    Json(value.rows.length()),
     "Actual metadata command tuples",
   )
   let columns = orm_array(required(value.result, "columns", "result"))
@@ -585,7 +577,7 @@ fn orm2_select(
   for i, name in names {
     orm_equal(
       columns[i],
-      { "name": name.to_json(), "typeCode": oids[i].to_json() },
+      { "name": Json(name), "typeCode": Json(oids[i]) },
       "Fixed control descriptor",
     )
   }

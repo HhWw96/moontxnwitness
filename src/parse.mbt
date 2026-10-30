@@ -91,7 +91,7 @@ pub fn parse_history(text : String) -> Result[History, String] {
     )
     let initial : Map[String, String] = Map([])
     for k, v in raw_initial {
-      let _ = identifier(k.to_json(), "initial key")
+      let _ = identifier(Json(k), "initial key")
       initial[k] = identifier(v, "initial." + k)
     }
     let orders : Map[String, Array[String]] = Map([])

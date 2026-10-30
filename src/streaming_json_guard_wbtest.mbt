@@ -1,5 +1,5 @@
 ///|
-fn streaming_guard_result(text : String, limit : Int) -> Result[Json, String] {
+fn streaming_guard_result(text : String, limit : Int32) -> Result[Json, String] {
   Ok(guarded_json(text, limit~)) catch {
     error => Err(error.to_string())
   }

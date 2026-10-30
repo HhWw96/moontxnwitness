@@ -32,8 +32,8 @@ test "chunked JSON preserves escaping and every element across repeated flushes"
       text.write_char(',')
     }
     let value = "line\n\t\"\\🙂\{i}"
-    values.push(value.to_json())
-    text.write_string(value.to_json().stringify())
+    values.push(Json(value))
+    text.write_string(Json(value).stringify())
   }
   text.write_char(']')
   assert_eq(@json.parse(text.to_string()), Json::array(values))

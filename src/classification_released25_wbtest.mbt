@@ -8,7 +8,7 @@ fn released25_category_verification(
   object_fields_unchecked_v3(
     @json.parse(verify_classification_v3_json(text, report)),
   ).get("valid") ==
-  Some(true.to_json())
+  Some(Json(true))
 }
 
 ///|
@@ -118,14 +118,14 @@ test "released25 category engine and algorithm are explicit" {
   // sentinel stays unsupported as new releases become current.
   assert_true(released25_category_verification(trace, report.stringify()))
   for engine in ["0.2.4", version() + "-unsupported", "unknown"] {
-    fields["version"] = engine.to_json()
+    fields["version"] = Json(engine)
     assert_eq(
       released25_category_verification(trace, report.stringify()),
       false,
     )
   }
-  fields["version"] = "0.2.5".to_json()
-  fields["algorithm"] = "unknown".to_json()
+  fields["version"] = Json("0.2.5")
+  fields["algorithm"] = Json("unknown")
   assert_eq(released25_category_verification(trace, report.stringify()), false)
 }
 
@@ -136,10 +136,10 @@ test "released25 cannot relabel a new isolation model report" {
     classify_v3_json(trace, "{\"models\":[\"adya-pl-3-v1\"]}"),
   )
   let fields = object_fields_unchecked_v3(report)
-  assert_eq(fields.at("algorithm"), "v3-isolation-model-1".to_json())
+  assert_eq(fields.at("algorithm"), Json("v3-isolation-model-1"))
   assert_true(released25_category_verification(trace, report.stringify()))
-  fields["version"] = "0.2.5".to_json()
+  fields["version"] = Json("0.2.5")
   assert_eq(released25_category_verification(trace, report.stringify()), false)
-  fields["algorithm"] = "v3-register-category-1".to_json()
+  fields["algorithm"] = Json("v3-register-category-1")
   assert_eq(released25_category_verification(trace, report.stringify()), false)
 }

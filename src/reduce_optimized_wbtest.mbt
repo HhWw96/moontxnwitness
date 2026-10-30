@@ -1,5 +1,5 @@
 ///|
-fn large_noise(n : Int) -> History {
+fn large_noise(n : Int32) -> History {
   let initial : Map[String, String] = Map([("x", "x0"), ("y", "y0")])
   let txs : Array[Transaction] = []
   for i in 0..<(n - 2) {
@@ -165,7 +165,7 @@ test "encoding cache saturation changes neither escaping nor complete reports" {
   let before = reduction_result_string(result)
   for i in 0..<2100 {
     let value = "cache/" + i.to_string() + "中文\"\\\n"
-    assert_eq(cached_quote(value), value.to_json().stringify())
+    assert_eq(cached_quote(value), Json(value).stringify())
   }
   assert_true(quoted_strings.values.length() <= 2048)
   assert_true(quoted_strings.units <= 131072)
@@ -274,7 +274,7 @@ test "shared reduction writer distinguishes an empty history from a singleton vi
     @json.parse(reduction_result_string(result)),
     "output",
   )
-  assert_eq(output.at("checks"), (1).to_json())
+  assert_eq(output.at("checks"), Json(1))
   assert_eq(
     @json.parse(reduction_result_string(result)),
     reduction_result_json(result),

@@ -15,8 +15,8 @@ fn coverage_indexed(
   h : History,
   writes : Map[String, Map[String, WriteRef]],
 ) -> Array[KeyCoverage] {
-  let reads : Map[String, Int] = Map([])
-  let unresolved : Map[String, Int] = Map([])
+  let reads : Map[String, Int32] = Map([])
+  let unresolved : Map[String, Int32] = Map([])
   for tx in h.transactions {
     if tx.status != Committed {
       continue
@@ -60,7 +60,7 @@ fn coverage_indexed(
 }
 
 ///|
-fn order_source_cn(source : String, writes : Int) -> String {
+fn order_source_cn(source : String, writes : Int32) -> String {
   match source {
     "asserted" => "采集声明的版本链"
     "searched" => "搜索得到的可行补全（非观测事实）"

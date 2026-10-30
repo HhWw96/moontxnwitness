@@ -1,7 +1,7 @@
 ///|
 fn result_valid(text : String) -> Bool {
   let j = @json.parse(text) catch { _ => return false }
-  j is Object(m) && m.get("valid") == Some(true.to_json())
+  j is Object(m) && m.get("valid") == Some(Json(true))
 }
 
 ///|
@@ -28,18 +28,18 @@ test "stable v1 and v2 replay accepts released engines only in supported headers
             "0.1.8",
             version(),
           ] {
-          fields["version"] = engine.to_json()
+          fields["version"] = Json(engine)
           assert_true(
             result_valid(replay_report_json(history, report.stringify())),
           )
           let original_status = fields.at("status")
-          fields["status"] = "consistent".to_json()
+          fields["status"] = Json("consistent")
           assert_true(
             !result_valid(replay_report_json(history, report.stringify())),
           )
           fields["status"] = original_status
         }
-        fields["version"] = "99.0.0".to_json()
+        fields["version"] = Json("99.0.0")
         assert_true(
           !result_valid(replay_report_json(history, report.stringify())),
         )
@@ -67,7 +67,7 @@ test "semantic replay rejects altered verdicts and counts" {
   let h = skew()
   let j = report_json(analyze(h))
   match j {
-    Object(m) => m["status"] = "consistent".to_json()
+    Object(m) => m["status"] = Json("consistent")
     _ => abort("object")
   }
   assert_true(
@@ -105,7 +105,7 @@ test "old cycle evidence remains verifiable under schema v1" {
   let h = skew()
   let j = report_json(analyze(h))
   match j {
-    Object(m) => m["version"] = "0.0.1".to_json()
+    Object(m) => m["version"] = Json("0.0.1")
     _ => abort("object")
   }
   assert_true(
@@ -124,7 +124,7 @@ test "model comparison isolates a realtime contradiction" {
   let j = compare_models(h)
   assert_true(
     j is Object(m) &&
-    m.get("classification") == Some("realtime-only-violation".to_json()),
+    m.get("classification") == Some(Json("realtime-only-violation")),
   )
   assert_true(h.model == Serializable)
 }
@@ -133,7 +133,7 @@ test "model comparison isolates a realtime contradiction" {
 test "model comparison does not invent missing time intervals" {
   let j = compare_models(hist([tx("T", [])]))
   assert_true(
-    j is Object(m) && m.get("classification") == Some("inconclusive".to_json()),
+    j is Object(m) && m.get("classification") == Some(Json("inconclusive")),
   )
 }
 
@@ -144,11 +144,11 @@ test "capsule structure validation does not claim cryptographic verification" {
     "format": "moontxnwitness-replay/v1",
     "schemaVersion": 1,
     "tool": "MoonTxnWitness",
-    "engineVersion": version().to_json(),
-    "historyText": history_json(h).stringify().to_json(),
-    "reportText": report_json(analyze(h)).stringify().to_json(),
-    "historySha256": "0".repeat(64).to_json(),
-    "reportSha256": "0".repeat(64).to_json(),
+    "engineVersion": Json(version()),
+    "historyText": Json(history_json(h).stringify()),
+    "reportText": Json(report_json(analyze(h)).stringify()),
+    "historySha256": Json("0".repeat(64)),
+    "reportSha256": Json("0".repeat(64)),
   }
   let inspected = capsule_content_json(j.stringify())
   assert_true(result_valid(inspected))

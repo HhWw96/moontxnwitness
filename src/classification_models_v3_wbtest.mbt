@@ -1,7 +1,7 @@
 ///|
 fn classification26_test_report(
   trace : Json,
-  options? : String = "{\"models\":[\"adya-pl-1-v1\",\"adya-pl-2-v1\",\"adya-pl-2.99-v1\",\"elle-generalized-si-v1\",\"adya-pl-3-v1\",\"strict-pl-ss-v1\"]}",
+  options~ : String = "{\"models\":[\"adya-pl-1-v1\",\"adya-pl-2-v1\",\"adya-pl-2.99-v1\",\"elle-generalized-si-v1\",\"adya-pl-3-v1\",\"strict-pl-ss-v1\"]}",
 ) -> Json raise {
   @json.parse(classify_v3_json(trace.stringify(), options))
 }
@@ -15,7 +15,7 @@ fn classification26_test_model(report : Json, name : String) -> Json raise {
 fn classification26_test_list(body : Array[Json]) -> Json {
   let trace = v3_test_trace(body)
   let fields = object_fields_unchecked_v3(trace)
-  fields["dataModel"] = "append-list-v1".to_json()
+  fields["dataModel"] = Json("append-list-v1")
   let events = presence_capture_array(fields.at("events"), "events") catch {
     _ => []
   }
@@ -60,7 +60,7 @@ fn classification26_test_envelope(
   ]
   for index, raw_tx in txs {
     let tx = object_fields(raw_tx, "transaction")
-    if tx.at("status") != "committed".to_json() {
+    if tx.at("status") != Json("committed") {
       continue
     }
     let id = identifier(tx.at("id"), "id")
@@ -69,8 +69,8 @@ fn classification26_test_envelope(
     let (start_ns, end_ns) = windows[index]
     let statements = events.filter(raw => {
       let fields = object_fields_unchecked_v3(raw)
-      fields.get("tx") == Some(id.to_json()) &&
-      fields.get("kind") == Some("statement".to_json())
+      fields.get("tx") == Some(Json(id)) &&
+      fields.get("kind") == Some(Json("statement"))
     })
     let calls : Array[Json] = if statements.is_empty() {
       [Json::null()]
@@ -81,27 +81,25 @@ fn classification26_test_envelope(
       let call_id = "sql-" + id + "-" + ordinal.to_string()
       records.push({
         "kind": "call-start",
-        "callId": call_id.to_json(),
+        "callId": Json(call_id),
         "method": "execute",
         "connection": connection,
-        "tx": id.to_json(),
+        "tx": Json(id),
         "processMonotonicDomain": "test-process",
-        "monotonicNs": (start_ns + ordinal.to_int64() * 2L)
-        .to_string()
-        .to_json(),
+        "monotonicNs": Json((start_ns + ordinal.to_int64() * 2L).to_string()),
         "statementSeq": Json::null(),
         "journalEventSeqs": { "begin": begin },
       })
       records.push({
         "kind": "call-end",
-        "callId": call_id.to_json(),
+        "callId": Json(call_id),
         "method": "execute",
         "connection": connection,
-        "tx": id.to_json(),
+        "tx": Json(id),
         "processMonotonicDomain": "test-process",
-        "monotonicNs": (start_ns + ordinal.to_int64() * 2L + 1L)
-        .to_string()
-        .to_json(),
+        "monotonicNs": Json(
+          (start_ns + ordinal.to_int64() * 2L + 1L).to_string(),
+        ),
         "succeeded": true,
         "statementSeq": statement,
         "journalEventSeqs": { "begin": begin },
@@ -109,25 +107,25 @@ fn classification26_test_envelope(
     }
     let request = events.filter(raw => {
         let fields = object_fields_unchecked_v3(raw)
-        fields.get("kind") == Some("commit_request".to_json()) &&
-        fields.get("tx") == Some(id.to_json())
+        fields.get("kind") == Some(Json("commit_request")) &&
+        fields.get("tx") == Some(Json(id))
       })[0]
     let commit = events.filter(raw => {
         let fields = object_fields_unchecked_v3(raw)
-        fields.get("kind") == Some("commit_ok".to_json()) &&
-        fields.get("tx") == Some(id.to_json())
+        fields.get("kind") == Some(Json("commit_ok")) &&
+        fields.get("tx") == Some(Json(id))
       })[0]
     let request_seq = object_fields_unchecked_v3(request).at("seq")
     let commit_seq = object_fields_unchecked_v3(commit).at("seq")
     let call_id = "commit-" + id
     records.push({
       "kind": "call-start",
-      "callId": call_id.to_json(),
+      "callId": Json(call_id),
       "method": "commit",
       "connection": connection,
-      "tx": id.to_json(),
+      "tx": Json(id),
       "processMonotonicDomain": "test-process",
-      "monotonicNs": (end_ns - 2L).to_string().to_json(),
+      "monotonicNs": Json((end_ns - 2L).to_string()),
       "statementSeq": Json::null(),
       "journalEventSeqs": { "begin": begin },
     })
@@ -138,16 +136,16 @@ fn classification26_test_envelope(
       "commandTag": "COMMIT",
       "transactionStatus": 0,
       "processMonotonicDomain": "test-process",
-      "monotonicNs": (end_ns - 1L).to_string().to_json(),
+      "monotonicNs": Json((end_ns - 1L).to_string()),
     })
     records.push({
       "kind": "call-end",
-      "callId": call_id.to_json(),
+      "callId": Json(call_id),
       "method": "commit",
       "connection": connection,
-      "tx": id.to_json(),
+      "tx": Json(id),
       "processMonotonicDomain": "test-process",
-      "monotonicNs": end_ns.to_string().to_json(),
+      "monotonicNs": Json(end_ns.to_string()),
       "succeeded": true,
       "nativeCommandTag": "COMMIT",
       "statementSeq": Json::null(),
@@ -165,19 +163,19 @@ fn classification26_test_envelope(
 fn classification26_test_pack_envelope(
   trace_text : String,
   records : Array[Json],
-  event_count : Int,
+  event_count : Int32,
 ) -> Json {
   let prefix = StringBuilder()
   for index, record in records {
-    object_fields_unchecked_v3(record)["seq"] = (index + 1).to_json()
+    object_fields_unchecked_v3(record)["seq"] = Json(index + 1)
     prefix.write_string(record.stringify())
     prefix.write_string("\n")
   }
   let seal : Json = {
-    "seq": (records.length() + 1).to_json(),
+    "seq": Json(records.length() + 1),
     "kind": "seal",
-    "records": records.length().to_json(),
-    "prefixSha256": v3_dislock_sha256(prefix.to_string()).to_json(),
+    "records": Json(records.length()),
+    "prefixSha256": Json(v3_dislock_sha256(prefix.to_string())),
   }
   let all = records.copy()
   all.push(seal)
@@ -188,42 +186,41 @@ fn classification26_test_pack_envelope(
     {
       "closed": true,
       "sourceClosed": true,
-      "eventCount": event_count.to_json(),
-      "durableSeq": event_count.to_json(),
+      "eventCount": Json(event_count),
+      "durableSeq": Json(event_count),
       "gaps": [],
     } : Json).stringify()
   let interval_text = (
     {
       "format": "moontxnwitness-client-intervals/v1",
-      "sourceTraceSha256": v3_dislock_sha256(trace_text).to_json(),
-      "sourceLifecycleSha256": v3_dislock_sha256(lifecycle_text).to_json(),
-      "sourceJournalIndexSha256": v3_dislock_sha256(index_text).to_json(),
-      "records": all.to_json(),
+      "sourceTraceSha256": Json(v3_dislock_sha256(trace_text)),
+      "sourceLifecycleSha256": Json(v3_dislock_sha256(lifecycle_text)),
+      "sourceJournalIndexSha256": Json(v3_dislock_sha256(index_text)),
+      "records": Json(all),
     } : Json).stringify()
   {
     "format": "moontxnwitness-classification-source/v1",
-    "traceText": trace_text.to_json(),
-    "intervalEvidenceText": interval_text.to_json(),
-    "lifecycleText": lifecycle_text.to_json(),
-    "journalIndexText": index_text.to_json(),
+    "traceText": Json(trace_text),
+    "intervalEvidenceText": Json(interval_text),
+    "lifecycleText": Json(lifecycle_text),
+    "journalIndexText": Json(index_text),
   }
 }
 
 ///|
 test "classification26 empty register history checks five models and leaves strict unknown without intervals" {
   let report = classification26_test_report(v3_test_completed([]))
-  assert_eq(
-    capture_field(report, "algorithm"),
-    "v3-isolation-model-1".to_json(),
-  )
+  assert_eq(capture_field(report, "algorithm"), Json("v3-isolation-model-1"))
   for name in classification_models_v3_names() {
     assert_eq(
       capture_field(classification26_test_model(report, name), "status"),
-      (if name == "strict-pl-ss-v1" {
-        "inconclusive"
-      } else {
-        "checked-compatible"
-      }).to_json(),
+      Json(
+        if name == "strict-pl-ss-v1" {
+          "inconclusive"
+        } else {
+          "checked-compatible"
+        },
+      ),
     )
   }
 }
@@ -236,7 +233,7 @@ test "classification26 G0 refutes every stronger model through logical closure" 
   for name in classification_models_v3_names() {
     assert_eq(
       capture_field(classification26_test_model(report, name), "status"),
-      "refuted".to_json(),
+      Json("refuted"),
     )
   }
 }
@@ -251,22 +248,22 @@ test "classification26 write skew is compatible with generalized SI but refutes 
       classification26_test_model(report, "elle-generalized-si-v1"),
       "status",
     ),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-2-v1"), "status"),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
   assert_eq(
     capture_field(
       classification26_test_model(report, "adya-pl-2.99-v1"),
       "status",
     ),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-3-v1"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
 }
 
@@ -290,13 +287,13 @@ test "classification26 confirmed aborted reads refute PL2 despite conservative p
   let report = classification26_test_report(trace)
   assert_eq(
     capture_field(classification_test_rule(report, "G1a"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-2-v1"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
-  assert_eq(capture_field(report, "status"), "refuted".to_json())
+  assert_eq(capture_field(report, "status"), Json("refuted"))
 }
 
 ///|
@@ -327,11 +324,11 @@ test "classification26 overwritten intermediate read has a direct G1b proof" {
   let report = classification26_test_report(trace)
   assert_eq(
     capture_field(classification_test_rule(report, "G1b"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-2-v1"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
 }
 
@@ -350,18 +347,18 @@ test "classification26 own overlay mismatch is an operational INT counterexample
   let report = classification26_test_report(trace)
   assert_eq(
     capture_field(classification_test_rule(report, "INT"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(
       classification26_test_model(report, "elle-generalized-si-v1"),
       "status",
     ),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-3-v1"), "status"),
-    "inconclusive".to_json(),
+    Json("inconclusive"),
   )
   assert_eq(
     capture_field(
@@ -371,7 +368,7 @@ test "classification26 own overlay mismatch is an operational INT counterexample
       ),
       "status",
     ),
-    "not-satisfied".to_json(),
+    Json("not-satisfied"),
   )
 }
 
@@ -394,14 +391,14 @@ test "classification26 savepoint rollback restores own overlay without erasing t
   let report = classification26_test_report(trace)
   assert_eq(
     capture_field(classification_test_rule(report, "INT"), "status"),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
   assert_eq(
     capture_field(
       classification26_test_model(report, "elle-generalized-si-v1"),
       "status",
     ),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
 }
 
@@ -427,18 +424,18 @@ test "classification26 repeated read changes violate INT and SI while PL2 remain
   let report = classification26_test_report(trace)
   assert_eq(
     capture_field(classification_test_rule(report, "INT"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(
       classification26_test_model(report, "elle-generalized-si-v1"),
       "status",
     ),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-2-v1"), "status"),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
 }
 
@@ -450,11 +447,11 @@ test "classification26 list write skew distinguishes SI from serializability" {
       classification26_test_model(report, "elle-generalized-si-v1"),
       "status",
     ),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-3-v1"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
 }
 
@@ -471,10 +468,10 @@ test "classification26 missing append order stays unknown instead of being compl
     { "kind": "commit_ok", "tx": "B" },
   ])
   let report = classification26_test_report(trace)
-  assert_eq(capture_field(report, "dependencyGraphComplete"), false.to_json())
+  assert_eq(capture_field(report, "dependencyGraphComplete"), Json(false))
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-1-v1"), "status"),
-    "inconclusive".to_json(),
+    Json("inconclusive"),
   )
 }
 
@@ -497,7 +494,7 @@ test "classification26 list abort source and intermediate append prefix have exp
   let report = classification26_test_report(aborted)
   assert_eq(
     capture_field(classification_test_rule(report, "G1a"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   let intermediate = classification26_test_list([
     { "kind": "begin", "tx": "W", "connection": "w" },
@@ -518,11 +515,11 @@ test "classification26 list abort source and intermediate append prefix have exp
   let report = classification26_test_report(intermediate)
   assert_eq(
     capture_field(classification_test_rule(report, "G1b"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-2-v1"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
 }
 
@@ -538,11 +535,11 @@ test "classification26 list own append visibility is checked operationally" {
   let report = classification26_test_report(trace)
   assert_eq(
     capture_field(classification_test_rule(report, "INT"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-3-v1"), "status"),
-    "inconclusive".to_json(),
+    Json("inconclusive"),
   )
   assert_eq(
     capture_field(
@@ -552,7 +549,7 @@ test "classification26 list own append visibility is checked operationally" {
       ),
       "status",
     ),
-    "not-satisfied".to_json(),
+    Json("not-satisfied"),
   )
 }
 
@@ -566,14 +563,14 @@ test "classification26 optional client evidence can finish strict checks" {
       classification26_test_model(report, "strict-pl-ss-v1"),
       "status",
     ),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
   assert_eq(
     capture_field(
       capture_field(report, "intervalEvidence"),
       "journalSegmentPayloadsRecomputed",
     ),
-    false.to_json(),
+    Json(false),
   )
 }
 
@@ -606,14 +603,14 @@ test "classification26 confirmed COMMIT before another actual SQL call refutes s
   let report = classification26_test_report(envelope)
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-3-v1"), "status"),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
   assert_eq(
     capture_field(
       classification26_test_model(report, "strict-pl-ss-v1"),
       "status",
     ),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_true(!v3_test_items(report, "realTimeDependencies").is_empty())
   assert_eq(
@@ -623,7 +620,7 @@ test "classification26 confirmed COMMIT before another actual SQL call refutes s
       ),
       "valid",
     ),
-    true.to_json(),
+    Json(true),
   )
 }
 
@@ -640,7 +637,7 @@ test "classification26 equal monotonic boundaries do not create realtime order" 
       classification26_test_model(report, "strict-pl-ss-v1"),
       "status",
     ),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
 }
 
@@ -654,10 +651,10 @@ test "classification26 differing original bytes or digests reject interval evide
     envelope.stringify(),
     "{\"models\":[\"strict-pl-ss-v1\"]}",
   )
-  fields["traceText"] = (v3_test_completed([]).stringify() + " ").to_json()
+  fields["traceText"] = Json(v3_test_completed([]).stringify() + " ")
   assert_eq(
     capture_field(classification26_test_report(envelope), "status"),
-    "invalid".to_json(),
+    Json("invalid"),
   )
   assert_eq(
     capture_field(
@@ -666,7 +663,7 @@ test "classification26 differing original bytes or digests reject interval evide
       ),
       "valid",
     ),
-    false.to_json(),
+    Json(false),
   )
 }
 
@@ -679,17 +676,17 @@ test "classification26 SQL proof options remain explicit and old categories rema
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-3-v1"), "status"),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
   let old = classification_test_result(
     classification_test_cycle_trace("G2-item"),
   )
-  assert_eq(capture_field(old, "algorithm"), "v3-register-category-1".to_json())
-  assert_eq(capture_field(old, "acceptsIsolationModels"), false.to_json())
+  assert_eq(capture_field(old, "algorithm"), Json("v3-register-category-1"))
+  assert_eq(capture_field(old, "acceptsIsolationModels"), Json(false))
 }
 
 ///|
-fn classification26_test_nonadj_oracle(kinds : Array[Int]) -> Bool {
+fn classification26_test_nonadj_oracle(kinds : Array[Int32]) -> Bool {
   let pairs = [(0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1)]
   let matrix = Array::make(9, 0)
   for index, pair in pairs {
@@ -737,7 +734,7 @@ test "classification26 nonadjacent search matches all 4096 typed three-node grap
   let pairs = [(0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1)]
   for code in 0..<4096 {
     let mut rest = code
-    let kinds : Array[Int] = []
+    let kinds : Array[Int32] = []
     let edges : Array[Edge] = []
     for pair in pairs {
       let kind = rest % 4

@@ -10,12 +10,12 @@ pub fn orm_sql_source2_v3_proof_json(text : String) -> String {
     ])
     orm_equal(
       required(input, "schema", "input"),
-      (2).to_json(),
+      Json(2),
       "Separate sourceSchema2 diagnostic input",
     )
     orm_equal(
       required(input, "profile", "input"),
-      "fastapi-users-sqlalchemy-7.0.0-pg18/1".to_json(),
+      Json("fastapi-users-sqlalchemy-7.0.0-pg18/1"),
       "Pinned ORM profile",
     )
     let trace_text = orm_text(required(input, "traceText", "input"))
@@ -29,7 +29,7 @@ pub fn orm_sql_source2_v3_proof_json(text : String) -> String {
       "lifecycle",
     )
     orm_assert(
-      required(lifecycle, "status", "lifecycle") != "invalid".to_json(),
+      required(lifecycle, "status", "lifecycle") != Json("invalid"),
       "Invalid lifecycle cannot receive sourceSchema2 proof",
     )
     let events = orm_array(required(root, "events", "trace"))
@@ -40,22 +40,22 @@ pub fn orm_sql_source2_v3_proof_json(text : String) -> String {
     let snapshot = object_fields(events[0], "snapshot")
     orm_equal(
       required(snapshot, "kind", "snapshot"),
-      "snapshot".to_json(),
+      Json("snapshot"),
       "First actual initialized snapshot",
     )
     orm_equal(
       required(snapshot, "seq", "snapshot"),
-      (1).to_json(),
+      Json(1),
       "Actual snapshot sequence",
     )
     orm_equal(
       required(snapshot, "consistent", "snapshot"),
-      true.to_json(),
+      Json(true),
       "Consistent actual initial snapshot",
     )
     orm_equal(
       orm_get(required(root, "scope", "trace"), "exclusiveWriters"),
-      true.to_json(),
+      Json(true),
       "Declared controlled writer scope",
     )
     let (records, installation_index, initial_controls, final_controls) = orm2_journal(
@@ -91,7 +91,7 @@ pub fn orm_sql_source2_v3_proof_json(text : String) -> String {
       let obj = object_fields(event, "event")
       orm_equal(
         required(obj, "seq", "event"),
-        (i + 1).to_json(),
+        Json(i + 1),
         "Original event sequence",
       )
       event_map[(i + 1).to_int64()] = obj
@@ -104,10 +104,10 @@ pub fn orm_sql_source2_v3_proof_json(text : String) -> String {
     for i in (installation_index + 1)..<(records.length() - 2) {
       let batch = object_fields(records[i], "sourceSchema2 batch")
       let kind = required(batch, "kind", "batch")
-      if kind == "control-query".to_json() {
+      if kind == Json("control-query") {
         continue
       }
-      if kind == "source-gap".to_json() {
+      if kind == Json("source-gap") {
         gaps.push(
           capture_gap(
             "orm_source_gap", "Original zero/error source result has no invented read or write",
@@ -115,7 +115,7 @@ pub fn orm_sql_source2_v3_proof_json(text : String) -> String {
         )
         continue
       }
-      orm_equal(kind, "source-batch".to_json(), "Original source batch kind")
+      orm_equal(kind, Json("source-batch"), "Original source batch kind")
       let statement_seq = v3_capture_seq(
         required(batch, "statement", "batch"),
         "statement",
@@ -143,19 +143,19 @@ pub fn orm_sql_source2_v3_proof_json(text : String) -> String {
       seen_statement[statement_seq] = true
       seen_rows[rows_seq] = true
       statements.push({
-        "statement": statement_seq.to_double().to_json(),
-        "mappingId": plan.mapping.to_json(),
+        "statement": Json(statement_seq.to_double()),
+        "mappingId": Json(plan.mapping),
       })
       batches.push({
         "sourceSeq": required(batch, "sourceSeq", "batch"),
-        "statement": statement_seq.to_double().to_json(),
-        "rows": rows_seq.to_double().to_json(),
+        "statement": Json(statement_seq.to_double()),
+        "rows": Json(rows_seq.to_double()),
         "kind": orm_get(fact, "kind"),
       })
       facts.push(fact)
     }
     for event in events {
-      if orm_get(event, "kind") == "statement".to_json() &&
+      if orm_get(event, "kind") == Json("statement") &&
         !seen_statement.contains(
           v3_capture_seq(orm_get(event, "seq"), "statement"),
         ) {
@@ -192,24 +192,26 @@ pub fn orm_sql_source2_v3_proof_json(text : String) -> String {
       "analysisCoverageAccepted": false,
       "history": Json::null(),
       "controlProfileComplete": true,
-      "matchedStatements": statements.to_json(),
-      "verifiedSourceBatches": batches.to_json(),
-      "candidateFacts": facts.to_json(),
-      "provenStatements": statements.to_json(),
-      "provenFacts": facts.to_json(),
+      "matchedStatements": Json(statements),
+      "verifiedSourceBatches": Json(batches),
+      "candidateFacts": Json(facts),
+      "provenStatements": Json(statements),
+      "provenFacts": Json(facts),
       "verifiedStatements": [],
       "verifiedFacts": [],
       "verifiedProfiles": [],
-      "verifiedControlQueries": controls.to_json(),
+      "verifiedControlQueries": Json(controls),
       "initializationEvidence": initialization,
       "finalizationEvidence": finalization,
-      "observedEffects": effects.to_json(),
+      "observedEffects": Json(effects),
       "ledger": ledger,
-      "gaps": gaps.to_json(),
-      "traceSha256": v3_dislock_sha256(trace_text).to_json(),
-      "sourceJournalSha256": v3_dislock_sha256(
-        orm_text(required(input, "sourceJournalText", "input")),
-      ).to_json(),
+      "gaps": Json(gaps),
+      "traceSha256": Json(v3_dislock_sha256(trace_text)),
+      "sourceJournalSha256": Json(
+        v3_dislock_sha256(
+          orm_text(required(input, "sourceJournalText", "input")),
+        ),
+      ),
       "scope": "Individual original source proofs under controlled writers, standard adapters and no unobserved DDL/metadata assumptions; no database authentication or complete-trace acceptance.",
     }
     result.stringify(indent=2)

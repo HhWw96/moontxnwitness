@@ -36,9 +36,7 @@ fn v3_sql_profiles(
           required(profile, "table", "SQL profile"),
           "SQL profile.table",
         )
-        let identity = [name.to_json(), schema.to_json(), table.to_json()]
-          .to_json()
-          .stringify()
+        let identity = Json([Json(name), Json(schema), Json(table)]).stringify()
         if names.contains(identity) {
           fail("Duplicate SQL profile installation")
         }

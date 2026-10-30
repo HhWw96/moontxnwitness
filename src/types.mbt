@@ -58,8 +58,8 @@ pub(all) struct Edge {
   to : String
   kind : Dependency
   key : String?
-  from_op : Int?
-  to_op : Int?
+  from_op : Int32?
+  to_op : Int32?
   from_version : String?
   to_version : String?
   reason : String
@@ -78,7 +78,7 @@ pub(all) struct Finding {
   message : String
   transactions : Array[String]
   key : String?
-  ops : Array[Int]
+  ops : Array[Int32]
 } derive(Eq)
 
 ///|
@@ -98,9 +98,9 @@ pub(all) struct Report {
   edges : Array[Edge]
   witness : Array[Edge]
   serial_order : Array[String]
-  transaction_count : Int
-  committed_count : Int
-  operation_count : Int
+  transaction_count : Int32
+  committed_count : Int32
+  operation_count : Int32
   inferred_orders : Map[String, Array[String]]
   order_sources : Map[String, String]
   search : SearchInfo
@@ -111,19 +111,19 @@ pub(all) struct Report {
 ///|
 pub(all) struct GraphInfo {
   analyzed : Bool
-  components : Int
-  cyclic_components : Int
-  cyclic_transactions : Int
-  bfs_roots : Int
+  components : Int32
+  cyclic_components : Int32
+  cyclic_transactions : Int32
+  bfs_roots : Int32
   edge_budget_exceeded : Bool
 } derive(Eq)
 
 ///|
 pub(all) struct KeyCoverage {
   key : String
-  committed_reads : Int
-  committed_final_writes : Int
-  unresolved_reads : Int
+  committed_reads : Int32
+  committed_final_writes : Int32
+  unresolved_reads : Int32
 } derive(Eq)
 
 ///|
@@ -135,8 +135,8 @@ pub extend KeyCoverage with Eq::{equal, not_equal}
 ///|
 pub(all) struct SearchInfo {
   status : String
-  attempts : Int
-  operation_checks : Int
+  attempts : Int32
+  operation_checks : Int32
   reason : String
   blockers : Array[Finding]
 } derive(Eq)
@@ -146,14 +146,14 @@ pub extend SearchInfo with Eq::{equal, not_equal}
 
 ///|
 priv struct WriteRef {
-  tx : Int
-  op : Int
+  tx : Int32
+  op : Int32
   is_final : Bool
 }
 
 ///|
 pub fn version() -> String {
-  "0.3.0"
+  "0.3.1"
 }
 
 ///|
@@ -206,9 +206,9 @@ fn issue(
   code : String,
   severity : String,
   message : String,
-  txs? : Array[String] = [],
-  key? : String? = None,
-  ops? : Array[Int] = [],
+  txs~ : Array[String] = [],
+  key~ : String? = None,
+  ops~ : Array[Int32] = [],
 ) -> Finding {
   { code, severity, message, transactions: txs, key, ops, }
 }

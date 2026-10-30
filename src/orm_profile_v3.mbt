@@ -7,15 +7,15 @@ priv struct OrmProfileDerivedV3 {
 ///|
 priv struct OrmProfileWindowV3 {
   records : Array[Json]
-  opened : Int
-  quiesced : Int
-  closed : Int
+  opened : Int32
+  quiesced : Int32
+  closed : Int32
 }
 
 ///|
 fn orm_profile_diagnostic_gaps_v3(
   gaps : Array[Json],
-  index? : Bool = false,
+  index~ : Bool = false,
 ) -> Unit raise {
   let seen : Map[String, Bool] = Map([])
   for raw in gaps {
@@ -83,7 +83,7 @@ fn orm_profile_window_v3(
     let value = object_fields(raw, "profile lifecycle")
     orm_equal(
       required(value, "seq", "lifecycle"),
-      (i + 1).to_json(),
+      Json(i + 1),
       "Contiguous profile lifecycle sequence",
     )
     let kind = orm_text(required(value, "kind", "lifecycle"))
@@ -94,12 +94,12 @@ fn orm_profile_window_v3(
       |> ignore
       orm_equal(
         required(value, "format", "header"),
-        "moontxnwitness-instrumentation/v1".to_json(),
+        Json("moontxnwitness-instrumentation/v1"),
         "Original instrumentation header",
       )
       orm_equal(
         required(value, "diagnosticOnly", "header"),
-        true.to_json(),
+        Json(true),
         "Original diagnostic flag remains",
       )
       orm_assert(kind == "header", "Initial lifecycle header required")
@@ -112,18 +112,18 @@ fn orm_profile_window_v3(
       orm_assert(kind == "seal", "Terminal lifecycle seal required")
       orm_equal(
         required(value, "records", "seal"),
-        i.to_json(),
+        Json(i),
         "Lifecycle seal count",
       )
       orm_equal(
         required(value, "prefixSha256", "seal"),
-        v3_dislock_sha256(prefix.to_string()).to_json(),
+        Json(v3_dislock_sha256(prefix.to_string())),
         "Original lifecycle prefix bytes",
       )
     } else {
       orm_equal(
         required(value, "processMonotonicDomain", "lifecycle"),
-        domain.to_json(),
+        Json(domain),
         "One process domain",
       )
       let ns = orm_text(required(value, "monotonicNs", "lifecycle"))
@@ -142,7 +142,7 @@ fn orm_profile_window_v3(
         kind == "profile-window-close" {
         orm_equal(
           required(value, "profile", "window"),
-          "fastapi-users-sqlalchemy-7.0.0-pg18/1".to_json(),
+          Json("fastapi-users-sqlalchemy-7.0.0-pg18/1"),
           "Pinned profile window",
         )
         orm_equal(
@@ -199,33 +199,33 @@ fn orm_profile_index_v3(
 ) -> Unit raise {
   orm_equal(
     required(index, "indexSchema", "index"),
-    (1).to_json(),
+    Json(1),
     "Known journal index",
   )
   orm_equal(
     required(index, "traceSchema", "index"),
-    (3).to_json(),
+    Json(3),
     "v3 journal index",
   )
   orm_equal(
     required(index, "closed", "index"),
-    true.to_json(),
+    Json(true),
     "Journal tail synchronized before profile analysis",
   )
   // The generic observer intentionally has no full-source acceptance claim.
   orm_equal(
     required(index, "sourceClosed", "index"),
-    false.to_json(),
+    Json(false),
     "Original diagnostic sourceClosed remains false",
   )
   orm_equal(
     required(index, "eventCount", "index"),
-    events.length().to_json(),
+    Json(events.length()),
     "Index/export event count",
   )
   orm_equal(
     required(index, "durableSeq", "index"),
-    events.length().to_json(),
+    Json(events.length()),
     "Index/export durable tail",
   )
   orm_assert(!events.is_empty(), "Actual initial snapshot required")
@@ -314,7 +314,7 @@ fn orm_profile_source_refs_v3(
   )
   orm_equal(
     required(opened, "initialCommitSourceSeq", "open"),
-    initial_commit.seq.to_double().to_json(),
+    Json(initial_commit.seq.to_double()),
     "Opening references actual initialization COMMIT",
   )
   orm_equal(
@@ -324,7 +324,7 @@ fn orm_profile_source_refs_v3(
   )
   orm_equal(
     required(closed, "finalCommitSourceSeq", "close"),
-    final_commit.seq.to_double().to_json(),
+    Json(final_commit.seq.to_double()),
     "Closing references actual finalization COMMIT",
   )
   orm_equal(
@@ -354,7 +354,7 @@ fn orm_profile_calls_v3(
   for raw in transactions {
     let tx = object_fields(raw, "transaction")
     orm_assert(
-      required(tx, "status", "transaction") != "unknown".to_json(),
+      required(tx, "status", "transaction") != Json("unknown"),
       "Unconfirmed transaction outcome prevents promotion",
     )
     txs[orm_text(required(tx, "id", "transaction"))] = tx
@@ -378,7 +378,7 @@ fn orm_profile_calls_v3(
       let event = object_fields(events[request.to_int() - 1], "request")
       orm_equal(
         required(event, "kind", "request"),
-        "commit_request".to_json(),
+        Json("commit_request"),
         "Actual COMMIT request event",
       )
       let tx = match txs.get(orm_text(required(event, "tx", "request"))) {
@@ -392,12 +392,12 @@ fn orm_profile_calls_v3(
       )
       orm_equal(
         required(value, "transactionStatus", "response"),
-        (0).to_json(),
+        Json(0),
         "Actual IDLE after COMMIT response",
       )
       let tag = required(value, "commandTag", "response")
       orm_assert(
-        tag == "COMMIT".to_json() || tag == "ROLLBACK".to_json(),
+        tag == Json("COMMIT") || tag == Json("ROLLBACK"),
         "Actual native COMMIT/ROLLBACK response required",
       )
       orm_assert(
@@ -422,7 +422,7 @@ fn orm_profile_calls_v3(
       }
       orm_equal(
         required(value, "succeeded", "call"),
-        true.to_json(),
+        Json(true),
         "Successful original driver calls required",
       )
       let call_method = orm_text(required(value, "method", "call"))
@@ -487,12 +487,12 @@ fn orm_profile_calls_v3(
                 let statement = object_fields(events[seq - 1], "statement")
                 orm_equal(
                   required(statement, "kind", "statement"),
-                  "statement".to_json(),
+                  Json("statement"),
                   "Actual execute statement reference",
                 )
                 orm_equal(
                   required(statement, "tx", "statement"),
-                  id.to_json(),
+                  Json(id),
                   "Actual execute transaction",
                 )
                 orm_assert(
@@ -537,14 +537,16 @@ fn orm_profile_calls_v3(
               )
               orm_equal(
                 orm_get(events[request.to_int() - 1], "tx"),
-                id.to_json(),
+                Json(id),
                 "COMMIT request belongs to this transaction",
               )
-              let expected_tag = (if status == "committed" {
-                "COMMIT"
-              } else {
-                "ROLLBACK"
-              }).to_json()
+              let expected_tag = Json(
+                if status == "committed" {
+                  "COMMIT"
+                } else {
+                  "ROLLBACK"
+                },
+              )
               orm_equal(
                 required(value, "nativeCommandTag", "call"),
                 expected_tag,
@@ -581,7 +583,7 @@ fn orm_profile_calls_v3(
     "Every original transaction has confirmed driver completion",
   )
   for event in events {
-    if orm_get(event, "kind") == "statement".to_json() {
+    if orm_get(event, "kind") == Json("statement") {
       orm_assert(
         statement_calls.contains(
           v3_capture_seq(orm_get(event, "seq"), "statement"),
@@ -591,9 +593,9 @@ fn orm_profile_calls_v3(
     }
   }
   {
-    "pairedCalls": ended.length().to_json(),
-    "confirmedTransactions": outcomes.length().to_json(),
-    "statementCalls": statement_calls.length().to_json(),
+    "pairedCalls": Json(ended.length()),
+    "confirmedTransactions": Json(outcomes.length()),
+    "statementCalls": Json(statement_calls.length()),
   }
 }
 
@@ -638,7 +640,7 @@ fn orm_profile_derived_v3(
       used_statements += 1
       continue
     }
-    let next = (derived.length() + 1).to_json()
+    let next = Json(derived.length() + 1)
     original_to_derived[seq] = next
     let fact_event : Json = if kind == "rows" {
       let fact = match by_rows.get(seq) {
@@ -661,7 +663,7 @@ fn orm_profile_derived_v3(
       let result : Json = {
         "seq": next,
         "time": required(event, "time", "event"),
-        "kind": fact_kind.to_json(),
+        "kind": Json(fact_kind),
         "tx": required(event, "tx", "event"),
         "key": required(data, "key", "fact"),
         "version": required(data, "version", "fact"),
@@ -700,7 +702,7 @@ fn orm_profile_derived_v3(
       Json::object(copy)
     }
     derived.push(fact_event)
-    origins.push(seq.to_double().to_json())
+    origins.push(Json(seq.to_double()))
   }
   orm_assert(
     used_rows == facts.length() && used_statements == facts.length(),
@@ -711,7 +713,7 @@ fn orm_profile_derived_v3(
     "clockDomain": clock,
     "scope": { "exclusiveWriters": true },
     "gaps": [],
-    "events": derived.to_json(),
+    "events": Json(derived),
   }
   let normalized = guarded_json(
     normalize_register_capture_v3_json(projection.stringify()),
@@ -719,7 +721,7 @@ fn orm_profile_derived_v3(
   )
   orm_equal(
     orm_get(normalized, "status"),
-    "ready".to_json(),
+    Json("ready"),
     "Derived point facts independently satisfy all lifecycle/source/order rules",
   )
   let history = match
@@ -752,12 +754,12 @@ pub fn orm_profile_source_v3_json(
     ])
     orm_equal(
       required(input, "format", "input"),
-      "moontxnwitness-orm-profile-source/v1".to_json(),
+      Json("moontxnwitness-orm-profile-source/v1"),
       "Independent fixed profile input format",
     )
     orm_equal(
       required(input, "profile", "input"),
-      "fastapi-users-sqlalchemy-7.0.0-pg18/1".to_json(),
+      Json("fastapi-users-sqlalchemy-7.0.0-pg18/1"),
       "Pinned fixed base-user profile",
     )
     let trace_text = orm_text(required(input, "traceText", "input"))
@@ -780,14 +782,14 @@ pub fn orm_profile_source_v3_json(
     )
     raw_coverage = required(lifecycle, "coverage", "lifecycle")
     orm_assert(
-      required(lifecycle, "status", "lifecycle") != "invalid".to_json(),
+      required(lifecycle, "status", "lifecycle") != Json("invalid"),
       "Original lifecycle must remain valid diagnostic evidence",
     )
     let envelope : Json = {
       "schema": 2,
       "profile": required(input, "profile", "input"),
-      "traceText": trace_text.to_json(),
-      "sourceJournalText": source_text.to_json(),
+      "traceText": Json(trace_text),
+      "sourceJournalText": Json(source_text),
     }
     source_proof = guarded_json(
       orm_sql_source2_v3_proof_json(envelope.stringify()),
@@ -795,13 +797,13 @@ pub fn orm_profile_source_v3_json(
     )
     orm_equal(
       orm_get(source_proof, "controlProfileComplete"),
-      true.to_json(),
+      Json(true),
       "All original sourceSchema2 controls and effects independently verify",
     )
     // Old APIs and original diagnostic proof keep their original non-acceptance.
     orm_equal(
       orm_get(source_proof, "analysisCoverageAccepted"),
-      false.to_json(),
+      Json(false),
       "Original proof remains diagnostic",
     )
     orm_equal(
@@ -845,7 +847,7 @@ pub fn orm_profile_source_v3_json(
     )
     for record in records {
       orm_assert(
-        orm_get(record, "kind") != "source-gap".to_json(),
+        orm_get(record, "kind") != Json("source-gap"),
         "Unproven conditional/error/zero-row SQL source remains inconclusive",
       )
     }
@@ -861,7 +863,7 @@ pub fn orm_profile_source_v3_json(
     let result : Json = {
       "schemaVersion": 3,
       "tool": "MoonTxnWitness",
-      "version": version().to_json(),
+      "version": Json(version()),
       "algorithm": "v3-orm-profile-source-promotion-1",
       "profile": required(input, "profile", "input"),
       "status": orm_get(analysis, "status"),
@@ -872,18 +874,18 @@ pub fn orm_profile_source_v3_json(
         "complete": true,
         "gaps": [],
         "actualCalls": calls,
-        "provenFacts": facts.length().to_json(),
+        "provenFacts": Json(facts.length()),
         "sourceWindowsChecked": true,
       },
       "history": history_json(history),
       "derivedNormalized": projection.normalized,
-      "retainedOriginalSeq": origins.to_json(),
+      "retainedOriginalSeq": Json(origins),
       "analysis": analysis,
       "sourceBindings": {
-        "traceSha256": v3_dislock_sha256(trace_text).to_json(),
-        "sourceJournalSha256": v3_dislock_sha256(source_text).to_json(),
-        "lifecycleSha256": v3_dislock_sha256(lifecycle_text).to_json(),
-        "journalIndexSha256": v3_dislock_sha256(index_text).to_json(),
+        "traceSha256": Json(v3_dislock_sha256(trace_text)),
+        "sourceJournalSha256": Json(v3_dislock_sha256(source_text)),
+        "lifecycleSha256": Json(v3_dislock_sha256(lifecycle_text)),
+        "journalIndexSha256": Json(v3_dislock_sha256(index_text)),
       },
       "scope": "Configured PostgreSQL18 fixed base-user point CRUD under the verified controlled-writer window; raw diagnostic coverage stays incomplete. The original index self-checksum and descriptors are checked; segment bytes were not supplied or independently rehashed. One complete engine attachment and returned-lease lifecycle is required; local factories remain diagnostic. No database authentication, arbitrary SQL, range/predicate, ORM-wide or real-time claim.",
     }
@@ -893,7 +895,7 @@ pub fn orm_profile_source_v3_json(
       let result : Json = {
         "schemaVersion": 3,
         "tool": "MoonTxnWitness",
-        "version": version().to_json(),
+        "version": Json(version()),
         "algorithm": "v3-orm-profile-source-promotion-1",
         "status": "inconclusive",
         "analysisCoverageAccepted": false,

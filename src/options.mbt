@@ -1,8 +1,8 @@
 ///|
 pub(all) struct AnalysisOptions {
-  max_attempts : Int
-  max_operation_checks : Int
-  max_cached_states : Int
+  max_attempts : Int32
+  max_operation_checks : Int32
+  max_cached_states : Int32
 } derive(Eq)
 
 ///|
@@ -10,9 +10,9 @@ pub extend AnalysisOptions with Eq::{equal, not_equal}
 
 ///|
 pub fn analysis_options(
-  max_attempts? : Int = 100000,
-  max_operation_checks? : Int = 1000000,
-  max_cached_states? : Int = 50000,
+  max_attempts~ : Int32 = 100000,
+  max_operation_checks~ : Int32 = 1000000,
+  max_cached_states~ : Int32 = 50000,
 ) -> AnalysisOptions {
   { max_attempts, max_operation_checks, max_cached_states, }
 }
@@ -21,8 +21,8 @@ pub fn analysis_options(
 pub(all) struct AnalysisResult {
   report : Report
   options : AnalysisOptions
-  cache_hits : Int
-  cached_states : Int
+  cache_hits : Int32
+  cached_states : Int32
 } derive(Eq)
 
 ///|
@@ -41,7 +41,7 @@ fn valid_analysis_options(o : AnalysisOptions) -> Bool {
 ///|
 pub fn analyze_with_options(
   h : History,
-  options? : AnalysisOptions = analysis_options(),
+  options~ : AnalysisOptions = analysis_options(),
 ) -> AnalysisResult {
   analyze_balanced_indexed(h, options, collect_writes(h))
 }
@@ -51,9 +51,9 @@ fn analyze_balanced_indexed(
   h : History,
   options : AnalysisOptions,
   writes : Map[String, Map[String, WriteRef]],
-  with_coverage? : Bool = true,
-  validated? : Bool = false,
-  search_cycles? : Bool = true,
+  with_coverage~ : Bool = true,
+  validated~ : Bool = false,
+  search_cycles~ : Bool = true,
 ) -> AnalysisResult {
   if !valid_analysis_options(options) {
     return {
@@ -131,41 +131,41 @@ fn effective_limits(o : AnalysisOptions) -> Json {
     "transactions": 12,
     "operations": 512,
     "keys": 128,
-    "attempts": o.max_attempts.to_json(),
-    "operationChecks": o.max_operation_checks.to_json(),
-    "cachedStates": o.max_cached_states.to_json(),
+    "attempts": Json(o.max_attempts),
+    "operationChecks": Json(o.max_operation_checks),
+    "cachedStates": Json(o.max_cached_states),
   }
 }
 
 ///|
 fn analysis_extras(result : AnalysisResult) -> Map[String, Json] {
   Map([
-    ("schemaVersion", (2).to_json()),
-    ("algorithm", "bounded-register-v2.1".to_json()),
+    ("schemaVersion", Json(2)),
+    ("algorithm", Json("bounded-register-v2.1")),
     ("effectiveLimits", effective_limits(result.options)),
     (
       "analysisOptions",
       {
-        "maxAttempts": result.options.max_attempts.to_json(),
-        "maxOperationChecks": result.options.max_operation_checks.to_json(),
-        "maxCachedStates": result.options.max_cached_states.to_json(),
+        "maxAttempts": Json(result.options.max_attempts),
+        "maxOperationChecks": Json(result.options.max_operation_checks),
+        "maxCachedStates": Json(result.options.max_cached_states),
       },
     ),
     (
       "search",
       {
-        "status": result.report.search.status.to_json(),
-        "reason": result.report.search.reason.to_json(),
+        "status": Json(result.report.search.status),
+        "reason": Json(result.report.search.reason),
       },
     ),
     (
       "metrics",
       {
-        "attempts": result.report.search.attempts.to_json(),
-        "operationChecks": result.report.search.operation_checks.to_json(),
-        "cacheHits": result.cache_hits.to_json(),
-        "cachedStates": result.cached_states.to_json(),
-        "blockers": result.report.search.blockers.map(finding_json).to_json(),
+        "attempts": Json(result.report.search.attempts),
+        "operationChecks": Json(result.report.search.operation_checks),
+        "cacheHits": Json(result.cache_hits),
+        "cachedStates": Json(result.cached_states),
+        "blockers": Json(result.report.search.blockers.map(finding_json)),
       },
     ),
   ])
@@ -200,7 +200,7 @@ fn parse_analysis_options(text : String) -> AnalysisOptions raise {
     ["maxAttempts", "maxOperationChecks", "maxCachedStates"],
     "options",
   )
-  fn number(key : String, default : Int, maximum : Int) -> Int raise {
+  fn number(key : String, default : Int32, maximum : Int32) -> Int32 raise {
     match m.get(key) {
       None => default
       Some(Number(n, ..)) if n >= 0.0 &&
@@ -272,8 +272,8 @@ pub fn run_options_json(text : String, format : String) -> String {
   }
   let transport : Json = {
     "report": json,
-    "output": output.to_json(),
-    "exitCode": exit_code(result.report.outcome).to_json(),
+    "output": Json(output),
+    "exitCode": Json(exit_code(result.report.outcome)),
   }
   transport.stringify()
 }

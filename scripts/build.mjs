@@ -1,3 +1,4 @@
+import {copyPublic030} from './legacy-v030-runtime.mjs';
 import { mkdirSync, copyFileSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -32,6 +33,7 @@ for(const name of ['legacy-v027.mjs','legacy-v027-runtime.mjs','legacy-v027-work
 await copyFrozenLegacyV027(root,output);
 for(const name of ['legacy-v028.mjs','legacy-v028-runtime.mjs','legacy-v028-worker.mjs','legacy-v028-policy.mjs','legacy-v028-dispatch.mjs','legacy-v028-binding.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
 await copyFrozenLegacyV028(root,output);
+await copyPublic030(root,output);
 const core = await import(pathToFileURL(resolve(output, 'core.mjs')).href + `?build=${Date.now()}`);
 const packageVersion = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
 const sourceVersion = readFileSync(resolve(root, 'moon.mod'), 'utf8').match(/^version\s*=\s*"([^"]+)"/m)?.[1];

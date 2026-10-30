@@ -56,17 +56,17 @@ fn capture_field(value : Json, key : String) -> Json raise {
 }
 
 ///|
-fn capture_event(fixture : Json, index : Int) -> Map[String, Json] raise {
+fn capture_event(fixture : Json, index : Int32) -> Map[String, Json] raise {
   object_fields(capture_events(fixture)[index], "test event")
 }
 
 ///|
 fn capture_check(fixture : Json, status : String) -> Json raise {
   let result = @json.parse(normalize_capture_json(fixture.stringify()))
-  assert_eq(capture_field(result, "status"), status.to_json())
+  assert_eq(capture_field(result, "status"), Json(status))
   assert_eq(
     capture_field(capture_field(result, "coverage"), "complete"),
-    (status == "ready").to_json(),
+    Json(status == "ready"),
   )
   if status != "ready" {
     assert_eq(capture_field(result, "history"), Json::null())
@@ -94,7 +94,9 @@ test "capture explicit gaps never expose a normal history" {
       "unsupported_sql", "incomplete_fetch", "log_failure", "autocommit", "savepoint",
     ] {
     let fixture = capture_fixture()
-    object_fields(fixture, "test")["gaps"] = [capture_gap(code, "test gap")].to_json()
+    object_fields(fixture, "test")["gaps"] = Json([
+      capture_gap(code, "test gap"),
+    ])
     let _ = capture_check(fixture, "inconclusive")
   }
 }
@@ -102,14 +104,16 @@ test "capture explicit gaps never expose a normal history" {
 ///|
 test "capture requires explicit exclusive writer scope" {
   let fixture = capture_fixture()
-  object_fields(capture_field(fixture, "scope"), "test")["exclusiveWriters"] = false.to_json()
+  object_fields(capture_field(fixture, "scope"), "test")["exclusiveWriters"] = Json(
+    false,
+  )
   let _ = capture_check(fixture, "inconclusive")
 }
 
 ///|
 test "capture inconsistent initialization is not treated as observed initial fact" {
   let fixture = capture_fixture()
-  capture_event(fixture, 0)["consistent"] = false.to_json()
+  capture_event(fixture, 0)["consistent"] = Json(false)
   let _ = capture_check(fixture, "inconclusive")
 }
 
@@ -123,7 +127,7 @@ test "capture missing initial key does not manufacture an initial version" {
 ///|
 test "capture unknown commit and outstanding transactions stay inconclusive" {
   let fixture = capture_fixture()
-  capture_event(fixture, 7)["status"] = "unknown".to_json()
+  capture_event(fixture, 7)["status"] = Json("unknown")
   let _ = capture_check(fixture, "inconclusive")
   let unfinished = capture_fixture()
   let _ = capture_events(unfinished).pop()
@@ -133,7 +137,7 @@ test "capture unknown commit and outstanding transactions stay inconclusive" {
 ///|
 test "capture missing snapshot is explicitly unresolved" {
   let fixture = capture_fixture()
-  object_fields(fixture, "test")["events"] = ([] : Array[Json]).to_json()
+  object_fields(fixture, "test")["events"] = Json(([] : Array[Json]))
   let _ = capture_check(fixture, "inconclusive")
 }
 
@@ -141,7 +145,7 @@ test "capture missing snapshot is explicitly unresolved" {
 test "capture detects missing event sequence without exporting partial history" {
   let fixture = capture_fixture()
   for index, _ in capture_events(fixture) {
-    capture_event(fixture, index)["seq"] = (index + 2).to_json()
+    capture_event(fixture, index)["seq"] = Json(index + 2)
   }
   let _ = capture_check(fixture, "inconclusive")
 }
@@ -149,25 +153,19 @@ test "capture detects missing event sequence without exporting partial history" 
 ///|
 test "capture duplicate sequence and backwards clock are invalid" {
   let fixture = capture_fixture()
-  capture_event(fixture, 3)["seq"] = (3).to_json()
+  capture_event(fixture, 3)["seq"] = Json(3)
   let _ = capture_check(fixture, "invalid")
   let clock = capture_fixture()
-  capture_event(clock, 3)["time"] = (1).to_json()
+  capture_event(clock, 3)["time"] = Json(1)
   let _ = capture_check(clock, "invalid")
 }
 
 ///|
 test "capture accepts equal clock ticks but rejects unsafe or missing timestamps" {
   let fixture = capture_fixture()
-  capture_event(fixture, 3)["time"] = (2).to_json()
+  capture_event(fixture, 3)["time"] = Json(2)
   let _ = capture_check(fixture, "ready")
-  for
-    bad in [
-      Json::null(),
-      (-1).to_json(),
-      0.5.to_json(),
-      9007199254740992.0.to_json(),
-    ] {
+  for bad in [Json::null(), Json(-1), Json(0.5), Json(9007199254740992.0)] {
     let invalid_time = capture_fixture()
     capture_event(invalid_time, 3)["time"] = bad
     let _ = capture_check(invalid_time, "invalid")
@@ -178,51 +176,55 @@ test "capture accepts equal clock ticks but rejects unsafe or missing timestamps
 test "capture rejects duplicate JSON keys including escaped key spellings" {
   let raw = "{\"traceSchema\":1,\"traceSchema\":1}"
   let result = @json.parse(normalize_capture_json(raw))
-  assert_eq(capture_field(result, "status"), "invalid".to_json())
+  assert_eq(capture_field(result, "status"), Json("invalid"))
   let escaped = "{\"traceSchema\":1,\"trace\\u0053chema\":1}"
   assert_eq(
     capture_field(@json.parse(normalize_capture_json(escaped)), "status"),
-    "invalid".to_json(),
+    Json("invalid"),
   )
 }
 
 ///|
 test "capture unknown event kinds and unrecognized structured fields are invalid" {
   let fixture = capture_fixture()
-  capture_event(fixture, 2)["kind"] = "new-unknown-event".to_json()
+  capture_event(fixture, 2)["kind"] = Json("new-unknown-event")
   let _ = capture_check(fixture, "invalid")
   let unsupported = capture_fixture()
-  capture_event(unsupported, 3)["unrecognized"] = true.to_json()
+  capture_event(unsupported, 3)["unrecognized"] = Json(true)
   let _ = capture_check(unsupported, "invalid")
 }
 
 ///|
 test "capture rejects operation before begin and operation after end" {
   let fixture = capture_fixture()
-  capture_event(fixture, 3)["tx"] = "B".to_json()
+  capture_event(fixture, 3)["tx"] = Json("B")
   let _ = capture_check(fixture, "invalid")
   let ended = capture_fixture()
-  capture_event(ended, 6)["tx"] = "A".to_json()
+  capture_event(ended, 6)["tx"] = Json("A")
   let _ = capture_check(ended, "invalid")
 }
 
 ///|
 test "capture duplicate transaction and duplicate end events are invalid" {
   let fixture = capture_fixture()
-  capture_event(fixture, 5)["tx"] = "A".to_json()
+  capture_event(fixture, 5)["tx"] = Json("A")
   let _ = capture_check(fixture, "invalid")
   let ended = capture_fixture()
-  capture_event(ended, 7)["tx"] = "A".to_json()
+  capture_event(ended, 7)["tx"] = Json("A")
   let _ = capture_check(ended, "invalid")
 }
 
 ///|
 test "capture rejects repeated write identity and reused initial identity" {
   let fixture = capture_fixture()
-  object_fields(capture_event(fixture, 6).at("op"), "test")["type"] = "write".to_json()
+  object_fields(capture_event(fixture, 6).at("op"), "test")["type"] = Json(
+    "write",
+  )
   let _ = capture_check(fixture, "invalid")
   let reused = capture_fixture()
-  object_fields(capture_event(reused, 3).at("op"), "test")["version"] = "x0".to_json()
+  object_fields(capture_event(reused, 3).at("op"), "test")["version"] = Json(
+    "x0",
+  )
   let _ = capture_check(reused, "invalid")
 }
 
@@ -253,24 +255,24 @@ test "capture SQL metadata is ordered and transaction scoped" {
   capture_event(fixture, 2)["tx"] = Json::null()
   let _ = capture_check(fixture, "ready")
   let bad = capture_fixture()
-  capture_event(bad, 2)["tx"] = "not-started".to_json()
+  capture_event(bad, 2)["tx"] = Json("not-started")
   let _ = capture_check(bad, "invalid")
 }
 
 ///|
 test "capture schema and clock domain are mandatory and bounded" {
   let fixture = capture_fixture()
-  object_fields(fixture, "test")["clockDomain"] = "".to_json()
+  object_fields(fixture, "test")["clockDomain"] = Json("")
   let _ = capture_check(fixture, "invalid")
   let unsupported = capture_fixture()
-  object_fields(unsupported, "test")["traceSchema"] = (2).to_json()
+  object_fields(unsupported, "test")["traceSchema"] = Json(2)
   let _ = capture_check(unsupported, "invalid")
 }
 
 ///|
 test "capture retains a real aborted source for the existing anomaly checker" {
   let fixture = capture_fixture()
-  capture_event(fixture, 4)["status"] = "aborted".to_json()
+  capture_event(fixture, 4)["status"] = Json("aborted")
   let result = capture_check(fixture, "ready")
   let h = parse_history(capture_field(result, "history").stringify()).unwrap()
   assert_true(analyze(h).outcome == Violation)
@@ -279,7 +281,9 @@ test "capture retains a real aborted source for the existing anomaly checker" {
 ///|
 test "capture readiness does not manufacture a source for an unexplained read" {
   let fixture = capture_fixture()
-  object_fields(capture_event(fixture, 6).at("op"), "test")["version"] = "never-captured".to_json()
+  object_fields(capture_event(fixture, 6).at("op"), "test")["version"] = Json(
+    "never-captured",
+  )
   let result = capture_check(fixture, "ready")
   let h = parse_history(capture_field(result, "history").stringify()).unwrap()
   assert_true(analyze(h).outcome == Inconclusive)
@@ -289,10 +293,12 @@ test "capture readiness does not manufacture a source for an unexplained read" {
 ///|
 test "capture malformed scope and gap declarations cannot silently disappear" {
   let fixture = capture_fixture()
-  object_fields(capture_field(fixture, "scope"), "test")["exclusiveWriters"] = "true".to_json()
+  object_fields(capture_field(fixture, "scope"), "test")["exclusiveWriters"] = Json(
+    "true",
+  )
   let _ = capture_check(fixture, "invalid")
   let malformed = capture_fixture()
-  object_fields(malformed, "test")["gaps"] = [{ "code": "failure" }].to_json()
+  object_fields(malformed, "test")["gaps"] = Json([{ "code": "failure" }])
   let _ = capture_check(malformed, "invalid")
 }
 
@@ -302,7 +308,7 @@ test "capture SQL metadata cannot hide new semantic fields or unmapped operation
   capture_event(fixture, 2)["versionOrders"] = ({} : Json)
   let _ = capture_check(fixture, "invalid")
   let unmapped = capture_fixture()
-  capture_event(unmapped, 2)["mapped"] = false.to_json()
+  capture_event(unmapped, 2)["mapped"] = Json(false)
   let _ = capture_check(unmapped, "inconclusive")
 }
 
@@ -310,25 +316,27 @@ test "capture SQL metadata cannot hide new semantic fields or unmapped operation
 test "capture preserves transport payload types without treating SQL rows as operations" {
   let fixture = capture_fixture()
   let sql = capture_event(fixture, 2)
-  sql["phase"] = "execute-ack".to_json()
-  sql["mapped"] = true.to_json()
+  sql["phase"] = Json("execute-ack")
+  sql["mapped"] = Json(true)
   sql["parameters"] = ["x1", 1, Json::null()]
   sql["rows"] = [["x1", 1]]
-  sql["affectedRows"] = (-1).to_json()
-  sql["returnedRows"] = (1).to_json()
-  sql["exhausted"] = true.to_json()
+  sql["affectedRows"] = Json(-1)
+  sql["returnedRows"] = Json(1)
+  sql["exhausted"] = Json(true)
   let result = capture_check(fixture, "ready")
   let h = parse_history(capture_field(result, "history").stringify()).unwrap()
   assert_eq(h.transactions[0].ops.length(), 1)
   let malformed = capture_fixture()
-  capture_event(malformed, 2)["rows"] = "not-an-array".to_json()
+  capture_event(malformed, 2)["rows"] = Json("not-an-array")
   let _ = capture_check(malformed, "invalid")
 }
 
 ///|
 test "capture event resource limits are explicit before event traversal" {
   let fixture = capture_fixture()
-  object_fields(fixture, "test")["events"] = Array::make(65537, Json::null()).to_json()
+  object_fields(fixture, "test")["events"] = Json(
+    Array::make(65537, Json::null()),
+  )
   let _ = capture_check(fixture, "invalid")
 }
 
@@ -348,13 +356,13 @@ fn column_capture_trace(body : Array[Json]) -> Json raise {
       "seq": 1,
       "time": 0,
       "consistent": true,
-      "initial": initial.to_json(),
+      "initial": Json(initial),
     },
   ]
   for index, event in body {
     let fields = object_fields(event, "column capture test event")
-    fields["seq"] = (index + 2).to_json()
-    fields["time"] = (index + 1).to_json()
+    fields["seq"] = Json(index + 2)
+    fields["time"] = Json(index + 1)
     events.push(event)
   }
   {
@@ -362,7 +370,7 @@ fn column_capture_trace(body : Array[Json]) -> Json raise {
     "clockDomain": "column-profile-monotonic-test",
     "scope": { "exclusiveWriters": true },
     "gaps": [],
-    "events": events.to_json(),
+    "events": Json(events),
   }
 }
 
@@ -388,16 +396,12 @@ test "server tokens preserve repeated-value writes and internal intermediate rea
       "mapped": true,
       "sql": "UPDATE items SET value=%s WHERE id=%s RETURNING private_version",
       "affectedRows": 1,
-      "rows": [[first.to_json()]],
+      "rows": [[Json(first)]],
     },
     {
       "kind": "op",
       "tx": "W",
-      "op": {
-        "type": "write",
-        "key": key.to_json(),
-        "version": first.to_json(),
-      },
+      "op": { "type": "write", "key": Json(key), "version": Json(first) },
     },
     {
       "kind": "sql",
@@ -405,12 +409,12 @@ test "server tokens preserve repeated-value writes and internal intermediate rea
       "phase": "fetch",
       "returnedRows": 1,
       "exhausted": true,
-      "rows": [[7, first.to_json()]],
+      "rows": [[7, Json(first)]],
     },
     {
       "kind": "op",
       "tx": "W",
-      "op": { "type": "read", "key": key.to_json(), "version": first.to_json() },
+      "op": { "type": "read", "key": Json(key), "version": Json(first) },
     },
     {
       "kind": "sql",
@@ -427,36 +431,24 @@ test "server tokens preserve repeated-value writes and internal intermediate rea
       "mapped": true,
       "sql": "UPDATE items SET value=%s WHERE id=%s RETURNING private_version",
       "affectedRows": 1,
-      "rows": [[final_token.to_json()]],
+      "rows": [[Json(final_token)]],
     },
     {
       "kind": "op",
       "tx": "W",
-      "op": {
-        "type": "write",
-        "key": key.to_json(),
-        "version": final_token.to_json(),
-      },
+      "op": { "type": "write", "key": Json(key), "version": Json(final_token) },
     },
     {
       "kind": "op",
       "tx": "W",
-      "op": {
-        "type": "read",
-        "key": key.to_json(),
-        "version": final_token.to_json(),
-      },
+      "op": { "type": "read", "key": Json(key), "version": Json(final_token) },
     },
     { "kind": "end", "tx": "W", "status": "committed" },
     { "kind": "begin", "tx": "R" },
     {
       "kind": "op",
       "tx": "R",
-      "op": {
-        "type": "read",
-        "key": key.to_json(),
-        "version": final_token.to_json(),
-      },
+      "op": { "type": "read", "key": Json(key), "version": Json(final_token) },
     },
     { "kind": "end", "tx": "R", "status": "committed" },
   ])
@@ -492,27 +484,19 @@ test "server-token projection retains external intermediate-version evidence" {
     {
       "kind": "op",
       "tx": "W",
-      "op": {
-        "type": "write",
-        "key": key.to_json(),
-        "version": first.to_json(),
-      },
+      "op": { "type": "write", "key": Json(key), "version": Json(first) },
     },
     {
       "kind": "op",
       "tx": "W",
-      "op": {
-        "type": "write",
-        "key": key.to_json(),
-        "version": final_token.to_json(),
-      },
+      "op": { "type": "write", "key": Json(key), "version": Json(final_token) },
     },
     { "kind": "end", "tx": "W", "status": "committed" },
     { "kind": "begin", "tx": "R" },
     {
       "kind": "op",
       "tx": "R",
-      "op": { "type": "read", "key": key.to_json(), "version": first.to_json() },
+      "op": { "type": "read", "key": Json(key), "version": Json(first) },
     },
     { "kind": "end", "tx": "R", "status": "committed" },
   ])
@@ -534,16 +518,12 @@ test "server-token rollback facts survive while unknown outcomes cannot expose h
     {
       "kind": "op",
       "tx": "W",
-      "op": {
-        "type": "write",
-        "key": key.to_json(),
-        "version": token.to_json(),
-      },
+      "op": { "type": "write", "key": Json(key), "version": Json(token) },
     },
     {
       "kind": "op",
       "tx": "W",
-      "op": { "type": "read", "key": key.to_json(), "version": token.to_json() },
+      "op": { "type": "read", "key": Json(key), "version": Json(token) },
     },
     { "kind": "end", "tx": "W", "status": "aborted" },
     { "kind": "begin", "tx": "R" },
@@ -552,7 +532,7 @@ test "server-token rollback facts survive while unknown outcomes cannot expose h
       "tx": "R",
       "op": {
         "type": "read",
-        "key": key.to_json(),
+        "key": Json(key),
         "version": "50000000-0000-4000-8000-000000000000",
       },
     },
@@ -564,7 +544,7 @@ test "server-token rollback facts survive while unknown outcomes cannot expose h
   assert_eq(h.transactions[0].ops.length(), 2)
   assert_eq(h.transactions[0].ops[0].version, token)
   assert_true(analyze(h).outcome == Consistent)
-  capture_event(trace, 4)["status"] = "unknown".to_json()
+  capture_event(trace, 4)["status"] = Json("unknown")
   let _ = capture_check(trace, "inconclusive")
 }
 
@@ -578,22 +558,14 @@ test "server UUID and acknowledgement order do not become collected version orde
     {
       "kind": "op",
       "tx": "A",
-      "op": {
-        "type": "write",
-        "key": key.to_json(),
-        "version": early.to_json(),
-      },
+      "op": { "type": "write", "key": Json(key), "version": Json(early) },
     },
     { "kind": "end", "tx": "A", "status": "committed" },
     { "kind": "begin", "tx": "B" },
     {
       "kind": "op",
       "tx": "B",
-      "op": {
-        "type": "write",
-        "key": key.to_json(),
-        "version": later.to_json(),
-      },
+      "op": { "type": "write", "key": Json(key), "version": Json(later) },
     },
     { "kind": "end", "tx": "B", "status": "committed" },
   ])

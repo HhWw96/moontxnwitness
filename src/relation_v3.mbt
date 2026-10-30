@@ -15,14 +15,14 @@ priv struct RelationV3Table {
 
 ///|
 priv struct RelationV3Key {
-  table : Int
+  table : Int32
   value : RelationV3Cell
   wire : Json
 }
 
 ///|
 priv struct RelationV3Row {
-  key : Int
+  key : Int32
   version : String
   values : Array[RelationV3Cell]
 }
@@ -38,15 +38,15 @@ priv struct RelationV3Source {
 
 ///|
 priv struct RelationV3Predicate {
-  column : Int
+  column : Int32
   op : String
   value : RelationV3Cell
 }
 
 ///|
 priv enum RelationV3Action {
-  WriteRow(Int)
-  QueryRows(Int, Array[RelationV3Predicate], Array[RelationV3Row], Int64)
+  WriteRow(Int32)
+  QueryRows(Int32, Array[RelationV3Predicate], Array[RelationV3Row], Int64)
   Mark(String)
   Undo(String)
   Release(String)
@@ -64,26 +64,26 @@ priv struct RelationV3Parsed {
   normalized : Json
   tables : Array[RelationV3Table]
   keys : Array[RelationV3Key]
-  initial : Array[Int]
+  initial : Array[Int32]
   sources : Array[RelationV3Source]
   programs : Array[RelationV3Program]
   findings : Array[Json]
   source_evidence : Array[Json]
-  operations : Int
+  operations : Int32
 }
 
 ///|
 priv struct RelationV3Search {
   parsed : RelationV3Parsed
   programs : Array[RelationV3Program]
-  state : Array[Int]
-  sorted_keys : Array[Array[Int]]
-  trail : Array[(Int, Int)]
+  state : Array[Int32]
+  sorted_keys : Array[Array[Int32]]
+  trail : Array[(Int32, Int32)]
   prefix : Array[String]
   blockers : Array[Json]
   options : ListV3Options
-  mut states : Int
-  mut operations : Int
+  mut states : Int32
+  mut operations : Int32
   mut limited : Bool
   mut reason : String
 }
@@ -195,21 +195,21 @@ fn relation_v3_cell(raw : Json, kind : String) -> RelationV3Cell raise {
 fn relation_v3_optional_text(value : String?) -> Json {
   match value {
     None => Json::null()
-    Some(text) => text.to_json()
+    Some(text) => Json(text)
   }
 }
 
 ///|
 fn relation_v3_wire(cell : RelationV3Cell) -> Json {
   match cell {
-    Integer(value) => value.to_string().to_json()
-    Text(value) => value.to_json()
-    Boolean(value) => value.to_json()
+    Integer(value) => Json(value.to_string())
+    Text(value) => Json(value)
+    Boolean(value) => Json(value)
   }
 }
 
 ///|
-fn relation_v3_text_compare(a : String, b : String) -> Int {
+fn relation_v3_text_compare(a : String, b : String) -> Int32 {
   let aa = a.code_units()
   let bb = b.code_units()
   let mut i = 0
@@ -244,7 +244,7 @@ fn relation_v3_text_compare(a : String, b : String) -> Int {
 }
 
 ///|
-fn relation_v3_compare(a : RelationV3Cell, b : RelationV3Cell) -> Int {
+fn relation_v3_compare(a : RelationV3Cell, b : RelationV3Cell) -> Int32 {
   match (a, b) {
     (Integer(a), Integer(b)) => if a < b { -1 } else if a > b { 1 } else { 0 }
     (Text(a), Text(b)) => relation_v3_text_compare(a, b)
@@ -316,16 +316,16 @@ fn relation_v3_values(
 ///|
 fn relation_v3_key(
   raw : Json,
-  table_index : Int,
+  table_index : Int32,
   tables : Array[RelationV3Table],
   keys : Array[RelationV3Key],
-  indices : Map[String, Int],
-) -> Int raise {
+  indices : Map[String, Int32],
+) -> Int32 raise {
   let table = tables[table_index]
   let cell = relation_v3_cell(raw, table.primary_type)
   // JSON array framing includes relation, type and exact value. No delimiter
   // concatenation can alias a second relation or a distinct text/int64 key.
-  let encoded : Json = [table.name.to_json(), table.primary_type.to_json(), raw]
+  let encoded : Json = [Json(table.name), Json(table.primary_type), raw]
   let encoded = encoded.stringify()
   match indices.get(encoded) {
     Some(index) => index
@@ -344,10 +344,10 @@ fn relation_v3_key(
 ///|
 fn relation_v3_row(
   raw : Json,
-  table_index : Int,
+  table_index : Int32,
   tables : Array[RelationV3Table],
   keys : Array[RelationV3Key],
-  indices : Map[String, Int],
+  indices : Map[String, Int32],
 ) -> RelationV3Row raise {
   let fields = object_fields(raw, "row")
   known_fields(fields, ["key", "version", "values"], "row")
@@ -460,12 +460,12 @@ fn relation_v3_finding(
   version : String,
 ) -> Json {
   {
-    "code": code.to_json(),
-    "tx": tx.to_json(),
-    "seq": seq.to_double().to_json(),
-    "relation": table.to_json(),
+    "code": Json(code),
+    "tx": Json(tx),
+    "seq": Json(seq.to_double()),
+    "relation": Json(table),
     "key": key,
-    "version": version.to_json(),
+    "version": Json(version),
   }
 }
 
@@ -504,14 +504,14 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
     ],
     "relation trace",
   )
-  if required(root, "traceSchema", "relation trace") != (3).to_json() ||
-    required(root, "dataModel", "relation trace") != "relation-set-v1".to_json() {
+  if required(root, "traceSchema", "relation trace") != Json(3) ||
+    required(root, "dataModel", "relation trace") != Json("relation-set-v1") {
     fail("Expected traceSchema 3 and dataModel relation-set-v1")
   }
   let tables = relation_v3_schema(
     required(root, "relationSchema", "relation trace"),
   )
-  let table_indices : Map[String, Int] = Map([])
+  let table_indices : Map[String, Int32] = Map([])
   for i, table in tables {
     table_indices[table.name] = i
   }
@@ -537,12 +537,12 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
     fail("At most 65,536 relation events are supported")
   }
   let keys : Array[RelationV3Key] = []
-  let key_indices : Map[String, Int] = Map([])
+  let key_indices : Map[String, Int32] = Map([])
   let sources : Array[RelationV3Source] = []
-  let versions : Map[String, Int] = Map([])
-  let writes : Map[Int64, Int] = Map([])
+  let versions : Map[String, Int32] = Map([])
+  let writes : Map[Int64, Int32] = Map([])
   let actions : Map[Int64, RelationV3Action] = Map([])
-  let initial_pairs : Array[(Int, Int)] = []
+  let initial_pairs : Array[(Int32, Int32)] = []
   let mut snapshot_seen = false
   let mut operations = 0
   let mut references = 0
@@ -616,7 +616,7 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
       }
       let predecessor = match required(event, "predecessor", kind) {
         Null if action == "insert" => None
-        String(value) => Some(relation_v3_identifier(value.to_json()))
+        String(value) => Some(relation_v3_identifier(Json(value)))
         _ =>
           fail(
             "Update and delete require a nonempty predecessor version; only insert accepts null",
@@ -717,7 +717,7 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
     let kind = identifier(required(event, "kind", "event"), "kind")
     let copy = list_v3_copy(event)
     if kind == "snapshot" {
-      copy["initial"] = lifecycle_initial.to_json()
+      copy["initial"] = Json(lifecycle_initial)
       metadata.push(Json::object(copy))
     } else if kind == "row_write" {
       metadata.push({
@@ -725,9 +725,9 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
         "time": event.at("time"),
         "kind": "write",
         "tx": event.at("tx"),
-        "key": ("relation-life-key-" + write_index.to_string()).to_json(),
-        "version": ("relation-life-write-" + write_index.to_string()).to_json(),
-        "predecessor": ("relation-life-initial-" + write_index.to_string()).to_json(),
+        "key": Json("relation-life-key-" + write_index.to_string()),
+        "version": Json("relation-life-write-" + write_index.to_string()),
+        "predecessor": Json("relation-life-initial-" + write_index.to_string()),
       })
       write_index += 1
     } else if kind == "row_read" {
@@ -768,7 +768,7 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
     "scope": {
       "exclusiveWriters": required(scope, "exclusiveWriters", "scope"),
     },
-    "events": metadata.to_json(),
+    "events": Json(metadata),
     "gaps": required(root, "gaps", "relation trace"),
   }
   let life = object_fields(
@@ -778,7 +778,7 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
     ),
     "lifecycle",
   )
-  if life.at("status") == "invalid".to_json() {
+  if life.at("status") == Json("invalid") {
     fail("Invalid relation transaction lifecycle")
   }
   let coverage = object_fields(life.at("coverage"), "coverage")
@@ -797,7 +797,7 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
     "transactions",
   )
   let programs : Array[RelationV3Program] = []
-  let program_indices : Map[String, Int] = Map([])
+  let program_indices : Map[String, Int32] = Map([])
   let outcomes : Map[String, TxStatus] = Map([])
   for raw in raw_transactions {
     let fields = object_fields(raw, "transaction")
@@ -824,12 +824,12 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
       value => Some(v3_capture_seq(value, "revertedBy"))
     }
     effects.push({
-      "seq": seq.to_double().to_json(),
-      "tx": source.writer.unwrap().to_json(),
-      "relation": tables[key.table].name.to_json(),
+      "seq": Json(seq.to_double()),
+      "tx": Json(source.writer.unwrap()),
+      "relation": Json(tables[key.table].name),
       "key": key.wire,
-      "action": source.action.to_json(),
-      "version": source.row.version.to_json(),
+      "action": Json(source.action),
+      "version": Json(source.row.version),
       "predecessor": relation_v3_optional_text(source.predecessor),
       "values": relation_v3_values_json(source, tables, keys),
       "revertedBy": reverted,
@@ -839,7 +839,7 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
   for raw in raw_transactions {
     let tx = list_v3_copy(object_fields(raw, "transaction"))
     let id = identifier(tx.at("id"), "transaction.id")
-    let last : Map[Int, Int64] = Map([])
+    let last : Map[Int32, Int64] = Map([])
     for source in sources {
       if source.writer == Some(id) && revoked.get(source.seq) == Some(None) {
         last[source.row.key] = source.seq
@@ -849,10 +849,10 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
     for source in sources {
       if source.writer == Some(id) &&
         last.get(source.row.key) == Some(source.seq) {
-        finals.push(source.seq.to_double().to_json())
+        finals.push(Json(source.seq.to_double()))
       }
     }
-    tx["finalWrites"] = finals.to_json()
+    tx["finalWrites"] = Json(finals)
     transactions.push(Json::object(tx))
   }
   let findings : Array[Json] = []
@@ -945,7 +945,7 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
           }
       }
     } else if kind == "row_read" {
-      if event.at("complete") != true.to_json() {
+      if event.at("complete") != Json(true) {
         gaps.push(
           capture_gap(
             "incomplete_query", "A relation query was not fully delivered",
@@ -954,7 +954,7 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
       }
       match actions.at(seq) {
         QueryRows(table, predicate, rows, _) => {
-          let seen : Map[Int, Bool] = Map([])
+          let seen : Map[Int32, Bool] = Map([])
           for row in rows {
             let key = keys[row.key]
             if program.status == Committed {
@@ -1081,16 +1081,16 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
     let key = keys[source.row.key]
     (
       {
-        "relation": tables[key.table].name.to_json(),
+        "relation": Json(tables[key.table].name),
         "key": key.wire,
-        "version": source.row.version.to_json(),
+        "version": Json(source.row.version),
         "values": relation_v3_values_json(source, tables, keys),
-        "action": source.action.to_json(),
+        "action": Json(source.action),
         "predecessor": relation_v3_optional_text(source.predecessor),
-        "sourceSeq": source.seq.to_double().to_json(),
+        "sourceSeq": Json(source.seq.to_double()),
         "writer": relation_v3_optional_text(source.writer),
         "revertedBy": match revoked.get(source.seq) {
-          Some(Some(at)) => at.to_double().to_json()
+          Some(Some(at)) => Json(at.to_double())
           _ => Json::null()
         },
       } : Json)
@@ -1100,15 +1100,12 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
     "schema": 3,
     "dataModel": "relation-set-v1",
     "algorithm": "v3-relation-lifecycle-1",
-    "status": status.to_json(),
+    "status": Json(status),
     "relationSchema": root.at("relationSchema"),
-    "coverage": {
-      "complete": gaps.is_empty().to_json(),
-      "gaps": gaps.to_json(),
-    },
+    "coverage": { "complete": Json(gaps.is_empty()), "gaps": Json(gaps) },
     "observations": observations,
-    "effects": effects.to_json(),
-    "transactions": transactions.to_json(),
+    "effects": Json(effects),
+    "transactions": Json(transactions),
     "history": Json::null(),
   }
   {
@@ -1144,7 +1141,7 @@ fn relation_v3_budget(ctx : RelationV3Search) -> Bool {
 }
 
 ///|
-fn relation_v3_undo(ctx : RelationV3Search, mark : Int) -> Unit {
+fn relation_v3_undo(ctx : RelationV3Search, mark : Int32) -> Unit {
   while ctx.trail.length() > mark {
     let (key, old) = ctx.trail.pop().unwrap()
     ctx.state[key] = old
@@ -1160,9 +1157,9 @@ fn relation_v3_blocker(
 ) -> Bool {
   if ctx.blockers.length() < 16 {
     ctx.blockers.push({
-      "tx": tx.to_json(),
-      "seq": seq.to_double().to_json(),
-      "code": code.to_json(),
+      "tx": Json(tx),
+      "seq": Json(seq.to_double()),
+      "code": Json(code),
     })
   }
   false
@@ -1173,7 +1170,7 @@ fn relation_v3_execute(
   ctx : RelationV3Search,
   program : RelationV3Program,
 ) -> Bool {
-  let scopes : Array[(String, Int)] = []
+  let scopes : Array[(String, Int32)] = []
   for action in program.actions {
     if !relation_v3_budget(ctx) {
       return false
@@ -1203,7 +1200,7 @@ fn relation_v3_execute(
         ctx.state[key] = index
       }
       QueryRows(table, predicate, rows, seq) => {
-        let actual : Array[Int] = []
+        let actual : Array[Int32] = []
         for key in ctx.sorted_keys[table] {
           let index = ctx.state[key]
           if index < 0 || ctx.parsed.sources[index].action == "delete" {
@@ -1312,7 +1309,10 @@ fn relation_v3_execute(
 }
 
 ///|
-fn relation_v3_search(ctx : RelationV3Search, selected : Int) -> Array[String]? {
+fn relation_v3_search(
+  ctx : RelationV3Search,
+  selected : Int32,
+) -> Array[String]? {
   if ctx.prefix.length() == ctx.programs.length() {
     return Some(ctx.prefix.copy())
   }
@@ -1352,17 +1352,17 @@ fn relation_v3_report(
   status : String,
   evidence : Json,
   options : ListV3Options,
-  states : Int,
-  operations : Int,
+  states : Int32,
+  operations : Int32,
   complete : Bool,
   reason : String,
 ) -> Json {
   {
     "schemaVersion": 3,
     "tool": "MoonTxnWitness",
-    "version": version().to_json(),
+    "version": Json(version()),
     "algorithm": "v3-relation-1",
-    "status": status.to_json(),
+    "status": Json(status),
     "modelDefinition": {
       "id": "relation-set-serializable-v1",
       "scope": "complete relation snapshots and committed full row-query/write/savepoint journals; no SQL mapping, opacity, isolation-level classification or real-time claim",
@@ -1373,14 +1373,14 @@ fn relation_v3_report(
     "execution": {
       "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
       "analysisOptions": {
-        "maxStates": options.max_states.to_json(),
-        "maxOperationChecks": options.max_operations.to_json(),
+        "maxStates": Json(options.max_states),
+        "maxOperationChecks": Json(options.max_operations),
       },
       "effectiveLimits": {
         "committedTransactions": 6,
         "operations": 128,
-        "states": options.max_states.to_json(),
-        "operationChecks": options.max_operations.to_json(),
+        "states": Json(options.max_states),
+        "operationChecks": Json(options.max_operations),
         "budgetScope": "serial-search-only",
         "relations": 8,
         "columns": 16,
@@ -1392,10 +1392,10 @@ fn relation_v3_report(
         "returnedRowReferences": 100000,
       },
       "metrics": {
-        "states": states.to_json(),
-        "operationChecks": operations.to_json(),
-        "complete": complete.to_json(),
-        "reason": reason.to_json(),
+        "states": Json(states),
+        "operationChecks": Json(operations),
+        "complete": Json(complete),
+        "reason": Json(reason),
       },
     },
   }
@@ -1431,7 +1431,7 @@ fn relation_v3_analysis(text : String, o : String, v? : Json) -> Json raise {
       "exact_capacity",
     )
   }
-  if status != "ready".to_json() {
+  if status != Json("ready") {
     return relation_v3_report(
       parsed.normalized,
       identifier(status, "status"),
@@ -1449,8 +1449,8 @@ fn relation_v3_analysis(text : String, o : String, v? : Json) -> Json raise {
       "violation",
       {
         "kind": "source-proven-relation-anomaly",
-        "findings": parsed.findings.to_json(),
-        "sourceEvidence": parsed.source_evidence.to_json(),
+        "findings": Json(parsed.findings),
+        "sourceEvidence": Json(parsed.source_evidence),
       },
       options,
       0,
@@ -1459,7 +1459,7 @@ fn relation_v3_analysis(text : String, o : String, v? : Json) -> Json raise {
       "source_proven_anomaly",
     )
   }
-  let sorted_keys : Array[Array[Int]] = parsed.tables.map(_ => [])
+  let sorted_keys : Array[Array[Int32]] = parsed.tables.map(_ => [])
   for i, key in parsed.keys {
     sorted_keys[key.table].push(i)
   }
@@ -1490,8 +1490,8 @@ fn relation_v3_analysis(text : String, o : String, v? : Json) -> Json raise {
         "consistent",
         {
           "kind": "serial-relation-replay",
-          "serialOrder": order.to_json(),
-          "sourceEvidence": parsed.source_evidence.to_json(),
+          "serialOrder": Json(order),
+          "sourceEvidence": Json(parsed.source_evidence),
         },
         options,
         ctx.states,
@@ -1505,8 +1505,8 @@ fn relation_v3_analysis(text : String, o : String, v? : Json) -> Json raise {
         "inconclusive",
         {
           "kind": "search-incomplete",
-          "sampleBlockers": ctx.blockers.to_json(),
-          "sourceEvidence": parsed.source_evidence.to_json(),
+          "sampleBlockers": Json(ctx.blockers),
+          "sourceEvidence": Json(parsed.source_evidence),
         },
         options,
         ctx.states,
@@ -1521,8 +1521,8 @@ fn relation_v3_analysis(text : String, o : String, v? : Json) -> Json raise {
         {
           "kind": "bounded-serial-exhaustion",
           "code": "no_serial_relation_execution",
-          "sampleBlockers": ctx.blockers.to_json(),
-          "sourceEvidence": parsed.source_evidence.to_json(),
+          "sampleBlockers": Json(ctx.blockers),
+          "sourceEvidence": Json(parsed.source_evidence),
         },
         options,
         ctx.states,

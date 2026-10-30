@@ -4,7 +4,7 @@ pub(all) struct Reduction {
   report : Report
   status : String
   removed : Array[String]
-  checks : Int
+  checks : Int32
   one_minimal : Bool
   reason : String
 } derive(Eq)
@@ -14,7 +14,7 @@ pub extend Reduction with Eq::{equal, not_equal}
 
 ///|
 // Removing transactions must prune only asserted orders, never assert searched ones.
-fn without_chunk(h : History, start : Int, size : Int) -> History {
+fn without_chunk(h : History, start : Int32, size : Int32) -> History {
   let transactions : Array[Transaction] = []
   for i, tx in h.transactions {
     if i < start || i >= start + size {
@@ -45,7 +45,7 @@ fn without_chunk(h : History, start : Int, size : Int) -> History {
 ///|
 /// Delta debugging followed by a complete singleton pass proves one-minimality.
 /// The predicate is a definite Violation from this analyzer, not absence of a serial replay with unknown sources.
-pub fn reduce_history(h : History, max_checks? : Int = 128) -> Reduction {
+pub fn reduce_history(h : History, max_checks~ : Int32 = 128) -> Reduction {
   let original = analyze(h)
   if original.outcome != Violation {
     return {
@@ -132,12 +132,12 @@ pub fn reduce_history(h : History, max_checks? : Int = 128) -> Reduction {
 pub fn reduction_json(r : Reduction) -> Json {
   {
     "tool": "MoonTxnWitness",
-    "version": version().to_json(),
-    "status": r.status.to_json(),
-    "oneMinimal": r.one_minimal.to_json(),
-    "removedTransactions": r.removed.to_json(),
-    "checks": r.checks.to_json(),
-    "reason": r.reason.to_json(),
+    "version": Json(version()),
+    "status": Json(r.status),
+    "oneMinimal": Json(r.one_minimal),
+    "removedTransactions": Json(r.removed),
+    "checks": Json(r.checks),
+    "reason": Json(r.reason),
     "reducedHistory": history_json(r.history),
     "report": report_json(r.report),
     "limits": { "transactions": 64, "operations": 2048, "checks": 128 },
@@ -152,7 +152,7 @@ pub fn shrink_json(text : String) -> String {
     Err(e) => {
       let result : Json = {
         "status": "invalid",
-        "reason": e.to_json(),
+        "reason": Json(e),
         "oneMinimal": false,
         "reducedHistory": Json::null(),
         "report": Json::null(),

@@ -53,7 +53,7 @@ for helper in ('legacy-v027.mjs', 'legacy-v027-runtime.mjs', 'legacy-v027-worker
 subprocess.check_call([NODE, '--input-type=module', '-e',
     "import{verifyPublicV027Runtime as source}from'./cmd/legacy-v027-runtime.mjs';import{verifyPublicV027Runtime as installed}from'./dist/legacy-v027-runtime.mjs';const a=source(),b=installed();if(a.manifestSha256!==b.manifestSha256||a.workerSha256!==b.workerSha256)throw Error('Copied public27 runtime differs');"], cwd=ROOT)
 
-for helper in ('legacy-v028.mjs', 'legacy-v028-runtime.mjs', 'legacy-v028-worker.mjs', 'legacy-v028-policy.mjs', 'legacy-v028-dispatch.mjs', 'legacy-v028-binding.mjs'):
+for helper in ('legacy-v028.mjs', 'legacy-v028-runtime.mjs', 'legacy-v028-worker.mjs', 'legacy-v028-policy.mjs', 'legacy-v028-dispatch.mjs','legacy-v030.mjs', 'legacy-v028-binding.mjs'):
     assert (ROOT / 'cmd' / helper).read_bytes() == (ROOT / 'dist' / helper).read_bytes(), 'Fixed public28 helper changed after build: ' + helper
 subprocess.check_call([NODE, '--input-type=module', '-e',
     "import{verifyPublicV028Runtime as source}from'./cmd/legacy-v028-runtime.mjs';import{verifyPublicV028Runtime as installed}from'./dist/legacy-v028-runtime.mjs';const a=source(),b=installed();if(a.manifestSha256!==b.manifestSha256)throw Error('Copied public28 runtime differs');"], cwd=ROOT)

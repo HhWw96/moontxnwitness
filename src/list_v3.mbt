@@ -9,8 +9,8 @@ priv struct ListV3Item {
 
 ///|
 priv enum ListV3Action {
-  Append(String, Int)
-  ReadList(String, Array[Int], Int64)
+  Append(String, Int32)
+  ReadList(String, Array[Int32], Int64)
   Mark(String)
   Undo(String)
   Release(String)
@@ -26,31 +26,31 @@ priv struct ListV3Program {
 ///|
 priv struct ListV3Parsed {
   normalized : Json
-  initial : Map[String, Array[Int]]
+  initial : Map[String, Array[Int32]]
   items : Array[ListV3Item]
   programs : Array[ListV3Program]
   findings : Array[Json]
   source_evidence : Array[Json]
-  operations : Int
+  operations : Int32
 }
 
 ///|
 priv struct ListV3Options {
-  max_states : Int
-  max_operations : Int
+  max_states : Int32
+  max_operations : Int32
 }
 
 ///|
 priv struct ListV3Search {
   programs : Array[ListV3Program]
   items : Array[ListV3Item]
-  state : Map[String, Array[Int]]
+  state : Map[String, Array[Int32]]
   trail : Array[String]
   prefix : Array[String]
   blockers : Array[Json]
   options : ListV3Options
-  mut states : Int
-  mut operations : Int
+  mut states : Int32
+  mut operations : Int32
   mut limited : Bool
   mut reason : String
 }
@@ -99,11 +99,11 @@ fn list_v3_finding(
   id : String,
 ) -> Json {
   {
-    "code": code.to_json(),
-    "tx": tx.to_json(),
-    "readSeq": seq.to_double().to_json(),
-    "key": key.to_json(),
-    "itemId": id.to_json(),
+    "code": Json(code),
+    "tx": Json(tx),
+    "readSeq": Json(seq.to_double()),
+    "key": Json(key),
+    "itemId": Json(id),
   }
 }
 
@@ -128,7 +128,7 @@ fn list_v3_invalid(text : String, message : String) -> Json {
     "effects": [],
     "transactions": [],
     "history": Json::null(),
-    "error": message.to_json(),
+    "error": Json(message),
   }
 }
 
@@ -140,8 +140,8 @@ fn list_v3_parse(text : String) -> ListV3Parsed raise {
     ["traceSchema", "dataModel", "clockDomain", "scope", "events", "gaps"],
     "list trace",
   )
-  if required(root, "traceSchema", "list trace") != (3).to_json() ||
-    required(root, "dataModel", "list trace") != "append-list-v1".to_json() {
+  if required(root, "traceSchema", "list trace") != Json(3) ||
+    required(root, "dataModel", "list trace") != Json("append-list-v1") {
     fail("Expected traceSchema 3 and dataModel append-list-v1")
   }
   let observations = required(root, "events", "list trace")
@@ -149,10 +149,10 @@ fn list_v3_parse(text : String) -> ListV3Parsed raise {
   if events.length() > 65536 {
     fail("At most 65,536 list events are supported")
   }
-  let initial : Map[String, Array[Int]] = Map([])
+  let initial : Map[String, Array[Int32]] = Map([])
   let items : Array[ListV3Item] = []
-  let ids : Map[String, Int] = Map([])
-  let append_indices : Map[Int64, Int] = Map([])
+  let ids : Map[String, Int32] = Map([])
+  let append_indices : Map[Int64, Int32] = Map([])
   let lifecycle_initial : Map[String, String] = Map([])
   let metadata : Array[Json] = []
   let mut operations = 0
@@ -181,8 +181,8 @@ fn list_v3_parse(text : String) -> ListV3Parsed raise {
         fail("At most 10,000 initialized list keys are supported")
       }
       for key, raw_list in raw_initial {
-        let _ = identifier(key.to_json(), "initial key")
-        let list : Array[Int] = []
+        let _ = identifier(Json(key), "initial key")
+        let list : Array[Int32] = []
         for value in presence_capture_array(raw_list, "initial list") {
           let item = list_v3_item(value, key, None, seq)
           if ids.contains(item.id) {
@@ -257,7 +257,7 @@ fn list_v3_parse(text : String) -> ListV3Parsed raise {
     let kind = identifier(required(e, "kind", "event"), "event.kind")
     let copy = list_v3_copy(e)
     if kind == "snapshot" {
-      copy["initial"] = lifecycle_initial.to_json()
+      copy["initial"] = Json(lifecycle_initial)
       metadata.push(Json::object(copy))
     } else if kind == "append" {
       metadata.push({
@@ -265,9 +265,9 @@ fn list_v3_parse(text : String) -> ListV3Parsed raise {
         "time": required(e, "time", "append"),
         "kind": "write",
         "tx": required(e, "tx", "append"),
-        "key": ("list-life-key-" + append_number.to_string()).to_json(),
-        "version": ("list-life-write-" + append_number.to_string()).to_json(),
-        "predecessor": ("list-life-initial-" + append_number.to_string()).to_json(),
+        "key": Json("list-life-key-" + append_number.to_string()),
+        "version": Json("list-life-write-" + append_number.to_string()),
+        "predecessor": Json("list-life-initial-" + append_number.to_string()),
       })
       append_number += 1
     } else if kind == "list_read" {
@@ -308,7 +308,7 @@ fn list_v3_parse(text : String) -> ListV3Parsed raise {
     "traceSchema": 3,
     "clockDomain": required(root, "clockDomain", "list trace"),
     "scope": required(root, "scope", "list trace"),
-    "events": metadata.to_json(),
+    "events": Json(metadata),
     "gaps": required(root, "gaps", "list trace"),
   }
   let life = object_fields(
@@ -333,7 +333,7 @@ fn list_v3_parse(text : String) -> ListV3Parsed raise {
   )
   let outcomes : Map[String, TxStatus] = Map([])
   let programs : Array[ListV3Program] = []
-  let program_ids : Map[String, Int] = Map([])
+  let program_ids : Map[String, Int32] = Map([])
   for raw_tx in transactions {
     let tx = object_fields(raw_tx, "transaction")
     let id = identifier(required(tx, "id", "transaction"), "transaction.id")
@@ -363,11 +363,11 @@ fn list_v3_parse(text : String) -> ListV3Parsed raise {
       value => Some(v3_capture_seq(value, "revertedBy"))
     }
     effects.push({
-      "seq": seq.to_double().to_json(),
-      "tx": item.tx.unwrap().to_json(),
-      "key": item.key.to_json(),
-      "id": item.id.to_json(),
-      "value": item.value.to_json(),
+      "seq": Json(seq.to_double()),
+      "tx": Json(item.tx.unwrap()),
+      "key": Json(item.key),
+      "id": Json(item.id),
+      "value": Json(item.value),
       "revertedBy": reverted,
     })
   }
@@ -409,7 +409,7 @@ fn list_v3_parse(text : String) -> ListV3Parsed raise {
             ),
           )
         }
-        let expected : Array[Int] = []
+        let expected : Array[Int32] = []
         let seen : Map[String, Bool] = Map([])
         for
           raw_item in presence_capture_array(
@@ -522,21 +522,21 @@ fn list_v3_parse(text : String) -> ListV3Parsed raise {
   let source_evidence = items.map(item => {
     (
       {
-        "id": item.id.to_json(),
-        "value": item.value.to_json(),
-        "key": item.key.to_json(),
-        "sourceSeq": item.seq.to_double().to_json(),
+        "id": Json(item.id),
+        "value": Json(item.value),
+        "key": Json(item.key),
+        "sourceSeq": Json(item.seq.to_double()),
         "writer": match item.tx {
           None => Json::null()
-          Some(id) => id.to_json()
+          Some(id) => Json(id)
         },
         "revertedBy": match revoked.get(item.seq) {
-          Some(Some(seq)) => seq.to_double().to_json()
+          Some(Some(seq)) => Json(seq.to_double())
           _ => Json::null()
         },
       } : Json)
   })
-  let final_status = if status == "invalid".to_json() {
+  let final_status = if status == Json("invalid") {
     "invalid"
   } else if gaps.length() > 0 {
     "inconclusive"
@@ -547,14 +547,14 @@ fn list_v3_parse(text : String) -> ListV3Parsed raise {
     "schema": 3,
     "dataModel": "append-list-v1",
     "algorithm": "v3-list-lifecycle-1",
-    "status": final_status.to_json(),
+    "status": Json(final_status),
     "coverage": {
-      "complete": (final_status == "ready").to_json(),
-      "gaps": gaps.to_json(),
+      "complete": Json(final_status == "ready"),
+      "gaps": Json(gaps),
     },
     "observations": observations,
-    "effects": effects.to_json(),
-    "transactions": transactions.to_json(),
+    "effects": Json(effects),
+    "transactions": Json(transactions),
     "history": Json::null(),
   }
   {
@@ -582,8 +582,8 @@ fn list_v3_options(text : String) -> ListV3Options raise {
   fn number(
     options : Map[String, Json],
     name : String,
-    maximum : Int,
-  ) -> Int raise {
+    maximum : Int32,
+  ) -> Int32 raise {
     match options.get(name) {
       None => maximum
       Some(Number(n, ..)) if n >= 0.0 &&
@@ -599,7 +599,7 @@ fn list_v3_options(text : String) -> ListV3Options raise {
 }
 
 ///|
-fn list_v3_undo(ctx : ListV3Search, mark : Int) -> Unit {
+fn list_v3_undo(ctx : ListV3Search, mark : Int32) -> Unit {
   while ctx.trail.length() > mark {
     let key = ctx.trail.pop().unwrap()
     let _ = ctx.state.get(key).unwrap().pop()
@@ -620,7 +620,7 @@ fn list_v3_check_budget(ctx : ListV3Search) -> Bool {
 
 ///|
 fn list_v3_execute(ctx : ListV3Search, program : ListV3Program) -> Bool {
-  let scopes : Array[(String, Int)] = []
+  let scopes : Array[(String, Int32)] = []
   for action in program.actions {
     if !list_v3_check_budget(ctx) {
       return false
@@ -649,14 +649,12 @@ fn list_v3_execute(ctx : ListV3Search, program : ListV3Program) -> Bool {
         if !same {
           if ctx.blockers.length() < 16 {
             ctx.blockers.push({
-              "tx": program.id.to_json(),
-              "readSeq": seq.to_double().to_json(),
-              "key": key.to_json(),
+              "tx": Json(program.id),
+              "readSeq": Json(seq.to_double()),
+              "key": Json(key),
               "code": "list_state_mismatch",
-              "actualIds": current.map(index => ctx.items[index].id).to_json(),
-              "observedIds": expected
-              .map(index => ctx.items[index].id)
-              .to_json(),
+              "actualIds": Json(current.map(index => ctx.items[index].id)),
+              "observedIds": Json(expected.map(index => ctx.items[index].id)),
             })
           }
           return false
@@ -694,7 +692,7 @@ fn list_v3_execute(ctx : ListV3Search, program : ListV3Program) -> Bool {
 }
 
 ///|
-fn list_v3_search(ctx : ListV3Search, selected : Int) -> Array[String]? {
+fn list_v3_search(ctx : ListV3Search, selected : Int32) -> Array[String]? {
   if ctx.prefix.length() == ctx.programs.length() {
     return Some(ctx.prefix.copy())
   }
@@ -734,17 +732,17 @@ fn list_v3_report(
   status : String,
   evidence : Json,
   options : ListV3Options,
-  states : Int,
-  operations : Int,
+  states : Int32,
+  operations : Int32,
   complete : Bool,
   reason : String,
 ) -> Json {
   {
     "schemaVersion": 3,
     "tool": "MoonTxnWitness",
-    "version": version().to_json(),
+    "version": Json(version()),
     "algorithm": "v3-list-1",
-    "status": status.to_json(),
+    "status": Json(status),
     "modelDefinition": {
       "id": "append-list-serializable-v1",
       "scope": "committed transactions' full append/read/savepoint journals; aborted observations retained, no opacity or real-time claim",
@@ -758,24 +756,24 @@ fn list_v3_report(
     "execution": {
       "lifecycleAdapter": "register-v3-lifecycle-metadata-1",
       "analysisOptions": {
-        "maxStates": options.max_states.to_json(),
-        "maxOperationChecks": options.max_operations.to_json(),
+        "maxStates": Json(options.max_states),
+        "maxOperationChecks": Json(options.max_operations),
       },
       "effectiveLimits": {
         "committedTransactions": 6,
         "operations": 128,
-        "states": options.max_states.to_json(),
-        "operationChecks": options.max_operations.to_json(),
+        "states": Json(options.max_states),
+        "operationChecks": Json(options.max_operations),
         "inputUtf16Units": 8388608,
         "events": 65536,
         "identities": 10000,
         "returnedItemReferences": 100000,
       },
       "metrics": {
-        "states": states.to_json(),
-        "operationChecks": operations.to_json(),
-        "complete": complete.to_json(),
-        "reason": reason.to_json(),
+        "states": Json(states),
+        "operationChecks": Json(operations),
+        "complete": Json(complete),
+        "reason": Json(reason),
       },
     },
   }
@@ -798,7 +796,7 @@ fn list_v3_analysis(text : String, options_text : String) -> Json raise {
       )
   }
   let status = object_fields_unchecked_v3(parsed.normalized).at("status")
-  if status != "ready".to_json() {
+  if status != Json("ready") {
     return list_v3_report(
       parsed.normalized,
       identifier(status, "status"),
@@ -816,8 +814,8 @@ fn list_v3_analysis(text : String, options_text : String) -> Json raise {
       "violation",
       {
         "kind": "source-proven-list-anomaly",
-        "findings": parsed.findings.to_json(),
-        "sourceEvidence": parsed.source_evidence.to_json(),
+        "findings": Json(parsed.findings),
+        "sourceEvidence": Json(parsed.source_evidence),
       },
       options,
       0,
@@ -839,7 +837,7 @@ fn list_v3_analysis(text : String, options_text : String) -> Json raise {
       "exact_capacity",
     )
   }
-  let state : Map[String, Array[Int]] = Map([])
+  let state : Map[String, Array[Int32]] = Map([])
   for key, list in parsed.initial {
     state[key] = list.copy()
   }
@@ -864,8 +862,8 @@ fn list_v3_analysis(text : String, options_text : String) -> Json raise {
         "consistent",
         {
           "kind": "serial-list-replay",
-          "serialOrder": order.to_json(),
-          "sourceEvidence": parsed.source_evidence.to_json(),
+          "serialOrder": Json(order),
+          "sourceEvidence": Json(parsed.source_evidence),
         },
         options,
         ctx.states,
@@ -879,8 +877,8 @@ fn list_v3_analysis(text : String, options_text : String) -> Json raise {
         "inconclusive",
         {
           "kind": "search-incomplete",
-          "sampleBlockers": ctx.blockers.to_json(),
-          "sourceEvidence": parsed.source_evidence.to_json(),
+          "sampleBlockers": Json(ctx.blockers),
+          "sourceEvidence": Json(parsed.source_evidence),
         },
         options,
         ctx.states,
@@ -895,8 +893,8 @@ fn list_v3_analysis(text : String, options_text : String) -> Json raise {
         {
           "kind": "bounded-serial-exhaustion",
           "code": "no_serial_list_execution",
-          "sampleBlockers": ctx.blockers.to_json(),
-          "sourceEvidence": parsed.source_evidence.to_json(),
+          "sampleBlockers": Json(ctx.blockers),
+          "sourceEvidence": Json(parsed.source_evidence),
         },
         options,
         ctx.states,

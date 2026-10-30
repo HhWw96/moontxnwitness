@@ -14,6 +14,11 @@ await import('./evidence-reference-test.mjs');
 const args = process.argv.slice(2);
 if (args.some(a => a !== '--all') || args.length > 1) throw new Error('Usage: node scripts/test.mjs [--all]');
 const targets = args.includes('--all') ? ['js', 'wasm-gc', 'wasm', 'native'] : ['js', 'wasm-gc', 'wasm'];
+process.env.PYTHONUTF8='1';
+process.env.PYTHONIOENCODING='utf-8';
+const pythonPreflight=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),['-c','import psycopg,sqlalchemy; assert psycopg.__version__ == "3.3.6"; assert sqlalchemy.__version__ == "2.0.55"'],{encoding:'utf8',windowsHide:true});
+if(pythonPreflight.error||pythonPreflight.status!==0)throw Error('Install the fixed test dependencies from examples/orm-requirements.txt before npm test: '+(pythonPreflight.stderr||''));
+await import('./toolchain-policy-test.mjs');
 const testedSources=verificationFingerprint(root,{includeDist:false});
 runMoon(['fmt', '--check']);
 runMoon(['check', '--target', 'all', '--deny-warn', '--jobs', '1']);
@@ -21,6 +26,9 @@ for (const target of targets) runMoon(['test', '--target', target, '--deny-warn'
 await import('./build.mjs');
 assert.deepEqual(verificationFingerprint(root,{includeDist:false}),testedSources,'Executable sources changed during core verification');
 const testedFiles=verificationFingerprint(root);
+const public030Check=spawnSync(process.execPath,['scripts/public030-compatibility-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:4*1024*1024});
+if(public030Check.error||public030Check.status!==0)throw Error('Public030 compatibility failed: '+public030Check.stdout+public030Check.stderr);
+
 const parser = (await import('./parser-test.mjs')).runParserTests();
 const oracle = (await import('./oracle.mjs')).runOracle();
 const cli = (await import('./cli-test.mjs')).runCliTests();

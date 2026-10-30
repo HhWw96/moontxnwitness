@@ -18,7 +18,7 @@ fn collect_writes(h : History) -> Map[String, Map[String, WriteRef]] {
     if single_last < 0 {
       continue
     }
-    let last : Map[String, Int]? = if multiple_keys {
+    let last : Map[String, Int32]? = if multiple_keys {
       Some(Map([]))
     } else {
       None
@@ -165,7 +165,7 @@ fn add_edge(
 }
 
 ///|
-fn count_ops(h : History) -> Int {
+fn count_ops(h : History) -> Int32 {
   let mut n = 0
   for tx in h.transactions {
     n += tx.ops.length()
@@ -179,8 +179,8 @@ fn base_report(
   outcome : Outcome,
   findings : Array[Finding],
   orders : Map[String, Array[String]],
-  writes? : Map[String, Map[String, WriteRef]] = collect_writes(h),
-  with_coverage? : Bool = true,
+  writes~ : Map[String, Map[String, WriteRef]] = collect_writes(h),
+  with_coverage~ : Bool = true,
 ) -> Report {
   let mut committed = 0
   for tx in h.transactions {
@@ -237,10 +237,10 @@ pub fn analyze(h : History) -> Report {
 fn analyze_internal(
   h : History,
   search_cycles : Bool,
-  writes? : Map[String, Map[String, WriteRef]] = collect_writes(h),
-  complete_search? : Bool = true,
-  with_coverage? : Bool = true,
-  validated? : Bool = false,
+  writes~ : Map[String, Map[String, WriteRef]] = collect_writes(h),
+  complete_search~ : Bool = true,
+  with_coverage~ : Bool = true,
+  validated~ : Bool = false,
 ) -> Report {
   let findings = if validated { [] } else { validate_history(h) }
   if !findings.is_empty() {
@@ -255,12 +255,12 @@ fn analyze_internal(
   let overflow = [false]
   let keys = orders.keys().collect()
   keys.sort()
-  let ranks : Map[String, Map[String, Int]] = Map([])
+  let ranks : Map[String, Map[String, Int32]] = Map([])
   for key in keys {
     if orders.at(key).length() < 3 {
       continue
     }
-    let by_rank : Map[String, Int] = Map([])
+    let by_rank : Map[String, Int32] = Map([])
     for i, v in orders.at(key) {
       by_rank[v] = i
     }
@@ -293,13 +293,13 @@ fn analyze_internal(
   }
   // Allocate scratch only for keys touched by a non-skipped committed
   // transaction. A reduced counterexample may retain many unused initial keys.
-  let scratch_keys : Map[String, Int] = Map([])
-  let own_epoch : Array[Int] = []
+  let scratch_keys : Map[String, Int32] = Map([])
+  let own_epoch : Array[Int32] = []
   let own_versions : Array[String] = []
-  let own_ops : Array[Int] = []
-  let read_epoch : Array[Int] = []
+  let own_ops : Array[Int32] = []
+  let read_epoch : Array[Int32] = []
   let read_versions : Array[String] = []
-  let read_ops : Array[Int] = []
+  let read_ops : Array[Int32] = []
   for ti, tx in h.transactions {
     if tx.status == Unknown {
       findings.push(

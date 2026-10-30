@@ -10,7 +10,7 @@ fn model_expect_reject_v3(action : () -> Unit raise) -> Unit raise {
 }
 
 ///|
-fn model_test_config_v3(is_list? : Bool = false) -> ModelProfileConfigV3 raise {
+fn model_test_config_v3(is_list~ : Bool = false) -> ModelProfileConfigV3 raise {
   model_config_v3(
     if is_list {
       {
@@ -36,8 +36,8 @@ test "configured model raw unknown envelope remains inconclusive" {
     model_profile_source_v3_json("{}", "{}"),
     limit=1048576,
   )
-  assert_eq(orm_get(report, "status"), "inconclusive".to_json())
-  assert_eq(orm_get(report, "analysisCoverageAccepted"), false.to_json())
+  assert_eq(orm_get(report, "status"), Json("inconclusive"))
+  assert_eq(orm_get(report, "analysisCoverageAccepted"), Json(false))
   assert_eq(orm_get(report, "derivedTrace"), Json::null())
 }
 
@@ -45,7 +45,7 @@ test "configured model raw unknown envelope remains inconclusive" {
 test "configured model unsafe schema rejected" {
   for name in ["UPPER", "bad;sql", "_hidden", "bad\"quoted"] {
     model_expect_reject_v3(fn() raise {
-      ignore(model_identifier_v3(name.to_json()))
+      ignore(model_identifier_v3(Json(name)))
     })
   }
 }
@@ -55,8 +55,8 @@ test "configured model canonical int64 boundaries retain exact source encoding" 
   for text in ["-9223372036854775808", "9223372036854775807", "0", "-1"] {
     assert_eq(model_integer_v3(model_encoded_integer_v3(text)), text)
   }
-  model_expect_reject_v3(fn() raise { ignore(model_integer_v3(true.to_json())) })
-  model_expect_reject_v3(fn() raise { ignore(model_integer_v3(1.5.to_json())) })
+  model_expect_reject_v3(fn() raise { ignore(model_integer_v3(Json(true))) })
+  model_expect_reject_v3(fn() raise { ignore(model_integer_v3(Json(1.5))) })
 }
 
 ///|

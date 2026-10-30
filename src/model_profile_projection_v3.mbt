@@ -18,14 +18,14 @@ fn model_row_v3(cells : Array[Json]) -> Json {
 ///|
 fn model_business_v3(cells : Array[Json], is_list : Bool) -> Json raise {
   if is_list {
-    return [cells[0]].to_json()
+    return Json([cells[0]])
   }
-  [
+  Json([
     model_encoded_integer_v3(orm_text(cells[0])),
     model_encoded_integer_v3(orm_text(cells[1])),
     cells[2],
     cells[3],
-  ].to_json()
+  ])
 }
 
 ///|
@@ -87,7 +87,7 @@ fn model_fact_v3(
   let original = object_fields(events[statement.to_int() - 1], "statement")
   orm_equal(
     required(original, "kind", "statement"),
-    "statement".to_json(),
+    Json("statement"),
     "Actual raw statement",
   )
   orm_equal(
@@ -109,27 +109,27 @@ fn model_fact_v3(
   }
   orm_equal(
     required(batch, "operation", "batch"),
-    plan.operation.to_json(),
+    Json(plan.operation),
     "Operation derived from actual SQL",
   )
   orm_equal(
     required(original, "sql", "statement"),
-    plan.sql.to_json(),
+    Json(plan.sql),
     "Original SQL bytes",
   )
   orm_equal(
     required(original, "executedSql", "statement"),
-    plan.executed.to_json(),
+    Json(plan.executed),
     "Same-statement executed SQL",
   )
   orm_equal(
     required(batch, "executedSql", "batch"),
-    plan.executed.to_json(),
+    Json(plan.executed),
     "Independent executed SQL derivation",
   )
   orm_equal(
     required(original, "mappingId", "statement"),
-    ("configured-model/" + plan.operation).to_json(),
+    Json("configured-model/" + plan.operation),
     "Typed source mapping identity",
   )
   orm_equal(
@@ -160,12 +160,12 @@ fn model_fact_v3(
   )
   orm_equal(
     required(batch, "resultComplete", "batch"),
-    true.to_json(),
+    Json(true),
     "Actual source result completed",
   )
   orm_equal(
     required(batch, "deliveredRows", "batch"),
-    native.length().to_json(),
+    Json(native.length()),
     "All native rows actually delivered",
   )
   let raw_refs = orm_array(required(batch, "businessRowsEvents", "batch"))
@@ -186,7 +186,7 @@ fn model_fact_v3(
     let event = object_fields(events[seq.to_int() - 1], "actual rows")
     orm_equal(
       required(event, "kind", "rows"),
-      "rows".to_json(),
+      Json("rows"),
       "Actual business rows event",
     )
     orm_equal(
@@ -196,7 +196,7 @@ fn model_fact_v3(
     )
     orm_equal(
       required(event, "statement", "rows"),
-      statement.to_double().to_json(),
+      Json(statement.to_double()),
       "Delivered original statement",
     )
     orm_equal(
@@ -206,7 +206,7 @@ fn model_fact_v3(
     )
     orm_equal(
       required(event, "complete", "rows"),
-      (i == raw_refs.length() - 1).to_json(),
+      Json(i == raw_refs.length() - 1),
       "Exactly one final actual delivery boundary",
     )
     orm_assert(
@@ -219,8 +219,8 @@ fn model_fact_v3(
     rows.push(seq)
   }
   orm_equal(
-    delivered.to_json(),
-    native.map(cells => model_business_v3(cells, config.is_list)).to_json(),
+    Json(delivered),
+    Json(native.map(cells => model_business_v3(cells, config.is_list))),
     "Native/business delivery equality without early consumption",
   )
   let tx = required(batch, "tx", "batch")
@@ -237,7 +237,7 @@ fn model_fact_v3(
         "kind": "list_read",
         "tx": tx,
         "key": key,
-        "items": items.to_json(),
+        "items": Json(items),
       }
     } else {
       orm_assert(
@@ -251,7 +251,7 @@ fn model_fact_v3(
         "id": orm_get(params[0], "id"),
         "value": orm_get(params[0], "value"),
       }
-      effect = { "key": key, "item": params[0], "items": items.to_json() }
+      effect = { "key": key, "item": params[0], "items": Json(items) }
     }
   } else if plan.operation == "row-read" {
     let returned : Array[Json] = []
@@ -269,8 +269,8 @@ fn model_fact_v3(
     let predicate : Array[Json] = []
     for i, term in plan.predicate {
       predicate.push({
-        "column": term.0.to_json(),
-        "op": term.1.to_json(),
+        "column": Json(term.0),
+        "op": Json(term.1),
         "value": params[i],
       })
     }
@@ -278,8 +278,8 @@ fn model_fact_v3(
       "kind": "row_read",
       "tx": tx,
       "relation": "business",
-      "predicate": predicate.to_json(),
-      "rows": returned.to_json(),
+      "predicate": Json(predicate),
+      "rows": Json(returned),
       "complete": true,
     }
   } else {
@@ -311,7 +311,7 @@ fn model_fact_v3(
       "tx": tx,
       "relation": "business",
       "key": key,
-      "action": action.to_json(),
+      "action": Json(action),
       "version": cells[4],
       "predecessor": cells[5],
       "values": image,
@@ -320,9 +320,9 @@ fn model_fact_v3(
       "key": key,
       "version": cells[4],
       "predecessor": cells[5],
-      "action": action.to_upper().to_json(),
-      "oldPresent": (action != "insert").to_json(),
-      "newPresent": (!deleted).to_json(),
+      "action": Json(action.to_upper()),
+      "oldPresent": Json(action != "insert"),
+      "newPresent": Json(!deleted),
       "values": image,
     }
   }
@@ -352,7 +352,7 @@ fn model_projection_v3(
   let effects : Array[Json] = []
   let append_ids : Map[String, Bool] = Map([])
   for raw in records {
-    if orm_get(raw, "kind") != "source-batch".to_json() {
+    if orm_get(raw, "kind") != Json("source-batch") {
       continue
     }
     let fact = model_fact_v3(config, raw, original)
@@ -368,7 +368,7 @@ fn model_projection_v3(
       )
       by_rows[seq] = fact
     }
-    if config.is_list && orm_get(fact.event, "kind") == "append".to_json() {
+    if config.is_list && orm_get(fact.event, "kind") == Json("append") {
       let id = orm_text(orm_get(fact.event, "id"))
       orm_assert(
         !append_ids.contains(id),
@@ -396,9 +396,9 @@ fn model_projection_v3(
     for key in config.keys {
       values[key] = Json::array([])
     }
-    values.to_json()
+    Json(values)
   } else {
-    { "business": source.initial.to_json() }
+    { "business": Json(source.initial) }
   }
   let mut used_statements = 0
   let mut used_rows = 0
@@ -430,7 +430,7 @@ fn model_projection_v3(
       }
       let copy = list_v3_copy(object_fields(fact.event, "proven model fact"))
       copy["time"] = required(event, "time", "actual delivery")
-      derived = copy.to_json()
+      derived = Json(copy)
     } else if kind == "snapshot" {
       orm_assert(
         i == 0,
@@ -454,9 +454,9 @@ fn model_projection_v3(
       derived = raw
     }
     let copy = list_v3_copy(object_fields(derived, "derived event"))
-    copy["seq"] = (events.length() + 1).to_json()
-    events.push(copy.to_json())
-    origins.push(seq.to_double().to_json())
+    copy["seq"] = Json(events.length() + 1)
+    events.push(Json(copy))
+    origins.push(Json(seq.to_double()))
   }
   orm_assert(
     used_statements == by_statement.length() && used_rows == by_rows.length(),
@@ -464,14 +464,16 @@ fn model_projection_v3(
   )
   let trace : Json = {
     "traceSchema": 3,
-    "dataModel": (if config.is_list {
-      "append-list-v1"
-    } else {
-      "relation-set-v1"
-    }).to_json(),
+    "dataModel": Json(
+      if config.is_list {
+        "append-list-v1"
+      } else {
+        "relation-set-v1"
+      },
+    ),
     "clockDomain": clock,
     "scope": { "exclusiveWriters": true },
-    "events": events.to_json(),
+    "events": Json(events),
     "gaps": [],
   }
   if !config.is_list {
@@ -487,9 +489,10 @@ fn model_projection_v3(
         },
       },
     }
-    object_fields_unchecked_v3(fields["scope"])["completeSnapshotTables"] = [
-      "business",
-    ].to_json()
+    object_fields_unchecked_v3(fields["scope"])["completeSnapshotTables"] = Json([
+        "business",
+      ],
+    )
   }
   (trace, origins, effects)
 }

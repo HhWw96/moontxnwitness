@@ -41,17 +41,17 @@ fn model_catalog_v3(
       ""
     }
     expected.push({
-      "name": name.to_json(),
-      "body": body.to_json(),
+      "name": Json(name),
+      "body": Json(body),
       "securityDefiner": false,
       "volatility": "v",
       "config": ["search_path=pg_catalog"],
-      "arguments": args.to_json(),
-      "return": (if i < 2 { "trigger" } else { "uuid" }).to_json(),
+      "arguments": Json(args),
+      "return": Json(if i < 2 { "trigger" } else { "uuid" }),
       "language": "plpgsql",
     })
   }
-  orm_set_equal(functions.to_json(), expected, "Owned source function identity")
+  orm_set_equal(Json(functions), expected, "Owned source function identity")
   let expected_triggers : Array[Json] = [
     {
       "name": "model_before",
@@ -65,7 +65,7 @@ fn model_catalog_v3(
     {
       "name": "model_after",
       "function": "after",
-      "type": (if config.is_list { 17 } else { 29 }).to_json(),
+      "type": Json(if config.is_list { 17 } else { 29 }),
       "enabled": "O",
       "args": "",
       "internal": false,
@@ -78,7 +78,7 @@ fn model_catalog_v3(
     // database-assigned OID, not a semantic identity or write-order source.
     let seen : Map[String, Bool] = Map([])
     for raw in triggers {
-      if orm_get(raw, "internal") != true.to_json() {
+      if orm_get(raw, "internal") != Json(true) {
         continue
       }
       let trigger = orm_exact(raw, [
@@ -106,9 +106,9 @@ fn model_catalog_v3(
       orm_equal(
         raw,
         {
-          "name": name.to_json(),
-          "function": function.to_json(),
-          "type": (if function == "RI_FKey_noaction_del" { 9 } else { 17 }).to_json(),
+          "name": Json(name),
+          "function": Json(function),
+          "type": Json(if function == "RI_FKey_noaction_del" { 9 } else { 17 }),
           "enabled": "O",
           "args": "",
           "internal": true,
@@ -124,7 +124,7 @@ fn model_catalog_v3(
     )
   }
   orm_set_equal(
-    triggers.to_json(),
+    Json(triggers),
     expected_triggers,
     "Owned source trigger identity",
   )
@@ -145,14 +145,10 @@ fn model_window_controls_v3(
     "phase", "queries", "snapshot", "ledger", "state", "catalog", "triggers", "locale",
     "snapshotRows", "ledgerRows", "stateRows", "catalogRows", "triggerRows", "localeRows",
   ])
-  orm_equal(
-    required(window, "phase", "window"),
-    phase.to_json(),
-    "Window phase",
-  )
+  orm_equal(required(window, "phase", "window"), Json(phase), "Window phase")
   orm_equal(
     required(window, "queries", "window"),
-    controls.map(c => c.seq.to_double().to_json()).to_json(),
+    Json(controls.map(c => Json(c.seq.to_double()))),
     "All original window query references",
   )
   let cursor : OrmControlCursor2 = { controls, at: 0, verified: [], }
@@ -169,9 +165,9 @@ fn model_window_controls_v3(
   let observed : Map[String, Array[Json]] = Map([])
   for name in ["snapshot", "ledger", "state", "catalog", "triggers", "locale"] {
     let params = if name == "catalog" {
-      [config.schema.to_json()].to_json()
+      Json([Json(config.schema)])
     } else if name == "triggers" {
-      [(v3_dislock_quote(config.schema) + ".\"business\"").to_json()].to_json()
+      Json([Json(v3_dislock_quote(config.schema) + ".\"business\"")])
     } else {
       Json::null()
     }
@@ -184,7 +180,7 @@ fn model_window_controls_v3(
     )
     orm_equal(
       required(window, name, "window"),
-      query.seq.to_double().to_json(),
+      Json(query.seq.to_double()),
       "Exact original window source sequence",
     )
     let row_field = if name == "triggers" {
@@ -194,7 +190,7 @@ fn model_window_controls_v3(
     }
     orm_equal(
       required(window, row_field, "window"),
-      query.rows.to_json(),
+      Json(query.rows),
       "Redundant declared rows equal independently decoded native control",
     )
     observed[name] = model_control_rows_v3(query)
@@ -202,8 +198,8 @@ fn model_window_controls_v3(
   ignore(orm2_command(cursor, "COMMIT", Json::null(), "COMMIT", None))
   model_catalog_v3(config, observed["catalog"], observed["triggers"])
   orm_equal(
-    observed["locale"].to_json(),
-    [{ "collate": "C", "ctype": "C" }].to_json(),
+    Json(observed["locale"]),
+    Json([{ "collate": "C", "ctype": "C" }]),
     "Supported C database comparison rules",
   )
   (observed["snapshot"], observed["state"], observed["ledger"])
@@ -262,7 +258,7 @@ fn model_controls_v3(
   })
   orm_equal(
     required(installation, "installationQueries", "installation"),
-    install_controls.map(c => c.seq.to_double().to_json()).to_json(),
+    Json(install_controls.map(c => Json(c.seq.to_double()))),
     "Exact installation control references",
   )
   let cursor : OrmControlCursor2 = {
@@ -293,7 +289,7 @@ fn model_controls_v3(
         orm2_command(
           cursor,
           "INSERT INTO " + table + " VALUES(%s,%s::jsonb)",
-          [raw_key, "[]".to_json()].to_json(),
+          Json([raw_key, Json("[]")]),
           "INSERT 0 1",
           Some(1),
         ),
@@ -326,7 +322,7 @@ fn model_controls_v3(
           " SELECT %s,version,true FROM " +
           table +
           " WHERE id=%s",
-          [config.raw_keys[i], config.raw_keys[i]].to_json(),
+          Json([config.raw_keys[i], config.raw_keys[i]]),
           if present {
             "INSERT 0 1"
           } else {
@@ -341,7 +337,7 @@ fn model_controls_v3(
           "INSERT INTO " +
           state +
           " VALUES(%s,NULL,false) ON CONFLICT DO NOTHING",
-          [config.raw_keys[i]].to_json(),
+          Json([config.raw_keys[i]]),
           if present {
             "INSERT 0 0"
           } else {
@@ -377,8 +373,8 @@ fn model_controls_v3(
   orm_assert(initial_ledger.is_empty(), "Initial actual-effect ledger is empty")
   if config.is_list {
     orm_set_equal(
-      initial.to_json(),
-      config.keys.map(key => { "key": key.to_json(), "items": [] }),
+      Json(initial),
+      config.keys.map(key => { "key": Json(key), "items": [] }),
       "Complete initially empty list domain",
     )
     orm_assert(
@@ -408,17 +404,17 @@ fn model_controls_v3(
     let expected : Array[Json] = []
     for key in config.keys {
       expected.push({
-        "key": key.to_json(),
+        "key": Json(key),
         "version": if rows.contains(key) {
           orm_get(rows[key], "version")
         } else {
           Json::null()
         },
-        "present": rows.contains(key).to_json(),
+        "present": Json(rows.contains(key)),
       })
     }
     orm_set_equal(
-      initial_state.to_json(),
+      Json(initial_state),
       expected,
       "Complete initialized source state including absent keys",
     )

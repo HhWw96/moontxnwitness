@@ -1,6 +1,6 @@
 ///|
 priv struct PresenceCaptureOp {
-  seq : Int
+  seq : Int32
   tx : String
   key : String
   version : String
@@ -12,7 +12,7 @@ priv struct PresenceCaptureSource {
   key : String
   present : Bool
   tx : String?
-  seq : Int
+  seq : Int32
   predecessor : String?
   old_present : Bool
 }
@@ -26,11 +26,8 @@ fn presence_capture_result(
 ) -> String {
   let result : Json = {
     "schema": 1,
-    "status": status.to_json(),
-    "coverage": {
-      "complete": (status == "ready").to_json(),
-      "gaps": gaps.to_json(),
-    },
+    "status": Json(status),
+    "coverage": { "complete": Json(status == "ready"), "gaps": Json(gaps) },
     "history": history,
     "projection": {
       "version": "column-presence-register-v0.1.2-experimental",
@@ -78,7 +75,7 @@ fn presence_capture_array(value : Json, path : String) -> Array[Json] raise {
 }
 
 ///|
-fn presence_capture_seq(value : Json, path : String) -> Int raise {
+fn presence_capture_seq(value : Json, path : String) -> Int32 raise {
   match value {
     Number(n, ..) if n >= 1.0 && n <= 65536.0 && n.to_int().to_double() == n =>
       n.to_int()
@@ -90,8 +87,8 @@ fn presence_capture_seq(value : Json, path : String) -> Int raise {
 fn presence_capture_fact_op(
   fact : Map[String, Json],
   kind : OpKind,
-  operations : Map[Int, PresenceCaptureOp],
-  seen : Map[Int, Bool],
+  operations : Map[Int32, PresenceCaptureOp],
+  seen : Map[Int32, Bool],
   path : String,
 ) -> PresenceCaptureOp raise {
   let seq = presence_capture_seq(required(fact, "seq", path), path + ".seq")
@@ -131,7 +128,7 @@ pub fn normalize_presence_capture_json(text : String) -> String {
       ["traceSchema", "clockDomain", "scope", "events", "gaps", "presenceFacts"],
       "presence capture",
     )
-    if required(root, "traceSchema", "presence capture") != (2).to_json() {
+    if required(root, "traceSchema", "presence capture") != Json(2) {
       fail("presence capture traceSchema must be 2")
     }
     let raw_facts = required(root, "presenceFacts", "presence capture")
@@ -141,9 +138,9 @@ pub fn normalize_presence_capture_json(text : String) -> String {
       ["schema", "projection", "initial", "reads", "writes"],
       "presenceFacts",
     )
-    if required(facts, "schema", "presenceFacts") != (1).to_json() ||
+    if required(facts, "schema", "presenceFacts") != Json(1) ||
       required(facts, "projection", "presenceFacts") !=
-      "column-presence-register-v0.1.2-experimental".to_json() {
+      Json("column-presence-register-v0.1.2-experimental") {
       fail("Unsupported presence fact schema or projection")
     }
     let raw_initial = presence_capture_array(
@@ -201,11 +198,11 @@ pub fn normalize_presence_capture_json(text : String) -> String {
       Ok(history) => history
       Err(message) => fail("Normalized presence history rejected: " + message)
     }
-    let operations : Map[Int, PresenceCaptureOp] = Map([])
+    let operations : Map[Int32, PresenceCaptureOp] = Map([])
     let ordered_ops : Array[PresenceCaptureOp] = []
     for raw_event in presence_capture_array(events, "events") {
       let event = object_fields(raw_event, "event")
-      if required(event, "kind", "event") == "op".to_json() {
+      if required(event, "kind", "event") == Json("op") {
         let raw_op = object_fields(required(event, "op", "event"), "op")
         let op : PresenceCaptureOp = {
           seq: presence_capture_seq(required(event, "seq", "event"), "op.seq"),
@@ -215,7 +212,7 @@ pub fn normalize_presence_capture_json(text : String) -> String {
             required(raw_op, "version", "op"),
             "op.version",
           ),
-          kind: if required(raw_op, "type", "op") == "read".to_json() {
+          kind: if required(raw_op, "type", "op") == Json("read") {
             Read
           } else {
             Write
@@ -262,7 +259,7 @@ pub fn normalize_presence_capture_json(text : String) -> String {
     if initial_keys.length() != h.initial.length() {
       fail("Initial presence facts must cover every snapshot key exactly once")
     }
-    let seen : Map[Int, Bool] = Map([])
+    let seen : Map[Int32, Bool] = Map([])
     for raw_write in raw_writes {
       let fact = object_fields(raw_write, "write fact")
       known_fields(
@@ -430,7 +427,7 @@ pub fn normalize_presence_capture_json(text : String) -> String {
     // in the exported operations and source facts. Aborted branches do not become
     // committed order facts. A linear successor relation must cover every final.
     let successors : Map[String, String] = Map([])
-    let finals_per_key : Map[String, Int] = Map([])
+    let finals_per_key : Map[String, Int32] = Map([])
     for tx in h.transactions {
       if tx.status == Committed {
         match final_by_tx.get(tx.id) {

@@ -5,7 +5,7 @@
 priv struct JsonText {
   blocks : Array[String]
   fragments : FixedArray[String]
-  mut used : Int
+  mut used : Int32
 }
 
 ///|

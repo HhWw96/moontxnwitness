@@ -5,8 +5,8 @@
 /// item can still establish G1a despite a separate list-shape gap.
 fn classification_models_v3_list_validity(parsed : ListV3Parsed) -> Array[Json] {
   let gaps : Array[Json] = []
-  let producers : Map[String, Map[String, Array[Int]]] = Map([])
-  let positions : Map[Int, Int] = Map([])
+  let producers : Map[String, Map[String, Array[Int32]]] = Map([])
+  let positions : Map[Int32, Int32] = Map([])
   for producer in parsed.programs {
     // Reverted append provenance needs a separate contract; do not infer a
     // flat prefix through a savepoint or rollback boundary.
@@ -18,7 +18,7 @@ fn classification_models_v3_list_validity(parsed : ListV3Parsed) -> Array[Json] 
       }) {
       continue
     }
-    let keys : Map[String, Array[Int]] = Map([])
+    let keys : Map[String, Array[Int32]] = Map([])
     for action in producer.actions {
       match action {
         Append(key, item) => {
@@ -35,9 +35,9 @@ fn classification_models_v3_list_validity(parsed : ListV3Parsed) -> Array[Json] 
   for finding in parsed.findings {
     let fields = object_fields_unchecked_v3(finding)
     if [
-        "item_key_mismatch".to_json(),
-        "item_value_mismatch".to_json(),
-        "duplicate_list_item".to_json(),
+        Json("item_key_mismatch"),
+        Json("item_value_mismatch"),
+        Json("duplicate_list_item"),
       ].contains(fields.get_or_default("code", Json::null())) {
       gaps.push(finding)
     }
@@ -63,28 +63,28 @@ fn classification_models_v3_list_validity(parsed : ListV3Parsed) -> Array[Json] 
               if !valid {
                 gaps.push({
                   "code": "list_initial_prefix_invalid",
-                  "tx": program.id.to_json(),
-                  "readSeq": seq.to_double().to_json(),
-                  "key": key.to_json(),
-                  "initialPrefixIds": initial
-                  .map(item => parsed.items[item].id)
-                  .to_json(),
-                  "observedIds": observed
-                  .map(item => {
-                    if item >= 0 {
-                      parsed.items[item].id
-                    } else {
-                      "<missing-source>"
-                    }
-                  })
-                  .to_json(),
+                  "tx": Json(program.id),
+                  "readSeq": Json(seq.to_double()),
+                  "key": Json(key),
+                  "initialPrefixIds": Json(
+                    initial.map(item => parsed.items[item].id),
+                  ),
+                  "observedIds": Json(
+                    observed.map(item => {
+                      if item >= 0 {
+                        parsed.items[item].id
+                      } else {
+                        "<missing-source>"
+                      }
+                    }),
+                  ),
                   "scope": "This read cannot supply list WR/RW/WW or complete-version G1b/INT evidence. A separately matching aborted item can still prove G1a; this shape gap is not itself an isolation anomaly.",
                 })
               }
             }
             None => () // Existing capture coverage already records missing initial state.
           }
-          let counts : Map[String, Int] = Map([])
+          let counts : Map[String, Int32] = Map([])
           let broken : Map[String, Bool] = Map([])
           for item in observed {
             if item < 0 {
@@ -117,16 +117,16 @@ fn classification_models_v3_list_validity(parsed : ListV3Parsed) -> Array[Json] 
             })
             gaps.push({
               "code": "list_external_producer_prefix_invalid",
-              "tx": program.id.to_json(),
-              "readSeq": seq.to_double().to_json(),
-              "key": key.to_json(),
-              "writer": producer.id.to_json(),
-              "writerAppendIds": written
-              .map(item => parsed.items[item].id)
-              .to_json(),
-              "observedWriterAppendIds": external
-              .map(item => parsed.items[item].id)
-              .to_json(),
+              "tx": Json(program.id),
+              "readSeq": Json(seq.to_double()),
+              "key": Json(key),
+              "writer": Json(producer.id),
+              "writerAppendIds": Json(
+                written.map(item => parsed.items[item].id),
+              ),
+              "observedWriterAppendIds": Json(
+                external.map(item => parsed.items[item].id),
+              ),
               "scope": "The external producer subsequence is not its captured append prefix; no graph or complete-version G1b/INT claim may use this read. Independently matching aborted elements remain eligible for G1a.",
             })
           }

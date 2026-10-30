@@ -123,19 +123,19 @@ pub fn benchmark_infer(h : @txn.History) -> @txn.Report {
 
 ///|
 #export_name("benchmark_cycle")
-pub fn benchmark_cycle(h : @txn.History, r : @txn.Report) -> Int {
+pub fn benchmark_cycle(h : @txn.History, r : @txn.Report) -> Int32 {
   @txn.benchmark_cycle(h, r)
 }
 
 ///|
 #export_name("benchmark_search")
-pub fn benchmark_search(h : @txn.History, r : @txn.Report) -> Int {
+pub fn benchmark_search(h : @txn.History, r : @txn.Report) -> Int32 {
   @txn.benchmark_search(h, r)
 }
 
 ///|
 #export_name("benchmark_search_balanced")
-pub fn benchmark_search_balanced(h : @txn.History, r : @txn.Report) -> Int {
+pub fn benchmark_search_balanced(h : @txn.History, r : @txn.Report) -> Int32 {
   @txn.benchmark_search_balanced(h, r)
 }
 

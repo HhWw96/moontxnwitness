@@ -2,12 +2,12 @@
 fn recorded_legacy_v3_report(trace : String, engine : String) -> Json raise {
   let report = v3_analysis(trace, "{}")
   let fields = object_fields_unchecked_v3(report)
-  fields["version"] = engine.to_json()
+  fields["version"] = Json(engine)
   match fields.get("evidence") {
     Some(Object(evidence)) =>
-      if evidence.get("tool") == Some("MoonTxnWitness".to_json()) &&
-        evidence.get("schemaVersion") == Some((2).to_json()) {
-        evidence["version"] = engine.to_json()
+      if evidence.get("tool") == Some(Json("MoonTxnWitness")) &&
+        evidence.get("schemaVersion") == Some(Json(2)) {
+        evidence["version"] = Json(engine)
       }
     _ => ()
   }
@@ -28,14 +28,14 @@ test "v3 released engines preserve nested engine and exact semantic field checks
     assert_true(result_valid(verify_v3_json(trace, report.stringify())))
     let fields = object_fields_unchecked_v3(report)
     let evidence = object_fields_unchecked_v3(fields.at("evidence"))
-    evidence["version"] = version().to_json()
+    evidence["version"] = Json(version())
     assert_true(!result_valid(verify_v3_json(trace, report.stringify())))
-    evidence["version"] = engine.to_json()
-    fields["status"] = "violation".to_json()
+    evidence["version"] = Json(engine)
+    fields["status"] = Json("violation")
     assert_true(!result_valid(verify_v3_json(trace, report.stringify())))
-    fields["status"] = "consistent".to_json()
-    fields["version"] = "0.1.0".to_json()
-    evidence["version"] = "0.1.0".to_json()
+    fields["status"] = Json("consistent")
+    fields["version"] = Json("0.1.0")
+    evidence["version"] = Json("0.1.0")
     assert_true(!result_valid(verify_v3_json(trace, report.stringify())))
   }
 }
@@ -54,21 +54,21 @@ test "v3 released capsule header must match recorded report engine" {
       "format": "moontxnwitness-replay/v3",
       "schemaVersion": 3,
       "tool": "MoonTxnWitness",
-      "engineVersion": engine.to_json(),
-      "traceText": trace.to_json(),
+      "engineVersion": Json(engine),
+      "traceText": Json(trace),
       "traceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "normalizedText": report_fields.at("normalized").stringify().to_json(),
+      "normalizedText": Json(report_fields.at("normalized").stringify()),
       "normalizedSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "reportText": report.stringify().to_json(),
+      "reportText": Json(report.stringify()),
       "reportSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "evidenceText": report_fields.at("evidence").stringify().to_json(),
+      "evidenceText": Json(report_fields.at("evidence").stringify()),
       "evidenceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     }
     assert_true(result_valid(capsule_v3_content_json(capsule.stringify())))
     let fields = object_fields_unchecked_v3(capsule)
-    fields["engineVersion"] = version().to_json()
+    fields["engineVersion"] = Json(version())
     assert_true(!result_valid(capsule_v3_content_json(capsule.stringify())))
-    fields["engineVersion"] = "99.0.0".to_json()
+    fields["engineVersion"] = Json("99.0.0")
     assert_true(!result_valid(capsule_v3_content_json(capsule.stringify())))
   }
 }
@@ -128,14 +128,14 @@ test "v3 released list replay preserves observed values and exact budgets" {
     let source = object_fields_unchecked_v3(
       presence_capture_array(evidence.at("sourceEvidence"), "sources")[0],
     )
-    source["value"] = "0.1.4".to_json()
+    source["value"] = Json("0.1.4")
     assert_true(!result_valid(verify_v3_json(text, report.stringify())))
     let unchanged = recorded_legacy_v3_report(text, engine)
     let execution = object_fields_unchecked_v3(
       object_fields_unchecked_v3(unchanged).at("execution"),
     )
     let options = object_fields_unchecked_v3(execution.at("analysisOptions"))
-    options["maxStates"] = (0).to_json()
+    options["maxStates"] = Json(0)
     assert_true(!result_valid(verify_v3_json(text, unchanged.stringify())))
   }
 }

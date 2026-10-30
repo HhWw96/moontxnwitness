@@ -7,11 +7,11 @@ fn model_closure_v3(
   effects : Array[Json],
 ) -> Unit raise {
   orm_set_equal(
-    source.ledger.to_json(),
+    Json(source.ledger),
     effects,
     "All and only actual committed observed effects",
   )
-  let consumed : Map[Int, Bool] = Map([])
+  let consumed : Map[Int32, Bool] = Map([])
   if config.is_list {
     let final_rows : Array[Json] = []
     let identities : Array[Json] = []
@@ -21,7 +21,7 @@ fn model_closure_v3(
       for _ in 0..<(effects.length() + 1) {
         let mut next = -1
         for i, effect in effects {
-          if orm_get(effect, "key") != key.to_json() || consumed.contains(i) {
+          if orm_get(effect, "key") != Json(key) || consumed.contains(i) {
             continue
           }
           let items = orm_array(orm_get(effect, "items"))
@@ -56,22 +56,22 @@ fn model_closure_v3(
           "Append source is exactly its actual final tail",
         )
         identities.push({
-          "id": id.to_json(),
-          "key": key.to_json(),
+          "id": Json(id),
+          "key": Json(key),
           "value": orm_get(item, "value"),
         })
         consumed[next] = true
         current = items
       }
-      final_rows.push({ "key": key.to_json(), "items": current.to_json() })
+      final_rows.push({ "key": Json(key), "items": Json(current) })
     }
     orm_set_equal(
-      source.final_rows.to_json(),
+      Json(source.final_rows),
       final_rows,
       "Complete final native list snapshot",
     )
     orm_set_equal(
-      source.final_state.to_json(),
+      Json(source.final_state),
       identities,
       "Actual unique append-identity state",
     )
@@ -114,7 +114,7 @@ fn model_closure_v3(
       for _ in 0..<(effects.length() + 1) {
         let mut next = -1
         for i, effect in effects {
-          if orm_get(effect, "key") == key.to_json() &&
+          if orm_get(effect, "key") == Json(key) &&
             orm_get(effect, "predecessor") == current &&
             !consumed.contains(i) {
             orm_assert(next < 0, "Actual committed version chain cannot fork")
@@ -127,7 +127,7 @@ fn model_closure_v3(
         let effect = effects[next]
         orm_equal(
           orm_get(effect, "oldPresent"),
-          present.to_json(),
+          Json(present),
           "Actual predecessor presence",
         )
         current = orm_get(effect, "version")
@@ -140,25 +140,25 @@ fn model_closure_v3(
         consumed[next] = true
       }
       final_state.push({
-        "key": key.to_json(),
+        "key": Json(key),
         "version": current,
-        "present": present.to_json(),
+        "present": Json(present),
       })
       if present {
         final_rows.push({
-          "key": key.to_json(),
+          "key": Json(key),
           "version": current,
           "values": values,
         })
       }
     }
     orm_set_equal(
-      source.final_rows.to_json(),
+      Json(source.final_rows),
       final_rows,
       "Complete final native relation snapshot",
     )
     orm_set_equal(
-      source.final_state.to_json(),
+      Json(source.final_state),
       final_state,
       "Actual final live/tombstone source state",
     )

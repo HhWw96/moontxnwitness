@@ -17,11 +17,11 @@ fn classification26_audit_prefix_trace(
     { "x": [first_x], "y": [first_y] }
   }
   if reordered {
-    object_fields_unchecked_v3(events[3])["items"] = [second_y, first_y].to_json()
-    object_fields_unchecked_v3(events[4])["items"] = [second_x, first_x].to_json()
+    object_fields_unchecked_v3(events[3])["items"] = Json([second_y, first_y])
+    object_fields_unchecked_v3(events[4])["items"] = Json([second_x, first_x])
   } else if valid {
-    object_fields_unchecked_v3(events[3])["items"] = [first_y].to_json()
-    object_fields_unchecked_v3(events[4])["items"] = [first_x].to_json()
+    object_fields_unchecked_v3(events[3])["items"] = Json([first_y])
+    object_fields_unchecked_v3(events[4])["items"] = Json([first_x])
   }
   trace
 }
@@ -30,7 +30,7 @@ fn classification26_audit_prefix_trace(
 test "classification26 audit missing initial prefix cannot supply a false list cycle" {
   let trace = classification26_audit_prefix_trace(false, false)
   let normalized = @json.parse(normalize_capture_v3_json(trace.stringify()))
-  assert_eq(capture_field(normalized, "status"), "ready".to_json())
+  assert_eq(capture_field(normalized, "status"), Json("ready"))
   let graph = classification_models_v3_list(trace.stringify(), normalized)
   assert_eq(graph.complete, false)
   assert_true(graph.edges.is_empty())
@@ -39,10 +39,10 @@ test "classification26 audit missing initial prefix cannot supply a false list c
   for category in ["G0", "G1c", "G2-item", "G-nonadjacent"] {
     assert_eq(
       capture_field(classification_test_rule(report, category), "status"),
-      "unknown".to_json(),
+      Json("unknown"),
     )
   }
-  assert_eq(capture_field(report, "status"), "inconclusive".to_json())
+  assert_eq(capture_field(report, "status"), Json("inconclusive"))
 }
 
 ///|
@@ -56,7 +56,7 @@ test "classification26 audit reordered initial prefix cannot supply a false list
   assert_true(!v3_test_items(report, "validityGaps").is_empty())
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-3-v1"), "status"),
-    "inconclusive".to_json(),
+    Json("inconclusive"),
   )
 }
 
@@ -69,11 +69,11 @@ test "classification26 audit valid initial prefix preserves actual list write sk
       classification26_test_model(report, "elle-generalized-si-v1"),
       "status",
     ),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-3-v1"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
 }
 
@@ -101,16 +101,16 @@ test "classification26 audit independent valid cycle survives another invalid li
     "z": [{ "id": "iz", "value": "initial-z" }],
   }
   let report = classification26_test_report(trace)
-  assert_eq(capture_field(report, "dependencyGraphComplete"), false.to_json())
+  assert_eq(capture_field(report, "dependencyGraphComplete"), Json(false))
   assert_eq(v3_test_items(report, "validityGaps").length(), 1)
   assert_eq(v3_test_items(report, "dependencies").length(), 2)
   assert_eq(
     capture_field(classification_test_rule(report, "G2-item"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification26_test_model(report, "adya-pl-3-v1"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(
@@ -120,6 +120,6 @@ test "classification26 audit independent valid cycle survives another invalid li
       ),
       "status",
     ),
-    "unknown".to_json(),
+    Json("unknown"),
   )
 }

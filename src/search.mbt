@@ -1,10 +1,10 @@
 ///|
 priv struct SearchContext {
-  mut attempts : Int
-  mut operations : Int
+  mut attempts : Int32
+  mut operations : Int32
   mut limited : Bool
-  max_attempts : Int
-  max_operations : Int
+  max_attempts : Int32
+  max_operations : Int32
   blockers : Array[Finding]
 }
 
@@ -23,12 +23,12 @@ fn search_step(
   orders : Map[String, Array[String]],
   edges : Array[Edge],
   selected : Array[Bool],
-  prefix : Array[Int],
+  prefix : Array[Int32],
   state : Map[String, String],
-  positions : Map[String, Int],
+  positions : Map[String, Int32],
   ctx : SearchContext,
-  count : Int,
-) -> Array[Int]? {
+  count : Int32,
+) -> Array[Int32]? {
   if prefix.length() == count {
     return Some(prefix)
   }
@@ -91,7 +91,7 @@ fn search_step(
     if !valid {
       continue
     }
-    let next_positions : Map[String, Int] = Map([])
+    let next_positions : Map[String, Int32] = Map([])
     for k, v in positions {
       next_positions[k] = v
     }
@@ -128,8 +128,8 @@ fn search_serial(
   h : History,
   orders : Map[String, Array[String]],
   edges : Array[Edge],
-  max_attempts? : Int = 100000,
-  max_operations? : Int = 1000000,
+  max_attempts~ : Int32 = 100000,
+  max_operations~ : Int32 = 1000000,
 ) -> (SearchInfo, Array[String]?) {
   let count = h.transactions.filter(t => t.status == Committed).length()
   if count > 8 || count_ops(h) > 512 || h.initial.length() > 128 {

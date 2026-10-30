@@ -45,8 +45,8 @@ fn v3_dislock_assert(condition : Bool, message : String) -> Unit raise {
 }
 
 ///|
-fn v3_dislock_utf8(text : String) -> Array[UInt] {
-  let bytes : Array[UInt] = []
+fn v3_dislock_utf8(text : String) -> Array[UInt32] {
+  let bytes : Array[UInt32] = []
   for ch in text.iter() {
     let n = ch.to_uint()
     if n <= 0x7fU {
@@ -69,7 +69,7 @@ fn v3_dislock_utf8(text : String) -> Array[UInt] {
 }
 
 ///|
-fn v3_dislock_ror(value : UInt, count : Int) -> UInt {
+fn v3_dislock_ror(value : UInt32, count : Int32) -> UInt32 {
   (value >> count) | (value << (32 - count))
 }
 
@@ -88,11 +88,11 @@ fn v3_dislock_sha256(text : String) -> String {
       ((bit_length >> ((7 - i) * 8)) & 255L).to_int().reinterpret_as_uint(),
     )
   }
-  let h : Array[UInt] = [
+  let h : Array[UInt32] = [
     0x6a09e667U, 0xbb67ae85U, 0x3c6ef372U, 0xa54ff53aU, 0x510e527fU, 0x9b05688cU,
     0x1f83d9abU, 0x5be0cd19U,
   ]
-  let k : Array[UInt] = [
+  let k : Array[UInt32] = [
     0x428a2f98U, 0x71374491U, 0xb5c0fbcfU, 0xe9b5dba5U, 0x3956c25bU, 0x59f111f1U,
     0x923f82a4U, 0xab1c5ed5U, 0xd807aa98U, 0x12835b01U, 0x243185beU, 0x550c7dc3U,
     0x72be5d74U, 0x80deb1feU, 0x9bdc06a7U, 0xc19bf174U, 0xe49b69c1U, 0xefbe4786U,
@@ -106,7 +106,7 @@ fn v3_dislock_sha256(text : String) -> String {
     0x90befffaU, 0xa4506cebU, 0xbef9a3f7U, 0xc67178f2U,
   ]
   for block in 0..<(bytes.length() / 64) {
-    let w : Array[UInt] = Array::make(64, 0U)
+    let w : Array[UInt32] = Array::make(64, 0U)
     for i in 0..<16 {
       let j = block * 64 + i * 4
       w[i] = (bytes[j] << 24) |
@@ -201,7 +201,7 @@ fn v3_dislock_quote(text : String) -> String raise {
 }
 
 ///|
-fn v3_dislock_digit(text : String, start : Int, count : Int) -> Int raise {
+fn v3_dislock_digit(text : String, start : Int32, count : Int32) -> Int32 raise {
   let mut n = 0
   if start < 0 || start + count > text.length() {
     fail("Truncated timestamp")
@@ -223,7 +223,7 @@ fn v3_dislock_time(value : Json) -> Int64 raise {
   let typed = object_fields(value, "aware datetime")
   known_fields(typed, ["captureType", "value"], "aware datetime")
   v3_dislock_assert(
-    required(typed, "captureType", "datetime") == "datetime".to_json(),
+    required(typed, "captureType", "datetime") == Json("datetime"),
     "Expected typed aware datetime",
   )
   let t = v3_dislock_text(
@@ -373,7 +373,7 @@ fn v3_dislock_sql(
   mapping : String,
   schema : String,
   table : String,
-) -> (String, String, Int, Array[String], Array[Int]) raise {
+) -> (String, String, Int32, Array[String], Array[Int32]) raise {
   let (original, executed, business, names, types) = match mapping {
     "dislock.acquire-schedule/1" =>
       (
@@ -541,7 +541,7 @@ fn v3_dislock_metadata(
     "metadata",
   )
   v3_dislock_assert(
-    required(m, "versionColumn", "metadata") == "_mtw_v3_version".to_json(),
+    required(m, "versionColumn", "metadata") == Json("_mtw_v3_version"),
     "Unexpected provenance column",
   )
   let nonce = presence_capture_uuid(
@@ -560,7 +560,7 @@ fn v3_dislock_metadata(
   let marker = object_fields(required(m, "marker", "metadata"), "marker")
   known_fields(marker, ["nonce", "tableOid"], "marker")
   v3_dislock_assert(
-    required(marker, "nonce", "marker") == nonce.to_json() &&
+    required(marker, "nonce", "marker") == Json(nonce) &&
     required(marker, "tableOid", "marker") == oid,
     "Installation marker differs from actual nonce/relation",
   )
@@ -569,23 +569,23 @@ fn v3_dislock_metadata(
     let f = object_fields(required(m, name, "metadata"), name)
     let source = v3_dislock_source(name, schema, table)
     v3_dislock_assert(
-      required(f, "source", name) == source.to_json(),
+      required(f, "source", name) == Json(source),
       "Installed function source differs from the frozen source",
     )
     v3_dislock_assert(
-      required(f, "sourceSha256", name) == v3_dislock_sha256(source).to_json(),
+      required(f, "sourceSha256", name) == Json(v3_dislock_sha256(source)),
       "Installed source digest does not bind its raw source",
     )
     let catalog = required(f, "functionCatalog", name)
     let expected_catalog : Json = [
-      schema.to_json(),
-      ("_mtw_v3_" + name).to_json(),
-      source.to_json(),
+      Json(schema),
+      Json("_mtw_v3_" + name),
+      Json(source),
       false,
       "v",
       ["search_path=pg_catalog"],
-      (if name == "predecessor" { 1 } else { 0 }).to_json(),
-      (if name == "predecessor" { "text" } else { "trigger" }).to_json(),
+      Json(if name == "predecessor" { 1 } else { 0 }),
+      Json(if name == "predecessor" { "text" } else { "trigger" }),
       "plpgsql",
     ]
     v3_dislock_assert(
@@ -611,9 +611,9 @@ fn v3_dislock_metadata(
       objects["trigger:" + identity] = true
       v3_dislock_assert(
         required(f, "triggerType", name) ==
-        (if name == "before" { 31 } else { 21 }).to_json() &&
-        required(f, "enabled", name) == "O".to_json() &&
-        required(f, "argumentsHex", name) == "".to_json(),
+        Json(if name == "before" { 31 } else { 21 }) &&
+        required(f, "enabled", name) == Json("O") &&
+        required(f, "argumentsHex", name) == Json(""),
         "Owned trigger event/enable/arguments changed",
       )
       let actual = v3_dislock_text(
@@ -666,7 +666,7 @@ fn v3_dislock_metadata(
   let encoded = "[" + ddl.map(v3_dislock_ascii_json).join(",") + "]"
   v3_dislock_assert(
     required(m, "installationDdlSha256", "metadata") ==
-    v3_dislock_sha256(encoded).to_json(),
+    Json(v3_dislock_sha256(encoded)),
     "Installation DDL digest differs from the exact generated DDL",
   )
 }
@@ -693,13 +693,13 @@ fn v3_dislock_fact(
   statement : V3DislockStatement,
   kind : String,
   key : String,
-  row : Int,
+  row : Int32,
 ) -> Map[String, Json] raise {
   v3_dislock_assert(
-    required(fact, "kind", "fact") == kind.to_json() &&
-    required(fact, "tx", "fact") == statement.tx.to_json() &&
-    required(fact, "statement", "fact") == statement.seq.to_double().to_json() &&
-    required(fact, "mappingId", "fact") == statement.mapping.to_json(),
+    required(fact, "kind", "fact") == Json(kind) &&
+    required(fact, "tx", "fact") == Json(statement.tx) &&
+    required(fact, "statement", "fact") == Json(statement.seq.to_double()) &&
+    required(fact, "mappingId", "fact") == Json(statement.mapping),
     "Fact kind/transaction/statement/mapping binding mismatch",
   )
   let evidence = object_fields(
@@ -713,17 +713,17 @@ fn v3_dislock_fact(
     "A mapped fact must follow its actual delivered server row",
   )
   v3_dislock_assert(
-    required(evidence, "serverRow", "evidence") == row.to_json(),
+    required(evidence, "serverRow", "evidence") == Json(row),
     "Fact serverRow must be its cumulative actual row ordinal",
   )
   if kind == "condition" {
     v3_dislock_assert(
-      required(evidence, "key", "evidence") == key.to_json(),
+      required(evidence, "key", "evidence") == Json(key),
       "Condition key differs from SQL parameters",
     )
   } else {
     v3_dislock_assert(
-      required(fact, "key", "fact") == key.to_json(),
+      required(fact, "key", "fact") == Json(key),
       "Fact key differs from SQL parameters",
     )
   }
@@ -783,13 +783,13 @@ fn v3_dislock_confirmed_abort(
   }
   v3_dislock_assert(
     required(proof, "request", "COMMIT response") ==
-    request.unwrap().to_double().to_json(),
+    Json(request.unwrap().to_double()),
     "COMMIT response request binding mismatch",
   )
   if proof.contains("commandTag") {
     known_fields(proof, ["request", "commandTag"], "COMMIT response")
     v3_dislock_assert(
-      required(proof, "commandTag", "COMMIT response") == "ROLLBACK".to_json(),
+      required(proof, "commandTag", "COMMIT response") == Json("ROLLBACK"),
       "Only actual COMMIT ROLLBACK confirms abortion",
     )
   } else {
@@ -800,10 +800,9 @@ fn v3_dislock_confirmed_abort(
     )
     let state = required(proof, "sqlstate", "COMMIT response")
     v3_dislock_assert(
-      (state == "40001".to_json() || state == "40P01".to_json()) &&
+      (state == Json("40001") || state == Json("40P01")) &&
       required(proof, "diagnosticSqlstate", "COMMIT response") == state &&
-      required(proof, "transactionStatus", "COMMIT response") ==
-      "IDLE".to_json(),
+      required(proof, "transactionStatus", "COMMIT response") == Json("IDLE"),
       "Missing reliable server abort response",
     )
   }
@@ -819,7 +818,7 @@ fn v3_dislock_outcomes(
 ) -> (Map[String, String], Map[Int64, Bool]) raise {
   let outcomes : Map[String, String] = Map([])
   let writes : Map[String, Array[Int64]] = Map([])
-  let scopes : Map[String, Array[(String, Int)]] = Map([])
+  let scopes : Map[String, Array[(String, Int32)]] = Map([])
   let requests : Map[String, Int64] = Map([])
   let revoked : Map[Int64, Bool] = Map([])
   for raw in events {
@@ -902,7 +901,7 @@ priv struct V3DislockSourceCheck {
 fn v3_dislock_source_window(root : Map[String, Json]) -> Array[Json] raise {
   let scope = object_fields(required(root, "scope", "trace"), "scope")
   v3_dislock_assert(
-    required(scope, "exclusiveWriters", "scope") == true.to_json(),
+    required(scope, "exclusiveWriters", "scope") == Json(true),
     "Complete SQL provenance requires the declared exclusive writer scope",
   )
   let gaps = presence_capture_array(required(root, "gaps", "trace"), "gaps")
@@ -921,14 +920,14 @@ fn v3_dislock_source_window(root : Map[String, Json]) -> Array[Json] raise {
   for index, raw in events {
     let event = object_fields(raw, "event")
     v3_dislock_assert(
-      required(event, "seq", "event") == (index + 1).to_json(),
+      required(event, "seq", "event") == Json(index + 1),
       "Every SQL observation must have its original contiguous sequence number",
     )
   }
   let first = object_fields(events[0], "initial snapshot")
   v3_dislock_assert(
-    required(first, "kind", "initial snapshot") == "snapshot".to_json() &&
-    required(first, "consistent", "initial snapshot") == true.to_json(),
+    required(first, "kind", "initial snapshot") == Json("snapshot") &&
+    required(first, "consistent", "initial snapshot") == Json(true),
     "The first observation must be the consistent captured snapshot at sequence one",
   )
   events
@@ -962,7 +961,7 @@ fn v3_dislock_prove_profile(
     "Declare 1..128 fixed lease keys",
   )
   let snapshot = events.filter(raw => {
-    object_fields_unchecked_v3(raw).get("kind") == Some("snapshot".to_json())
+    object_fields_unchecked_v3(raw).get("kind") == Some(Json("snapshot"))
   })
   v3_dislock_assert(
     snapshot.length() == 1,
@@ -1004,7 +1003,7 @@ fn v3_dislock_prove_profile(
     v3_dislock_assert(
       known.contains(key) &&
       !initialized.contains(key) &&
-      initial.get(key) == Some(token.to_json()) &&
+      initial.get(key) == Some(Json(token)) &&
       !versions.contains(token),
       "Initial state must cover each declared key/token exactly once",
     )
@@ -1035,7 +1034,7 @@ fn v3_dislock_prove_profile(
   let statement_order : Array[Int64] = []
   for raw in events {
     let e = object_fields(raw, "event")
-    if e.get("kind") != Some("statement".to_json()) {
+    if e.get("kind") != Some(Json("statement")) {
       continue
     }
     let mapping = match e.get("mappingId") {
@@ -1045,8 +1044,8 @@ fn v3_dislock_prove_profile(
     let seq = v3_capture_seq(required(e, "seq", "statement"), "statement.seq")
     let sql = v3_dislock_sql(mapping, schema, table)
     v3_dislock_assert(
-      required(e, "sql", "statement") == sql.0.to_json() &&
-      required(e, "executedSql", "statement") == sql.1.to_json(),
+      required(e, "sql", "statement") == Json(sql.0) &&
+      required(e, "executedSql", "statement") == Json(sql.1),
       "Frozen original/executed SQL mismatch",
     )
     let parameters = v3_dislock_params(
@@ -1093,7 +1092,7 @@ fn v3_dislock_prove_profile(
     }
     let seq = v3_capture_seq(required(e, "seq", "event"), "event.seq")
     v3_dislock_assert(
-      seq > ref_seq && required(e, "tx", "event") == statement.tx.to_json(),
+      seq > ref_seq && required(e, "tx", "event") == Json(statement.tx),
       "SQL observation must bind its preceding same-transaction statement",
     )
     if kind != "rows" {
@@ -1129,8 +1128,8 @@ fn v3_dislock_prove_profile(
       let c = object_fields(column, "column")
       known_fields(c, ["name", "typeCode"], "column")
       v3_dislock_assert(
-        required(c, "name", "column") == shape.3[index].to_json() &&
-        required(c, "typeCode", "column") == shape.4[index].to_json(),
+        required(c, "name", "column") == Json(shape.3[index]) &&
+        required(c, "typeCode", "column") == Json(shape.4[index]),
         "Business column name/type differs from the frozen SQL",
       )
     }
@@ -1208,7 +1207,7 @@ fn v3_dislock_prove_profile(
         let proof = v3_dislock_fact(facts[0], statement, "read", key, 0)
         known_fields(proof, ["serverRow"], "read evidence")
         v3_dislock_assert(
-          required(facts[0], "version", "read fact") == token.to_json(),
+          required(facts[0], "version", "read fact") == Json(token),
           "Read version differs from same-statement server token",
         )
         checks.push({
@@ -1260,7 +1259,7 @@ fn v3_dislock_prove_profile(
         }
         if upsert {
           v3_dislock_assert(
-            row[0] == key.to_json(),
+            row[0] == Json(key),
             "Returned key differs from parameters",
           )
         }
@@ -1274,7 +1273,7 @@ fn v3_dislock_prove_profile(
           )
         } else {
           v3_dislock_assert(
-            old_token == predecessor.to_json(),
+            old_token == Json(predecessor),
             "UPDATE predecessor must be the actual OLD token",
           )
           let _ = v3_dislock_text(old_owner, "actual OLD owner")
@@ -1304,7 +1303,7 @@ fn v3_dislock_prove_profile(
           )
         } else if mapping == "dislock.expire/1" {
           v3_dislock_assert(
-            row[0] == key.to_json(),
+            row[0] == Json(key),
             "Expire RETURNING key differs from bound key",
           )
         } else {
@@ -1323,9 +1322,9 @@ fn v3_dislock_prove_profile(
         let proof = v3_dislock_fact(write, statement, "write", key, 0)
         known_fields(proof, ["serverRow", "action"], "write evidence")
         v3_dislock_assert(
-          required(proof, "action", "write evidence") == action.to_json() &&
-          required(write, "version", "write") == new_token.to_json() &&
-          required(write, "predecessor", "write") == predecessor.to_json(),
+          required(proof, "action", "write evidence") == Json(action) &&
+          required(write, "version", "write") == Json(new_token) &&
+          required(write, "predecessor", "write") == Json(predecessor),
           "Write identity/action/predecessor differs from actual RETURNING",
         )
         let write_seq = v3_capture_seq(
@@ -1346,10 +1345,10 @@ fn v3_dislock_prove_profile(
         write_sequences[new_token] = write_seq
         write_transactions[new_token] = statement.tx
         written[new_token] = {
-          "key": key.to_json(),
-          "version": new_token.to_json(),
-          "predecessor": predecessor.to_json(),
-          "action": action.to_json(),
+          "key": Json(key),
+          "version": Json(new_token),
+          "predecessor": Json(predecessor),
+          "action": Json(action),
           "owner": new_owner,
           "expireAt": new_expire,
         }
@@ -1381,10 +1380,10 @@ fn v3_dislock_prove_profile(
           }
           let predicate = if upsert { "lease-expired" } else { "owner-equals" }
           v3_dislock_assert(
-            required(condition, "predicate", "condition") == predicate.to_json() &&
-            required(condition, "matched", "condition") == true.to_json() &&
+            required(condition, "predicate", "condition") == Json(predicate) &&
+            required(condition, "matched", "condition") == Json(true) &&
             required(condition, "sourceVersion", "condition") ==
-            predecessor.to_json(),
+            Json(predecessor),
             "Condition fact differs from the real SQL predicate",
           )
           for
@@ -1394,8 +1393,8 @@ fn v3_dislock_prove_profile(
               ("oldExpireAt", old_expire),
               ("serverNow", server_now),
               ("oldToken", old_token),
-              ("newToken", new_token.to_json()),
-              ("action", action.to_json()),
+              ("newToken", Json(new_token)),
+              ("action", Json(action)),
             ] {
             v3_dislock_assert(
               required(condition_proof, pair.0, "condition evidence") == pair.1,
@@ -1466,9 +1465,7 @@ fn v3_dislock_prove_profile(
     ledger_seen[token] = true
   }
   let profiles : Map[String, Bool] = Map([])
-  profiles[["dislock-f9946f0-v3/1".to_json(), schema.to_json(), table.to_json()]
-  .to_json()
-  .stringify()] = true
+  profiles[Json([Json("dislock-f9946f0-v3/1"), Json(schema), Json(table)]).stringify()] = true
   {
     verified_statements,
     verified_facts,
@@ -1491,7 +1488,7 @@ fn v3_dislock_sql_proof(root : Map[String, Json]) -> V3DislockSQLProof raise {
   }
   let selected = profiles.filter(value => {
     object_fields_unchecked_v3(value).get("profile") ==
-    Some("dislock-f9946f0-v3/1".to_json())
+    Some(Json("dislock-f9946f0-v3/1"))
   })
   if selected.is_empty() {
     return empty
@@ -1522,7 +1519,7 @@ pub fn dislock_sql_v3_proof_json(text : String) -> String {
       guarded_json(normalize_register_capture_v3_json(text), limit=33554432),
       "v3 lifecycle",
     )
-    if required(lifecycle, "status", "v3 lifecycle") == "invalid".to_json() {
+    if required(lifecycle, "status", "v3 lifecycle") == Json("invalid") {
       fail(
         "Invalid v3 structure/lifecycle cannot receive SQL verification claims",
       )
@@ -1546,10 +1543,10 @@ pub fn dislock_sql_v3_proof_json(text : String) -> String {
     let result : Json = {
       "algorithm": "dislock-f9946f0-sql-proof-1",
       "analysisCoverageAccepted": false,
-      "verifiedStatements": statements.map(seq => seq.to_double()).to_json(),
-      "verifiedFacts": facts.map(seq => seq.to_double()).to_json(),
-      "verifiedProfiles": profiles.to_json(),
-      "gaps": proof.gaps.to_json(),
+      "verifiedStatements": Json(statements.map(seq => seq.to_double())),
+      "verifiedFacts": Json(facts.map(seq => seq.to_double())),
+      "verifiedProfiles": Json(profiles),
+      "gaps": Json(proof.gaps),
       "scope": "Semantic coherence of fixed SQL, source/catalog observations and actual effect ledgers; no database authenticity claim or automatic coverage exemption.",
     }
     result.stringify(indent=2)
@@ -1570,8 +1567,8 @@ pub fn dislock_sql_v3_proof_json(text : String) -> String {
 }
 
 ///|
-fn v3_dislock_constraint(kind : String, column : Int) -> Json {
-  [kind.to_json(), [column.to_json()], true, true, false, false]
+fn v3_dislock_constraint(kind : String, column : Int32) -> Json {
+  [Json(kind), [Json(column)], true, true, false, false]
 }
 
 ///|
@@ -1612,10 +1609,10 @@ fn v3_dislock_catalog_entry(
   )
   relation_oids[id] = true
   v3_dislock_assert(
-    relation[1] == "r".to_json() &&
-    relation[2] == false.to_json() &&
-    relation[3] == false.to_json() &&
-    relation[4] == "p".to_json(),
+    relation[1] == Json("r") &&
+    relation[2] == Json(false) &&
+    relation[3] == Json(false) &&
+    relation[4] == Json("p"),
     "Ordinary permanent tables without RLS are required",
   )
   v3_dislock_assert(
@@ -1663,7 +1660,7 @@ fn v3_dislock_catalog_entry(
     trigger_seen[id] = true
   }
   v3_dislock_assert(
-    required(e, "indexCount", "catalog") == semantic.length().to_json(),
+    required(e, "indexCount", "catalog") == Json(semantic.length()),
     "Unregistered indexes are unsupported",
   )
   let effects = object_fields(
@@ -1678,7 +1675,7 @@ fn v3_dislock_catalog_entry(
   known_fields(effects, names, "unsafeEffects")
   for name in names {
     v3_dislock_assert(
-      required(effects, name, "unsafeEffects") == (0).to_json(),
+      required(effects, name, "unsafeEffects") == Json(0),
       "Catalog feature can execute unobserved SQL or change the fixed model",
     )
   }
@@ -1777,7 +1774,7 @@ fn v3_dislock_catalog(
       "commandTag": "LOCK TABLE",
     },
     { "kind": "catalog", "tableOid": table_oid },
-    { "kind": "snapshot", "rows": initial_state.to_json() },
+    { "kind": "snapshot", "rows": Json(initial_state) },
     { "kind": "commit", "commandTag": "COMMIT" },
   ]
   for i in 0..<5 {

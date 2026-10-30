@@ -17,7 +17,7 @@ fn compatible_evidence_version(v : Json?) -> Bool {
 fn replay_failure(message : String) -> String {
   let result : Json = {
     "valid": false,
-    "reason": message.to_json(),
+    "reason": Json(message),
     "scope": "semantic result reproduction; not a signature or source authenticity check",
   }
   result.stringify(indent=2)
@@ -34,11 +34,11 @@ pub fn replay_report_json(
       guarded_json(report_text, limit=33554432),
       "report",
     )
-    if root.get("schemaVersion") == Some((2).to_json()) {
+    if root.get("schemaVersion") == Some(Json(2)) {
       return replay_report_v2(history_text, root)
     }
-    if root.get("tool") != Some("MoonTxnWitness".to_json()) ||
-      root.get("schemaVersion") != Some((1).to_json()) ||
+    if root.get("tool") != Some(Json("MoonTxnWitness")) ||
+      root.get("schemaVersion") != Some(Json(1)) ||
       !compatible_evidence_version(root.get("version")) {
       return replay_failure("Unsupported report header")
     }
@@ -65,8 +65,8 @@ pub fn replay_report_json(
       "reason": "The current engine reproduces every checked semantic field.",
       "status": expected.at("status"),
       "model": expected.at("model"),
-      "checkedFields": checked.to_json(),
-      "currentEngine": version().to_json(),
+      "checkedFields": Json(checked),
+      "currentEngine": Json(version()),
       "recordedEngine": root.at("version"),
       "scope": "semantic result reproduction; supplemental presentation fields and source authenticity are not checked",
     }
@@ -89,13 +89,13 @@ pub fn capsule_content_json(text : String) -> String {
       ],
       "capsule",
     )
-    let v1 = root.get("format") == Some("moontxnwitness-replay/v1".to_json()) &&
-      root.get("schemaVersion") == Some((1).to_json())
-    let v2 = root.get("format") == Some("moontxnwitness-replay/v2".to_json()) &&
-      root.get("schemaVersion") == Some((2).to_json()) &&
+    let v1 = root.get("format") == Some(Json("moontxnwitness-replay/v1")) &&
+      root.get("schemaVersion") == Some(Json(1))
+    let v2 = root.get("format") == Some(Json("moontxnwitness-replay/v2")) &&
+      root.get("schemaVersion") == Some(Json(2)) &&
       compatible_v2_version(root.get("engineVersion"))
     if (!v1 && !v2) ||
-      root.get("tool") != Some("MoonTxnWitness".to_json()) ||
+      root.get("tool") != Some(Json("MoonTxnWitness")) ||
       !compatible_evidence_version(root.get("engineVersion")) {
       fail("Unsupported capsule header")
     }
@@ -171,16 +171,13 @@ pub fn compare_models(h : History) -> Json {
   }
   {
     "tool": "MoonTxnWitness",
-    "version": version().to_json(),
-    "valid": (category != "invalid").to_json(),
-    "classification": category.to_json(),
-    "inputModel": model_label(h.model).to_json(),
+    "version": Json(version()),
+    "valid": Json(category != "invalid"),
+    "classification": Json(category),
+    "inputModel": Json(model_label(h.model)),
     "serializable": report_json(serial),
     "strictSerializable": report_json(strict),
-    "realtimeEdges": strict.edges
-    .filter(e => e.kind == RT)
-    .map(edge_json)
-    .to_json(),
+    "realtimeEdges": Json(strict.edges.filter(e => e.kind == RT).map(edge_json)),
     "scope": "same observations under two models; no database-wide guarantee",
   }
 }
@@ -193,7 +190,7 @@ pub fn compare_models_json(text : String) -> String {
       let result : Json = {
         "valid": false,
         "classification": "invalid",
-        "reason": e.to_json(),
+        "reason": Json(e),
       }
       result.stringify(indent=2)
     }

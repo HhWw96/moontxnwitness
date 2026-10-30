@@ -142,7 +142,7 @@ test "published transaction reduction" {{
 ///|
 test "published model comparison" {{
   let j = @txn.compare_models(load({history('strict-realtime')}))
-  assert_true(j is Object(m) && m.get("classification") == Some("realtime-only-violation".to_json()))
+  assert_true(j is Object(m) && m.get("classification") == Some(Json("realtime-only-violation")))
 }}
 
 ///|
@@ -150,7 +150,7 @@ test "published semantic report replay" {{
   let text = {history('write-skew')}
   let r = @txn.analyze(load(text))
   let j = @json.parse(@txn.replay_report_json(text, @txn.report_json(r).stringify()))
-  assert_true(j is Object(m) && m.get("valid") == Some(true.to_json()))
+  assert_true(j is Object(m) && m.get("valid") == Some(Json(true)))
 }}
 '''
     expected_tests = 6
@@ -162,7 +162,7 @@ test "published semantic report replay" {{
   assert_eq(result.report.search.status, "exhausted")
   let j = @txn.analysis_result_json(result)
   let replay = @json.parse(@txn.replay_report_json(text, j.stringify()))
-  assert_true(replay is Object(m) && m.get("valid") == Some(true.to_json()))
+  assert_true(replay is Object(m) && m.get("valid") == Some(Json(true)))
 }}
 '''
         expected_tests += 1
@@ -183,8 +183,8 @@ test "published semantic report replay" {{
   let result = @json.parse(@txn.normalize_capture_json({json.dumps(json.dumps(complete_capture), ensure_ascii=True)}))
   match result {{
     Object(fields) => {{
-      assert_eq(fields.get("status"), Some("ready".to_json()))
-      assert_true(fields.get("coverage") is Some(Object(coverage)) && coverage.get("complete") == Some(true.to_json()))
+      assert_eq(fields.get("status"), Some(Json("ready")))
+      assert_true(fields.get("coverage") is Some(Object(coverage)) && coverage.get("complete") == Some(Json(true)))
       let h = load(fields.at("history").stringify())
       assert_true(@txn.analyze(h).outcome == @txn.Violation)
     }}
@@ -197,9 +197,9 @@ test "published incomplete capture refuses a history" {{
   let result = @json.parse(@txn.normalize_capture_json({json.dumps(json.dumps(incomplete_capture), ensure_ascii=True)}))
   match result {{
     Object(fields) => {{
-      assert_eq(fields.get("status"), Some("inconclusive".to_json()))
+      assert_eq(fields.get("status"), Some(Json("inconclusive")))
       assert_eq(fields.get("history"), Some(Json::null()))
-      assert_true(fields.get("coverage") is Some(Object(coverage)) && coverage.get("complete") == Some(false.to_json()))
+      assert_true(fields.get("coverage") is Some(Object(coverage)) && coverage.get("complete") == Some(Json(false)))
     }}
     _ => abort("Normalized capture object required")
   }}

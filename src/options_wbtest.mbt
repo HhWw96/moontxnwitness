@@ -1,5 +1,5 @@
 ///|
-fn completion_noise(n : Int) -> History {
+fn completion_noise(n : Int32) -> History {
   let txs : Array[Transaction] = []
   for i in 0..<(n - 3) {
     txs.push(tx("N" + i.to_string(), [read_op("z", "z0")]))
@@ -110,8 +110,8 @@ test "v2 rejects altered verdict, effective budget, algorithm and version proven
   let text = history_json(h).stringify()
   for
     (field, replacement) in [
-      ("status", "consistent".to_json()),
-      ("algorithm", "unknown".to_json()),
+      ("status", Json("consistent")),
+      ("algorithm", Json("unknown")),
       ("effectiveLimits", Json::null()),
       ("versionOrderSources", Json::null()),
     ] {
@@ -146,7 +146,7 @@ test "balanced option parsing rejects duplicate, fractional and excessive budget
       "{\"maxAttempts\":1,\"maxAttempts\":2}", "{\"unknown\":1}",
     ] {
     let j = @json.parse(analyze_options_json(h, opts))
-    assert_true(j is Object(m) && m.get("status") == Some("invalid".to_json()))
+    assert_true(j is Object(m) && m.get("status") == Some(Json("invalid")))
   }
 }
 

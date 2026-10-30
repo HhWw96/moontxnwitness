@@ -41,7 +41,7 @@ fn model_lifecycle_v3(
     let record = object_fields(raw, "model lifecycle")
     orm_equal(
       required(record, "seq", "lifecycle"),
-      (i + 1).to_json(),
+      Json(i + 1),
       "Contiguous original lifecycle sequence",
     )
     let kind = orm_text(required(record, "kind", "lifecycle"))
@@ -52,12 +52,12 @@ fn model_lifecycle_v3(
       |> ignore
       orm_equal(
         required(record, "format", "header"),
-        "moontxnwitness-instrumentation/v1".to_json(),
+        Json("moontxnwitness-instrumentation/v1"),
         "Original diagnostic instrumentation format",
       )
       orm_equal(
         required(record, "diagnosticOnly", "header"),
-        true.to_json(),
+        Json(true),
         "Raw diagnostic flag retained",
       )
       orm_assert(kind == "header", "One initial lifecycle header")
@@ -73,18 +73,18 @@ fn model_lifecycle_v3(
       )
       orm_equal(
         required(record, "records", "seal"),
-        i.to_json(),
+        Json(i),
         "Lifecycle record count",
       )
       orm_equal(
         required(record, "prefixSha256", "seal"),
-        v3_dislock_sha256(prefix.to_string()).to_json(),
+        Json(v3_dislock_sha256(prefix.to_string())),
         "Original lifecycle prefix bytes",
       )
     } else {
       orm_equal(
         required(record, "processMonotonicDomain", "record"),
-        domain.to_json(),
+        Json(domain),
         "One original client clock domain",
       )
       let ns = orm_profile_ns_v3(record)
@@ -93,7 +93,7 @@ fn model_lifecycle_v3(
         kind == "model-window-close" {
         orm_equal(
           required(record, "profile", "window"),
-          "pg18-configured-models/1".to_json(),
+          Json("pg18-configured-models/1"),
           "Pinned model profile",
         )
         orm_equal(
@@ -147,7 +147,7 @@ fn model_lifecycle_v3(
         )
         orm_equal(
           required(record, "asynchronous", "factory"),
-          false.to_json(),
+          Json(false),
           "First profile supports native synchronous factory only",
         )
         attached = true
@@ -164,7 +164,7 @@ fn model_lifecycle_v3(
         )
         orm_equal(
           required(record, "borrowedConnections", "detach"),
-          (0).to_json(),
+          Json(0),
           "No borrowed connection on detach",
         )
         detached = true
@@ -184,7 +184,7 @@ fn model_lifecycle_v3(
           )
           orm_equal(
             required(record, "asynchronous", "connect"),
-            false.to_json(),
+            Json(false),
             "Synchronous native connection",
           )
           connected[connection] = true
@@ -265,7 +265,7 @@ fn model_lifecycle_v3(
             }
             finished[id] = true
             active.remove(connection) |> ignore
-            if required(record, "method", "call") != "execute".to_json() {
+            if required(record, "method", "call") != Json("execute") {
               active_txs.remove(connection) |> ignore
             }
           } else if kind == "commit-response" {
@@ -275,7 +275,7 @@ fn model_lifecycle_v3(
             }
             orm_equal(
               required(calls[id], "method", "call"),
-              "commit".to_json(),
+              Json("commit"),
               "Original native COMMIT call",
             )
             orm_assert(

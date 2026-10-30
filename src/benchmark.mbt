@@ -5,13 +5,13 @@ pub fn benchmark_infer(h : History) -> Report {
 }
 
 ///|
-pub fn benchmark_cycle(h : History, r : Report) -> Int {
+pub fn benchmark_cycle(h : History, r : Report) -> Int32 {
   let (cycle, _) = shortest_cycle(h.transactions, r.edges)
   cycle.length()
 }
 
 ///|
-pub fn benchmark_search(h : History, r : Report) -> Int {
+pub fn benchmark_search(h : History, r : Report) -> Int32 {
   let (info, _) = search_serial(h, r.inferred_orders, r.edges)
   info.attempts
 }
@@ -22,7 +22,7 @@ pub fn benchmark_render(r : Report) -> String {
 }
 
 ///|
-pub fn benchmark_search_balanced(h : History, r : Report) -> Int {
+pub fn benchmark_search_balanced(h : History, r : Report) -> Int32 {
   let (info, _, _, _) = search_optimized(
     h,
     r.inferred_orders,

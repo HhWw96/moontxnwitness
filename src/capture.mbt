@@ -1,6 +1,6 @@
 ///|
 fn capture_gap(code : String, message : String) -> Json {
-  { "code": code.to_json(), "message": message.to_json() }
+  { "code": Json(code), "message": Json(message) }
 }
 
 ///|
@@ -11,11 +11,8 @@ fn capture_result(
 ) -> String {
   let result : Json = {
     "schema": 1,
-    "status": status.to_json(),
-    "coverage": {
-      "complete": (status == "ready").to_json(),
-      "gaps": gaps.to_json(),
-    },
+    "status": Json(status),
+    "coverage": { "complete": Json(status == "ready"), "gaps": Json(gaps) },
     "history": history,
   }
   result.stringify(indent=2)
@@ -32,10 +29,10 @@ fn capture_time(event : Map[String, Json], path : String) -> Int64 raise {
 ///|
 fn capture_active_tx(
   event : Map[String, Json],
-  ids : Map[String, Int],
+  ids : Map[String, Int32],
   active : Map[String, Bool],
   path : String,
-) -> Int raise {
+) -> Int32 raise {
   let id = identifier(required(event, "tx", path), path + ".tx")
   match (ids.get(id), active.get(id)) {
     (Some(index), Some(true)) => index
@@ -54,7 +51,7 @@ pub fn normalize_capture_json(text : String) -> String {
       ["traceSchema", "clockDomain", "scope", "events", "gaps"],
       "capture",
     )
-    if required(root, "traceSchema", "capture") != (1).to_json() {
+    if required(root, "traceSchema", "capture") != Json(1) {
       fail("traceSchema must be 1")
     }
     let _ = identifier(required(root, "clockDomain", "capture"), "clockDomain")
@@ -98,7 +95,7 @@ pub fn normalize_capture_json(text : String) -> String {
       fail("At most 65,536 capture events are supported")
     }
     let initial : Map[String, String] = Map([])
-    let ids : Map[String, Int] = Map([])
+    let ids : Map[String, Int32] = Map([])
     let active : Map[String, Bool] = Map([])
     let txs : Array[Transaction] = []
     let mut snapshot_seen = false
@@ -155,7 +152,7 @@ pub fn normalize_capture_json(text : String) -> String {
             path + ".initial",
           )
           for key, value in raw_initial {
-            let _ = identifier(key.to_json(), "initial key")
+            let _ = identifier(Json(key), "initial key")
             initial[key] = identifier(value, "initial." + key)
           }
         }
@@ -279,7 +276,7 @@ pub fn normalize_capture_json(text : String) -> String {
             None | Some(Array(_)) => ()
             _ => fail(path + ".rows must be an array")
           }
-          if event.get("mapped") == Some(false.to_json()) {
+          if event.get("mapped") == Some(Json(false)) {
             gaps.push(
               capture_gap(
                 "unmapped_sql", "A SQL observation has no supported semantic mapping",

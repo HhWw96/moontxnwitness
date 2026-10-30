@@ -14,7 +14,7 @@ fn orm_test_reject(action : () -> Unit raise) -> Unit raise {
 fn orm_test_image(email : String) -> Json {
   {
     "id": "00000000-0000-0000-0000-000000000001",
-    "email": email.to_json(),
+    "email": Json(email),
     "hashed_password": "hash",
     "is_active": true,
     "is_superuser": false,
@@ -38,19 +38,19 @@ test "ORM varchar counts Unicode scalars rather than UTF16 code units" {
 ///|
 test "ORM varchar counts combining scalars without normalization" {
   let value = "é".repeat(160)
-  assert_eq(orm_native_text(value.to_json(), 320), value)
-  orm_test_reject(() => ignore(orm_native_text((value + "́").to_json(), 320)))
+  assert_eq(orm_native_text(Json(value), 320), value)
+  orm_test_reject(() => ignore(orm_native_text(Json(value + "́"), 320)))
 }
 
 ///|
 test "ORM native PostgreSQL text rejects NUL" {
-  orm_test_reject(() => ignore(orm_native_text("a\u0000b".to_json(), 320)))
+  orm_test_reject(() => ignore(orm_native_text(Json("a\u0000b"), 320)))
 }
 
 ///|
 test "ORM image flags cannot be numeric booleans" {
   let image = orm_test_image("a")
-  object_fields(image, "image")["is_active"] = (1).to_json()
+  object_fields(image, "image")["is_active"] = Json(1)
   orm_test_reject(() => {
     orm_image(image, "00000000-0000-0000-0000-000000000001", true)
   })
@@ -78,7 +78,7 @@ test "ORM absent image cannot retain business columns" {
 ///|
 test "ORM six native columns reject extras" {
   let image = orm_test_image("a")
-  object_fields(image, "image")["role"] = "admin".to_json()
+  object_fields(image, "image")["role"] = Json("admin")
   orm_test_reject(() => {
     orm_image(image, "00000000-0000-0000-0000-000000000001", true)
   })
@@ -87,13 +87,9 @@ test "ORM six native columns reject extras" {
 ///|
 test "ORM password length is independent of email length" {
   let image = orm_test_image("a")
-  object_fields(image, "image")["hashed_password"] = "密"
-    .repeat(1024)
-    .to_json()
+  object_fields(image, "image")["hashed_password"] = Json("密".repeat(1024))
   orm_image(image, "00000000-0000-0000-0000-000000000001", true)
-  object_fields(image, "image")["hashed_password"] = "密"
-    .repeat(1025)
-    .to_json()
+  object_fields(image, "image")["hashed_password"] = Json("密".repeat(1025))
   orm_test_reject(() => {
     orm_image(image, "00000000-0000-0000-0000-000000000001", true)
   })
@@ -117,7 +113,7 @@ test "ORM typed UUID uses exact capture type and canonical case" {
     )
   })
   orm_test_reject(() => {
-    ignore(orm_bound_uuid("ABCDEF00-0000-0000-0000-000000000001".to_json()))
+    ignore(orm_bound_uuid(Json("ABCDEF00-0000-0000-0000-000000000001")))
   })
 }
 
@@ -125,7 +121,7 @@ test "ORM typed UUID uses exact capture type and canonical case" {
 test "ORM byte decoding rejects noncanonical padding" {
   assert_eq(
     orm_raw_text({ "captureType": "bytes", "base64": "YQ==" }),
-    "a".to_json(),
+    Json("a"),
   )
   orm_test_reject(() => {
     ignore(orm_raw_text({ "captureType": "bytes", "base64": "YQ" }))
@@ -146,7 +142,7 @@ test "ORM byte decoding rejects whitespace and invalid UTF8" {
 test "ORM byte decoding preserves initial BOM as an actual scalar" {
   assert_eq(
     orm_raw_text({ "captureType": "bytes", "base64": "77u/YQ==" }),
-    "﻿a".to_json(),
+    Json("﻿a"),
   )
 }
 
@@ -155,7 +151,7 @@ test "ORM raw NULL is distinct from JSON text null" {
   assert_eq(orm_raw_text(Json::null()), Json::null())
   assert_eq(
     orm_raw_text({ "captureType": "bytes", "base64": "bnVsbA==" }),
-    "null".to_json(),
+    Json("null"),
   )
 }
 
@@ -163,18 +159,13 @@ test "ORM raw NULL is distinct from JSON text null" {
 test "ORM raw cells cannot exceed predecode or decoded limit" {
   orm_test_reject(() => {
     ignore(
-      orm_raw_text({
-        "captureType": "bytes",
-        "base64": "A".repeat(70001).to_json(),
-      }),
+      orm_raw_text({ "captureType": "bytes", "base64": Json("A".repeat(70001)) }),
     )
   })
   let text = "a".repeat(51201)
   let encoded = @base64.encode(@utf8.encode(text[:])[:])
   orm_test_reject(() => {
-    ignore(
-      orm_raw_text({ "captureType": "bytes", "base64": encoded.to_json() }),
-    )
+    ignore(orm_raw_text({ "captureType": "bytes", "base64": Json(encoded) }))
   })
 }
 
@@ -182,10 +173,7 @@ test "ORM raw cells cannot exceed predecode or decoded limit" {
 test "ORM record node budget is shared across containers" {
   let first = Array::make(2050, Json::null())
   let second = Array::make(2050, Json::null())
-  let record : Json = {
-    "rows": first.to_json(),
-    "effectRows": second.to_json(),
-  }
+  let record : Json = { "rows": Json(first), "effectRows": Json(second) }
   orm_test_reject(() => ignore(orm_nodes(record, 0)))
 }
 
@@ -193,7 +181,7 @@ test "ORM record node budget is shared across containers" {
 test "ORM recursive node budget rejects excess depth" {
   let mut value : Json = Json::null()
   for _ in 0..<66 {
-    value = [value].to_json()
+    value = Json([value])
   }
   orm_test_reject(() => ignore(orm_nodes(value, 0)))
 }
@@ -275,7 +263,7 @@ test "ORM pg18 constraints distinguish NOT NULL and PK inheritance flags" {
 test "ORM catalog sets reject duplicate entries even at same cardinality" {
   let a = orm_constraint("n", 1)
   let b = orm_constraint("p", 1)
-  orm_test_reject(() => orm_set_equal([a, a].to_json(), [a, b], "constraints"))
+  orm_test_reject(() => orm_set_equal(Json([a, a]), [a, b], "constraints"))
 }
 
 ///|
@@ -318,5 +306,5 @@ test "ORM malformed envelope grants no partial source sets" {
   let result = @json.parse(orm_sql_v3_proof_json("{\"schema\":1,\"schema\":1}"))
   assert_eq(orm_get(result, "verifiedSourceBatches"), orm_empty())
   assert_eq(orm_get(result, "history"), Json::null())
-  assert_eq(orm_get(result, "analysisCoverageAccepted"), false.to_json())
+  assert_eq(orm_get(result, "analysisCoverageAccepted"), Json(false))
 }

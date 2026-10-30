@@ -1,17 +1,17 @@
 ///|
 priv struct CompiledOperation {
-  key : Int
-  version : Int
+  key : Int32
+  version : Int32
   read : Bool
-  original : Int
+  original : Int32
 }
 
 ///|
 priv struct CompiledTransaction {
   id : String
   ops : Array[CompiledOperation]
-  final_writes : Array[(Int, Int)]
-  predecessors : Int
+  final_writes : Array[(Int32, Int32)]
+  predecessors : Int32
 }
 
 ///|
@@ -19,32 +19,32 @@ priv struct OptimizedSearch {
   txs : Array[CompiledTransaction]
   keys : Array[String]
   versions : Array[Array[String]]
-  orders : Array[Array[Int]]
-  state : Array[Int]
-  positions : Array[Int]
-  key_units : FixedArray[Int]
-  trail_keys : FixedArray[Int]
-  trail_values : FixedArray[Int]
-  position_keys : FixedArray[Int]
-  position_values : FixedArray[Int]
-  mut trail_size : Int
-  mut position_size : Int
+  orders : Array[Array[Int32]]
+  state : Array[Int32]
+  positions : Array[Int32]
+  key_units : FixedArray[Int32]
+  trail_keys : FixedArray[Int32]
+  trail_values : FixedArray[Int32]
+  position_keys : FixedArray[Int32]
+  position_values : FixedArray[Int32]
+  mut trail_size : Int32
+  mut position_size : Int32
   failures : Map[String, Bool]
-  prefix : Array[Int]
+  prefix : Array[Int32]
   blockers : Array[Finding]
   options : AnalysisOptions
-  mut attempts : Int
-  mut operations : Int
-  mut hits : Int
+  mut attempts : Int32
+  mut operations : Int32
+  mut hits : Int32
   mut limited : Bool
 }
 
 ///|
 fn encode_search_state_key(
-  selected : Int,
-  state : Array[Int],
-  positions : Array[Int],
-  units? : FixedArray[Int] = FixedArray::make(
+  selected : Int32,
+  state : Array[Int32],
+  positions : Array[Int32],
+  units~ : FixedArray[Int32] = FixedArray::make(
     1 + state.length() + positions.length(),
     0,
   ),
@@ -54,10 +54,10 @@ fn encode_search_state_key(
 
 ///|
 fn fill_search_state_key(
-  selected : Int,
-  state : Array[Int],
-  positions : Array[Int],
-  units : FixedArray[Int],
+  selected : Int32,
+  state : Array[Int32],
+  positions : Array[Int32],
+  units : FixedArray[Int32],
 ) -> String {
   // Exactly the existing 1+2*K UTF-16 units: selected<=4095, versions<=512,
   // positions<=12 and K<=128. All units are below the surrogate range.
@@ -77,12 +77,12 @@ fn fill_search_state_key(
 // At most257 arguments, each an exact nonnegative UTF-16 code unit. This FFI
 // only materializes the already encoded key; it performs no search decisions.
 #cfg(target="js")
-extern "js" fn string_from_search_units(units : FixedArray[Int]) -> String =
+extern "js" fn string_from_search_units(units : FixedArray[Int32]) -> String =
   #| (units) => String.fromCharCode(...units)
 
 ///|
 #cfg(not(target="js"))
-fn string_from_search_units(units : FixedArray[Int]) -> String {
+fn string_from_search_units(units : FixedArray[Int32]) -> String {
   let b = StringBuilder(size_hint=units.length())
   for value in units {
     b.write_char(value.unsafe_to_char())
@@ -91,7 +91,7 @@ fn string_from_search_units(units : FixedArray[Int]) -> String {
 }
 
 ///|
-fn optimized_state_key(ctx : OptimizedSearch, selected : Int) -> String {
+fn optimized_state_key(ctx : OptimizedSearch, selected : Int32) -> String {
   encode_search_state_key(
     selected,
     ctx.state,
@@ -101,7 +101,11 @@ fn optimized_state_key(ctx : OptimizedSearch, selected : Int) -> String {
 }
 
 ///|
-fn undo_search(ctx : OptimizedSearch, mark : Int, position_mark : Int) -> Unit {
+fn undo_search(
+  ctx : OptimizedSearch,
+  mark : Int32,
+  position_mark : Int32,
+) -> Unit {
   while ctx.trail_size > mark {
     ctx.trail_size -= 1
     ctx.state[ctx.trail_keys[ctx.trail_size]] = ctx.trail_values[ctx.trail_size]
@@ -113,7 +117,7 @@ fn undo_search(ctx : OptimizedSearch, mark : Int, position_mark : Int) -> Unit {
 }
 
 ///|
-fn optimized_step(ctx : OptimizedSearch, selected : Int) -> Array[Int]? {
+fn optimized_step(ctx : OptimizedSearch, selected : Int32) -> Array[Int32]? {
   if ctx.prefix.length() == ctx.txs.length() {
     return Some(ctx.prefix.copy())
   }
@@ -216,7 +220,7 @@ fn search_optimized(
   orders : Map[String, Array[String]],
   edges : Array[Edge],
   options : AnalysisOptions,
-) -> (SearchInfo, Array[String]?, Int, Int) {
+) -> (SearchInfo, Array[String]?, Int32, Int32) {
   let transactions = h.transactions.filter(t => t.status == Committed)
   if transactions.length() > 12 ||
     count_ops(h) > 512 ||
@@ -236,8 +240,8 @@ fn search_optimized(
   }
   let keys = h.initial.keys().collect()
   keys.sort()
-  let key_ids : Map[String, Int] = Map([])
-  let version_ids : Array[Map[String, Int]] = []
+  let key_ids : Map[String, Int32] = Map([])
+  let version_ids : Array[Map[String, Int32]] = []
   let versions : Array[Array[String]] = []
   for i, key in keys {
     key_ids[key] = i
@@ -253,7 +257,7 @@ fn search_optimized(
       }
     }
   }
-  let tx_ids : Map[String, Int] = Map([])
+  let tx_ids : Map[String, Int32] = Map([])
   for i, tx in transactions {
     tx_ids[tx.id] = i
   }
@@ -263,7 +267,7 @@ fn search_optimized(
     predecessors[target] = predecessors[target] | (1 << tx_ids.at(e.from))
   }
   let compiled : Array[CompiledTransaction] = transactions.mapi((i, tx) => {
-    let finals : Map[Int, Int] = Map([])
+    let finals : Map[Int32, Int32] = Map([])
     let ops : Array[CompiledOperation] = tx.ops.mapi((oi, op) => {
       let key = key_ids.at(op.key)
       let version = version_ids[key].at(op.version)

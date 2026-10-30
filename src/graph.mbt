@@ -1,17 +1,17 @@
 ///|
 priv struct GraphIndex {
-  adj : FixedArray[FixedArray[Int]]
-  sources : FixedArray[Int]
-  targets : FixedArray[Int]
+  adj : FixedArray[FixedArray[Int32]]
+  sources : FixedArray[Int32]
+  targets : FixedArray[Int32]
 }
 
 ///|
 // Internal empty neighbors have no writable index and never hold input data.
-let empty_graph_neighbors : FixedArray[Int] = FixedArray::make(0, 0)
+let empty_graph_neighbors : FixedArray[Int32] = FixedArray::make(0, 0)
 
 ///|
 fn adjacency(txs : Array[Transaction], edges : Array[Edge]) -> GraphIndex {
-  let index : Map[String, Int] = Map([])
+  let index : Map[String, Int32] = Map([])
   for i, tx in txs {
     index[tx.id] = i
   }
@@ -50,7 +50,7 @@ fn adjacency(txs : Array[Transaction], edges : Array[Edge]) -> GraphIndex {
 fn shortest_cycle(
   txs : Array[Transaction],
   edges : Array[Edge],
-  prepared? : GraphIndex = adjacency(txs, edges),
+  prepared~ : GraphIndex = adjacency(txs, edges),
 ) -> (Array[Edge], GraphInfo) {
   let g = prepared
   let n = txs.length()
@@ -136,17 +136,17 @@ fn shortest_cycle(
 
 ///|
 priv struct Components {
-  indices : Array[Int]
-  low : Array[Int]
+  indices : Array[Int32]
+  low : Array[Int32]
   active : Array[Bool]
-  stack : Array[Int]
-  groups : Array[Int]
-  sizes : Array[Int]
-  mut next : Int
+  stack : Array[Int32]
+  groups : Array[Int32]
+  sizes : Array[Int32]
+  mut next : Int32
 }
 
 ///|
-fn component_visit(v : Int, ctx : Components, g : GraphIndex) -> Unit {
+fn component_visit(v : Int32, ctx : Components, g : GraphIndex) -> Unit {
   ctx.indices[v] = ctx.next
   ctx.low[v] = ctx.next
   ctx.next += 1
@@ -202,7 +202,7 @@ fn strongly_connected(txs : Array[Transaction], g : GraphIndex) -> Components {
 }
 
 ///|
-fn topology_ready_push(ready : Array[Int], value : Int) -> Unit {
+fn topology_ready_push(ready : Array[Int32], value : Int32) -> Unit {
   let mut child = ready.length()
   ready.push(value)
   while child > 0 {
@@ -217,7 +217,7 @@ fn topology_ready_push(ready : Array[Int], value : Int) -> Unit {
 }
 
 ///|
-fn topology_ready_pop(ready : Array[Int]) -> Int {
+fn topology_ready_pop(ready : Array[Int32]) -> Int32 {
   let next = ready[0]
   let last = match ready.pop() {
     Some(value) => value
@@ -248,7 +248,7 @@ fn topology_ready_pop(ready : Array[Int]) -> Int {
 fn topological_order(
   txs : Array[Transaction],
   edges : Array[Edge],
-  prepared? : GraphIndex = adjacency(txs, edges),
+  prepared~ : GraphIndex = adjacency(txs, edges),
 ) -> Array[String] {
   let g = prepared
   let degree = Array::make(txs.length(), 0)
@@ -258,7 +258,7 @@ fn topological_order(
   // Original array indices define the existing deterministic tie order. A
   // min-heap selects that same first ready transaction without rescanning all
   // previously emitted transactions for every result element.
-  let ready : Array[Int] = []
+  let ready : Array[Int32] = []
   for i, tx in txs {
     if tx.status == Committed && degree[i] == 0 {
       topology_ready_push(ready, i)

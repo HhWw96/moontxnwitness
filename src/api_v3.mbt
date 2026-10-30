@@ -15,7 +15,7 @@ fn v3_analysis(text : String, options_text : String) -> Json raise {
   let mut evidence : Json = Json::null()
   let mut status = required(n, "status", "normalized")
   let mut metrics : Json = Json::null()
-  if status == "ready".to_json() {
+  if status == Json("ready") {
     match
       parse_history_optimized(required(n, "history", "normalized").stringify()) {
       Ok(h) => {
@@ -28,18 +28,26 @@ fn v3_analysis(text : String, options_text : String) -> Json raise {
     }
   }
   let recorded_options : Json = {
-    "maxAttempts": options.max_attempts.to_json(),
-    "maxOperationChecks": options.max_operation_checks.to_json(),
-    "maxCachedStates": options.max_cached_states.to_json(),
+    "maxAttempts": Json(options.max_attempts),
+    "maxOperationChecks": Json(options.max_operation_checks),
+    "maxCachedStates": Json(options.max_cached_states),
   }
   if sql_proof {
-    object_fields_unchecked_v3(recorded_options)["sqlProof"] = "dislock-f9946f0-sql-proof-1".to_json()
+    object_fields_unchecked_v3(recorded_options)["sqlProof"] = Json(
+      "dislock-f9946f0-sql-proof-1",
+    )
   }
   {
     "schemaVersion": 3,
     "tool": "MoonTxnWitness",
-    "version": version().to_json(),
-    "algorithm": (if sql_proof { "v3-register-sql-1" } else { "v3-register-1" }).to_json(),
+    "version": Json(version()),
+    "algorithm": Json(
+      if sql_proof {
+        "v3-register-sql-1"
+      } else {
+        "v3-register-1"
+      },
+    ),
     "status": status,
     "modelDefinition": {
       "id": "register-serializable-v1",
@@ -61,11 +69,11 @@ fn v3_failure(message : String) -> Json {
   {
     "schemaVersion": 3,
     "tool": "MoonTxnWitness",
-    "version": version().to_json(),
+    "version": Json(version()),
     "algorithm": "v3-register-1",
     "status": "invalid",
     "coverage": { "complete": false, "gaps": [] },
-    "error": message.to_json(),
+    "error": Json(message),
   }
 }
 
@@ -110,21 +118,23 @@ pub fn verify_v3_json(text : String, report_text : String) -> String {
     expected_fields["version"] = fields.at("version")
     match expected_fields.get("evidence") {
       Some(Object(evidence)) =>
-        if evidence.get("tool") == Some("MoonTxnWitness".to_json()) &&
-          evidence.get("schemaVersion") == Some((2).to_json()) {
+        if evidence.get("tool") == Some(Json("MoonTxnWitness")) &&
+          evidence.get("schemaVersion") == Some(Json(2)) {
           evidence["version"] = fields.at("version")
         }
       _ => ()
     }
     let valid = supplied == expected
     let result : Json = {
-      "valid": valid.to_json(),
+      "valid": Json(valid),
       "schemaVersion": 3,
-      "reason": (if valid {
-        "Every v3 field was independently recomputed, including observations, effects, coverage, budgets and evidence."
-      } else {
-        "Recomputed v3 report differs."
-      }).to_json(),
+      "reason": Json(
+        if valid {
+          "Every v3 field was independently recomputed, including observations, effects, coverage, budgets and evidence."
+        } else {
+          "Recomputed v3 report differs."
+        },
+      ),
       "scope": "semantic reproduction; hashes do not authenticate source observations",
     }
     result.stringify(indent=2)
@@ -154,9 +164,9 @@ pub fn capsule_v3_content_json(text : String) -> String {
       ],
       "capsule",
     )
-    if root.get("format") != Some("moontxnwitness-replay/v3".to_json()) ||
-      root.get("schemaVersion") != Some((3).to_json()) ||
-      root.get("tool") != Some("MoonTxnWitness".to_json()) ||
+    if root.get("format") != Some(Json("moontxnwitness-replay/v3")) ||
+      root.get("schemaVersion") != Some(Json(3)) ||
+      root.get("tool") != Some(Json("MoonTxnWitness")) ||
       !compatible_v3_engine(root.get("engineVersion")) {
       fail("Unsupported v3 capsule header")
     }
@@ -205,7 +215,7 @@ pub fn capsule_v3_content_json(text : String) -> String {
 fn v3_without_transaction(
   trace : Json,
   removed : String,
-  prune_sql_ledger? : Bool = false,
+  prune_sql_ledger~ : Bool = false,
 ) -> (Json, Array[Json]) raise {
   let root = object_fields(trace, "trace")
   let events = match required(root, "events", "trace") {
@@ -219,19 +229,19 @@ fn v3_without_transaction(
   for raw in events {
     let event = object_fields(raw, "event")
     if prune_sql_ledger &&
-      event.get("tx") == Some(removed.to_json()) &&
-      event.get("kind") == Some("write".to_json()) {
+      event.get("tx") == Some(Json(removed)) &&
+      event.get("kind") == Some(Json("write")) {
       removed_versions[identifier(
         required(event, "version", "write"),
         "write.version",
       )] = true
     }
-    if event.get("tx") != Some(removed.to_json()) {
+    if event.get("tx") != Some(Json(removed)) {
       let copy : Map[String, Json] = Map([])
       for key, value in event {
         copy[key] = value
       }
-      let next = (kept.length() + 1).to_json()
+      let next = Json(kept.length() + 1)
       let original = required(event, "seq", "event")
       sequence[original.stringify()] = next
       copy["seq"] = next
@@ -266,7 +276,7 @@ fn v3_without_transaction(
   for key, value in root {
     copy[key] = value
   }
-  copy["events"] = kept.to_json()
+  copy["events"] = Json(kept)
   if prune_sql_ledger {
     match root.get("sqlProfiles") {
       Some(Array(profiles)) => {
@@ -279,8 +289,8 @@ fn v3_without_transaction(
           }
           match fields.get("effectLedger") {
             Some(Array(rows)) =>
-              profile["effectLedger"] = rows
-                .filter(row => {
+              profile["effectLedger"] = Json(
+                rows.filter(row => {
                   let version = identifier(
                     required(
                       object_fields(row, "effect ledger"),
@@ -290,13 +300,13 @@ fn v3_without_transaction(
                     "effect ledger.version",
                   )
                   !removed_versions.contains(version)
-                })
-                .to_json()
+                }),
+              )
             _ => ()
           }
           pruned.push(Json::object(profile))
         }
-        copy["sqlProfiles"] = pruned.to_json()
+        copy["sqlProfiles"] = Json(pruned)
       }
       _ => ()
     }
@@ -344,7 +354,7 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
       origins.push(object_fields(event, "event").at("seq"))
     }
     let eligible = object_fields(report, "report").get("status") ==
-      Some("violation".to_json())
+      Some(Json("violation"))
     if eligible {
       let mut changed = true
       while changed && checks < max_checks {
@@ -377,7 +387,7 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
             candidate, analysis_options,
           )
           if object_fields(candidate_report, "report").get("status") ==
-            Some("violation".to_json()) {
+            Some(Json("violation")) {
             let old_events = match object_fields(trace, "trace").at("events") {
               Array(items) => items
               _ => []
@@ -403,27 +413,31 @@ pub fn reduce_v3_json(text : String, options_text : String) -> String {
     let result : Json = {
       "schemaVersion": 3,
       "algorithm": "v3-source-checked-single-delete-1",
-      "predicate": (if v3_is_relation_capture(text) {
-        "definite relation-set serializability violation with complete capture coverage"
-      } else if v3_is_list_capture(text) {
-        "definite append-list serializability violation with complete capture coverage"
-      } else {
-        "definite register serializability violation with complete capture coverage"
-      }).to_json(),
-      "status": (if !eligible {
-        "not-violation"
-      } else if !minimal {
-        "budget"
-      } else if removed.is_empty() {
-        "unchanged"
-      } else {
-        "reduced"
-      }).to_json(),
-      "maxChecks": max_checks.to_json(),
-      "checks": checks.to_json(),
-      "oneMinimal": minimal.to_json(),
-      "removed": removed.to_json(),
-      "retainedOriginalSeq": origins.to_json(),
+      "predicate": Json(
+        if v3_is_relation_capture(text) {
+          "definite relation-set serializability violation with complete capture coverage"
+        } else if v3_is_list_capture(text) {
+          "definite append-list serializability violation with complete capture coverage"
+        } else {
+          "definite register serializability violation with complete capture coverage"
+        },
+      ),
+      "status": Json(
+        if !eligible {
+          "not-violation"
+        } else if !minimal {
+          "budget"
+        } else if removed.is_empty() {
+          "unchanged"
+        } else {
+          "reduced"
+        },
+      ),
+      "maxChecks": Json(max_checks),
+      "checks": Json(checks),
+      "oneMinimal": Json(minimal),
+      "removed": Json(removed),
+      "retainedOriginalSeq": Json(origins),
       "reducedCapture": trace,
       "report": report,
     }

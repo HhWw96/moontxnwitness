@@ -5,8 +5,8 @@
 priv struct JsonScan {
   chars : Array[Char]
   decoded_keys : Map[String, String]
-  mut pos : Int
-  mut depth : Int
+  mut pos : Int32
+  mut depth : Int32
 }
 
 ///|
@@ -146,7 +146,7 @@ fn JsonScan::value(self : JsonScan) -> Unit raise {
 }
 
 ///|
-fn guarded_base(text : String, limit? : Int = 1048576) -> Json raise {
+fn guarded_base(text : String, limit~ : Int32 = 1048576) -> Json raise {
   if text.length() > limit {
     fail("JSON input exceeds the size limit")
   }
@@ -190,8 +190,8 @@ priv struct StreamingJsonScan {
   chars : Iter[Char]
   decoded_keys : Map[String, String]
   mut current : Char?
-  mut pos : Int
-  mut depth : Int
+  mut pos : Int32
+  mut depth : Int32
 }
 
 ///|
@@ -344,7 +344,7 @@ fn StreamingJsonScan::value(self : StreamingJsonScan) -> Unit raise {
 ///|
 // Valid large inputs avoid a materialized character array. Input errors use
 // the original guard to preserve diagnostic priority and source coordinates.
-fn guarded_json(text : String, limit? : Int = 1048576) -> Json raise {
+fn guarded_json(text : String, limit~ : Int32 = 1048576) -> Json raise {
   if text.length() > limit {
     return guarded_base(text, limit~)
   }

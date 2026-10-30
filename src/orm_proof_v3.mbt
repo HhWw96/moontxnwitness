@@ -24,7 +24,7 @@ fn orm_journal(text : String) -> Array[Json] raise {
     let record = object_fields(value, "source record")
     orm_equal(
       required(record, "sourceSeq", "record"),
-      (i + 1).to_json(),
+      Json(i + 1),
       "source sequence",
     )
     let kind = orm_text(required(record, "kind", "record"))
@@ -50,12 +50,12 @@ fn orm_journal(text : String) -> Array[Json] raise {
       orm_assert(kind == "seal", "Terminal source seal required")
       orm_equal(
         required(record, "sourceRecords", "seal"),
-        i.to_json(),
+        Json(i),
         "sealed record count",
       )
       orm_equal(
         required(record, "prefixSha256", "seal"),
-        v3_dislock_sha256(prefix.to_string()).to_json(),
+        Json(v3_dislock_sha256(prefix.to_string())),
         "original-byte journal seal",
       )
     } else if i == lines.length() - 3 {
@@ -146,20 +146,20 @@ fn orm_initial_sources(
     let version = orm_uuid(required(state, "version", "initial"))
     orm_equal(
       required(tokens, key, "snapshot"),
-      version.to_json(),
+      Json(version),
       "initial snapshot token",
     )
     let present = required(state, "present", "state")
     orm_assert(
-      present == true.to_json() || present == false.to_json(),
+      present == Json(true) || present == Json(false),
       "Initial presence must be boolean",
     )
     let image = required(state, "image", "initial")
-    orm_image(image, key, present == true.to_json())
+    orm_image(image, key, present == Json(true))
     orm_assert(!sources.contains(version), "Initial source UUID collision")
     sources[version] = {
-      "key": key.to_json(),
-      "version": version.to_json(),
+      "key": Json(key),
+      "version": Json(version),
       "present": present,
       "image": image,
       "seq": required(snapshot, "seq", "snapshot"),
@@ -186,8 +186,8 @@ fn orm_effect_ledger(
     orm_assert(!by_row.contains(row), "Duplicate source row binding")
     by_row[row] = fact
   }
-  let trails : Map[String, Array[Int]] = Map([])
-  let scopes : Map[String, Array[(String, Int)]] = Map([])
+  let trails : Map[String, Array[Int32]] = Map([])
+  let scopes : Map[String, Array[(String, Int32)]] = Map([])
   let outcomes : Map[String, String] = Map([])
   for tx in transactions {
     outcomes[orm_text(orm_get(tx, "id"))] = orm_text(orm_get(tx, "status"))
@@ -229,8 +229,7 @@ fn orm_effect_ledger(
         let mark = stack[target].1
         while trail.length() > mark {
           match trail.pop() {
-            Some(index) =>
-              effects[index].reverted_by = seq.to_double().to_json()
+            Some(index) => effects[index].reverted_by = Json(seq.to_double())
             None => ()
           }
         }
@@ -246,7 +245,7 @@ fn orm_effect_ledger(
     if kind == "rows" {
       match by_row.get(seq) {
         Some(fact) =>
-          if orm_get(fact, "kind") == "write".to_json() {
+          if orm_get(fact, "kind") == Json("write") {
             let data = object_fields(orm_get(fact, "data"), "write data")
             let version = orm_uuid(required(data, "version", "write"))
             orm_assert(
@@ -255,12 +254,12 @@ fn orm_effect_ledger(
             )
             sources[version] = {
               "key": required(data, "key", "write"),
-              "version": version.to_json(),
+              "version": Json(version),
               "present": required(data, "newPresent", "write"),
               "image": required(data, "newImage", "write"),
-              "seq": seq.to_double().to_json(),
-              "writer": tx.to_json(),
-              "effect": effects.length().to_json(),
+              "seq": Json(seq.to_double()),
+              "writer": Json(tx),
+              "effect": Json(effects.length()),
             }
             trail.push(effects.length())
             effects.push({
@@ -279,12 +278,12 @@ fn orm_effect_ledger(
     }
     if kind == "rollback_ok" && outcomes.get(tx) == Some("aborted") {
       for index in trail {
-        effects[index].reverted_by = seq.to_double().to_json()
+        effects[index].reverted_by = Json(seq.to_double())
       }
       trail.clear()
     }
   }
-  let last : Map[String, Map[String, Int]] = Map([])
+  let last : Map[String, Map[String, Int32]] = Map([])
   for i, effect in effects {
     if effect.reverted_by == Json::null() {
       let table = match last.get(effect.tx) {
@@ -300,7 +299,7 @@ fn orm_effect_ledger(
   }
   for fact in facts {
     let data = object_fields(orm_get(fact, "data"), "fact data")
-    let write = orm_get(fact, "kind") == "write".to_json()
+    let write = orm_get(fact, "kind") == Json("write")
     let token = orm_uuid(
       required(data, if write { "predecessor" } else { "version" }, "fact"),
     )
@@ -408,10 +407,10 @@ fn orm_effect_ledger(
           Some(value) => value
           None => fail("Missing committed effect in server ledger")
         },
-        effect.data.to_json(),
+        Json(effect.data),
         "actual committed effect ledger",
       )
-      surviving[token] = effect.data.to_json()
+      surviving[token] = Json(effect.data)
     } else {
       orm_assert(
         !actual.contains(token),
@@ -419,13 +418,13 @@ fn orm_effect_ledger(
       )
     }
     output.push({
-      "tx": effect.tx.to_json(),
-      "rows": effect.row_seq.to_double().to_json(),
-      "sourceSeq": effect.source_seq.to_double().to_json(),
-      "data": effect.data.to_json(),
+      "tx": Json(effect.tx),
+      "rows": Json(effect.row_seq.to_double()),
+      "sourceSeq": Json(effect.source_seq.to_double()),
+      "data": Json(effect.data),
       "revertedBy": effect.reverted_by,
       "outcome": match outcomes.get(effect.tx) {
-        Some(value) => value.to_json()
+        Some(value) => Json(value)
         None => Json::null()
       },
     })
@@ -454,7 +453,7 @@ fn orm_effect_ledger(
     let mut current : Json = Json::null()
     for id, source in sources {
       if orm_get(source, "writer") == Json::null() &&
-        orm_get(source, "key") == key.to_json() {
+        orm_get(source, "key") == Json(key) {
         token = id
         current = source
       }
@@ -465,11 +464,7 @@ fn orm_effect_ledger(
         Some(effect) => {
           let next = orm_text(orm_get(effect, "version"))
           orm_assert(!visited.contains(next), "Committed source cycle")
-          orm_equal(
-            orm_get(effect, "key"),
-            key.to_json(),
-            "committed chain key",
-          )
+          orm_equal(orm_get(effect, "key"), Json(key), "committed chain key")
           orm_equal(
             orm_get(effect, "oldPresent"),
             orm_get(current, "present"),
@@ -483,7 +478,7 @@ fn orm_effect_ledger(
           visited[next] = true
           token = next
           current = {
-            "version": token.to_json(),
+            "version": Json(token),
             "present": orm_get(effect, "newPresent"),
             "image": orm_get(effect, "newImage"),
           }
@@ -494,7 +489,7 @@ fn orm_effect_ledger(
     orm_equal(
       required(final_state, key, "final state"),
       {
-        "version": token.to_json(),
+        "version": Json(token),
         "present": orm_get(current, "present"),
         "image": orm_get(current, "image"),
       },
@@ -508,9 +503,9 @@ fn orm_effect_ledger(
   (
     output,
     {
-      "observedEffects": effects.length().to_json(),
-      "committedUnrevertedEffects": surviving.length().to_json(),
-      "serverLedgerEffects": actual.length().to_json(),
+      "observedEffects": Json(effects.length()),
+      "committedUnrevertedEffects": Json(surviving.length()),
+      "serverLedgerEffects": Json(actual.length()),
       "sourceChainsChecked": true,
     },
   )
@@ -526,14 +521,10 @@ pub fn orm_sql_v3_proof_json(text : String) -> String {
     let input = orm_exact(guarded_json(text, limit=67108864), [
       "schema", "profile", "traceText", "sourceJournalText",
     ])
-    orm_equal(
-      required(input, "schema", "input"),
-      (1).to_json(),
-      "diagnostic schema",
-    )
+    orm_equal(required(input, "schema", "input"), Json(1), "diagnostic schema")
     orm_equal(
       required(input, "profile", "input"),
-      "fastapi-users-sqlalchemy-7.0.0-pg18/1".to_json(),
+      Json("fastapi-users-sqlalchemy-7.0.0-pg18/1"),
       "diagnostic profile",
     )
     let trace_text = orm_text(required(input, "traceText", "input"))
@@ -550,7 +541,7 @@ pub fn orm_sql_v3_proof_json(text : String) -> String {
       "lifecycle",
     )
     orm_assert(
-      required(lifecycle, "status", "lifecycle") != "invalid".to_json(),
+      required(lifecycle, "status", "lifecycle") != Json("invalid"),
       "Invalid v3 lifecycle cannot receive source diagnostics",
     )
     let events = orm_array(required(root, "events", "trace"))
@@ -561,22 +552,22 @@ pub fn orm_sql_v3_proof_json(text : String) -> String {
     let snapshot = object_fields(events[0], "snapshot")
     orm_equal(
       required(snapshot, "kind", "snapshot"),
-      "snapshot".to_json(),
+      Json("snapshot"),
       "initial event",
     )
     orm_equal(
       required(snapshot, "seq", "snapshot"),
-      (1).to_json(),
+      Json(1),
       "snapshot sequence",
     )
     orm_equal(
       required(snapshot, "consistent", "snapshot"),
-      true.to_json(),
+      Json(true),
       "consistent initialized snapshot",
     )
     orm_equal(
       orm_get(required(root, "scope", "trace"), "exclusiveWriters"),
-      true.to_json(),
+      Json(true),
       "controlled writers",
     )
     let records = orm_journal(
@@ -600,7 +591,7 @@ pub fn orm_sql_v3_proof_json(text : String) -> String {
       let obj = object_fields(event, "event")
       orm_equal(
         required(obj, "seq", "event"),
-        (i + 1).to_json(),
+        Json(i + 1),
         "contiguous original event sequence",
       )
       event_map[(i + 1).to_int64()] = obj
@@ -612,7 +603,7 @@ pub fn orm_sql_v3_proof_json(text : String) -> String {
     let seen_rows : Map[Int64, Bool] = Map([])
     for i in 2..<(records.length() - 2) {
       let batch = object_fields(records[i], "source batch")
-      if required(batch, "kind", "batch") == "source-gap".to_json() {
+      if required(batch, "kind", "batch") == Json("source-gap") {
         gaps.push(
           capture_gap(
             "orm_source_gap", "Observed zero/error source result grants no invented read/write fact",
@@ -647,19 +638,19 @@ pub fn orm_sql_v3_proof_json(text : String) -> String {
       seen_statement[statement_seq] = true
       seen_rows[rows_seq] = true
       statements.push({
-        "statement": statement_seq.to_double().to_json(),
-        "mappingId": plan.mapping.to_json(),
+        "statement": Json(statement_seq.to_double()),
+        "mappingId": Json(plan.mapping),
       })
       batches.push({
         "sourceSeq": required(batch, "sourceSeq", "batch"),
-        "statement": statement_seq.to_double().to_json(),
-        "rows": rows_seq.to_double().to_json(),
+        "statement": Json(statement_seq.to_double()),
+        "rows": Json(rows_seq.to_double()),
         "kind": orm_get(fact, "kind"),
       })
       facts.push(fact)
     }
     for event in events {
-      if orm_get(event, "kind") == "statement".to_json() &&
+      if orm_get(event, "kind") == Json("statement") &&
         !seen_statement.contains(
           v3_capture_seq(orm_get(event, "seq"), "statement"),
         ) {
@@ -688,20 +679,22 @@ pub fn orm_sql_v3_proof_json(text : String) -> String {
       "algorithm": "v3-orm-source-proof-1",
       "analysisCoverageAccepted": false,
       "history": Json::null(),
-      "matchedStatements": statements.to_json(),
-      "verifiedSourceBatches": batches.to_json(),
-      "candidateFacts": facts.to_json(),
+      "matchedStatements": Json(statements),
+      "verifiedSourceBatches": Json(batches),
+      "candidateFacts": Json(facts),
       "verifiedStatements": [],
       "verifiedFacts": [],
       "verifiedProfiles": [],
-      "gaps": gaps.to_json(),
+      "gaps": Json(gaps),
       "capturedCatalogChecked": catalog,
-      "observedEffects": effects.to_json(),
+      "observedEffects": Json(effects),
       "ledger": ledger,
-      "traceSha256": v3_dislock_sha256(trace_text).to_json(),
-      "sourceJournalSha256": v3_dislock_sha256(
-        orm_text(required(input, "sourceJournalText", "input")),
-      ).to_json(),
+      "traceSha256": Json(v3_dislock_sha256(trace_text)),
+      "sourceJournalSha256": Json(
+        v3_dislock_sha256(
+          orm_text(required(input, "sourceJournalText", "input")),
+        ),
+      ),
       "scope": "Semantic consistency under controlled writers/no unobserved DDL assumptions; captured metadata is not database authentication.",
     }
     result.stringify(indent=2)

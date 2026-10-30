@@ -1,6 +1,6 @@
 ///|
 pub(all) struct ReductionOptions {
-  max_checks : Int
+  max_checks : Int32
   analysis : AnalysisOptions
 } derive(Eq)
 
@@ -9,8 +9,8 @@ pub extend ReductionOptions with Eq::{equal, not_equal}
 
 ///|
 pub fn reduction_options(
-  max_checks? : Int = 256,
-  analysis? : AnalysisOptions = analysis_options(),
+  max_checks~ : Int32 = 256,
+  analysis~ : AnalysisOptions = analysis_options(),
 ) -> ReductionOptions {
   { max_checks, analysis, }
 }
@@ -19,8 +19,8 @@ pub fn reduction_options(
 pub(all) struct ReductionResult {
   reduction : Reduction
   analysis : AnalysisResult
-  cached_checks : Int
-  max_checks : Int
+  cached_checks : Int32
+  max_checks : Int32
 } derive(Eq)
 
 ///|
@@ -31,10 +31,10 @@ priv struct ReductionContext {
   original : History
   writes : Map[String, Map[String, WriteRef]]
   options : ReductionOptions
-  original_indices : Map[String, Int]
+  original_indices : Map[String, Int32]
   negative_candidates : Map[String, Bool]
-  mut checks : Int
-  mut hits : Int
+  mut checks : Int32
+  mut hits : Int32
 }
 
 ///|
@@ -64,7 +64,7 @@ fn indexed_candidate(
   ctx : ReductionContext,
   txs : Array[Transaction],
 ) -> (History, Map[String, Map[String, WriteRef]]) {
-  let local_ids : Map[String, Int] = Map([])
+  let local_ids : Map[String, Int32] = Map([])
   for i, tx in txs {
     local_ids[tx.id] = i
   }
@@ -216,7 +216,7 @@ fn witness_seed(
 ///|
 pub fn reduce_with_options(
   h : History,
-  options? : ReductionOptions = reduction_options(),
+  options~ : ReductionOptions = reduction_options(),
 ) -> ReductionResult {
   let writes = collect_writes(h)
   let original = analyze_balanced_indexed(
@@ -347,14 +347,14 @@ pub fn reduction_result_json(result : ReductionResult) -> Json {
   let json = reduction_json(result.reduction)
   match json {
     Object(m) => {
-      m["schemaVersion"] = (2).to_json()
+      m["schemaVersion"] = Json(2)
       m["report"] = analysis_result_json(result.analysis)
       m["limits"] = {
         "transactions": 512,
         "operations": 10000,
-        "checks": result.max_checks.to_json(),
+        "checks": Json(result.max_checks),
       }
-      m["cachedCandidateChecks"] = result.cached_checks.to_json()
+      m["cachedCandidateChecks"] = Json(result.cached_checks)
     }
     _ => abort("Reduction object")
   }
@@ -395,7 +395,7 @@ pub fn shrink_options_json(text : String, options_text : String) -> String {
     e => {
       let result : Json = {
         "status": "invalid",
-        "reason": e.to_string().to_json(),
+        "reason": Json(e.to_string()),
         "oneMinimal": false,
         "reducedHistory": Json::null(),
         "report": Json::null(),

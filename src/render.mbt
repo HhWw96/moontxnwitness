@@ -47,11 +47,11 @@ pub fn render_report(r : Report, format : String) -> String {
         })
       b.write_string(
         "  " +
-        e.from.to_json().stringify() +
+        Json(e.from).stringify() +
         " -> " +
-        e.to.to_json().stringify() +
+        Json(e.to).stringify() +
         " [label=" +
-        label.to_json().stringify(),
+        Json(label).stringify(),
       )
       if r.witness.contains(e) {
         b.write_string(", color=\"#b42318\", penwidth=3")
@@ -236,7 +236,7 @@ pub fn render_report(r : Report, format : String) -> String {
 }
 
 ///|
-fn exit_code(o : Outcome) -> Int {
+fn exit_code(o : Outcome) -> Int32 {
   match o {
     Consistent => 0
     Violation => 1
@@ -267,8 +267,8 @@ pub fn run_json(text : String, format : String) -> String {
   }
   let transport : Json = {
     "report": report_json(r),
-    "output": render_report(r, format).to_json(),
-    "exitCode": exit_code(r.outcome).to_json(),
+    "output": Json(render_report(r, format)),
+    "exitCode": Json(exit_code(r.outcome)),
   }
   transport.stringify()
 }
@@ -280,33 +280,33 @@ pub fn history_json(h : History) -> Json {
     let ops = tx.ops.map(op => {
       (
         {
-          "type": op_label(op.kind).to_json(),
-          "key": op.key.to_json(),
-          "version": op.version.to_json(),
+          "type": Json(op_label(op.kind)),
+          "key": Json(op.key),
+          "version": Json(op.version),
         } : Json)
     })
     let start = match tx.start {
-      Some(v) => v.to_double().to_json()
+      Some(v) => Json(v.to_double())
       None => Json::null()
     }
     let end = match tx.end {
-      Some(v) => v.to_double().to_json()
+      Some(v) => Json(v.to_double())
       None => Json::null()
     }
     (
       {
-        "id": tx.id.to_json(),
-        "status": status_label(tx.status).to_json(),
-        "ops": ops.to_json(),
+        "id": Json(tx.id),
+        "status": Json(status_label(tx.status)),
+        "ops": Json(ops),
         "start": start,
         "end": end,
       } : Json)
   })
   {
     "schemaVersion": 1,
-    "model": model_label(h.model).to_json(),
-    "initial": h.initial.to_json(),
-    "versionOrders": h.version_orders.to_json(),
-    "transactions": transactions.to_json(),
+    "model": Json(model_label(h.model)),
+    "initial": Json(h.initial),
+    "versionOrders": Json(h.version_orders),
+    "transactions": Json(transactions),
   }
 }

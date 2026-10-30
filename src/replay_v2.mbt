@@ -17,8 +17,8 @@ fn replay_report_v2(
   history_text : String,
   root : Map[String, Json],
 ) -> String raise {
-  if root.get("tool") != Some("MoonTxnWitness".to_json()) ||
-    root.get("algorithm") != Some("bounded-register-v2.1".to_json()) ||
+  if root.get("tool") != Some(Json("MoonTxnWitness")) ||
+    root.get("algorithm") != Some(Json("bounded-register-v2.1")) ||
     !compatible_v2_version(root.get("version")) {
     return replay_failure("Unsupported v2 algorithm or engine header")
   }
@@ -50,8 +50,8 @@ fn replay_report_v2(
     "valid": true,
     "reason": "The bounded v2 algorithm reproduces the semantic result under the recorded effective budgets.",
     "status": expected.at("status"),
-    "checkedFields": checked.to_json(),
-    "currentEngine": version().to_json(),
+    "checkedFields": Json(checked),
+    "currentEngine": Json(version()),
     "recordedEngine": root.at("version"),
     "scope": "semantic replay; runtime metrics, presentation and source identity are not authenticated",
   }

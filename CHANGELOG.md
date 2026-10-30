@@ -1,3 +1,10 @@
+# 0.3.1 — 2026-10-30
+
+- Require moonc ≥0.10.16 and pin current CI to 0.10.16+b1a0e846e.
+- Migrate deprecated JSON conversion calls and add a direct MoonBit library example.
+- Preserve published v3 diagnostics and public v0.3.0 replay through a checksum-bound runtime prepared outside the source tree.
+- Keep generated outputs out of Git and add compiler/dependency preflight checks.
+
 # 0.3.0 — 2026-10-27
 
 - Deliver the native MLflow HTTP `log-batch` repair comparison: 30 fixed seed pairs, actual PostgreSQL deadlock evidence, 16 real reduction candidates and three fixed-side regressions of the identical final 623-key case. Add an offline SDK example using unchanged real observations; keep `oneMinimal=false` and diagnostic coverage gaps.

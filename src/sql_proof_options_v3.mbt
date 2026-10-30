@@ -43,10 +43,10 @@ fn v3_sql_proof_evidence(
   profiles.sort()
   {
     "policy": "dislock-f9946f0-sql-proof-1",
-    "verifiedStatements": statements.map(seq => seq.to_double()).to_json(),
-    "verifiedFacts": facts.map(seq => seq.to_double()).to_json(),
-    "verifiedProfiles": profiles.to_json(),
-    "gaps": proof.gaps.to_json(),
+    "verifiedStatements": Json(statements.map(seq => seq.to_double())),
+    "verifiedFacts": Json(facts.map(seq => seq.to_double())),
+    "verifiedProfiles": Json(profiles),
+    "gaps": Json(proof.gaps),
     "profileEvidence": root.get_or_default("sqlProfiles", Json::array([])),
     "scope": "Semantic validation of supplied SQL and source observations; no database authenticity or unobserved-writer claim",
   }
@@ -91,7 +91,7 @@ pub fn normalize_capture_v3_options_json(
         "effects": [],
         "transactions": [],
         "history": Json::null(),
-        "error": error.to_string().to_json(),
+        "error": Json(error.to_string()),
       }
       result.stringify(indent=2)
     }

@@ -13,7 +13,9 @@ jobs:
         os: [ubuntu-24.04, windows-2022]
     runs-on: ${{ matrix.os }}
     env:
-      MOONBIT_INSTALL_VERSION: 0.10.14+7d59c7ec9
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: utf-8
+      MOONBIT_INSTALL_VERSION: 0.10.16+b1a0e846e
     steps:
       - name: Enable long paths for the Windows checkout
         if: runner.os == 'Windows'
@@ -46,6 +48,12 @@ jobs:
           set -euo pipefail
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$MOONBIT_INSTALL_VERSION"
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Validate active compiler version
+        run: node scripts/toolchain-policy.mjs
+      - name: Test compiler version boundaries
+        run: node scripts/toolchain-policy-test.mjs
+      - name: Run the MoonBit library example
+        run: node scripts/moon.mjs run --target wasm-gc src/demo
       - name: Check publication privacy including history
         run: python scripts/publication_privacy.py --history
       - name: Verify committed business and presence capture byte bindings

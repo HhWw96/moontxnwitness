@@ -2,7 +2,7 @@
 fn v3_is_relation_capture(text : String) -> Bool {
   try {
     let root = object_fields(guarded_json(text, limit=8388608), "capture")
-    root.get("dataModel") == Some("relation-set-v1".to_json())
+    root.get("dataModel") == Some(Json("relation-set-v1"))
   } catch {
     _ => false
   }
@@ -12,7 +12,7 @@ fn v3_is_relation_capture(text : String) -> Bool {
 fn v3_is_list_capture(text : String) -> Bool {
   try {
     let root = object_fields(guarded_json(text, limit=8388608), "capture")
-    root.get("dataModel") == Some("append-list-v1".to_json())
+    root.get("dataModel") == Some(Json("append-list-v1"))
   } catch {
     _ => false
   }

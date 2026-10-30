@@ -1,20 +1,20 @@
 ///|
-fn orm_constraint(kind : String, column : Int) -> Json {
+fn orm_constraint(kind : String, column : Int32) -> Json {
   [
-    kind.to_json(),
-    [column.to_json()].to_json(),
+    Json(kind),
+    Json([Json(column)]),
     true,
     true,
     false,
     false,
-    (kind != "n").to_json(),
+    Json(kind != "n"),
   ]
 }
 
 ///|
 fn orm_index(primary : Bool, field : String) -> Json {
   [
-    primary.to_json(),
+    Json(primary),
     true,
     true,
     true,
@@ -24,7 +24,7 @@ fn orm_index(primary : Bool, field : String) -> Json {
     true,
     true,
     "btree",
-    [field.to_json()].to_json(),
+    Json([Json(field)]),
     ["pg_catalog"],
     [true],
   ]
@@ -41,7 +41,7 @@ fn orm_set_equal(
     actual.length() == expected.length(),
     label + " cardinality mismatch",
   )
-  let seen : Map[Int, Bool] = Map([])
+  let seen : Map[Int32, Bool] = Map([])
   for row in actual {
     let mut matched = -1
     for i, target in expected {
@@ -62,7 +62,7 @@ fn orm_catalog_relation(
   value : Json,
   names : Array[String],
   types : Array[String],
-  null_count : Int,
+  null_count : Int32,
   unique_constraint : Bool,
   extra_index : String?,
   oid : Json?,
@@ -81,7 +81,7 @@ fn orm_catalog_relation(
     orm_equal(relation[0], expected, "business table OID")
   }
   orm_equal(
-    relation.to_json(),
+    Json(relation),
     [relation[0], "r", false, false, "p"],
     "ordinary non-RLS permanent relation",
   )
@@ -89,9 +89,9 @@ fn orm_catalog_relation(
   let constraints = [orm_constraint("p", 1)]
   for i, name in names {
     columns.push([
-      name.to_json(),
-      types[i].to_json(),
-      (i < null_count).to_json(),
+      Json(name),
+      Json(types[i]),
+      Json(i < null_count),
       "",
       "",
       false,
@@ -105,7 +105,7 @@ fn orm_catalog_relation(
   }
   orm_equal(
     required(obj, "columns", "catalog"),
-    columns.to_json(),
+    Json(columns),
     "native exact columns/defaults",
   )
   orm_set_equal(
@@ -144,13 +144,13 @@ fn orm_verify_catalog(
   )
   orm_equal(
     required(metadata, "versionColumn", "metadata"),
-    "_mtw_orm_version".to_json(),
+    Json("_mtw_orm_version"),
     "private version column",
   )
   ignore(orm_uuid(required(metadata, "nonce", "metadata")))
   orm_equal(
     required(metadata, "coreProofAccepted", "metadata"),
-    false.to_json(),
+    Json(false),
     "unpromoted producer metadata",
   )
   let functions = object_fields(
@@ -183,12 +183,12 @@ fn orm_verify_catalog(
     let source = orm_expected_function(schema, name)
     orm_equal(
       required(function, "source", "function"),
-      source.to_json(),
+      Json(source),
       "fixed raw pg_proc.prosrc template",
     )
     orm_equal(
       required(function, "sourceSha256", "function"),
-      v3_dislock_sha256(source).to_json(),
+      Json(v3_dislock_sha256(source)),
       "owned source SHA",
     )
     let args = if name == "before" || name == "after" {
@@ -202,17 +202,17 @@ fn orm_verify_catalog(
       name +
       (if args == 0 { "_fn" } else { "" })
     let expected : Json = [
-      schema.to_json(),
-      function_name.to_json(),
-      source.to_json(),
+      Json(schema),
+      Json(function_name),
+      Json(source),
       false,
       "v",
       ["search_path=pg_catalog"],
-      args.to_json(),
+      Json(args),
       if args == 0 {
-        "trigger".to_json()
+        Json("trigger")
       } else {
-        "uuid".to_json()
+        Json("uuid")
       },
       "plpgsql",
     ]
@@ -231,15 +231,15 @@ fn orm_verify_catalog(
         "Invalid/duplicate trigger OID",
       )
       used_trigger_oids[trigger_oid] = true
-      trigger_oids.push([trigger_oid.to_double().to_json()].to_json())
+      trigger_oids.push(Json([Json(trigger_oid.to_double())]))
       orm_equal(
         required(function, "triggerCatalog", "function"),
         [
-          oid.to_double().to_json(),
+          Json(oid.to_double()),
           if name == "before" {
-            (31).to_json()
+            Json(31)
           } else {
-            (29).to_json()
+            Json(29)
           },
           "O",
           0,
@@ -262,7 +262,7 @@ fn orm_verify_catalog(
     "catalog server version",
   )
   orm_catalog_relation(
-    catalog.to_json(),
+    Json(catalog),
     [
       "id", "email", "hashed_password", "is_active", "is_superuser", "is_verified",
       "_mtw_orm_version",

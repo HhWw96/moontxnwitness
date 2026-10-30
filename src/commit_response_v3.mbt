@@ -19,7 +19,7 @@ fn v3_confirmed_commit_rollback(
   }
   if proof.contains("commandTag") {
     known_fields(proof, ["request", "commandTag"], "commitResponse")
-    if required(proof, "commandTag", "commitResponse") != "ROLLBACK".to_json() {
+    if required(proof, "commandTag", "commitResponse") != Json("ROLLBACK") {
       fail("The acknowledged COMMIT must have returned commandTag ROLLBACK")
     }
   } else {
@@ -33,8 +33,8 @@ fn v3_confirmed_commit_rollback(
       "commitResponse.sqlstate",
     )
     if !["40001", "40P01"].contains(state) ||
-      required(proof, "diagnosticSqlstate", "commitResponse") != state.to_json() ||
-      required(proof, "transactionStatus", "commitResponse") != "IDLE".to_json() {
+      required(proof, "diagnosticSqlstate", "commitResponse") != Json(state) ||
+      required(proof, "transactionStatus", "commitResponse") != Json("IDLE") {
       fail(
         "COMMIT error proof requires matching server diagnostics and confirmed IDLE state",
       )

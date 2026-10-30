@@ -28,12 +28,12 @@ fn l3_test_case(
   options : String,
 ) -> Unit raise {
   let report = list_v3_analysis(text, options)
-  assert_eq(capture_field(report, "status"), expected_status.to_json())
-  assert_eq(capture_field(report, "algorithm"), "v3-list-1".to_json())
-  assert_eq(capture_field(report, "schemaVersion"), (3).to_json())
+  assert_eq(capture_field(report, "status"), Json(expected_status))
+  assert_eq(capture_field(report, "algorithm"), Json("v3-list-1"))
+  assert_eq(capture_field(report, "schemaVersion"), Json(3))
   assert_eq(
     capture_field(capture_field(report, "modelDefinition"), "id"),
-    "append-list-serializable-v1".to_json(),
+    Json("append-list-serializable-v1"),
   )
   let normalized = capture_field(report, "normalized")
   assert_eq(capture_field(normalized, "history"), Json::null())
@@ -766,17 +766,11 @@ test "list v3 initial source points to the original snapshot event" {
     capture_field(report, "evidence"),
     "sourceEvidence",
   )
-  assert_eq(capture_field(sources[0], "sourceSeq"), (1).to_json())
+  assert_eq(capture_field(sources[0], "sourceSeq"), Json(1))
   let changed = text.replace(old="\"seq\":1", new="\"seq\":7")
   let parsed = list_v3_parse(changed)
-  assert_eq(
-    capture_field(parsed.normalized, "status"),
-    "inconclusive".to_json(),
-  )
-  assert_eq(
-    capture_field(parsed.source_evidence[0], "sourceSeq"),
-    (7).to_json(),
-  )
+  assert_eq(capture_field(parsed.normalized, "status"), Json("inconclusive"))
+  assert_eq(capture_field(parsed.source_evidence[0], "sourceSeq"), Json(7))
   assert_true(v3_test_has_gap(parsed.normalized, "sequence_gap"))
 }
 
@@ -784,7 +778,7 @@ test "list v3 initial source points to the original snapshot event" {
 test "list v3 duplicate JSON root fields cannot be normalized away" {
   let text = "{\"traceSchema\":3,\"traceSchema\":3,\"dataModel\":\"append-list-v1\",\"clockDomain\":\"x\",\"scope\":{\"exclusiveWriters\":true},\"events\":[],\"gaps\":[]}"
   let result = @json.parse(normalize_list_capture_v3_json(text))
-  assert_eq(capture_field(result, "status"), "invalid".to_json())
+  assert_eq(capture_field(result, "status"), Json("invalid"))
   assert_eq(capture_field(result, "history"), Json::null())
 }
 

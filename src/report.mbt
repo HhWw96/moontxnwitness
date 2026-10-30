@@ -1,15 +1,15 @@
 ///|
 fn string_option(s : String?) -> Json {
   match s {
-    Some(v) => v.to_json()
+    Some(v) => Json(v)
     None => Json::null()
   }
 }
 
 ///|
-fn int_option(s : Int?) -> Json {
+fn int_option(s : Int32?) -> Json {
   match s {
-    Some(v) => v.to_json()
+    Some(v) => Json(v)
     None => Json::null()
   }
 }
@@ -17,27 +17,27 @@ fn int_option(s : Int?) -> Json {
 ///|
 fn edge_json(e : Edge) -> Json {
   {
-    "from": e.from.to_json(),
-    "to": e.to.to_json(),
-    "kind": dependency_label(e.kind).to_json(),
+    "from": Json(e.from),
+    "to": Json(e.to),
+    "kind": Json(dependency_label(e.kind)),
     "key": string_option(e.key),
     "fromOp": int_option(e.from_op),
     "toOp": int_option(e.to_op),
     "fromVersion": string_option(e.from_version),
     "toVersion": string_option(e.to_version),
-    "reason": e.reason.to_json(),
+    "reason": Json(e.reason),
   }
 }
 
 ///|
 fn finding_json(f : Finding) -> Json {
   {
-    "code": f.code.to_json(),
-    "severity": f.severity.to_json(),
-    "message": f.message.to_json(),
-    "transactions": f.transactions.to_json(),
+    "code": Json(f.code),
+    "severity": Json(f.severity),
+    "message": Json(f.message),
+    "transactions": Json(f.transactions),
     "key": string_option(f.key),
-    "ops": f.ops.to_json(),
+    "ops": Json(f.ops),
   }
 }
 
@@ -50,63 +50,65 @@ pub fn report_json(r : Report) -> Json {
     ids.push(r.witness[0].from)
     {
       "kind": "dependency_cycle",
-      "transactions": ids.to_json(),
-      "edges": r.witness.map(edge_json).to_json(),
+      "transactions": Json(ids),
+      "edges": Json(r.witness.map(edge_json)),
       "minimality": "shortest directed cycle in the constructed graph",
     }
   }
   {
     "schemaVersion": 1,
     "tool": "MoonTxnWitness",
-    "version": version().to_json(),
-    "status": outcome_label(r.outcome).to_json(),
-    "model": model_label(r.model).to_json(),
+    "version": Json(version()),
+    "status": Json(outcome_label(r.outcome)),
+    "model": Json(model_label(r.model)),
     "scope": "versioned point-read/write registers; supplied history and asserted version orders",
-    "complete": (!r.findings.any(f => {
-      f.severity == "uncertainty" || f.severity == "error"
-    })).to_json(),
+    "complete": Json(
+      !r.findings.any(f => f.severity == "uncertainty" || f.severity == "error"),
+    ),
     "stats": {
-      "transactions": r.transaction_count.to_json(),
-      "committed": r.committed_count.to_json(),
-      "operations": r.operation_count.to_json(),
-      "dependencies": r.edges.length().to_json(),
+      "transactions": Json(r.transaction_count),
+      "committed": Json(r.committed_count),
+      "operations": Json(r.operation_count),
+      "dependencies": Json(r.edges.length()),
     },
-    "findings": r.findings.map(finding_json).to_json(),
-    "edges": r.edges.map(edge_json).to_json(),
+    "findings": Json(r.findings.map(finding_json)),
+    "edges": Json(r.edges.map(edge_json)),
     "witness": witness,
-    "serialOrder": r.serial_order.to_json(),
-    "versionOrders": r.inferred_orders.to_json(),
-    "versionOrderSources": r.order_sources.to_json(),
+    "serialOrder": Json(r.serial_order),
+    "versionOrders": Json(r.inferred_orders),
+    "versionOrderSources": Json(r.order_sources),
     "graph": {
-      "analyzed": r.graph.analyzed.to_json(),
-      "components": r.graph.components.to_json(),
-      "cyclicComponents": r.graph.cyclic_components.to_json(),
-      "cyclicTransactions": r.graph.cyclic_transactions.to_json(),
-      "bfsRoots": r.graph.bfs_roots.to_json(),
-      "edgeBudgetExceeded": r.graph.edge_budget_exceeded.to_json(),
+      "analyzed": Json(r.graph.analyzed),
+      "components": Json(r.graph.components),
+      "cyclicComponents": Json(r.graph.cyclic_components),
+      "cyclicTransactions": Json(r.graph.cyclic_transactions),
+      "bfsRoots": Json(r.graph.bfs_roots),
+      "edgeBudgetExceeded": Json(r.graph.edge_budget_exceeded),
     },
-    "coverage": r.coverage
-    .map(k => {
-      (
-        {
-          "key": k.key.to_json(),
-          "committedReads": k.committed_reads.to_json(),
-          "committedFinalWrites": k.committed_final_writes.to_json(),
-          "unresolvedReads": k.unresolved_reads.to_json(),
-          "versionOrderSource": r.order_sources.at(k.key).to_json(),
-          "sourceLabel": order_source_cn(
-            r.order_sources.at(k.key),
-            k.committed_final_writes,
-          ).to_json(),
-        } : Json)
-    })
-    .to_json(),
-    "nextSteps": next_steps(r).to_json(),
+    "coverage": Json(
+      r.coverage.map(k => {
+        (
+          {
+            "key": Json(k.key),
+            "committedReads": Json(k.committed_reads),
+            "committedFinalWrites": Json(k.committed_final_writes),
+            "unresolvedReads": Json(k.unresolved_reads),
+            "versionOrderSource": Json(r.order_sources.at(k.key)),
+            "sourceLabel": Json(
+              order_source_cn(
+                r.order_sources.at(k.key),
+                k.committed_final_writes,
+              ),
+            ),
+          } : Json)
+      }),
+    ),
+    "nextSteps": Json(next_steps(r)),
     "search": {
-      "status": r.search.status.to_json(),
-      "attempts": r.search.attempts.to_json(),
-      "operationChecks": r.search.operation_checks.to_json(),
-      "reason": r.search.reason.to_json(),
+      "status": Json(r.search.status),
+      "attempts": Json(r.search.attempts),
+      "operationChecks": Json(r.search.operation_checks),
+      "reason": Json(r.search.reason),
       "limits": {
         "transactions": 8,
         "operations": 512,
@@ -114,7 +116,7 @@ pub fn report_json(r : Report) -> Json {
         "attempts": 100000,
         "operationChecks": 1000000,
       },
-      "blockers": r.search.blockers.map(finding_json).to_json(),
+      "blockers": Json(r.search.blockers.map(finding_json)),
     },
   }
 }
@@ -173,7 +175,7 @@ pub fn verify_certificate_json(
   let invalid = fn(message : String) -> String {
     let j : Json = {
       "valid": false,
-      "reason": message.to_json(),
+      "reason": Json(message),
       "scope": "dependency-cycle certificate",
     }
     j.stringify(indent=2)
@@ -193,11 +195,11 @@ pub fn verify_certificate_json(
     Object(m) => m
     _ => return invalid("Certificate must be a report object")
   }
-  if root.get("tool") != Some("MoonTxnWitness".to_json()) ||
-    root.get("schemaVersion") != Some((1).to_json()) ||
+  if root.get("tool") != Some(Json("MoonTxnWitness")) ||
+    root.get("schemaVersion") != Some(Json(1)) ||
     !compatible_evidence_version(root.get("version")) ||
-    root.get("model") != Some(model_label(h.model).to_json()) ||
-    root.get("status") != Some("violation".to_json()) {
+    root.get("model") != Some(Json(model_label(h.model))) ||
+    root.get("status") != Some(Json("violation")) {
     return invalid(
       "Certificate header does not match this tool, version, model and status",
     )
@@ -210,7 +212,7 @@ pub fn verify_certificate_json(
     Some(Array(a)) => a
     _ => return invalid("Witness edges must be an array")
   }
-  if w.get("kind") != Some("dependency_cycle".to_json()) ||
+  if w.get("kind") != Some(Json("dependency_cycle")) ||
     cert_edges.length() < 2 ||
     cert_edges.length() > 512 {
     return invalid("Invalid witness kind or size")
@@ -240,7 +242,7 @@ pub fn verify_certificate_json(
       return invalid("Witness repeats a transaction before closure")
     }
     seen[from] = true
-    if ids[i] != from.to_json() || em.get("to") != Some(ids[i + 1]) {
+    if ids[i] != Json(from) || em.get("to") != Some(ids[i + 1]) {
       return invalid("Witness edges do not follow the stated transaction path")
     }
   }
@@ -251,7 +253,7 @@ pub fn verify_certificate_json(
     "valid": true,
     "reason": "Every edge is justified and the simple transaction path closes into a cycle.",
     "scope": "dependency-cycle certificate",
-    "verifiedEdges": cert_edges.length().to_json(),
+    "verifiedEdges": Json(cert_edges.length()),
     "checks": [
       "input constraints", "edge provenance", "transaction path", "cycle closure",
     ],

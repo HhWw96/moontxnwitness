@@ -3,9 +3,9 @@ fn v3_response_check(trace : Json, status : String) -> Json raise {
   let result = @json.parse(
     normalize_register_capture_v3_json(trace.stringify()),
   )
-  assert_eq(capture_field(result, "status"), status.to_json())
+  assert_eq(capture_field(result, "status"), Json(status))
   if status == "ready" {
-    assert_eq(capture_field(result, "algorithm"), "v3-lifecycle-2".to_json())
+    assert_eq(capture_field(result, "algorithm"), Json("v3-lifecycle-2"))
   }
   result
 }
@@ -35,13 +35,13 @@ test "v3 actual COMMIT ROLLBACK tag confirms abort and reverses effects" {
   let transactions = v3_test_items(result, "transactions")
   assert_eq(
     object_fields_unchecked_v3(transactions[0]).at("status"),
-    "aborted".to_json(),
+    Json("aborted"),
   )
   assert_eq(
     object_fields_unchecked_v3(v3_test_items(result, "effects")[0]).at(
       "revertedBy",
     ),
-    (5).to_json(),
+    Json(5),
   )
 }
 

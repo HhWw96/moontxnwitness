@@ -10,12 +10,12 @@
     "x": [
       "x0",
       "x:r0:B:retry",
-      "x:r1:B"
+      "x:r1:B:retry"
     ],
     "y": [
       "y0",
       "y:r0:A",
-      "y:r1:A:retry"
+      "y:r1:A"
     ]
   },
   "transactions": [
@@ -54,7 +54,7 @@
       "id": "r0-B-retry",
       "status": "committed",
       "start": 16000,
-      "end": 31000,
+      "end": 16000,
       "ops": [
         {
           "type": "read",
@@ -63,19 +63,6 @@
         },
         {
           "type": "write",
-          "key": "x",
-          "version": "x:r0:B:retry"
-        }
-      ]
-    },
-    {
-      "id": "r1-A",
-      "status": "aborted",
-      "start": 31000,
-      "end": 31000,
-      "ops": [
-        {
-          "type": "read",
           "key": "x",
           "version": "x:r0:B:retry"
         }
@@ -83,6 +70,37 @@
     },
     {
       "id": "r1-B",
+      "status": "aborted",
+      "start": 16000,
+      "end": 31000,
+      "ops": [
+        {
+          "type": "read",
+          "key": "y",
+          "version": "y:r0:A"
+        }
+      ]
+    },
+    {
+      "id": "r1-A",
+      "status": "committed",
+      "start": 16000,
+      "end": 31000,
+      "ops": [
+        {
+          "type": "read",
+          "key": "x",
+          "version": "x:r0:B:retry"
+        },
+        {
+          "type": "write",
+          "key": "y",
+          "version": "y:r1:A"
+        }
+      ]
+    },
+    {
+      "id": "r1-B-retry",
       "status": "committed",
       "start": 31000,
       "end": 31000,
@@ -90,30 +108,12 @@
         {
           "type": "read",
           "key": "y",
-          "version": "y:r0:A"
+          "version": "y:r1:A"
         },
         {
           "type": "write",
           "key": "x",
-          "version": "x:r1:B"
-        }
-      ]
-    },
-    {
-      "id": "r1-A-retry",
-      "status": "committed",
-      "start": 31000,
-      "end": 47000,
-      "ops": [
-        {
-          "type": "read",
-          "key": "x",
-          "version": "x:r1:B"
-        },
-        {
-          "type": "write",
-          "key": "y",
-          "version": "y:r1:A:retry"
+          "version": "x:r1:B:retry"
         }
       ]
     }

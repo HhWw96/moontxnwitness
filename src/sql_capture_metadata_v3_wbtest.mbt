@@ -41,7 +41,9 @@ test "v3 named SQL mappings retain observations but cannot manufacture coverage"
 ///|
 test "v3 source metadata cannot bind a future statement" {
   let trace = v3_sql_transport_trace()
-  object_fields_unchecked_v3(v3_test_items(trace, "events")[4])["statement"] = (6).to_json()
+  object_fields_unchecked_v3(v3_test_items(trace, "events")[4])["statement"] = Json(
+    6,
+  )
   let _ = v3_test_check(trace, "invalid")
 }
 
@@ -57,7 +59,9 @@ test "v3 SQL fact metadata must be complete" {
 ///|
 test "v3 SQL fact evidence must be an object" {
   let trace = v3_sql_transport_trace()
-  object_fields_unchecked_v3(v3_test_items(trace, "events")[4])["evidence"] = true.to_json()
+  object_fields_unchecked_v3(v3_test_items(trace, "events")[4])["evidence"] = Json(
+    true,
+  )
   let _ = v3_test_check(trace, "invalid")
 }
 
@@ -134,32 +138,30 @@ fn v3_sql_profile_trace(keys : Json) -> Json {
 
 ///|
 test "v3 self-declared installation verification does not establish coverage" {
-  let result = v3_test_check(
-    v3_sql_profile_trace(["x"].to_json()),
-    "inconclusive",
-  )
+  let result = v3_test_check(v3_sql_profile_trace(Json(["x"])), "inconclusive")
   assert_true(v3_test_has_gap(result, "unverified_sql_profile"))
 }
 
 ///|
 test "v3 duplicate profile keys are rejected" {
-  let _ = v3_test_check(v3_sql_profile_trace(["x", "x"].to_json()), "invalid")
+  let _ = v3_test_check(v3_sql_profile_trace(Json(["x", "x"])), "invalid")
 }
 
 ///|
 test "v3 duplicate installations are rejected" {
-  let trace = v3_sql_profile_trace(["x"].to_json())
+  let trace = v3_sql_profile_trace(Json(["x"]))
   let profile = v3_test_items(trace, "sqlProfiles")[0]
-  object_fields_unchecked_v3(trace)["sqlProfiles"] = [profile, profile].to_json()
+  object_fields_unchecked_v3(trace)["sqlProfiles"] = Json([profile, profile])
   let _ = v3_test_check(trace, "invalid")
 }
 
 ///|
 test "v3 SQL profile evidence cannot be a scalar" {
-  let trace = v3_sql_profile_trace(["x"].to_json())
-  object_fields_unchecked_v3(v3_test_items(trace, "sqlProfiles")[0])["effectLedger"] = [
-    true,
-  ].to_json()
+  let trace = v3_sql_profile_trace(Json(["x"]))
+  object_fields_unchecked_v3(v3_test_items(trace, "sqlProfiles")[0])["effectLedger"] = Json([
+      true,
+    ],
+  )
   let _ = v3_test_check(trace, "invalid")
 }
 
@@ -179,12 +181,12 @@ test "v3 deletion remaps confirmed COMMIT response references" {
   ])
   let (reduced, origins) = v3_without_transaction(trace, "N")
   let _ = v3_response_check(reduced, "ready")
-  assert_eq(origins, [1, 5, 6, 7].map(n => n.to_json()))
+  assert_eq(origins, [1, 5, 6, 7].map(n => Json(n)))
   let response = capture_field(
     v3_test_items(reduced, "events")[3],
     "commitResponse",
   )
-  assert_eq(capture_field(response, "request"), (3).to_json())
+  assert_eq(capture_field(response, "request"), Json(3))
 }
 
 ///|
@@ -225,10 +227,10 @@ test "v3 deletion remaps every fact statement binding" {
   let _ = v3_test_check(reduced, "inconclusive")
   assert_eq(
     capture_field(v3_test_items(reduced, "events")[3], "statement"),
-    (3).to_json(),
+    Json(3),
   )
   assert_eq(
     capture_field(v3_test_items(reduced, "events")[4], "statement"),
-    (3).to_json(),
+    Json(3),
   )
 }

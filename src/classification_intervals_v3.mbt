@@ -35,8 +35,7 @@ fn classification_source_v3(text : String) -> ClassificationSourceV3 raise {
     guarded_json(text, limit=33554432),
     "classification source",
   )
-  if root.get("format") !=
-    Some("moontxnwitness-classification-source/v1".to_json()) {
+  if root.get("format") != Some(Json("moontxnwitness-classification-source/v1")) {
     if orm_utf8_size(text) > 8388608 {
       fail("Classification trace exceeds 8 MiB UTF-8")
     }
@@ -112,14 +111,13 @@ fn classification_interval_event(
 ) -> Unit raise {
   let seq = v3_capture_seq(reference, "journal event reference")
   let event = object_fields(
-    match events.get(seq.to_double().to_json().stringify()) {
+    match events.get(Json(seq.to_double()).stringify()) {
       Some(value) => value
       None => fail("Missing referenced original journal event")
     },
     "journal event",
   )
-  if event.get("kind") != Some(kind.to_json()) ||
-    event.get("tx") != Some(tx.to_json()) {
+  if event.get("kind") != Some(Json(kind)) || event.get("tx") != Some(Json(tx)) {
     fail(
       "Interval event reference does not match original kind and transaction",
     )
@@ -155,8 +153,7 @@ fn classification_intervals_v3(
     ],
     "interval evidence",
   )
-  if supplied.get("format") !=
-    Some("moontxnwitness-client-intervals/v1".to_json()) {
+  if supplied.get("format") != Some(Json("moontxnwitness-client-intervals/v1")) {
     fail("Unsupported client interval format")
   }
   if classification_interval_digest(
@@ -193,13 +190,12 @@ fn classification_intervals_v3(
     }
     let raw = guarded_json(line, limit=1048576)
     let fields = object_fields(raw, "lifecycle record")
-    if required(fields, "seq", "lifecycle record") != (index + 1).to_json() {
+    if required(fields, "seq", "lifecycle record") != Json(index + 1) {
       fail("Lifecycle sequence must be contiguous")
     }
     if index == 0 {
-      if fields.get("kind") != Some("header".to_json()) ||
-        fields.get("format") !=
-        Some("moontxnwitness-instrumentation/v1".to_json()) {
+      if fields.get("kind") != Some(Json("header")) ||
+        fields.get("format") != Some(Json("moontxnwitness-instrumentation/v1")) {
         fail("Expected instrumentation lifecycle header")
       }
       let _ = identifier(
@@ -207,14 +203,14 @@ fn classification_intervals_v3(
         "processMonotonicDomain",
       )
     } else if index == lines.length() - 2 {
-      if fields.get("kind") != Some("seal".to_json()) ||
-        fields.get("records") != Some(index.to_json()) ||
+      if fields.get("kind") != Some(Json("seal")) ||
+        fields.get("records") != Some(Json(index)) ||
         fields.get("prefixSha256") !=
-        Some(v3_dislock_sha256(prefix.to_string()).to_json()) {
+        Some(Json(v3_dislock_sha256(prefix.to_string()))) {
         fail("Lifecycle seal or prefix digest differs")
       }
-    } else if fields.get("kind") == Some("header".to_json()) ||
-      fields.get("kind") == Some("seal".to_json()) {
+    } else if fields.get("kind") == Some(Json("header")) ||
+      fields.get("kind") == Some(Json("seal")) {
       fail("Lifecycle contains an early header or seal")
     }
     if index != lines.length() - 2 {
@@ -223,7 +219,7 @@ fn classification_intervals_v3(
     }
     records.push(raw)
   }
-  if required(supplied, "records", "interval evidence") != records.to_json() {
+  if required(supplied, "records", "interval evidence") != Json(records) {
     fail("Interval records are not the exact original lifecycle records")
   }
   let domain = identifier(
@@ -259,7 +255,7 @@ fn classification_intervals_v3(
   for raw in trace_events {
     let fields = object_fields(raw, "trace event")
     events[required(fields, "seq", "event").stringify()] = raw
-    if fields.get("kind") == Some("begin".to_json()) {
+    if fields.get("kind") == Some(Json("begin")) {
       begin_events[identifier(required(fields, "tx", "begin"), "begin.tx")] = raw
     }
   }
@@ -267,10 +263,10 @@ fn classification_intervals_v3(
     guarded_json(index_text, limit=8388608),
     "journal index",
   )
-  let index_complete = index.get("closed") == Some(true.to_json()) &&
-    index.get("sourceClosed") == Some(true.to_json()) &&
-    index.get("eventCount") == Some(trace_events.length().to_json()) &&
-    index.get("durableSeq") == Some(trace_events.length().to_json()) &&
+  let index_complete = index.get("closed") == Some(Json(true)) &&
+    index.get("sourceClosed") == Some(Json(true)) &&
+    index.get("eventCount") == Some(Json(trace_events.length())) &&
+    index.get("durableSeq") == Some(Json(trace_events.length())) &&
     index.get("gaps") == Some(Json::array([]))
   let starts : Map[String, Json] = Map([])
   let ends : Map[String, Json] = Map([])
@@ -286,7 +282,7 @@ fn classification_intervals_v3(
       continue
     }
     if record.contains("monotonicNs") {
-      if record.get("processMonotonicDomain") != Some(domain.to_json()) {
+      if record.get("processMonotonicDomain") != Some(Json(domain)) {
         fail(
           "A lifecycle journal cannot silently change monotonic clock domain",
         )
@@ -319,7 +315,7 @@ fn classification_intervals_v3(
       "connection",
     )
     let _ = classification_interval_ns(required(record, "monotonicNs", "call"))
-    if record.get("processMonotonicDomain") != Some(domain.to_json()) {
+    if record.get("processMonotonicDomain") != Some(Json(domain)) {
       fail("Call clock domain differs from its source header")
     }
     let tx = match required(record, "tx", "call") {
@@ -412,8 +408,8 @@ fn classification_intervals_v3(
             fail("Only a commit method may claim a native COMMIT tag")
           }
           if call_method == "commit" &&
-            record.get("succeeded") == Some(true.to_json()) &&
-            record.get("nativeCommandTag") == Some("COMMIT".to_json()) &&
+            record.get("succeeded") == Some(Json(true)) &&
+            record.get("nativeCommandTag") == Some(Json("COMMIT")) &&
             refs.contains("commit_ok") &&
             refs.contains("commit_request") {
             let request = refs.at("commit_request")
@@ -423,11 +419,11 @@ fn classification_intervals_v3(
               .get_or_default(request.stringify(), [])
             for candidate in returned {
               let response = object_fields_unchecked_v3(candidate)
-              if response.get("kind") == Some("commit-response".to_json()) &&
-                response.get("connection") == Some(connection.to_json()) &&
+              if response.get("kind") == Some(Json("commit-response")) &&
+                response.get("connection") == Some(Json(connection)) &&
                 response.get("request") == Some(request) &&
-                response.get("commandTag") == Some("COMMIT".to_json()) &&
-                response.get("transactionStatus") == Some((0).to_json()) {
+                response.get("commandTag") == Some(Json("COMMIT")) &&
+                response.get("transactionStatus") == Some(Json(0)) {
                 let response_seq = v3_capture_seq(
                   required(response, "seq", "commit response"),
                   "seq",
@@ -475,7 +471,7 @@ fn classification_intervals_v3(
   }
   for raw in trace_events {
     let fields = object_fields(raw, "trace event")
-    if fields.get("kind") == Some("statement".to_json()) &&
+    if fields.get("kind") == Some(Json("statement")) &&
       !observed_statements.contains(
         required(fields, "seq", "statement").stringify(),
       ) {
@@ -492,15 +488,15 @@ fn classification_intervals_v3(
   )
   let metadata_gap = capture_gaps.any(raw => {
     let code = object_fields_unchecked_v3(raw).get("code")
-    code == Some("instrumentation_metadata_missing".to_json()) ||
-    code == Some("instrumentation_metadata_unsealed".to_json())
+    code == Some(Json("instrumentation_metadata_missing")) ||
+    code == Some(Json("instrumentation_metadata_unsealed"))
   })
   let intervals : Array[ClassificationIntervalV3] = []
   let mut complete = index_complete && !metadata_gap
   for tx_raw in transactions {
     let tx = object_fields(tx_raw, "transaction")
     let id = identifier(tx.at("id"), "id")
-    if outcomes.get(id) != Some("committed".to_json()) {
+    if outcomes.get(id) != Some(Json("committed")) {
       continue
     }
     if !first.contains(id) ||
@@ -579,7 +575,7 @@ fn classification_intervals_v3(
         {
           "beforeCommitCall": before.end_call,
           "afterFirstSqlCall": after.start_call,
-          "processMonotonicDomain": domain.to_json(),
+          "processMonotonicDomain": Json(domain),
         },
       ]
     }
@@ -595,7 +591,7 @@ fn classification_intervals_v3(
     sources,
     evidence: {
       "format": "moontxnwitness-client-intervals/v1",
-      "sourceIntervalEvidenceSha256": v3_dislock_sha256(interval_text).to_json(),
+      "sourceIntervalEvidenceSha256": Json(v3_dislock_sha256(interval_text)),
       "sourceTraceSha256": supplied.at("sourceTraceSha256"),
       "sourceLifecycleSha256": supplied.at("sourceLifecycleSha256"),
       "sourceJournalIndexSha256": supplied.at("sourceJournalIndexSha256"),
@@ -603,18 +599,18 @@ fn classification_intervals_v3(
       "lifecycleBytesBound": true,
       "journalIndexBytesBound": true,
       "journalSegmentPayloadsRecomputed": false,
-      "intervals": intervals
-      .map(interval => {
-        (
-          {
-            "tx": interval.transaction.to_json(),
-            "connection": interval.connection.to_json(),
-            "processMonotonicDomain": interval.domain.to_json(),
-            "firstSqlBeforeNs": interval.begin_ns.to_string().to_json(),
-            "confirmedCommitAfterNs": interval.end_ns.to_string().to_json(),
-          } : Json)
-      })
-      .to_json(),
+      "intervals": Json(
+        intervals.map(interval => {
+          (
+            {
+              "tx": Json(interval.transaction),
+              "connection": Json(interval.connection),
+              "processMonotonicDomain": Json(interval.domain),
+              "firstSqlBeforeNs": Json(interval.begin_ns.to_string()),
+              "confirmedCommitAfterNs": Json(interval.end_ns.to_string()),
+            } : Json)
+        }),
+      ),
       "scope": "Explicit DBAPI call boundaries and original source byte bindings; no server snapshot inference or collector authenticity certification",
     },
   }

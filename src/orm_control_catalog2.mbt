@@ -6,23 +6,20 @@ fn orm2_collect_catalog(
   server : Json,
   business : Bool,
 ) -> (Json, Json) raise {
-  let relation = orm2_query(cursor, "relation", [
-    schema.to_json(),
-    table.to_json(),
-  ])
+  let relation = orm2_query(cursor, "relation", [Json(schema), Json(table)])
   let row = orm_array(orm2_one(relation))
   orm_assert(row.length() == 5, "Actual relation tuple width")
   let oid = row[0]
   ignore(v3_capture_seq(oid, "actual relation OID"))
-  let facts : Map[String, Json] = Map([("relation", row.to_json())])
+  let facts : Map[String, Json] = Map([("relation", Json(row))])
   let refs : Map[String, Json] = Map([
-    ("relation", relation.seq.to_double().to_json()),
+    ("relation", Json(relation.seq.to_double())),
   ])
   if business {
     facts["serverVersion"] = server
     let locks = orm2_query(cursor, "locks", [oid])
-    facts["locks"] = locks.rows.to_json()
-    refs["locks"] = locks.seq.to_double().to_json()
+    facts["locks"] = Json(locks.rows)
+    refs["locks"] = Json(locks.seq.to_double())
   }
   let requests = if business {
     ["columns", "constraints", "triggers", "indexes", "unsafe", "locale"]
@@ -33,9 +30,9 @@ fn orm2_collect_catalog(
     let params = if name == "locale" {
       Json::null()
     } else if name == "unsafe" {
-      [oid, oid, oid, oid, oid, oid].to_json()
+      Json([oid, oid, oid, oid, oid, oid])
     } else {
-      [oid].to_json()
+      Json([oid])
     }
     let query = orm2_query(cursor, name, params)
     let key = match name {
@@ -47,11 +44,11 @@ fn orm2_collect_catalog(
     facts[key] = if name == "unsafe" || name == "locale" {
       orm2_one(query)
     } else {
-      query.rows.to_json()
+      Json(query.rows)
     }
-    refs[key] = query.seq.to_double().to_json()
+    refs[key] = Json(query.seq.to_double())
   }
-  (facts.to_json(), refs.to_json())
+  (Json(facts), Json(refs))
 }
 
 ///|
@@ -191,12 +188,12 @@ fn orm2_functions(
     let source = orm_expected_function(schema, name)
     orm_equal(
       required(meta, "source", "function"),
-      source.to_json(),
+      Json(source),
       "Fixed function body",
     )
     orm_equal(
       required(meta, "sourceSha256", "function"),
-      v3_dislock_sha256(source).to_json(),
+      Json(v3_dislock_sha256(source)),
       "Raw function source digest",
     )
     let args = if name == "before" || name == "after" {
@@ -207,17 +204,17 @@ fn orm2_functions(
       2
     }
     let expected : Json = [
-      schema.to_json(),
-      orm2_function_name(name).to_json(),
-      source.to_json(),
+      Json(schema),
+      Json(orm2_function_name(name)),
+      Json(source),
       false,
       "v",
       ["search_path=pg_catalog"],
-      args.to_json(),
+      Json(args),
       if args == 0 {
-        "trigger".to_json()
+        Json("trigger")
       } else {
-        "uuid".to_json()
+        Json("uuid")
       },
       "plpgsql",
     ]
@@ -230,7 +227,7 @@ fn orm2_functions(
     )
     orm_equal(
       required(meta, "functionQuerySeq", "function"),
-      query.seq.to_double().to_json(),
+      Json(query.seq.to_double()),
       "Function query reference",
     )
     if args == 0 {
@@ -245,9 +242,9 @@ fn orm2_functions(
       let expected : Json = [
         function_oid,
         if name == "before" {
-          (31).to_json()
+          Json(31)
         } else {
-          (29).to_json()
+          Json(29)
         },
         "O",
         0,
@@ -263,10 +260,10 @@ fn orm2_functions(
       )
       orm_equal(
         required(meta, "triggerQuerySeq", "function"),
-        trigger.seq.to_double().to_json(),
+        Json(trigger.seq.to_double()),
         "Trigger query reference",
       )
-      triggers.push([trigger_oid].to_json())
+      triggers.push(Json([trigger_oid]))
     }
   }
   triggers
@@ -291,7 +288,7 @@ fn orm2_collect_owned(
     facts[name] = fact
     refs[name] = references
   }
-  (facts.to_json(), refs.to_json())
+  (Json(facts), Json(refs))
 }
 
 ///|
@@ -302,17 +299,17 @@ fn orm2_relations(
   owned : Json,
 ) -> Json raise {
   let out : Array[Json] = [
-    { "schema": schema.to_json(), "table": table.to_json(), "oid": oid },
+    { "schema": Json(schema), "table": Json(table), "oid": oid },
   ]
   for name in ["installation", "state", "candidates", "effects"] {
     let row = orm_array(orm_get(orm_get(owned, name), "relation"))
     out.push({
-      "schema": schema.to_json(),
-      "table": ("_mtw_orm_" + name).to_json(),
+      "schema": Json(schema),
+      "table": Json("_mtw_orm_" + name),
       "oid": row[0],
     })
   }
-  out.to_json()
+  Json(out)
 }
 
 ///|
@@ -345,18 +342,18 @@ fn orm2_snapshot_rows(
     previous = key
     let present = row[2]
     orm_assert(
-      present == true.to_json() || present == false.to_json(),
+      present == Json(true) || present == Json(false),
       "Snapshot presence type",
     )
-    orm_image(row[3], key, present == true.to_json())
+    orm_image(row[3], key, present == Json(true))
     orm_equal(
       required(expected, key, "state"),
-      { "version": token.to_json(), "present": present, "image": row[3] },
+      { "version": Json(token), "present": present, "image": row[3] },
       "Actual joined state/image",
     )
-    if present == true.to_json() {
-      orm_equal(row[4], key.to_json(), "Live business key")
-      orm_equal(row[5], token.to_json(), "Live business token")
+    if present == Json(true) {
+      orm_equal(row[4], Json(key), "Live business key")
+      orm_equal(row[5], Json(token), "Live business token")
       orm_equal(row[6], row[3], "Live business/state same-statement image")
     } else {
       orm_equal(row[4], Json::null(), "Absent business ID")

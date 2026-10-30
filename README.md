@@ -12,6 +12,18 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
+## v0.3.1
+
+需要 MoonBit moonc ≥0.10.16。当前构建与 CI 固定使用 0.10.16+b1a0e846e。JSON 转换已迁移至新标准库接口，并在构建前检查编译器版本。
+
+直接运行 MoonBit 核心库示例，无需 Node.js 或 Python：
+
+```powershell
+moon run --target wasm-gc src/demo
+```
+
+示例分析两事务写偏斜、核对环证据并验证缩减结果。JavaScript SDK 和 CLI 保留原入口；公开 v0.3.0 的原运行时通过固定下载摘要校验后用于旧证据回放。首次源码构建需要联网取得该兼容组件，已准备的缓存可离线复用，源码树不保存其副本。
+
 ## v0.3.0
 
 本版收敛自动采集、三种数据模型、逐类别诊断和证据重放，新增[原生 MLflow HTTP 排障案例](docs/mlflow-http-case.md)。真实 `log-batch` 路由的修复前后各运行 30 个固定种子；原生死锁通过 SQLSTATE `40P01` 确认。案例由 1000 个键缩减至 623 个，同一最终请求在修复前连续三次复现、修复后连续三次成功，保留 `oneMinimal=false`。
@@ -44,7 +56,7 @@ node examples/mlflow-http-roundtrip.mjs
 
 ## 运行演示
 
-从源码克隆时，Windows 请启用 Git 长路径支持：`git -c core.longpaths=true clone https://github.com/HhWw96/moontxnwitness.git`。
+从源码克隆时，Windows 请启用 Git 长路径支持：`git -c core.longpaths=true clone --depth 1 https://github.com/HhWw96/moontxnwitness.git`。
 
 下载并解压 portable ZIP，需要 Node.js ≥20：
 
@@ -79,7 +91,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.3.0
+moon add HhWw96/moontxnwitness@0.3.1
 ```
 
 ```javascript

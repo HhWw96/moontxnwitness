@@ -12,9 +12,9 @@ fn write_op(key : String, version : String) -> Operation {
 fn tx(
   id : String,
   ops : Array[Operation],
-  status? : TxStatus = Committed,
-  start? : Int64? = None,
-  end? : Int64? = None,
+  status~ : TxStatus = Committed,
+  start~ : Int64? = None,
+  end~ : Int64? = None,
 ) -> Transaction {
   { id, status, ops, start, end, }
 }
@@ -22,8 +22,8 @@ fn tx(
 ///|
 fn hist(
   txs : Array[Transaction],
-  orders? : Map[String, Array[String]] = Map([]),
-  model? : Model = Serializable,
+  orders~ : Map[String, Array[String]] = Map([]),
+  model~ : Model = Serializable,
 ) -> History {
   {
     model,
@@ -366,7 +366,7 @@ test "generated JSON certificate verifies against its source history" {
   ) catch {
     _ => abort("invalid transport")
   }
-  assert_true(result is Object(m) && m.get("valid") == Some(true.to_json()))
+  assert_true(result is Object(m) && m.get("valid") == Some(Json(true)))
 }
 
 ///|

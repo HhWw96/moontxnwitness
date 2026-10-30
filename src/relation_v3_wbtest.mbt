@@ -6,8 +6,8 @@ fn r3_test_case(
   options : String,
 ) -> Unit raise {
   let report = relation_v3_analysis(text, options)
-  assert_eq(capture_field(report, "status"), status.to_json())
-  assert_eq(capture_field(report, "algorithm"), "v3-relation-1".to_json())
+  assert_eq(capture_field(report, "status"), Json(status))
+  assert_eq(capture_field(report, "algorithm"), Json("v3-relation-1"))
   let normalized = capture_field(report, "normalized")
   assert_eq(capture_field(normalized, "history"), Json::null())
   assert_eq(
@@ -1018,7 +1018,7 @@ test "relation SDK normalizer options dispatch and reject unrelated SQL proof" {
       text, "{\"sqlProof\":\"dislock-f9946f0-sql-proof-1\"}",
     ),
   )
-  assert_eq(capture_field(rejected, "status"), "invalid".to_json())
+  assert_eq(capture_field(rejected, "status"), Json("invalid"))
   assert_eq(capture_field(rejected, "history"), Json::null())
 }
 
@@ -1026,13 +1026,10 @@ test "relation SDK normalizer options dispatch and reject unrelated SQL proof" {
 test "relation SDK analyze and verify bind complete model and source facts" {
   let text = "{\"traceSchema\":3,\"dataModel\":\"relation-set-v1\",\"relationSchema\":{\"accounts\":{\"primaryKey\":\"id\",\"columns\":{\"id\":\"int64\",\"balance\":\"int64\",\"active\":\"bool\",\"region\":\"text\"}}},\"clockDomain\":\"relation-own-tests\",\"scope\":{\"exclusiveWriters\":true,\"completeSnapshotTables\":[\"accounts\"]},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"accounts\":[{\"key\":\"1\",\"version\":\"v0\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"A\",\"seq\":2,\"time\":1},{\"kind\":\"row_read\",\"tx\":\"A\",\"relation\":\"accounts\",\"predicate\":[],\"rows\":[{\"key\":\"1\",\"version\":\"v0\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}],\"complete\":true,\"seq\":3,\"time\":2},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":4,\"time\":3},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}],\"gaps\":[]}"
   let report = analyze_v3_json(text, "{}")
-  assert_eq(
-    capture_field(@json.parse(report), "status"),
-    "consistent".to_json(),
-  )
+  assert_eq(capture_field(@json.parse(report), "status"), Json("consistent"))
   assert_eq(
     capture_field(@json.parse(verify_v3_json(text, report)), "valid"),
-    true.to_json(),
+    Json(true),
   )
   let tampered = object_fields(@json.parse(report), "report")
   tampered["modelDefinition"] = { "id": "register-serializable-v1" }
@@ -1041,7 +1038,7 @@ test "relation SDK analyze and verify bind complete model and source facts" {
       @json.parse(verify_v3_json(text, Json::object(tampered).stringify())),
       "valid",
     ),
-    false.to_json(),
+    Json(false),
   )
 }
 
@@ -1053,16 +1050,18 @@ test "relation generic reduction removes noise and revalidates source closure" {
       text, "{\"analysisOptions\":{\"maxStates\":100000},\"maxChecks\":256}",
     ),
   )
-  assert_eq(capture_field(reduced, "status"), "reduced".to_json())
-  assert_eq(capture_field(reduced, "oneMinimal"), true.to_json())
-  assert_eq(capture_field(reduced, "removed"), ["Noise"].to_json())
+  assert_eq(capture_field(reduced, "status"), Json("reduced"))
+  assert_eq(capture_field(reduced, "oneMinimal"), Json(true))
+  assert_eq(capture_field(reduced, "removed"), Json(["Noise"]))
   assert_eq(
     capture_field(capture_field(reduced, "report"), "status"),
-    "violation".to_json(),
+    Json("violation"),
   )
   assert_eq(
     capture_field(reduced, "predicate"),
-    "definite relation-set serializability violation with complete capture coverage".to_json(),
+    Json(
+      "definite relation-set serializability violation with complete capture coverage",
+    ),
   )
 }
 
@@ -1106,8 +1105,8 @@ test "relation independent-fix 05 unpaired high surrogate is not a scalar versio
   let text = "{\"traceSchema\":3,\"dataModel\":\"relation-set-v1\",\"relationSchema\":{\"accounts\":{\"primaryKey\":\"id\",\"columns\":{\"id\":\"int64\",\"balance\":\"int64\",\"active\":\"bool\",\"region\":\"text\"}}},\"clockDomain\":\"relation-own-tests\",\"scope\":{\"exclusiveWriters\":true,\"completeSnapshotTables\":[\"accounts\"]},\"events\":[{\"kind\":\"snapshot\",\"initial\":{\"accounts\":[{\"key\":\"1\",\"version\":\"\\ud800\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}]},\"consistent\":true,\"seq\":1,\"time\":0},{\"kind\":\"begin\",\"tx\":\"A\",\"connection\":\"A\",\"seq\":2,\"time\":1},{\"kind\":\"row_read\",\"tx\":\"A\",\"relation\":\"accounts\",\"predicate\":[],\"rows\":[{\"key\":\"1\",\"version\":\"\\ud800\",\"values\":{\"balance\":\"10\",\"active\":true,\"region\":\"north\"}}],\"complete\":true,\"seq\":3,\"time\":2},{\"kind\":\"commit_request\",\"tx\":\"A\",\"seq\":4,\"time\":3},{\"kind\":\"commit_ok\",\"tx\":\"A\",\"seq\":5,\"time\":4}],\"gaps\":[]}"
   let report = relation_v3_analysis(text, "{}")
   let normalized = @json.parse(normalize_relation_capture_v3_json(text))
-  assert_eq(capture_field(report, "status"), "invalid".to_json())
-  assert_eq(capture_field(normalized, "status"), "invalid".to_json())
+  assert_eq(capture_field(report, "status"), Json("invalid"))
+  assert_eq(capture_field(normalized, "status"), Json("invalid"))
   assert_eq(capture_field(normalized, "history"), Json::null())
 }
 

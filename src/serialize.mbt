@@ -3,7 +3,7 @@
 /// Saturation only disables insertion and does not affect output or analysis.
 priv struct QuotedStrings {
   values : Map[String, String]
-  mut units : Int
+  mut units : Int32
 }
 
 ///|
@@ -14,7 +14,7 @@ fn cached_quote(value : String) -> String {
   match quoted_strings.values.get(value) {
     Some(text) => text
     None => {
-      let text = value.to_json().stringify()
+      let text = Json(value).stringify()
       if quoted_strings.values.length() < 2048 &&
         quoted_strings.units + value.length() + text.length() <= 131072 {
         quoted_strings.values[value] = text
@@ -36,7 +36,7 @@ fn scalar_string(value : Json, strings : Map[String, String]) -> String {
 ///|
 /// Stream the largest array instead of materializing its JSON object tree.
 /// Public report_json remains available for structured MoonBit callers.
-fn report_string(r : Report, extras? : Map[String, Json] = Map([])) -> String {
+fn report_string(r : Report, extras~ : Map[String, Json] = Map([])) -> String {
   let b = json_text()
   let strings : Map[String, String] = Map([])
   write_report(b, r, strings, extras~)
@@ -49,7 +49,7 @@ fn write_report(
   b : JsonText,
   r : Report,
   strings : Map[String, String],
-  extras? : Map[String, Json] = Map([]),
+  extras~ : Map[String, Json] = Map([]),
 ) -> Unit {
   let small = report_json({
     ..r,
@@ -66,7 +66,7 @@ fn write_report(
     fields[name] = value
   }
   match fields.at("stats") {
-    Object(m) => m["dependencies"] = r.edges.length().to_json()
+    Object(m) => m["dependencies"] = Json(r.edges.length())
     _ => abort("Report stats")
   }
   b.write_char('{')
@@ -183,7 +183,7 @@ fn optional_quoted(strings : Map[String, String], value : String?) -> String {
 }
 
 ///|
-fn optional_integer(value : Int?) -> String {
+fn optional_integer(value : Int32?) -> String {
   match value {
     Some(i) => i.to_string()
     None => "null"

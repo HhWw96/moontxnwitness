@@ -2,7 +2,7 @@
 package "HhWw96/moontxnwitness"
 
 // Values
-pub fn analysis_options(max_attempts? : Int, max_operation_checks? : Int, max_cached_states? : Int) -> AnalysisOptions
+pub fn analysis_options(max_attempts? : Int32, max_operation_checks? : Int32, max_cached_states? : Int32) -> AnalysisOptions
 
 pub fn analysis_result_json(AnalysisResult) -> Json
 
@@ -16,7 +16,7 @@ pub fn analyze_v3_json(String, String) -> String
 
 pub fn analyze_with_options(History, options? : AnalysisOptions) -> AnalysisResult
 
-pub fn benchmark_cycle(History, Report) -> Int
+pub fn benchmark_cycle(History, Report) -> Int32
 
 pub fn benchmark_infer(History) -> Report
 
@@ -26,9 +26,9 @@ pub fn benchmark_reduce_balanced(History) -> ReductionResult
 
 pub fn benchmark_render(Report) -> String
 
-pub fn benchmark_search(History, Report) -> Int
+pub fn benchmark_search(History, Report) -> Int32
 
-pub fn benchmark_search_balanced(History, Report) -> Int
+pub fn benchmark_search_balanced(History, Report) -> Int32
 
 pub fn capsule_content_json(String) -> String
 
@@ -72,7 +72,7 @@ pub fn parse_history_optimized(String) -> Result[History, String]
 
 pub fn reduce_classification_v3_json(String, String) -> String
 
-pub fn reduce_history(History, max_checks? : Int) -> Reduction
+pub fn reduce_history(History, max_checks? : Int32) -> Reduction
 
 pub fn reduce_v3_json(String, String) -> String
 
@@ -80,7 +80,7 @@ pub fn reduce_with_options(History, options? : ReductionOptions) -> ReductionRes
 
 pub fn reduction_json(Reduction) -> Json
 
-pub fn reduction_options(max_checks? : Int, analysis? : AnalysisOptions) -> ReductionOptions
+pub fn reduction_options(max_checks? : Int32, analysis? : AnalysisOptions) -> ReductionOptions
 
 pub fn reduction_result_json(ReductionResult) -> Json
 
@@ -112,9 +112,9 @@ pub fn version() -> String
 
 // Types and methods
 pub(all) struct AnalysisOptions {
-  max_attempts : Int
-  max_operation_checks : Int
-  max_cached_states : Int
+  max_attempts : Int32
+  max_operation_checks : Int32
+  max_cached_states : Int32
 } derive(Eq)
 pub fn AnalysisOptions::equal(Self, Self) -> Bool
 pub fn AnalysisOptions::not_equal(Self, Self) -> Bool
@@ -122,8 +122,8 @@ pub fn AnalysisOptions::not_equal(Self, Self) -> Bool
 pub(all) struct AnalysisResult {
   report : Report
   options : AnalysisOptions
-  cache_hits : Int
-  cached_states : Int
+  cache_hits : Int32
+  cached_states : Int32
 } derive(Eq)
 pub fn AnalysisResult::equal(Self, Self) -> Bool
 pub fn AnalysisResult::not_equal(Self, Self) -> Bool
@@ -135,7 +135,7 @@ pub(all) enum Dependency {
   RT
 } derive(Eq, Hash)
 pub fn Dependency::equal(Self, Self) -> Bool
-pub fn Dependency::hash(Self) -> Int
+pub fn Dependency::hash(Self) -> Int32
 pub fn Dependency::hash_combine(Self, Hasher) -> Unit
 pub fn Dependency::not_equal(Self, Self) -> Bool
 
@@ -144,14 +144,14 @@ pub(all) struct Edge {
   to : String
   kind : Dependency
   key : String?
-  from_op : Int?
-  to_op : Int?
+  from_op : Int32?
+  to_op : Int32?
   from_version : String?
   to_version : String?
   reason : String
 } derive(Eq, Hash)
 pub fn Edge::equal(Self, Self) -> Bool
-pub fn Edge::hash(Self) -> Int
+pub fn Edge::hash(Self) -> Int32
 pub fn Edge::hash_combine(Self, Hasher) -> Unit
 pub fn Edge::not_equal(Self, Self) -> Bool
 
@@ -161,17 +161,17 @@ pub(all) struct Finding {
   message : String
   transactions : Array[String]
   key : String?
-  ops : Array[Int]
+  ops : Array[Int32]
 } derive(Eq)
 pub fn Finding::equal(Self, Self) -> Bool
 pub fn Finding::not_equal(Self, Self) -> Bool
 
 pub(all) struct GraphInfo {
   analyzed : Bool
-  components : Int
-  cyclic_components : Int
-  cyclic_transactions : Int
-  bfs_roots : Int
+  components : Int32
+  cyclic_components : Int32
+  cyclic_transactions : Int32
+  bfs_roots : Int32
   edge_budget_exceeded : Bool
 } derive(Eq)
 pub fn GraphInfo::equal(Self, Self) -> Bool
@@ -188,9 +188,9 @@ pub fn History::not_equal(Self, Self) -> Bool
 
 pub(all) struct KeyCoverage {
   key : String
-  committed_reads : Int
-  committed_final_writes : Int
-  unresolved_reads : Int
+  committed_reads : Int32
+  committed_final_writes : Int32
+  unresolved_reads : Int32
 } derive(Eq)
 pub fn KeyCoverage::equal(Self, Self) -> Bool
 pub fn KeyCoverage::not_equal(Self, Self) -> Bool
@@ -231,7 +231,7 @@ pub(all) struct Reduction {
   report : Report
   status : String
   removed : Array[String]
-  checks : Int
+  checks : Int32
   one_minimal : Bool
   reason : String
 } derive(Eq)
@@ -239,7 +239,7 @@ pub fn Reduction::equal(Self, Self) -> Bool
 pub fn Reduction::not_equal(Self, Self) -> Bool
 
 pub(all) struct ReductionOptions {
-  max_checks : Int
+  max_checks : Int32
   analysis : AnalysisOptions
 } derive(Eq)
 pub fn ReductionOptions::equal(Self, Self) -> Bool
@@ -248,8 +248,8 @@ pub fn ReductionOptions::not_equal(Self, Self) -> Bool
 pub(all) struct ReductionResult {
   reduction : Reduction
   analysis : AnalysisResult
-  cached_checks : Int
-  max_checks : Int
+  cached_checks : Int32
+  max_checks : Int32
 } derive(Eq)
 pub fn ReductionResult::equal(Self, Self) -> Bool
 pub fn ReductionResult::not_equal(Self, Self) -> Bool
@@ -261,9 +261,9 @@ pub(all) struct Report {
   edges : Array[Edge]
   witness : Array[Edge]
   serial_order : Array[String]
-  transaction_count : Int
-  committed_count : Int
-  operation_count : Int
+  transaction_count : Int32
+  committed_count : Int32
+  operation_count : Int32
   inferred_orders : Map[String, Array[String]]
   order_sources : Map[String, String]
   search : SearchInfo
@@ -275,8 +275,8 @@ pub fn Report::not_equal(Self, Self) -> Bool
 
 pub(all) struct SearchInfo {
   status : String
-  attempts : Int
-  operation_checks : Int
+  attempts : Int32
+  operation_checks : Int32
   reason : String
   blockers : Array[Finding]
 } derive(Eq)

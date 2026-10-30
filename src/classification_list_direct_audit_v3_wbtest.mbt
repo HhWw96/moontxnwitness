@@ -20,7 +20,7 @@ fn classification26_source_interleaved(
   })
   body.push({
     "kind": "append",
-    "tx": (if own { "R" } else { "C" }).to_json(),
+    "tx": Json(if own { "R" } else { "C" }),
     "key": "x",
     "id": "c",
     "value": "same",
@@ -41,12 +41,7 @@ fn classification26_source_interleaved(
   if read_final {
     items.push({ "id": "b", "value": "same" })
   }
-  body.push({
-    "kind": "list_read",
-    "tx": "R",
-    "key": "x",
-    "items": items.to_json(),
-  })
+  body.push({ "kind": "list_read", "tx": "R", "key": "x", "items": Json(items) })
   if !read_final {
     body.push({
       "kind": "append",
@@ -86,15 +81,10 @@ fn classification26_source_prefix(aborted : Bool, observed : String) -> Json {
   }
   let items : Array[Json] = []
   for item in observed.iter() {
-    items.push({ "id": item.to_string().to_json(), "value": "same" })
+    items.push({ "id": Json(item.to_string()), "value": "same" })
   }
   body.push({ "kind": "begin", "tx": "R", "connection": "r" })
-  body.push({
-    "kind": "list_read",
-    "tx": "R",
-    "key": "x",
-    "items": items.to_json(),
-  })
+  body.push({ "kind": "list_read", "tx": "R", "key": "x", "items": Json(items) })
   body.push({ "kind": "commit_request", "tx": "R" })
   body.push({ "kind": "commit_ok", "tx": "R" })
   classification26_test_list(body)
@@ -107,7 +97,7 @@ test "classification26 source final external last append does not read an earlie
   )
   assert_eq(
     capture_field(classification_test_rule(report, "G1b"), "status"),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
   assert_true(v3_test_items(report, "validityGaps").is_empty())
 }
@@ -119,11 +109,11 @@ test "classification26 source own last append does not create external G1b" {
   )
   assert_eq(
     capture_field(classification_test_rule(report, "G1b"), "status"),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
   assert_eq(
     capture_field(classification_test_rule(report, "INT"), "status"),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
 }
 
@@ -134,14 +124,14 @@ test "classification26 source aborted final last append preserves G1a without ad
   )
   assert_eq(
     capture_field(classification_test_rule(report, "G1a"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_true(
     capture_field(classification_test_rule(report, "G1b"), "status") !=
-    "refuted".to_json(),
+    Json("refuted"),
   )
   let proof = capture_field(classification_test_rule(report, "G1a"), "evidence")
-  assert_eq(capture_field(capture_field(proof, "source"), "id"), "c".to_json())
+  assert_eq(capture_field(capture_field(proof, "source"), "id"), Json("c"))
 }
 
 ///|
@@ -150,11 +140,11 @@ test "classification26 source actual intermediate last append retains specific G
   let report = classification26_test_report(trace)
   assert_eq(
     capture_field(classification_test_rule(report, "G1b"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   let proof = capture_field(classification_test_rule(report, "G1b"), "evidence")
-  assert_eq(capture_field(proof, "lastObservedItem"), "a".to_json())
-  assert_eq(capture_field(capture_field(proof, "source"), "id"), "a".to_json())
+  assert_eq(capture_field(proof, "lastObservedItem"), Json("a"))
+  assert_eq(capture_field(capture_field(proof, "source"), "id"), Json("a"))
   assert_eq(
     capture_field(
       @json.parse(
@@ -162,7 +152,7 @@ test "classification26 source actual intermediate last append retains specific G
       ),
       "valid",
     ),
-    true.to_json(),
+    Json(true),
   )
 }
 
@@ -173,7 +163,7 @@ test "classification26 source final complete list value does not become intermed
   )
   assert_eq(
     capture_field(classification_test_rule(report, "G1b"), "status"),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
   assert_true(v3_test_items(report, "validityGaps").is_empty())
 }
@@ -188,10 +178,10 @@ test "classification26 source incomplete or reversed external producer prefix is
     for rule in ["G1a", "G1b", "INT"] {
       assert_eq(
         capture_field(classification_test_rule(report, rule), "status"),
-        "unknown".to_json(),
+        Json("unknown"),
       )
     }
-    assert_eq(capture_field(report, "dependencyGraphComplete"), false.to_json())
+    assert_eq(capture_field(report, "dependencyGraphComplete"), Json(false))
   }
 }
 
@@ -203,12 +193,12 @@ test "classification26 source malformed producer prefix does not erase matching 
     assert_true(!v3_test_items(report, "validityGaps").is_empty())
     assert_eq(
       capture_field(classification_test_rule(report, "G1a"), "status"),
-      "refuted".to_json(),
+      Json("refuted"),
     )
     for rule in ["G1b", "INT"] {
       assert_eq(
         capture_field(classification_test_rule(report, rule), "status"),
-        "unknown".to_json(),
+        Json("unknown"),
       )
     }
     assert_eq(
@@ -216,7 +206,7 @@ test "classification26 source malformed producer prefix does not erase matching 
         classification26_test_model(report, "adya-pl-2-v1"),
         "status",
       ),
-      "refuted".to_json(),
+      Json("refuted"),
     )
     assert_eq(
       capture_field(
@@ -225,7 +215,7 @@ test "classification26 source malformed producer prefix does not erase matching 
         ),
         "valid",
       ),
-      true.to_json(),
+      Json(true),
     )
   }
 }
@@ -241,11 +231,11 @@ test "classification26 source initial prefix gap also cannot erase independent a
   assert_true(!v3_test_items(report, "validityGaps").is_empty())
   assert_eq(
     capture_field(classification_test_rule(report, "G1a"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification_test_rule(report, "G1b"), "status"),
-    "unknown".to_json(),
+    Json("unknown"),
   )
 }
 
@@ -255,19 +245,21 @@ test "classification26 source wrong key or wrong business value cannot prove abo
     let trace = classification26_source_prefix(true, "a")
     for raw in v3_test_items(trace, "events") {
       let event = object_fields_unchecked_v3(raw)
-      if event.get("kind") != Some("list_read".to_json()) {
+      if event.get("kind") != Some(Json("list_read")) {
         continue
       }
       if mismatch == "key" {
-        event["key"] = "y".to_json()
+        event["key"] = Json("y")
       } else {
-        object_fields_unchecked_v3(v3_test_items(raw, "items")[0])["value"] = "forged".to_json()
+        object_fields_unchecked_v3(v3_test_items(raw, "items")[0])["value"] = Json(
+          "forged",
+        )
       }
     }
     let report = classification26_test_report(trace)
     assert_true(
       capture_field(classification_test_rule(report, "G1a"), "status") !=
-      "refuted".to_json(),
+      Json("refuted"),
     )
   }
 }
@@ -276,17 +268,19 @@ test "classification26 source wrong key or wrong business value cannot prove abo
 test "classification26 source unrelated mismatching item does not erase a matching aborted item" {
   let trace = classification26_source_interleaved(false, true, false)
   for raw in v3_test_items(trace, "events") {
-    if capture_field(raw, "kind") == "list_read".to_json() {
-      object_fields_unchecked_v3(v3_test_items(raw, "items")[0])["value"] = "forged".to_json()
+    if capture_field(raw, "kind") == Json("list_read") {
+      object_fields_unchecked_v3(v3_test_items(raw, "items")[0])["value"] = Json(
+        "forged",
+      )
     }
   }
   let report = classification26_test_report(trace)
   assert_eq(
     capture_field(classification_test_rule(report, "G1a"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_true(
     capture_field(classification_test_rule(report, "G1b"), "status") !=
-    "refuted".to_json(),
+    Json("refuted"),
   )
 }

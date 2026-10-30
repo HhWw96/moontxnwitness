@@ -1,14 +1,14 @@
 ///|
 fn orm2_control_seqs(
   cursor : OrmControlCursor2,
-  begin : Int,
-  end : Int,
+  begin : Int32,
+  end : Int32,
 ) -> Json {
   let out : Array[Json] = []
   for i in begin..<end {
-    out.push(cursor.controls[i].seq.to_double().to_json())
+    out.push(Json(cursor.controls[i].seq.to_double()))
   }
-  out.to_json()
+  Json(out)
 }
 
 ///|
@@ -28,8 +28,8 @@ fn orm2_marker(
     ["nonce", "table_oid"],
     [25, 26],
   )
-  let expected : Json = [[nonce, oid].to_json()].to_json()
-  orm_equal(query.rows.to_json(), expected, "Actual installation marker rows")
+  let expected : Json = Json([Json([nonce, oid])])
+  orm_equal(Json(query.rows), expected, "Actual installation marker rows")
   orm_equal(
     required(record, prefix + "MarkerRows", "marker"),
     expected,
@@ -37,7 +37,7 @@ fn orm2_marker(
   )
   orm_equal(
     required(record, prefix + "MarkerQuerySeq", "marker"),
-    query.seq.to_double().to_json(),
+    Json(query.seq.to_double()),
     "Marker source query reference",
   )
 }
@@ -64,15 +64,15 @@ fn orm2_init_profile(
   )
   orm_equal(
     required(metadata, "versionColumn", "metadata"),
-    "_mtw_orm_version".to_json(),
+    Json("_mtw_orm_version"),
     "Private version column",
   )
   orm_equal(
     required(metadata, "coreProofAccepted", "metadata"),
-    false.to_json(),
+    Json(false),
     "Unpromoted producer declaration",
   )
-  let nonce = orm_uuid(required(metadata, "nonce", "metadata")).to_json()
+  let nonce = Json(orm_uuid(required(metadata, "nonce", "metadata")))
   let state = object_fields(
     required(metadata, "initialState", "metadata"),
     "initial state",
@@ -221,7 +221,7 @@ fn orm2_init_profile(
       { "version": row[1], "present": true, "image": row[2] },
       "Actual initial live state/source",
     )
-    images[key] = row.to_json()
+    images[key] = Json(row)
   }
   let parameter_groups : Array[Json] = []
   let mut jsonb_parameters = 0
@@ -230,11 +230,11 @@ fn orm2_init_profile(
     let entry = orm_exact(required(state, key_text, "initial state"), [
       "version", "present", "image",
     ])
-    let token = orm_uuid(required(entry, "version", "state")).to_json()
+    let token = Json(orm_uuid(required(entry, "version", "state")))
     let present = live_keys.contains(key_text)
     orm_equal(
       required(entry, "present", "state"),
-      present.to_json(),
+      Json(present),
       "Initial presence from original live rows",
     )
     let image = required(entry, "image", "state")
@@ -254,15 +254,15 @@ fn orm2_init_profile(
       "INSERT INTO " +
       orm2_qualified(schema, "_mtw_orm_state") +
       " VALUES(%s,%s,%s,%s)",
-      [key, token, present.to_json(), parameter_image],
+      [key, token, Json(present), parameter_image],
       "INSERT 0 1",
       Some(1),
     )
     parameter_groups.push({
-      "sourceSeq": query.seq.to_double().to_json(),
+      "sourceSeq": Json(query.seq.to_double()),
       "key": key,
-      "present": present.to_json(),
-      "explicitJsonb": present.to_json(),
+      "present": Json(present),
+      "explicitJsonb": Json(present),
     })
   }
   for name in ["predecessor", "deleted_version", "before", "after"] {
@@ -276,13 +276,13 @@ fn orm2_init_profile(
       ),
     )
     let lookup = orm2_query(cursor, "function_oid", [
-      schema.to_json(),
-      orm2_function_name(name).to_json(),
+      Json(schema),
+      Json(orm2_function_name(name)),
     ])
     let meta = object_fields(required(functions, name, "functions"), "function")
     orm_equal(
       orm2_one(lookup),
-      [required(meta, "functionOid", "function")].to_json(),
+      Json([required(meta, "functionOid", "function")]),
       "Created actual function OID",
     )
     if name == "before" || name == "after" {
@@ -297,11 +297,11 @@ fn orm2_init_profile(
       )
       let lookup = orm2_query(cursor, "trigger_oid", [
         oid,
-        ("_mtw_orm_" + name).to_json(),
+        Json("_mtw_orm_" + name),
       ])
       orm_equal(
         orm2_one(lookup),
-        [required(meta, "triggerOid", "function")].to_json(),
+        Json([required(meta, "triggerOid", "function")]),
         "Created actual trigger OID",
       )
     }
@@ -347,12 +347,12 @@ fn orm2_init_profile(
   orm2_snapshot_rows(snapshot.rows, state, known)
   orm_equal(
     required(metadata, "initialSnapshotRows", "metadata"),
-    snapshot.rows.to_json(),
+    Json(snapshot.rows),
     "Initial raw seven-cell snapshot",
   )
   orm_equal(
     required(metadata, "initialSnapshotQuerySeq", "metadata"),
-    snapshot.seq.to_double().to_json(),
+    Json(snapshot.seq.to_double()),
     "Initial snapshot source reference",
   )
   let commit = orm2_command(cursor, "COMMIT", Json::null(), "COMMIT", None)
@@ -364,7 +364,7 @@ fn orm2_init_profile(
     {
       "kind": "begin",
       "commandTag": "BEGIN",
-      "querySeq": begin.seq.to_double().to_json(),
+      "querySeq": Json(begin.seq.to_double()),
     },
     {
       "kind": "lock",
@@ -372,8 +372,8 @@ fn orm2_init_profile(
       "mode": "ACCESS EXCLUSIVE",
       "tableOid": oid,
       "querySeqs": [
-        first_lock.seq.to_double().to_json(),
-        all_lock.seq.to_double().to_json(),
+        Json(first_lock.seq.to_double()),
+        Json(all_lock.seq.to_double()),
       ],
       "relations": orm2_relations(schema, table, oid, owned),
     },
@@ -384,13 +384,13 @@ fn orm2_init_profile(
     },
     {
       "kind": "snapshot",
-      "rows": snapshot.rows.to_json(),
-      "querySeq": snapshot.seq.to_double().to_json(),
+      "rows": Json(snapshot.rows),
+      "querySeq": Json(snapshot.seq.to_double()),
     },
     {
       "kind": "commit",
       "commandTag": "COMMIT",
-      "querySeq": commit.seq.to_double().to_json(),
+      "querySeq": Json(commit.seq.to_double()),
     },
   ]
   orm_equal(
@@ -401,8 +401,8 @@ fn orm2_init_profile(
   (
     {
       "window": window,
-      "parameterGroups": parameter_groups.to_json(),
-      "explicitJsonbParameters": jsonb_parameters.to_json(),
+      "parameterGroups": Json(parameter_groups),
+      "explicitJsonbParameters": Json(jsonb_parameters),
       "migrationDdlStatements": 13,
       "preMigrationCatalog": prior_catalog,
     },
@@ -545,12 +545,12 @@ fn orm2_final_profile(
   }
   orm_equal(
     required(final_record, "ledger", "final"),
-    effects.to_json(),
+    Json(effects),
     "Actual raw final ledger binding",
   )
   orm_equal(
     required(final_record, "ledgerQuerySeq", "final"),
-    ledger.seq.to_double().to_json(),
+    Json(ledger.seq.to_double()),
     "Final ledger raw source reference",
   )
   let snapshot = orm2_snapshot_query(cursor, schema, table)
@@ -561,12 +561,12 @@ fn orm2_final_profile(
   )
   orm_equal(
     required(final_record, "finalSnapshotRows", "final"),
-    snapshot.rows.to_json(),
+    Json(snapshot.rows),
     "Final raw seven-cell snapshot",
   )
   orm_equal(
     required(final_record, "finalSnapshotQuerySeq", "final"),
-    snapshot.seq.to_double().to_json(),
+    Json(snapshot.seq.to_double()),
     "Final snapshot raw source reference",
   )
   let commit = orm2_command(cursor, "COMMIT", Json::null(), "COMMIT", None)
@@ -578,14 +578,14 @@ fn orm2_final_profile(
     {
       "kind": "begin",
       "commandTag": "BEGIN",
-      "querySeq": begin.seq.to_double().to_json(),
+      "querySeq": Json(begin.seq.to_double()),
     },
     {
       "kind": "lock",
       "commandTag": "LOCK TABLE",
       "mode": "ACCESS EXCLUSIVE",
       "tableOid": oid,
-      "querySeq": lock.seq.to_double().to_json(),
+      "querySeq": Json(lock.seq.to_double()),
       "relations": orm2_relations(schema, table, oid, owned),
     },
     {
@@ -595,15 +595,15 @@ fn orm2_final_profile(
     },
     {
       "kind": "snapshot_and_ledger",
-      "rows": snapshot.rows.to_json(),
-      "effectLedger": effects.to_json(),
-      "snapshotQuerySeq": snapshot.seq.to_double().to_json(),
-      "ledgerQuerySeq": ledger.seq.to_double().to_json(),
+      "rows": Json(snapshot.rows),
+      "effectLedger": Json(effects),
+      "snapshotQuerySeq": Json(snapshot.seq.to_double()),
+      "ledgerQuerySeq": Json(ledger.seq.to_double()),
     },
     {
       "kind": "commit",
       "commandTag": "COMMIT",
-      "querySeq": commit.seq.to_double().to_json(),
+      "querySeq": Json(commit.seq.to_double()),
     },
   ]
   orm_equal(
@@ -612,7 +612,7 @@ fn orm2_final_profile(
     "Actual final lock/catalog/snapshot/ledger/ACK window",
   )
   (
-    { "window": window, "ledgerEntries": effects.length().to_json() },
+    { "window": window, "ledgerEntries": Json(effects.length()) },
     cursor.verified,
   )
 }

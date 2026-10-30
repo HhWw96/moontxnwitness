@@ -1,3 +1,4 @@
+import {checkToolchain} from './toolchain-policy.mjs';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve, delimiter } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,6 +18,7 @@ export function runMoon(args) {
   const localPath = resolve(root, '.local-toolchain.json');
   const local = existsSync(localPath) ? JSON.parse(readFileSync(localPath, 'utf8')).moonHome : null;
   const home = process.env.MOON_HOME || local;
+  checkToolchain(home);
   const env = { ...process.env };
   if (home) {
     env.MOON_HOME = home;

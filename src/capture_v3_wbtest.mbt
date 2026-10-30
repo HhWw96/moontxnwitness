@@ -12,14 +12,14 @@ fn v3_test_trace(body : Array[Json]) -> Json {
   }
   for index, event in events {
     let fields = object_fields_unchecked_v3(event)
-    fields["seq"] = (index + 1).to_json()
-    fields["time"] = index.to_json()
+    fields["seq"] = Json(index + 1)
+    fields["time"] = Json(index)
   }
   {
     "traceSchema": 3,
     "clockDomain": "v3-test",
     "scope": { "exclusiveWriters": true },
-    "events": events.to_json(),
+    "events": Json(events),
     "gaps": [],
   }
 }
@@ -38,12 +38,12 @@ fn v3_test_completed(steps : Array[Json]) -> Json {
 ///|
 fn v3_test_check(trace : Json, status : String) -> Json raise {
   let result = @json.parse(normalize_capture_v3_json(trace.stringify()))
-  assert_eq(capture_field(result, "schema"), (3).to_json())
-  assert_eq(capture_field(result, "algorithm"), "v3-lifecycle-1".to_json())
-  assert_eq(capture_field(result, "status"), status.to_json())
+  assert_eq(capture_field(result, "schema"), Json(3))
+  assert_eq(capture_field(result, "algorithm"), Json("v3-lifecycle-1"))
+  assert_eq(capture_field(result, "status"), Json(status))
   assert_eq(
     capture_field(capture_field(result, "coverage"), "complete"),
-    (status == "ready").to_json(),
+    Json(status == "ready"),
   )
   assert_eq(
     capture_field(result, "observations"),
@@ -67,7 +67,7 @@ fn v3_test_items(value : Json, field : String) -> Array[Json] raise {
 fn v3_test_has_gap(result : Json, code : String) -> Bool raise {
   let mut found = false
   for gap in v3_test_items(capture_field(result, "coverage"), "gaps") {
-    if capture_field(gap, "code") == code.to_json() {
+    if capture_field(gap, "code") == Json(code) {
       found = true
     }
   }
@@ -78,7 +78,7 @@ fn v3_test_has_gap(result : Json, code : String) -> Bool raise {
 test "v3 empty commit retains transaction identity and no client realtime constraints" {
   let result = v3_test_check(v3_test_completed([]), "ready")
   let tx = v3_test_items(result, "transactions")[0]
-  assert_eq(capture_field(tx, "events"), [2, 3, 4].to_json())
+  assert_eq(capture_field(tx, "events"), Json([2, 3, 4]))
   assert_eq(capture_field(tx, "finalWrites"), Json::array([]))
   let h = parse_history(capture_field(result, "history").stringify()).unwrap()
   assert_eq(h.transactions.length(), 1)
@@ -104,7 +104,7 @@ test "v3 own read is checked before eliminating it from the safe projection" {
   assert_true(h.transactions[0].ops == [write_op("x", "x1")])
   assert_eq(
     capture_field(v3_test_items(result, "transactions")[0], "finalWrites"),
-    [3].to_json(),
+    Json([3]),
   )
   assert_eq(
     capture_field(v3_test_items(result, "effects")[0], "revertedBy"),
@@ -173,9 +173,9 @@ test "v3 nested rollback restores each original overlay and preserves delivered 
   )
   let effects = v3_test_items(result, "effects")
   assert_eq(effects.length(), 5)
-  assert_eq(capture_field(effects[1], "revertedBy"), (10).to_json())
-  assert_eq(capture_field(effects[2], "revertedBy"), (8).to_json())
-  assert_eq(capture_field(effects[3], "revertedBy"), (10).to_json())
+  assert_eq(capture_field(effects[1], "revertedBy"), Json(10))
+  assert_eq(capture_field(effects[2], "revertedBy"), Json(8))
+  assert_eq(capture_field(effects[3], "revertedBy"), Json(10))
   let h = parse_history(capture_field(result, "history").stringify()).unwrap()
   assert_true(
     h.transactions[0].ops == [write_op("x", "x1"), write_op("x", "x5")],
@@ -211,7 +211,7 @@ test "v3 release merges child writes so parent rollback still revokes them" {
     "ready",
   )
   for effect in v3_test_items(result, "effects") {
-    assert_eq(capture_field(effect, "revertedBy"), (9).to_json())
+    assert_eq(capture_field(effect, "revertedBy"), Json(9))
   }
   let h = parse_history(capture_field(result, "history").stringify()).unwrap()
   assert_true(h.transactions[0].ops == [read_op("x", "x0")])
@@ -243,8 +243,8 @@ test "v3 rollback target remains active for a second rollback" {
     "ready",
   )
   let effects = v3_test_items(result, "effects")
-  assert_eq(capture_field(effects[0], "revertedBy"), (5).to_json())
-  assert_eq(capture_field(effects[1], "revertedBy"), (7).to_json())
+  assert_eq(capture_field(effects[0], "revertedBy"), Json(5))
+  assert_eq(capture_field(effects[1], "revertedBy"), Json(7))
 }
 
 ///|
@@ -254,7 +254,7 @@ test "v3 hidden same-name savepoint cannot be addressed by older instance ID" {
       v3_test_completed([
         { "kind": "savepoint", "tx": "A", "name": "same", "instance": "s1" },
         { "kind": "savepoint", "tx": "A", "name": "same", "instance": "s2" },
-        { "kind": kind.to_json(), "tx": "A", "instance": "s1" },
+        { "kind": Json(kind), "tx": "A", "instance": "s1" },
       ]),
       "invalid",
     )
@@ -287,7 +287,7 @@ test "v3 releasing newest same-name mark exposes the old one" {
     "ready",
   )
   for effect in v3_test_items(result, "effects") {
-    assert_eq(capture_field(effect, "revertedBy"), (8).to_json())
+    assert_eq(capture_field(effect, "revertedBy"), Json(8))
   }
 }
 
@@ -343,11 +343,11 @@ test "v3 top-level rollback revokes effects but retains original own reads" {
   )
   assert_eq(
     capture_field(v3_test_items(result, "effects")[0], "revertedBy"),
-    (5).to_json(),
+    Json(5),
   )
   assert_eq(
     capture_field(v3_test_items(result, "transactions")[0], "status"),
-    "aborted".to_json(),
+    Json("aborted"),
   )
   assert_eq(
     capture_field(v3_test_items(result, "transactions")[0], "finalWrites"),
@@ -437,11 +437,11 @@ test "v3 disconnect after commit request leaves permanent unknown even after con
   assert_true(v3_test_has_gap(result, "unknown_commit"))
   assert_eq(
     capture_field(v3_test_items(result, "transactions")[0], "status"),
-    "unknown".to_json(),
+    Json("unknown"),
   )
   assert_eq(
     capture_field(v3_test_items(result, "transactions")[1], "status"),
-    "committed".to_json(),
+    Json("committed"),
   )
 }
 
@@ -464,7 +464,7 @@ test "v3 rollback ack after a commit request cannot prove original commit was ab
   )
   assert_eq(
     capture_field(v3_test_items(result, "transactions")[0], "status"),
-    "unknown".to_json(),
+    Json("unknown"),
   )
   assert_eq(
     capture_field(v3_test_items(result, "effects")[0], "revertedBy"),
@@ -558,7 +558,7 @@ test "v3 external aborted and intermediate sources remain facts with a coverage 
       })
       body.push({ "kind": "commit_request", "tx": "W" })
     }
-    body.push({ "kind": outcome.to_json(), "tx": "W" })
+    body.push({ "kind": Json(outcome), "tx": "W" })
     body.push({ "kind": "begin", "tx": "R", "connection": "cr" })
     body.push({ "kind": "read", "tx": "R", "key": "x", "version": "x1" })
     body.push({ "kind": "commit_request", "tx": "R" })
@@ -784,10 +784,12 @@ test "v3 unconsumed rows and rows after exhaustion cannot become complete histor
 ///|
 test "v3 sequence gaps preserve observations while reversed clocks and unknown kinds are invalid" {
   let gap = v3_test_completed([])
-  object_fields_unchecked_v3(v3_test_items(gap, "events")[3])["seq"] = (5).to_json()
+  object_fields_unchecked_v3(v3_test_items(gap, "events")[3])["seq"] = Json(5)
   let _ = v3_test_check(gap, "inconclusive")
   let clock = v3_test_completed([])
-  object_fields_unchecked_v3(v3_test_items(clock, "events")[3])["time"] = (0).to_json()
+  object_fields_unchecked_v3(v3_test_items(clock, "events")[3])["time"] = Json(
+    0,
+  )
   let _ = v3_test_check(clock, "invalid")
   let _ = v3_test_check(
     v3_test_completed([{ "kind": "magic", "tx": "A" }]),
@@ -798,15 +800,19 @@ test "v3 sequence gaps preserve observations while reversed clocks and unknown k
 ///|
 test "v3 inconsistent snapshots open writer scope and explicit gaps forbid projection" {
   let snapshot = v3_test_completed([])
-  object_fields_unchecked_v3(v3_test_items(snapshot, "events")[0])["consistent"] = false.to_json()
+  object_fields_unchecked_v3(v3_test_items(snapshot, "events")[0])["consistent"] = Json(
+    false,
+  )
   let _ = v3_test_check(snapshot, "inconclusive")
   let scope = v3_test_completed([])
-  object_fields_unchecked_v3(capture_field(scope, "scope"))["exclusiveWriters"] = false.to_json()
+  object_fields_unchecked_v3(capture_field(scope, "scope"))["exclusiveWriters"] = Json(
+    false,
+  )
   let _ = v3_test_check(scope, "inconclusive")
   let explicit = v3_test_completed([])
-  object_fields_unchecked_v3(explicit)["gaps"] = [
+  object_fields_unchecked_v3(explicit)["gaps"] = Json([
     capture_gap("test", "Missing source segment"),
-  ].to_json()
+  ])
   let _ = v3_test_check(explicit, "inconclusive")
 }
 
@@ -817,9 +823,11 @@ test "v3 rejects duplicate JSON keys and unsupported event fields without using 
     .stringify()
     .replace(old="\"traceSchema\":3", new="\"traceSchema\":3,\"traceSchema\":3")
   let result = @json.parse(normalize_capture_v3_json(duplicate))
-  assert_eq(capture_field(result, "status"), "invalid".to_json())
+  assert_eq(capture_field(result, "status"), Json("invalid"))
   let wrong = v3_test_completed([])
-  object_fields_unchecked_v3(v3_test_items(wrong, "events")[1])["extra"] = true.to_json()
+  object_fields_unchecked_v3(v3_test_items(wrong, "events")[1])["extra"] = Json(
+    true,
+  )
   let _ = v3_test_check(wrong, "invalid")
 }
 
@@ -830,8 +838,8 @@ test "v3 savepoint nesting has an explicit resource bound" {
     body.push({
       "kind": "savepoint",
       "tx": "A",
-      "name": ("name" + index.to_string()).to_json(),
-      "instance": ("s" + index.to_string()).to_json(),
+      "name": Json("name" + index.to_string()),
+      "instance": Json("s" + index.to_string()),
     })
   }
   let _ = v3_test_check(v3_test_completed(body), "invalid")

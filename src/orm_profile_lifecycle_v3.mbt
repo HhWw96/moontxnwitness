@@ -96,7 +96,7 @@ fn orm_profile_ownership_v3(window : OrmProfileWindowV3) -> Unit raise {
       )
       orm_equal(
         required(record, "borrowedConnections", "detach"),
-        (0).to_json(),
+        Json(0),
         "No connection may remain borrowed on detach",
       )
       orm_assert(
@@ -156,12 +156,12 @@ fn orm_profile_ownership_v3(window : OrmProfileWindowV3) -> Unit raise {
         )
         orm_equal(
           required(record, "terminateOnly", "reset"),
-          false.to_json(),
+          Json(false),
           "Terminating reset is outside the verified profile",
         )
         orm_equal(
           required(record, "transactionWasReset", "reset"),
-          false.to_json(),
+          Json(false),
           "Implicit reset outcome is outside the verified profile",
         )
         match required(record, "asyncioSafe", "reset") {
@@ -260,7 +260,7 @@ fn orm_profile_ownership_v3(window : OrmProfileWindowV3) -> Unit raise {
         )
         orm_equal(
           required(record, "succeeded", "call"),
-          true.to_json(),
+          Json(true),
           "Unconfirmed or failed calls remain uncovered",
         )
         let call_method = orm_text(required(record, "method", "call"))
@@ -286,7 +286,7 @@ fn orm_profile_ownership_v3(window : OrmProfileWindowV3) -> Unit raise {
         }
         orm_equal(
           required(start, "method", "call"),
-          "commit".to_json(),
+          Json("commit"),
           "Native response belongs to COMMIT",
         )
         orm_assert(
@@ -404,8 +404,8 @@ fn orm_profile_index_digest_v3(
     }
   }
   orm_equal(
-    v3_dislock_sha256(payload.to_string()).to_json(),
-    expected.to_json(),
+    Json(v3_dislock_sha256(payload.to_string())),
+    Json(expected),
     "Original journal index checksum",
   )
 }

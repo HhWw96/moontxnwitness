@@ -91,18 +91,18 @@ fn reduction_result_string(result : ReductionResult) -> String {
   let metadata : Json = {
     "schemaVersion": 2,
     "tool": "MoonTxnWitness",
-    "version": version().to_json(),
-    "status": r.status.to_json(),
-    "oneMinimal": r.one_minimal.to_json(),
-    "removedTransactions": r.removed.to_json(),
-    "checks": r.checks.to_json(),
-    "reason": r.reason.to_json(),
+    "version": Json(version()),
+    "status": Json(r.status),
+    "oneMinimal": Json(r.one_minimal),
+    "removedTransactions": Json(r.removed),
+    "checks": Json(r.checks),
+    "reason": Json(r.reason),
     "limits": {
       "transactions": 512,
       "operations": 10000,
-      "checks": result.max_checks.to_json(),
+      "checks": Json(result.max_checks),
     },
-    "cachedCandidateChecks": result.cached_checks.to_json(),
+    "cachedCandidateChecks": Json(result.cached_checks),
     "scope": "transaction deletion; fixed initial state; asserted orders pruned; analyzer-specific definite-violation predicate",
   }
   let fields = match metadata {

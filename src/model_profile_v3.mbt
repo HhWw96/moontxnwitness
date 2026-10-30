@@ -1,5 +1,5 @@
 ///|
-fn model_diagnostic_gaps_v3(raw : Json, index? : Bool = false) -> Unit raise {
+fn model_diagnostic_gaps_v3(raw : Json, index~ : Bool = false) -> Unit raise {
   let seen : Map[String, Bool] = Map([])
   for raw in orm_array(raw) {
     let gap = orm_exact(raw, ["code", "message"])
@@ -38,12 +38,12 @@ fn model_index_v3(text : String, events : Array[Json]) -> Unit raise {
   orm_profile_index_digest_v3(text, index)
   for
     (name, value) in [
-      ("indexSchema", (1).to_json()),
-      ("traceSchema", (3).to_json()),
-      ("closed", true.to_json()),
-      ("sourceClosed", false.to_json()),
-      ("eventCount", events.length().to_json()),
-      ("durableSeq", events.length().to_json()),
+      ("indexSchema", Json(1)),
+      ("traceSchema", Json(3)),
+      ("closed", Json(true)),
+      ("sourceClosed", Json(false)),
+      ("eventCount", Json(events.length())),
+      ("durableSeq", Json(events.length())),
     ] {
     orm_equal(required(index, name, "index"), value, "Original index " + name)
   }
@@ -117,12 +117,12 @@ pub fn model_profile_source_v3_json(
     ])
     orm_equal(
       required(input, "format", "input"),
-      "moontxnwitness-model-profile-source/v1".to_json(),
+      Json("moontxnwitness-model-profile-source/v1"),
       "Separate configured model source format",
     )
     orm_equal(
       required(input, "profile", "input"),
-      "pg18-configured-models/1".to_json(),
+      Json("pg18-configured-models/1"),
       "Pinned model source profile",
     )
     let trace_text = orm_text(required(input, "traceText", "input"))
@@ -143,14 +143,14 @@ pub fn model_profile_source_v3_json(
     )
     raw_coverage = required(lifecycle, "coverage", "lifecycle")
     orm_assert(
-      required(lifecycle, "status", "lifecycle") != "invalid".to_json(),
+      required(lifecycle, "status", "lifecycle") != Json("invalid"),
       "Original diagnostic lifecycle is valid",
     )
     let events = orm_array(required(trace, "events", "trace"))
     orm_assert(!events.is_empty(), "Original diagnostic snapshot exists")
     orm_equal(
       orm_get(events[0], "kind"),
-      "snapshot".to_json(),
+      Json("snapshot"),
       "Original diagnostic begins with raw snapshot boundary",
     )
     orm_equal(
@@ -160,12 +160,12 @@ pub fn model_profile_source_v3_json(
     )
     orm_equal(
       orm_get(events[0], "consistent"),
-      false.to_json(),
+      Json(false),
       "Original generic diagnostic keeps its unproved initial flag",
     )
     orm_equal(
       orm_get(required(trace, "scope", "trace"), "exclusiveWriters"),
-      false.to_json(),
+      Json(false),
       "Original generic writer scope is not silently upgraded",
     )
     let (records, installation_index, initial_controls, final_controls) = orm2_journal(
@@ -180,7 +180,7 @@ pub fn model_profile_source_v3_json(
     for record in [installation, final_record] {
       orm_equal(
         required(record, "profile", "source"),
-        "pg18-configured-models/1".to_json(),
+        Json("pg18-configured-models/1"),
         "One independently configured source profile",
       )
     }
@@ -194,7 +194,7 @@ pub fn model_profile_source_v3_json(
     )
     for record in records {
       orm_assert(
-        orm_get(record, "kind") != "source-gap".to_json(),
+        orm_get(record, "kind") != Json("source-gap"),
         "No missing/unknown original source effect",
       )
     }
@@ -229,38 +229,38 @@ pub fn model_profile_source_v3_json(
       relation_v3_analysis(derived.stringify(), options_text)
     }
     orm_assert(
-      orm_get(analysis, "status") != "invalid".to_json(),
+      orm_get(analysis, "status") != Json("invalid"),
       "Independently derived model history remains valid",
     )
     orm_equal(
       orm_get(orm_get(analysis, "coverage"), "complete"),
-      true.to_json(),
+      Json(true),
       "No missing lifecycle or version source in derived model",
     )
     let report : Json = {
       "schemaVersion": 3,
       "tool": "MoonTxnWitness",
-      "version": version().to_json(),
+      "version": Json(version()),
       "algorithm": "v3-configured-model-source-projection-1",
       "profile": "pg18-configured-models/1",
       "status": orm_get(analysis, "status"),
       "analysisCoverageAccepted": true,
       "originalDiagnosticCoverage": raw_coverage,
       "derivedTrace": derived,
-      "retainedOriginalSeq": origins.to_json(),
+      "retainedOriginalSeq": Json(origins),
       "analysis": analysis,
       "mappingCoverage": {
         "complete": true,
         "gaps": [],
         "actualCalls": calls,
         "sourceWindowsChecked": true,
-        "committedEffectsChecked": effects.length().to_json(),
+        "committedEffectsChecked": Json(effects.length()),
       },
       "sourceBindings": {
-        "traceSha256": v3_dislock_sha256(trace_text).to_json(),
-        "sourceJournalSha256": v3_dislock_sha256(source_text).to_json(),
-        "lifecycleSha256": v3_dislock_sha256(lifecycle_text).to_json(),
-        "journalIndexSha256": v3_dislock_sha256(index_text).to_json(),
+        "traceSha256": Json(v3_dislock_sha256(trace_text)),
+        "sourceJournalSha256": Json(v3_dislock_sha256(source_text)),
+        "lifecycleSha256": Json(v3_dislock_sha256(lifecycle_text)),
+        "journalIndexSha256": Json(v3_dislock_sha256(index_text)),
       },
       "scope": "Explicit new controlled PostgreSQL18 schema and one startup synchronous psycopg factory; exact registered list append/point read or relation point CRUD/AND SELECT only. RETURNING is not a predicate read. Original raw gaps remain incomplete; source/driver observations are independently projected. Source checks bind the supplied index self-checksum/descriptors, not absent segment payloads. Hashes do not authenticate the server or exclusive writer declaration. No ORM, async, savepoint, arbitrary SQL/table, mixed model, isolation-level or real-time claim.",
     }
@@ -270,7 +270,7 @@ pub fn model_profile_source_v3_json(
       let report : Json = {
         "schemaVersion": 3,
         "tool": "MoonTxnWitness",
-        "version": version().to_json(),
+        "version": Json(version()),
         "algorithm": "v3-configured-model-source-projection-1",
         "profile": "pg18-configured-models/1",
         "status": "inconclusive",

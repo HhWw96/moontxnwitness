@@ -47,7 +47,7 @@ fn model_integer_v3(value : Json) -> String raise {
       let object = orm_exact(value, ["captureType", "value"])
       orm_equal(
         required(object, "captureType", "integer"),
-        "int".to_json(),
+        Json("int"),
         "Original large integer encoding",
       )
       let text = orm_text(required(object, "value", "integer"))
@@ -61,9 +61,9 @@ fn model_integer_v3(value : Json) -> String raise {
 fn model_encoded_integer_v3(text : String) -> Json raise {
   let n = relation_v3_int64(text)
   if n >= -9007199254740991L && n <= 9007199254740991L {
-    n.to_double().to_json()
+    Json(n.to_double())
   } else {
-    { "captureType": "int", "value": text.to_json() }
+    { "captureType": "int", "value": Json(text) }
   }
 }
 
@@ -221,7 +221,7 @@ fn model_plans_v3(
 }
 
 ///|
-fn model_string_v3(raw : Json, maximum : Int) -> String raise {
+fn model_string_v3(raw : Json, maximum : Int32) -> String raise {
   orm_native_text(raw, maximum)
 }
 
@@ -256,7 +256,7 @@ fn model_parameters_v3(
       orm_assert(items.length() == 1, "One actual append item")
       values.push(model_list_item_v3(items[0]))
     }
-    values.push(key.to_json())
+    values.push(Json(key))
   } else if plan.operation == "row-read" {
     orm_assert(
       params.length() == plan.predicate.length(),
@@ -265,14 +265,14 @@ fn model_parameters_v3(
     for i, term in plan.predicate {
       let value = params[i]
       if term.0 == "id" || term.0 == "balance" {
-        values.push(model_integer_v3(value).to_json())
+        values.push(Json(model_integer_v3(value)))
       } else if term.0 == "active" {
         match value {
           True | False => values.push(value)
           _ => fail("Original bool predicate required")
         }
       } else {
-        values.push(model_string_v3(value, 1024).to_json())
+        values.push(Json(model_string_v3(value, 1024)))
       }
     }
   } else {
@@ -289,15 +289,15 @@ fn model_parameters_v3(
     orm_assert(config.keys.contains(key), "Write key in installed domain")
     if plan.operation != "row-delete" {
       let offset = if plan.operation == "row-insert" { 1 } else { 0 }
-      values.push(model_integer_v3(params[offset]).to_json())
+      values.push(Json(model_integer_v3(params[offset])))
       match params[offset + 1] {
         True | False => ()
         _ => fail("Original row boolean required")
       }
       values.push(params[offset + 1])
-      values.push(model_string_v3(params[offset + 2], 1024).to_json())
+      values.push(Json(model_string_v3(params[offset + 2], 1024)))
     }
-    values.push(key.to_json())
+    values.push(Json(key))
   }
   values
 }
@@ -335,43 +335,39 @@ fn model_native_rows_v3(
     let field = orm_exact(raw, ["oid", "format", "typmod"])
     orm_equal(
       required(field, "oid", "field"),
-      oids[i].to_json(),
+      Json(oids[i]),
       "Fixed native model OID",
     )
     orm_equal(
       required(field, "format", "field"),
-      (0).to_json(),
+      Json(0),
       "Native text result format",
     )
     orm_equal(
       required(field, "typmod", "field"),
-      (-1).to_json(),
+      Json(-1),
       "Native unconstrained source typmod",
     )
   }
-  orm_equal(
-    required(actual, "status", "result"),
-    (2).to_json(),
-    "Native TUPLES_OK",
-  )
+  orm_equal(required(actual, "status", "result"), Json(2), "Native TUPLES_OK")
   orm_equal(
     required(actual, "ntuples", "result"),
-    raw_rows.length().to_json(),
+    Json(raw_rows.length()),
     "Native row count",
   )
   orm_equal(
     required(actual, "nfields", "result"),
-    width.to_json(),
+    Json(width),
     "Native field count",
   )
   orm_equal(
     required(actual, "commandTuples", "result"),
-    raw_rows.length().to_json(),
+    Json(raw_rows.length()),
     "Native command tuple count",
   )
   orm_equal(
     required(batch, "rowcount", "batch"),
-    raw_rows.length().to_json(),
+    Json(raw_rows.length()),
     "Original affected/result count",
   )
   let tag = if plan.operation == "row-insert" {
@@ -385,7 +381,7 @@ fn model_native_rows_v3(
   }
   orm_equal(
     required(batch, "commandTag", "batch"),
-    (tag + raw_rows.length().to_string()).to_json(),
+    Json(tag + raw_rows.length().to_string()),
     "Actual model command tag",
   )
   orm_equal(
@@ -415,9 +411,9 @@ fn model_native_rows_v3(
       } else if oids[i] == 20 {
         let integer = orm_text(text)
         ignore(relation_v3_int64(integer))
-        cells.push(integer.to_json())
+        cells.push(Json(integer))
       } else if oids[i] == 2950 {
-        cells.push(orm_uuid(text).to_json())
+        cells.push(Json(orm_uuid(text)))
       } else {
         cells.push(orm2_decode_cell(value, oids[i]))
       }

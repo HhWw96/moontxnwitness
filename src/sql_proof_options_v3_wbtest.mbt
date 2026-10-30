@@ -11,14 +11,11 @@ test "v3 SQL proof is explicit and leaves the original conservative default inta
   let explicit = @json.parse(
     normalize_capture_v3_options_json(text, v3_test_sql_options()),
   )
-  assert_eq(capture_field(legacy, "status"), "inconclusive".to_json())
-  assert_eq(capture_field(legacy, "algorithm"), "v3-lifecycle-1".to_json())
+  assert_eq(capture_field(legacy, "status"), Json("inconclusive"))
+  assert_eq(capture_field(legacy, "algorithm"), Json("v3-lifecycle-1"))
   assert_true(!object_fields_unchecked_v3(legacy).contains("sqlProof"))
-  assert_eq(capture_field(explicit, "status"), "ready".to_json())
-  assert_eq(
-    capture_field(explicit, "algorithm"),
-    "v3-lifecycle-sql-1".to_json(),
-  )
+  assert_eq(capture_field(explicit, "status"), Json("ready"))
+  assert_eq(capture_field(explicit, "algorithm"), Json("v3-lifecycle-sql-1"))
   assert_eq(
     capture_field(explicit, "observations"),
     capture_field(trace, "events"),
@@ -34,8 +31,8 @@ test "v3 SQL proof is explicit and leaves the original conservative default inta
 test "v3 analysis records the chosen SQL policy and verifies the whole report" {
   let text = d3_test_fixture().stringify()
   let report = v3_analysis(text, v3_test_sql_options())
-  assert_eq(capture_field(report, "status"), "consistent".to_json())
-  assert_eq(capture_field(report, "algorithm"), "v3-register-sql-1".to_json())
+  assert_eq(capture_field(report, "status"), Json("consistent"))
+  assert_eq(capture_field(report, "algorithm"), Json("v3-register-sql-1"))
   assert_eq(
     capture_field(report, "normalized"),
     @json.parse(normalize_capture_v3_options_json(text, v3_test_sql_options())),
@@ -45,14 +42,14 @@ test "v3 analysis records the chosen SQL policy and verifies the whole report" {
       capture_field(capture_field(report, "execution"), "analysisOptions"),
       "sqlProof",
     ),
-    "dislock-f9946f0-sql-proof-1".to_json(),
+    Json("dislock-f9946f0-sql-proof-1"),
   )
   assert_eq(
     capture_field(
       @json.parse(verify_v3_json(text, report.stringify())),
       "valid",
     ),
-    true.to_json(),
+    Json(true),
   )
 }
 
@@ -68,7 +65,7 @@ test "v3 deleting the SQL policy cannot retain its stronger report" {
       @json.parse(verify_v3_json(text, report.stringify())),
       "valid",
     ),
-    false.to_json(),
+    Json(false),
   )
 }
 
@@ -83,10 +80,10 @@ test "v3 a forged SQL policy is rejected instead of silently falling back" {
     let normalized = @json.parse(
       normalize_capture_v3_options_json(text, options),
     )
-    assert_eq(capture_field(normalized, "status"), "invalid".to_json())
+    assert_eq(capture_field(normalized, "status"), Json("invalid"))
     assert_eq(
       capture_field(@json.parse(analyze_v3_json(text, options)), "status"),
-      "invalid".to_json(),
+      Json("invalid"),
     )
   }
 }
@@ -104,7 +101,7 @@ test "v3 normalization rejects unrelated or duplicate option keys" {
         @json.parse(normalize_capture_v3_options_json(text, options)),
         "status",
       ),
-      "invalid".to_json(),
+      Json("invalid"),
     )
   }
 }
@@ -132,7 +129,7 @@ test "v3 the register SQL policy cannot be mixed into a list model" {
       @json.parse(normalize_capture_v3_json(trace.stringify())),
       "status",
     ),
-    "ready".to_json(),
+    Json("ready"),
   )
   assert_eq(
     capture_field(
@@ -144,23 +141,23 @@ test "v3 the register SQL policy cannot be mixed into a list model" {
       ),
       "status",
     ),
-    "invalid".to_json(),
+    Json("invalid"),
   )
   assert_eq(
     capture_field(
       @json.parse(analyze_v3_json(trace.stringify(), v3_test_sql_options())),
       "status",
     ),
-    "invalid".to_json(),
+    Json("invalid"),
   )
 }
 
 ///|
 test "v3 verified SQL does not erase an explicitly incomplete snapshot" {
   let trace = d3_test_fixture()
-  d3_test_set(trace, ["events", 0, "consistent"], false.to_json())
+  d3_test_set(trace, ["events", 0, "consistent"], Json(false))
   let report = v3_analysis(trace.stringify(), v3_test_sql_options())
-  assert_eq(capture_field(report, "status"), "inconclusive".to_json())
+  assert_eq(capture_field(report, "status"), Json("inconclusive"))
   assert_eq(capture_field(report, "evidence"), Json::null())
   assert_eq(
     capture_field(capture_field(report, "normalized"), "history"),
@@ -171,12 +168,12 @@ test "v3 verified SQL does not erase an explicitly incomplete snapshot" {
 ///|
 test "v3 explicit SQL never hides an unproven writer scope" {
   let trace = d3_test_fixture()
-  d3_test_set(trace, ["scope", "exclusiveWriters"], false.to_json())
+  d3_test_set(trace, ["scope", "exclusiveWriters"], Json(false))
   let report = v3_analysis(trace.stringify(), v3_test_sql_options())
-  assert_eq(capture_field(report, "status"), "inconclusive".to_json())
+  assert_eq(capture_field(report, "status"), Json("inconclusive"))
   assert_eq(
     capture_field(capture_field(report, "coverage"), "complete"),
-    false.to_json(),
+    Json(false),
   )
 }
 
@@ -188,12 +185,12 @@ test "v3 analysis keeps the SQL policy separate from numeric budgets" {
     capture_field(report, "execution"),
     "analysisOptions",
   )
-  assert_eq(capture_field(recorded, "maxAttempts"), (0).to_json())
-  assert_eq(capture_field(recorded, "maxOperationChecks"), (0).to_json())
-  assert_eq(capture_field(recorded, "maxCachedStates"), (0).to_json())
+  assert_eq(capture_field(recorded, "maxAttempts"), Json(0))
+  assert_eq(capture_field(recorded, "maxOperationChecks"), Json(0))
+  assert_eq(capture_field(recorded, "maxCachedStates"), Json(0))
   assert_eq(
     capture_field(recorded, "sqlProof"),
-    "dislock-f9946f0-sql-proof-1".to_json(),
+    Json("dislock-f9946f0-sql-proof-1"),
   )
   assert_eq(
     capture_field(
@@ -202,7 +199,7 @@ test "v3 analysis keeps the SQL policy separate from numeric budgets" {
       ),
       "valid",
     ),
-    true.to_json(),
+    Json(true),
   )
 }
 
@@ -227,7 +224,7 @@ test "v3 SQL reduction prunes only deleted transaction effect ledger facts" {
       v3_analysis(reduced.stringify(), v3_test_sql_options()),
       "status",
     ),
-    "consistent".to_json(),
+    Json("consistent"),
   )
 }
 
@@ -249,10 +246,10 @@ test "v3 reducing a consistent SQL capture is not a counterexample" {
       "{\"analysisOptions\":{\"sqlProof\":\"dislock-f9946f0-sql-proof-1\"}}",
     ),
   )
-  assert_eq(capture_field(result, "status"), "not-violation".to_json())
-  assert_eq(capture_field(result, "oneMinimal"), false.to_json())
+  assert_eq(capture_field(result, "status"), Json("not-violation"))
+  assert_eq(capture_field(result, "oneMinimal"), Json(false))
   assert_eq(
     capture_field(capture_field(result, "report"), "status"),
-    "consistent".to_json(),
+    Json("consistent"),
   )
 }

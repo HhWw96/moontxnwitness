@@ -3,7 +3,7 @@
 // This helper has no production call site and is outside release compilation.
 
 ///|
-fn history_ascii_symbol(text : String, start : Int, end : Int) -> String {
+fn history_ascii_symbol(text : String, start : Int32, end : Int32) -> String {
   // Called only after the unchanged scanner saw a closing quote in its
   // plain-ASCII branch. Literal reuse avoids copying every repeated schema
   // field/status/kind. Exact unit comparison prevents prefix/length aliases.

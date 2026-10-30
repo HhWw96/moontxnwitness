@@ -9,7 +9,7 @@ fn identifier_fixture(encoded_id : String) -> String {
 test "every ASCII code retains identifier acceptance and legacy rejection semantics" {
   for code in 0..<128 {
     let id = code.unsafe_to_char().to_string()
-    let text = identifier_fixture(id.to_json().stringify())
+    let text = identifier_fixture(Json(id).stringify())
     if code >= 32 && code < 127 {
       match (direct_history(text), parse_history(text)) {
         (Ok(fast), Ok(reference)) => assert_true(fast == reference)
@@ -28,7 +28,7 @@ test "every ASCII code retains identifier acceptance and legacy rejection semant
 ///|
 test "ASCII identifier scan accepts the existing inclusive length and printable boundaries" {
   for id in [" ", "~", "a".repeat(255), "z".repeat(256)] {
-    let text = identifier_fixture(id.to_json().stringify())
+    let text = identifier_fixture(Json(id).stringify())
     match (direct_history(text), parse_history(text)) {
       (Ok(fast), Ok(reference)) => {
         assert_true(fast == reference)

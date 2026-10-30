@@ -12,14 +12,14 @@ priv struct V3CaptureEffect {
 priv struct V3CaptureStep {
   op : Operation
   own : Bool
-  effect : Int?
+  effect : Int32?
 }
 
 ///|
 priv struct V3CaptureScope {
   name : String
   instance : String
-  mark : Int
+  mark : Int32
 }
 
 ///|
@@ -35,16 +35,16 @@ priv struct V3CaptureTx {
   mut confirmed_rollback_response : Bool
   events : Array[Int64]
   steps : Array[V3CaptureStep]
-  effects : Array[Int]
+  effects : Array[Int32]
   own : Map[String, String?]
-  trail : Array[(Int, String?)]
+  trail : Array[(Int32, String?)]
   scopes : Array[V3CaptureScope]
 }
 
 ///|
 priv struct V3CaptureSource {
   key : String
-  effect : Int?
+  effect : Int32?
 }
 
 ///|
@@ -69,7 +69,7 @@ fn v3_capture_own(tx : V3CaptureTx, key : String) -> String? {
 fn v3_capture_rollback(
   tx : V3CaptureTx,
   effects : Array[V3CaptureEffect],
-  mark : Int,
+  mark : Int32,
   seq : Int64,
 ) -> Unit {
   // A write enters and leaves this trail at most once. Savepoint creation and
@@ -85,7 +85,7 @@ fn v3_capture_rollback(
 ///|
 fn v3_capture_active(
   event : Map[String, Json],
-  ids : Map[String, Int],
+  ids : Map[String, Int32],
   transactions : Array[V3CaptureTx],
   path : String,
 ) -> V3CaptureTx raise {
@@ -102,7 +102,7 @@ fn v3_capture_active(
 }
 
 ///|
-fn v3_capture_scope(tx : V3CaptureTx, instance : String) -> Int raise {
+fn v3_capture_scope(tx : V3CaptureTx, instance : String) -> Int32 raise {
   let mut found = -1
   for index, scope in tx.scopes {
     if scope.instance == instance {
@@ -151,62 +151,60 @@ fn v3_capture_result(
 ) -> String {
   let raw_effects = effects.map(effect => {
     let reverted = match effect.reverted_by {
-      Some(seq) => seq.to_double().to_json()
+      Some(seq) => Json(seq.to_double())
       None => Json::null()
     }
     (
       {
-        "seq": effect.seq.to_double().to_json(),
-        "tx": effect.tx.to_json(),
-        "key": effect.key.to_json(),
-        "version": effect.version.to_json(),
-        "predecessor": effect.predecessor.to_json(),
+        "seq": Json(effect.seq.to_double()),
+        "tx": Json(effect.tx),
+        "key": Json(effect.key),
+        "version": Json(effect.version),
+        "predecessor": Json(effect.predecessor),
         "revertedBy": reverted,
       } : Json)
   })
   let raw_transactions = transactions.map(tx => {
     let end_seq = match tx.end_seq {
-      Some(seq) => seq.to_double().to_json()
+      Some(seq) => Json(seq.to_double())
       None => Json::null()
     }
     (
       {
-        "id": tx.id.to_json(),
-        "connection": tx.connection.to_json(),
-        "status": status_label(tx.status).to_json(),
-        "beginSeq": tx.begin_seq.to_double().to_json(),
+        "id": Json(tx.id),
+        "connection": Json(tx.connection),
+        "status": Json(status_label(tx.status)),
+        "beginSeq": Json(tx.begin_seq.to_double()),
         "endSeq": end_seq,
-        "events": tx.events.map(seq => seq.to_double().to_json()).to_json(),
-        "finalWrites": v3_capture_final_writes(tx, effects)
-        .map(seq => seq.to_double().to_json())
-        .to_json(),
+        "events": Json(tx.events.map(seq => Json(seq.to_double()))),
+        "finalWrites": Json(
+          v3_capture_final_writes(tx, effects).map(seq => Json(seq.to_double())),
+        ),
       } : Json)
   })
   let result : Json = {
     "schema": 3,
-    "algorithm": (if sql_proof != Json::null() {
-      "v3-lifecycle-sql-1"
-    } else if transactions.any(tx => tx.confirmed_rollback_response) {
-      "v3-lifecycle-2"
-    } else {
-      "v3-lifecycle-1"
-    }).to_json(),
-    "status": status.to_json(),
-    "coverage": {
-      "complete": (status == "ready").to_json(),
-      "gaps": gaps.to_json(),
-    },
+    "algorithm": Json(
+      if sql_proof != Json::null() {
+        "v3-lifecycle-sql-1"
+      } else if transactions.any(tx => tx.confirmed_rollback_response) {
+        "v3-lifecycle-2"
+      } else {
+        "v3-lifecycle-1"
+      },
+    ),
+    "status": Json(status),
+    "coverage": { "complete": Json(status == "ready"), "gaps": Json(gaps) },
     "observations": observations,
-    "effects": raw_effects.to_json(),
-    "transactions": raw_transactions.to_json(),
+    "effects": Json(raw_effects),
+    "transactions": Json(raw_transactions),
     "history": history,
   }
   if sql_proof != Json::null() {
     object_fields_unchecked_v3(result)["sqlProof"] = sql_proof
   }
   match error {
-    Some(message) =>
-      object_fields_unchecked_v3(result)["error"] = message.to_json()
+    Some(message) => object_fields_unchecked_v3(result)["error"] = Json(message)
     None => ()
   }
   result.stringify(indent=2)
@@ -224,7 +222,7 @@ fn object_fields_unchecked_v3(value : Json) -> Map[String, Json] {
 fn v3_capture_external_final(
   source : V3CaptureSource,
   effects : Array[V3CaptureEffect],
-  ids : Map[String, Int],
+  ids : Map[String, Int32],
   transactions : Array[V3CaptureTx],
 ) -> Bool {
   match source.effect {
@@ -245,7 +243,7 @@ fn v3_capture_external_final(
 /// exported. Conditions and raw SQL remain observations with explicit gaps.
 fn normalize_register_capture_v3_json(
   text : String,
-  use_sql_proof? : Bool = false,
+  use_sql_proof~ : Bool = false,
 ) -> String {
   let mut observations : Json = Json::null()
   let mut proof_evidence : Json = Json::null()
@@ -265,7 +263,7 @@ fn normalize_register_capture_v3_json(
       None | Some(String("point-register-v1")) => ()
       _ => fail("Unsupported register dataModel")
     }
-    if required(root, "traceSchema", "capture v3") != (3).to_json() {
+    if required(root, "traceSchema", "capture v3") != Json(3) {
       fail("traceSchema must be 3")
     }
     let _ = identifier(
@@ -323,8 +321,8 @@ fn normalize_register_capture_v3_json(
     v3_sql_profiles(root, gaps, sql_proof.verified_profiles)
     let initial : Map[String, String] = Map([])
     let sources : Map[String, V3CaptureSource] = Map([])
-    let ids : Map[String, Int] = Map([])
-    let connections : Map[String, Int?] = Map([])
+    let ids : Map[String, Int32] = Map([])
+    let connections : Map[String, Int32?] = Map([])
     let instances : Map[String, Bool] = Map([])
     let statements : Map[Int64, String] = Map([])
     let row_complete : Map[Int64, Bool] = Map([])
@@ -379,7 +377,7 @@ fn normalize_register_capture_v3_json(
           fail("At most 10,000 initialized keys are supported")
         }
         for key, value in raw_initial {
-          let _ = identifier(key.to_json(), "initial key")
+          let _ = identifier(Json(key), "initial key")
           let version = identifier(value, "initial version")
           if sources.contains(version) {
             fail("Version identities must be globally unique")
@@ -826,7 +824,7 @@ fn normalize_register_capture_v3_json(
       }
     }
     let successors : Map[String, String] = Map([])
-    let final_counts : Map[String, Int] = Map([])
+    let final_counts : Map[String, Int32] = Map([])
     // An incomplete source chain cannot safely be followed or exported.
     if gaps.length() == 0 {
       for tx in transactions {

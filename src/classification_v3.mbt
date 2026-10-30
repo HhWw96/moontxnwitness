@@ -1,16 +1,16 @@
 ///|
 priv struct ClassificationV3Options {
   categories : Array[String]
-  max_states : Int
-  max_edge_checks : Int
+  max_states : Int32
+  max_edge_checks : Int32
 }
 
 ///|
 priv struct ClassificationV3Budget {
-  max_states : Int
-  max_edge_checks : Int
-  mut states : Int
-  mut edge_checks : Int
+  max_states : Int32
+  max_edge_checks : Int32
+  mut states : Int32
+  mut edge_checks : Int32
   mut limited : Bool
   mut reason : String
 }
@@ -49,8 +49,8 @@ fn classification_v3_options(text : String) -> ClassificationV3Options raise {
   fn budget(
     fields : Map[String, Json],
     key : String,
-    maximum : Int,
-  ) -> Int raise {
+    maximum : Int32,
+  ) -> Int32 raise {
     match fields.get(key) {
       None => maximum
       Some(Number(n, ..)) if n >= 0.0 &&
@@ -69,9 +69,9 @@ fn classification_v3_options(text : String) -> ClassificationV3Options raise {
 ///|
 fn classification_v3_options_json(options : ClassificationV3Options) -> Json {
   {
-    "categories": options.categories.to_json(),
-    "maxStates": options.max_states.to_json(),
-    "maxEdgeChecks": options.max_edge_checks.to_json(),
+    "categories": Json(options.categories),
+    "maxStates": Json(options.max_states),
+    "maxEdgeChecks": Json(options.max_edge_checks),
   }
 }
 
@@ -80,12 +80,12 @@ fn classification_v3_failure(status : String, message : String) -> Json {
   {
     "schemaVersion": 3,
     "tool": "MoonTxnWitness",
-    "version": version().to_json(),
+    "version": Json(version()),
     "kind": "isolation-classification",
     "algorithm": "v3-register-category-1",
-    "status": status.to_json(),
+    "status": Json(status),
     "acceptsIsolationModels": false,
-    "error": message.to_json(),
+    "error": Json(message),
   }
 }
 
@@ -222,10 +222,10 @@ fn classification_v3_observation_sources(
   }
   for raw in observations {
     let fields = object_fields_unchecked_v3(raw)
-    if fields.get("tx") == Some(transaction.to_json()) &&
-      fields.get("kind") == Some(op_label(operation.kind).to_json()) &&
-      fields.get("key") == Some(operation.key.to_json()) &&
-      fields.get("version") == Some(operation.version.to_json()) {
+    if fields.get("tx") == Some(Json(transaction)) &&
+      fields.get("kind") == Some(Json(op_label(operation.kind))) &&
+      fields.get("key") == Some(Json(operation.key)) &&
+      fields.get("version") == Some(Json(operation.version)) {
       match fields.get("seq") {
         Some(seq) => result.push(seq)
         None => ()
@@ -265,29 +265,29 @@ fn classification_v3_witness(
       None => []
     }
     let order = match edge.key {
-      Some(key) => history.version_orders.get_or_default(key, []).to_json()
+      Some(key) => Json(history.version_orders.get_or_default(key, []))
       None => Json::null()
     }
     (
       {
         "edge": edge_json(edge),
-        "fromObservationSeq": from_sources.to_json(),
-        "toObservationSeq": to_sources.to_json(),
+        "fromObservationSeq": Json(from_sources),
+        "toObservationSeq": Json(to_sources),
         "capturedVersionOrder": order,
       } : Json)
   })
   {
     "kind": "category-dependency-cycle",
     "specificCategory": if edges.all(edge => edge.kind == WW) {
-      "G0".to_json()
+      Json("G0")
     } else if edges.any(edge => edge.kind == RT) {
-      "realtime-cycle".to_json()
+      Json("realtime-cycle")
     } else if edges.any(edge => edge.kind == RW) {
-      "G2-item".to_json()
+      Json("G2-item")
     } else {
-      "G1c".to_json()
+      Json("G1c")
     },
-    "edges": proof.to_json(),
+    "edges": Json(proof),
     "minimality": "a simple cycle for this category; no global or category-shortest claim",
     "sourceScope": "all matching original observations plus the captured predecessor version chain; input assertions are not database authentication",
   }
@@ -316,7 +316,7 @@ fn classification_v3_analysis(
   let input_fields = object_fields(original, "trace")
   let model = input_fields.get_or_default(
     "dataModel",
-    "point-register-v1".to_json(),
+    Json("point-register-v1"),
   )
   let normalized = guarded_json(normalize_capture_v3_json(text), limit=33554432)
   let n = object_fields(normalized, "normalized")
@@ -328,13 +328,13 @@ fn classification_v3_analysis(
   let mut structural_reason = ""
   let mut history : History? = None
   let mut inferred : Report? = None
-  if model != "point-register-v1".to_json() {
+  if model != Json("point-register-v1") {
     status = "unsupported"
     structural_reason = "Only point-register-v1 is supported by this classification algorithm"
-  } else if n.get("status") == Some("invalid".to_json()) {
+  } else if n.get("status") == Some(Json("invalid")) {
     status = "invalid"
     structural_reason = "Invalid capture"
-  } else if n.get("status") != Some("ready".to_json()) {
+  } else if n.get("status") != Some(Json("ready")) {
     status = "inconclusive"
     structural_reason = "Capture coverage is incomplete; no version-order completion is performed"
   } else {
@@ -348,7 +348,7 @@ fn classification_v3_analysis(
         items
         .filter(item => {
           let kind = object_fields_unchecked_v3(item).get("kind")
-          kind == Some("read".to_json()) || kind == Some("write".to_json())
+          kind == Some(Json("read")) || kind == Some(Json("write"))
         })
         .length()
       _ => 0
@@ -415,16 +415,18 @@ fn classification_v3_analysis(
           status = "inconclusive"
         }
         rules[category] = {
-          "status": rule_status.to_json(),
-          "reason": (if budget.limited {
-            budget.reason
-          } else if !graph_complete {
-            structural_reason
-          } else {
-            "complete"
-          }).to_json(),
-          "states": budget.states.to_json(),
-          "edgeChecks": budget.edge_checks.to_json(),
+          "status": Json(rule_status),
+          "reason": Json(
+            if budget.limited {
+              budget.reason
+            } else if !graph_complete {
+              structural_reason
+            } else {
+              "complete"
+            },
+          ),
+          "states": Json(budget.states),
+          "edgeChecks": Json(budget.edge_checks),
           "evidence": if cycle.is_empty() {
             Json::null()
           } else {
@@ -436,12 +438,14 @@ fn classification_v3_analysis(
     _ =>
       for category in options.categories {
         rules[category] = {
-          "status": (if status == "unsupported" {
-            "unsupported"
-          } else {
-            "unknown"
-          }).to_json(),
-          "reason": structural_reason.to_json(),
+          "status": Json(
+            if status == "unsupported" {
+              "unsupported"
+            } else {
+              "unknown"
+            },
+          ),
+          "reason": Json(structural_reason),
           "states": 0,
           "edgeChecks": 0,
           "evidence": Json::null(),
@@ -451,27 +455,27 @@ fn classification_v3_analysis(
   {
     "schemaVersion": 3,
     "tool": "MoonTxnWitness",
-    "version": version().to_json(),
+    "version": Json(version()),
     "kind": "isolation-classification",
     "algorithm": "v3-register-category-1",
     "dataModel": model,
-    "status": status.to_json(),
+    "status": Json(status),
     "acceptsIsolationModels": false,
     "scope": "requested point-register dependency-cycle categories only; checked-compatible is not acceptance of an isolation model or certification of a database",
-    "sourceTraceText": text.to_json(),
+    "sourceTraceText": Json(text),
     "normalized": normalized,
-    "dependencies": dependencies.to_json(),
-    "dependencyGraphComplete": graph_complete.to_json(),
-    "rules": rules.to_json(),
-    "impliedAnomalies": implied.to_json(),
+    "dependencies": Json(dependencies),
+    "dependencyGraphComplete": Json(graph_complete),
+    "rules": Json(rules),
+    "impliedAnomalies": Json(implied),
     "execution": {
       "classificationOptions": classification_v3_options_json(options),
       "limits": {
         "transactions": 128,
         "operations": 4096,
         "edges": 50000,
-        "statesPerCategory": options.max_states.to_json(),
-        "edgeChecksPerCategory": options.max_edge_checks.to_json(),
+        "statesPerCategory": Json(options.max_states),
+        "edgeChecksPerCategory": Json(options.max_edge_checks),
       },
       "versionOrderCompletion": false,
     },
@@ -488,10 +492,8 @@ fn classification_v3_diagnostic(
   let result = classification_v3_failure(status, message)
   let fields = object_fields_unchecked_v3(result)
   if orm_utf8_size(text) <= 8388608 && orm_utf8_size(options_text) <= 8192 {
-    fields["sourceTraceText"] = text.to_json()
-    fields["execution"] = {
-      "classificationOptionsText": options_text.to_json(),
-    }
+    fields["sourceTraceText"] = Json(text)
+    fields["execution"] = { "classificationOptionsText": Json(options_text) }
   }
   result.stringify(indent=2)
 }
@@ -540,17 +542,17 @@ pub fn verify_classification_v3_json(
     let supplied = guarded_json(report_text, limit=33554432)
     let fields = object_fields(supplied, "classification report")
     let category_algorithm = fields.get("algorithm") ==
-      Some("v3-register-category-1".to_json())
+      Some(Json("v3-register-category-1"))
     // Released 0.2.5 only defined register categories. Its options, including
     // rejected model options, must never dispatch into newer model semantics.
-    let released_category = fields.get("version") == Some("0.2.5".to_json()) &&
+    let released_category = fields.get("version") == Some(Json("0.2.5")) &&
       category_algorithm
-    let current_engine = fields.get("version") == Some(version().to_json())
+    let current_engine = fields.get("version") == Some(Json(version()))
     if !released_category &&
       !(current_engine &&
       (
         category_algorithm ||
-        fields.get("algorithm") == Some("v3-isolation-model-1".to_json())
+        fields.get("algorithm") == Some(Json("v3-isolation-model-1"))
       )) {
       fail("Unsupported classification engine or algorithm")
     }
@@ -572,18 +574,20 @@ pub fn verify_classification_v3_json(
     )
     if released_category {
       // Normalized facts are unversioned; every other field is compared exactly.
-      object_fields_unchecked_v3(expected)["version"] = "0.2.5".to_json()
+      object_fields_unchecked_v3(expected)["version"] = Json("0.2.5")
     }
     let valid = supplied == expected
     (
       {
-        "valid": valid.to_json(),
+        "valid": Json(valid),
         "scope": "every category, source observation, dependency, exact original trace text, budget and counter is recomputed; not database authentication",
-        "reason": (if valid {
-          "Classification reproduced"
-        } else {
-          "Classification differs from recomputation"
-        }).to_json(),
+        "reason": Json(
+          if valid {
+            "Classification reproduced"
+          } else {
+            "Classification differs from recomputation"
+          },
+        ),
       } : Json).stringify(indent=2)
   } catch {
     _ =>
@@ -603,7 +607,7 @@ fn classification_v3_rule_refuted(report : Json, category : String) -> Bool {
   object_fields_unchecked_v3(rules.get_or_default(category, Json::null())).get(
     "status",
   ) ==
-  Some("refuted".to_json())
+  Some(Json("refuted"))
 }
 
 ///|
@@ -731,8 +735,8 @@ pub fn reduce_classification_v3_json(
           )
           // A proven source gap is outside this reduction predicate. A complete
           // candidate with an exhausted search must not establish minimality.
-          if candidate_coverage.get("complete") == Some(true.to_json()) &&
-            candidate_rule.get("status") == Some("unknown".to_json()) {
+          if candidate_coverage.get("complete") == Some(Json(true)) &&
+            candidate_rule.get("status") == Some(Json("unknown")) {
             pass_unknown = true
           }
           if !candidate_fields.contains("normalized") {
@@ -749,28 +753,30 @@ pub fn reduce_classification_v3_json(
       {
         "schemaVersion": 3,
         "tool": "MoonTxnWitness",
-        "version": version().to_json(),
+        "version": Json(version()),
         "algorithm": "v3-classification-source-checked-single-delete-1",
-        "category": category.to_json(),
+        "category": Json(category),
         "predicate": "the requested category has a source-verified counterexample",
-        "status": (if !eligible {
-          "not-refuted"
-        } else if unknown_candidate {
-          "inconclusive"
-        } else if !minimal {
-          "budget"
-        } else if removed.is_empty() {
-          "unchanged"
-        } else {
-          "reduced"
-        }).to_json(),
-        "checks": checks.to_json(),
-        "maxChecks": max_checks.to_json(),
-        "oneMinimal": minimal.to_json(),
-        "removed": removed.to_json(),
-        "retainedOriginalSeq": origins.to_json(),
+        "status": Json(
+          if !eligible {
+            "not-refuted"
+          } else if unknown_candidate {
+            "inconclusive"
+          } else if !minimal {
+            "budget"
+          } else if removed.is_empty() {
+            "unchanged"
+          } else {
+            "reduced"
+          },
+        ),
+        "checks": Json(checks),
+        "maxChecks": Json(max_checks),
+        "oneMinimal": Json(minimal),
+        "removed": Json(removed),
+        "retainedOriginalSeq": Json(origins),
         "reducedCapture": trace,
-        "reducedTraceText": trace_text.to_json(),
+        "reducedTraceText": Json(trace_text),
         "report": report,
         "classificationOptions": classification_v3_options_json(parsed_options),
       } : Json).stringify(indent=2)

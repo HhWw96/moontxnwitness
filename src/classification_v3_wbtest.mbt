@@ -1,7 +1,7 @@
 ///|
 fn classification_test_result(
   trace : Json,
-  options? : String = "{}",
+  options~ : String = "{}",
 ) -> Json raise {
   @json.parse(classify_v3_json(trace.stringify(), options))
 }
@@ -16,7 +16,7 @@ fn classification_test_rule(report : Json, category : String) -> Json {
 ///|
 fn classification_test_cycle_trace(
   category : String,
-  noise? : Bool = false,
+  noise~ : Bool = false,
 ) -> Json {
   let body : Array[Json] = [
     { "kind": "begin", "tx": "A", "connection": "a" },
@@ -102,20 +102,20 @@ fn classification_test_cycle_trace(
 ///|
 test "classification25 G0 retains a pure write cycle and G1 implication" {
   let report = classification_test_result(classification_test_cycle_trace("G0"))
-  assert_eq(capture_field(report, "status"), "refuted".to_json())
+  assert_eq(capture_field(report, "status"), Json("refuted"))
   assert_eq(
     capture_field(classification_test_rule(report, "G0"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification_test_rule(report, "G1c"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(report, "impliedAnomalies"),
-    ["G0", "G1c", "G1"].to_json(),
+    Json(["G0", "G1c", "G1"]),
   )
-  assert_eq(capture_field(report, "acceptsIsolationModels"), false.to_json())
+  assert_eq(capture_field(report, "acceptsIsolationModels"), Json(false))
 }
 
 ///|
@@ -125,11 +125,11 @@ test "classification25 WR cycle is found independently of G0" {
   )
   assert_eq(
     capture_field(classification_test_rule(report, "G1c"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification_test_rule(report, "G0"), "status"),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
 }
 
@@ -140,16 +140,13 @@ test "classification25 item anti-dependency cycle is found" {
   )
   assert_eq(
     capture_field(classification_test_rule(report, "G2-item"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification_test_rule(report, "G0"), "status"),
-    "checked-compatible".to_json(),
+    Json("checked-compatible"),
   )
-  assert_eq(
-    capture_field(report, "impliedAnomalies"),
-    ["G2-item", "G2"].to_json(),
-  )
+  assert_eq(capture_field(report, "impliedAnomalies"), Json(["G2-item", "G2"]))
 }
 
 ///|
@@ -158,10 +155,10 @@ test "classification25 zero budget is unknown, never no cycle" {
     classification_test_cycle_trace("G2-item"),
     options="{\"maxStates\":0,\"maxEdgeChecks\":0}",
   )
-  assert_eq(capture_field(report, "status"), "inconclusive".to_json())
+  assert_eq(capture_field(report, "status"), Json("inconclusive"))
   assert_eq(
     capture_field(classification_test_rule(report, "G2-item"), "status"),
-    "unknown".to_json(),
+    Json("unknown"),
   )
 }
 
@@ -171,27 +168,27 @@ test "classification25 empty dependency graph completes even with zero budget" {
     v3_test_completed([]),
     options="{\"maxStates\":0,\"maxEdgeChecks\":0}",
   )
-  assert_eq(capture_field(report, "status"), "checked-compatible".to_json())
+  assert_eq(capture_field(report, "status"), Json("checked-compatible"))
 }
 
 ///|
 test "classification25 unsupported model stays unsupported" {
   let trace = classification_test_cycle_trace("G2-item")
-  object_fields_unchecked_v3(trace)["dataModel"] = "append-list-v1".to_json()
+  object_fields_unchecked_v3(trace)["dataModel"] = Json("append-list-v1")
   assert_eq(
     capture_field(classification_test_result(trace), "status"),
-    "unsupported".to_json(),
+    Json("unsupported"),
   )
 }
 
 ///|
 test "classification25 incomplete source facts never become compatible" {
   let trace = classification_test_cycle_trace("G2-item")
-  object_fields_unchecked_v3(trace)["gaps"] = [
+  object_fields_unchecked_v3(trace)["gaps"] = Json([
     { "code": "lost", "message": "event lost" },
-  ].to_json()
+  ])
   let report = classification_test_result(trace)
-  assert_eq(capture_field(report, "status"), "inconclusive".to_json())
+  assert_eq(capture_field(report, "status"), Json("inconclusive"))
 }
 
 ///|
@@ -221,14 +218,14 @@ test "classification25 verifier binds original text including whitespace" {
       @json.parse(verify_classification_v3_json(text, report)),
       "valid",
     ),
-    true.to_json(),
+    Json(true),
   )
   assert_eq(
     capture_field(
       @json.parse(verify_classification_v3_json(text + " ", report)),
       "valid",
     ),
-    false.to_json(),
+    Json(false),
   )
 }
 
@@ -236,33 +233,35 @@ test "classification25 verifier binds original text including whitespace" {
 test "classification25 verifier rejects rule, budget and source tampering" {
   let text = classification_test_cycle_trace("G2-item").stringify()
   let report = @json.parse(classify_v3_json(text, "{}"))
-  object_fields_unchecked_v3(classification_test_rule(report, "G2-item"))["status"] = "checked-compatible".to_json()
+  object_fields_unchecked_v3(classification_test_rule(report, "G2-item"))["status"] = Json(
+    "checked-compatible",
+  )
   assert_eq(
     capture_field(
       @json.parse(verify_classification_v3_json(text, report.stringify())),
       "valid",
     ),
-    false.to_json(),
+    Json(false),
   )
   let report = @json.parse(classify_v3_json(text, "{}"))
   object_fields_unchecked_v3(
     capture_field(capture_field(report, "execution"), "classificationOptions"),
-  )["maxStates"] = (0).to_json()
+  )["maxStates"] = Json(0)
   assert_eq(
     capture_field(
       @json.parse(verify_classification_v3_json(text, report.stringify())),
       "valid",
     ),
-    false.to_json(),
+    Json(false),
   )
   let report = @json.parse(classify_v3_json(text, "{}"))
-  object_fields_unchecked_v3(report)["sourceTraceText"] = "{}".to_json()
+  object_fields_unchecked_v3(report)["sourceTraceText"] = Json("{}")
   assert_eq(
     capture_field(
       @json.parse(verify_classification_v3_json(text, report.stringify())),
       "valid",
     ),
-    false.to_json(),
+    Json(false),
   )
 }
 
@@ -276,7 +275,7 @@ test "classification25 options reject duplicate labels and out-of-range budgets"
     ] {
     assert_eq(
       capture_field(@json.parse(classify_v3_json(text, options)), "status"),
-      "invalid".to_json(),
+      Json("invalid"),
     )
   }
 }
@@ -290,9 +289,9 @@ test "classification25 reduction preserves the requested category and single-del
       "{\"category\":\"G2-item\"}",
     ),
   )
-  assert_eq(capture_field(reduced, "status"), "reduced".to_json())
-  assert_eq(capture_field(reduced, "removed"), ["N"].to_json())
-  assert_eq(capture_field(reduced, "oneMinimal"), true.to_json())
+  assert_eq(capture_field(reduced, "status"), Json("reduced"))
+  assert_eq(capture_field(reduced, "removed"), Json(["N"]))
+  assert_eq(capture_field(reduced, "oneMinimal"), Json(true))
   assert_true(
     classification_v3_rule_refuted(capture_field(reduced, "report"), "G2-item"),
   )
@@ -310,7 +309,7 @@ test "classification25 reduction preserves the requested category and single-del
       ),
       "valid",
     ),
-    true.to_json(),
+    Json(true),
   )
 }
 
@@ -320,18 +319,22 @@ test "classification25 reduction refuses another category and honors zero checks
   let other = @json.parse(
     reduce_classification_v3_json(text, "{\"category\":\"G0\"}"),
   )
-  assert_eq(capture_field(other, "status"), "not-refuted".to_json())
+  assert_eq(capture_field(other, "status"), Json("not-refuted"))
   let limited = @json.parse(
     reduce_classification_v3_json(
       text, "{\"category\":\"G2-item\",\"maxChecks\":0}",
     ),
   )
-  assert_eq(capture_field(limited, "status"), "budget".to_json())
-  assert_eq(capture_field(limited, "oneMinimal"), false.to_json())
+  assert_eq(capture_field(limited, "status"), Json("budget"))
+  assert_eq(capture_field(limited, "oneMinimal"), Json(false))
 }
 
 ///|
-fn classification_test_edge(from : Int, to : Int, kind : Dependency) -> Edge {
+fn classification_test_edge(
+  from : Int32,
+  to : Int32,
+  kind : Dependency,
+) -> Edge {
   {
     from: from.to_string(),
     to: to.to_string(),
@@ -346,7 +349,7 @@ fn classification_test_edge(from : Int, to : Int, kind : Dependency) -> Edge {
 }
 
 ///|
-fn classification_test_oracle(kinds : Array[Int], category : String) -> Bool {
+fn classification_test_oracle(kinds : Array[Int32], category : String) -> Bool {
   let pairs = [(0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1)]
   let matrix = Array::make(9, 0)
   for i, pair in pairs {
@@ -394,7 +397,7 @@ test "classification25 all 4096 typed three-node graphs agree with simple-cycle 
   let pairs = [(0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1)]
   for code in 0..<4096 {
     let mut remainder = code
-    let kinds : Array[Int] = []
+    let kinds : Array[Int32] = []
     let edges : Array[Edge] = []
     for pair in pairs {
       let kind = remainder % 4
@@ -558,14 +561,14 @@ test "classification25 reliable refutation survives another category budget limi
     trace,
     options="{\"maxEdgeChecks\":3}",
   )
-  assert_eq(capture_field(report, "status"), "refuted".to_json())
+  assert_eq(capture_field(report, "status"), Json("refuted"))
   assert_eq(
     capture_field(classification_test_rule(report, "G0"), "status"),
-    "refuted".to_json(),
+    Json("refuted"),
   )
   assert_eq(
     capture_field(classification_test_rule(report, "G2-item"), "status"),
-    "unknown".to_json(),
+    Json("unknown"),
   )
 }
 
@@ -573,13 +576,13 @@ test "classification25 reliable refutation survives another category budget limi
 test "classification25 invalid diagnostics can be reproduced without accepting them" {
   let text = "{broken"
   let report = classify_v3_json(text, "{}")
-  assert_eq(capture_field(@json.parse(report), "status"), "invalid".to_json())
+  assert_eq(capture_field(@json.parse(report), "status"), Json("invalid"))
   assert_eq(
     capture_field(
       @json.parse(verify_classification_v3_json(text, report)),
       "valid",
     ),
-    true.to_json(),
+    Json(true),
   )
   let valid_text = classification_test_cycle_trace("G0").stringify()
   let bad_options = classify_v3_json(valid_text, "{\"maxStates\":100001}")
@@ -588,7 +591,7 @@ test "classification25 invalid diagnostics can be reproduced without accepting t
       @json.parse(verify_classification_v3_json(valid_text, bad_options)),
       "valid",
     ),
-    true.to_json(),
+    Json(true),
   )
 }
 
@@ -605,8 +608,8 @@ test "classification25 raw rolled-back operations cannot bypass the 4096 limit" 
       "kind": "write",
       "tx": "A",
       "key": "x",
-      "version": version.to_json(),
-      "predecessor": predecessor.to_json(),
+      "version": Json(version),
+      "predecessor": Json(predecessor),
     })
     predecessor = version
   }
@@ -614,10 +617,10 @@ test "classification25 raw rolled-back operations cannot bypass the 4096 limit" 
   body.push({ "kind": "commit_request", "tx": "A" })
   body.push({ "kind": "commit_ok", "tx": "A" })
   let report = classification_test_result(v3_test_trace(body))
-  assert_eq(capture_field(report, "status"), "inconclusive".to_json())
+  assert_eq(capture_field(report, "status"), Json("inconclusive"))
   assert_eq(
     capture_field(classification_test_rule(report, "G0"), "status"),
-    "unknown".to_json(),
+    Json("unknown"),
   )
 }
 
@@ -628,15 +631,15 @@ test "classification25 frozen WW-only history refutes an independent G1c request
     trace,
     options="{\"categories\":[\"G1c\"]}",
   )
-  assert_eq(capture_field(report, "status"), "refuted".to_json())
+  assert_eq(capture_field(report, "status"), Json("refuted"))
   let rule = classification_test_rule(report, "G1c")
-  assert_eq(capture_field(rule, "status"), "refuted".to_json())
+  assert_eq(capture_field(rule, "status"), Json("refuted"))
   assert_eq(
     capture_field(capture_field(rule, "evidence"), "specificCategory"),
-    "G0".to_json(),
+    Json("G0"),
   )
   assert_eq(
     capture_field(report, "impliedAnomalies"),
-    ["G0", "G1c", "G1"].to_json(),
+    Json(["G0", "G1c", "G1"]),
   )
 }

@@ -43,8 +43,7 @@ fn classification_models_v3_requested(
       guarded_json(text, limit=33554432),
       "classification source",
     )
-    root.get("format") ==
-    Some("moontxnwitness-classification-source/v1".to_json())
+    root.get("format") == Some(Json("moontxnwitness-classification-source/v1"))
   } catch {
     _ => false
   }
@@ -112,9 +111,9 @@ fn classification_models_v3_options_json(
   options : ClassificationModelV3Options,
 ) -> Json {
   {
-    "models": options.models.to_json(),
-    "maxStates": options.category_options.max_states.to_json(),
-    "maxEdgeChecks": options.category_options.max_edge_checks.to_json(),
+    "models": Json(options.models),
+    "maxStates": Json(options.category_options.max_states),
+    "maxEdgeChecks": Json(options.category_options.max_edge_checks),
     "normalizationOptions": options.normalization_options,
   }
 }
@@ -125,11 +124,7 @@ fn classification_models_v3_rule(
   reason : String,
   evidence : Json,
 ) -> Json {
-  {
-    "status": status.to_json(),
-    "reason": reason.to_json(),
-    "evidence": evidence,
-  }
+  { "status": Json(status), "reason": Json(reason), "evidence": evidence }
 }
 
 ///|
@@ -155,7 +150,7 @@ fn classification_models_v3_register(
   let operation_count = observations
     .filter(raw => {
       let kind = object_fields_unchecked_v3(raw).get("kind")
-      kind == Some("read".to_json()) || kind == Some("write".to_json())
+      kind == Some(Json("read")) || kind == Some(Json("write"))
     })
     .length()
   let transaction_count = presence_capture_array(
@@ -166,7 +161,7 @@ fn classification_models_v3_register(
     result.reason = "register-classification-structure-limit"
     return result
   }
-  if n.get("status") != Some("ready".to_json()) {
+  if n.get("status") != Some(Json("ready")) {
     return result
   }
   let history = match
@@ -304,7 +299,7 @@ fn classification_models_v3_list(
     })
   }
   let complete_capture = object_fields_unchecked_v3(normalized).get("status") ==
-    Some("ready".to_json())
+    Some(Json("ready"))
   if !complete_capture || !parsed.findings.is_empty() {
     return {
       ..result,
@@ -314,9 +309,9 @@ fn classification_models_v3_list(
   }
   if events.any(raw => {
       let kind = object_fields_unchecked_v3(raw).get("kind")
-      kind == Some("savepoint".to_json()) ||
-      kind == Some("rollback_to".to_json()) ||
-      kind == Some("release".to_json())
+      kind == Some(Json("savepoint")) ||
+      kind == Some(Json("rollback_to")) ||
+      kind == Some(Json("release"))
     }) {
     return {
       ..result,
@@ -328,8 +323,8 @@ fn classification_models_v3_list(
   for program in parsed.programs {
     outcomes[program.id] = program.status
   }
-  let ids : Map[String, Int] = Map([])
-  let active : Array[Int] = []
+  let ids : Map[String, Int32] = Map([])
+  let active : Array[Int32] = []
   let per_tx_key : Map[String, Map[String, Bool]] = Map([])
   for index, item in parsed.items {
     ids[item.id] = index
@@ -352,7 +347,7 @@ fn classification_models_v3_list(
   }
   let edges : Array[Edge] = []
   let sources : Map[Edge, Array[Json]] = Map([])
-  let item_index : Map[Int, Int] = Map([])
+  let item_index : Map[Int32, Int32] = Map([])
   for index, item in active {
     item_index[item] = index
   }
@@ -361,7 +356,7 @@ fn classification_models_v3_list(
   let mut complete = validity_gaps.is_empty()
   for raw in events {
     let fields = object_fields(raw, "event")
-    if fields.get("kind") != Some("list_read".to_json()) {
+    if fields.get("kind") != Some(Json("list_read")) {
       continue
     }
     let reader = identifier(required(fields, "tx", "list_read"), "tx")
@@ -379,7 +374,7 @@ fn classification_models_v3_list(
       required(fields, "items", "list_read"),
       "items",
     )
-    let observed : Array[Int] = []
+    let observed : Array[Int32] = []
     for value in values {
       observed.push(
         ids.at(
@@ -390,7 +385,7 @@ fn classification_models_v3_list(
         ),
       )
     }
-    let present : Map[Int, Bool] = Map([])
+    let present : Map[Int32, Bool] = Map([])
     for index in observed {
       present[index] = true
     }
@@ -431,8 +426,8 @@ fn classification_models_v3_list(
       }
       if !classification_models_v3_add_list_edge(edges, sources, edge, {
           "readSeq": read_seq,
-          "appendSeq": item.seq.to_double().to_json(),
-          "itemId": item.id.to_json(),
+          "appendSeq": Json(item.seq.to_double()),
+          "itemId": Json(item.id),
         }) {
         complete = false
       }
@@ -472,10 +467,10 @@ fn classification_models_v3_list(
         )
         if !classification_models_v3_add_list_edge(edges, sources, edge, {
             "orderedByReadSeq": read_seq,
-            "fromAppendSeq": first.seq.to_double().to_json(),
-            "toAppendSeq": last.seq.to_double().to_json(),
-            "fromItem": first.id.to_json(),
-            "toItem": last.id.to_json(),
+            "fromAppendSeq": Json(first.seq.to_double()),
+            "toAppendSeq": Json(last.seq.to_double()),
+            "fromItem": Json(first.id),
+            "toItem": Json(last.id),
           }) {
           complete = false
         }
@@ -525,30 +520,31 @@ fn classification_models_v3_witness(
   match graph.history {
     Some(history) => {
       let result = classification_v3_witness(graph.normalized, history, cycle)
-      object_fields_unchecked_v3(result)["realTimeSources"] = cycle
+      object_fields_unchecked_v3(result)["realTimeSources"] = Json(
+        cycle
         .filter(e => e.kind == RT)
         .map(edge => {
           (
             {
               "edge": edge_json(edge),
-              "sources": graph.sources.get_or_default(edge, []).to_json(),
+              "sources": Json(graph.sources.get_or_default(edge, [])),
             } : Json)
-        })
-        .to_json()
+        }),
+      )
       result
     }
     None =>
       {
         "kind": "source-checked-list-dependency-cycle",
-        "edges": cycle
-        .map(edge => {
-          (
-            {
-              "edge": edge_json(edge),
-              "sources": graph.sources.get_or_default(edge, []).to_json(),
-            } : Json)
-        })
-        .to_json(),
+        "edges": Json(
+          cycle.map(edge => {
+            (
+              {
+                "edge": edge_json(edge),
+                "sources": Json(graph.sources.get_or_default(edge, [])),
+              } : Json)
+          }),
+        ),
         "minimality": "simple cycle for the requested category; no shortest claim",
         "sourceScope": "explicit complete list observations and unique append identities; not SQL authenticity",
       }
@@ -561,7 +557,7 @@ fn classification_models_v3_direct(
   data_model : String,
 ) -> Map[String, Json] raise {
   let n = object_fields(graph.normalized, "normalized")
-  let ready = n.get("status") == Some("ready".to_json())
+  let ready = n.get("status") == Some(Json("ready"))
   let result : Map[String, Json] = Map([])
   let capacity_exceeded = graph.reason ==
     "register-classification-structure-limit" ||
@@ -586,7 +582,7 @@ fn classification_models_v3_direct(
   if capacity_exceeded {
     return result
   }
-  if n.get("status") == Some("invalid".to_json()) {
+  if n.get("status") == Some(Json("invalid")) {
     return result
   }
   if data_model == "append-list-v1" {
@@ -594,7 +590,7 @@ fn classification_models_v3_direct(
       Some(parsed) => {
         let invalid_reads : Map[String, Bool] = Map([])
         let source_mismatches : Map[String, Map[String, Bool]] = Map([])
-        let by_item : Map[String, Int] = Map([])
+        let by_item : Map[String, Int32] = Map([])
         for index, item in parsed.items {
           by_item[item.id] = index
         }
@@ -606,13 +602,13 @@ fn classification_models_v3_direct(
         for finding in parsed.findings {
           let fields = object_fields(finding, "list finding")
           if [
-              "item_key_mismatch".to_json(),
-              "item_value_mismatch".to_json(),
-              "duplicate_list_item".to_json(),
+              Json("item_key_mismatch"),
+              Json("item_value_mismatch"),
+              Json("duplicate_list_item"),
             ].contains(fields.get_or_default("code", Json::null())) {
             let read_id = required(fields, "readSeq", "list finding").stringify()
             invalid_reads[read_id] = true
-            if fields.get("code") != Some("duplicate_list_item".to_json()) {
+            if fields.get("code") != Some(Json("duplicate_list_item")) {
               let mismatches = source_mismatches.get_or_default(
                 read_id,
                 Map([]),
@@ -637,7 +633,7 @@ fn classification_models_v3_direct(
         for finding in parsed.findings {
           let fields = object_fields(finding, "list finding")
           let code = fields.get("code")
-          if code == Some("read_from_aborted_append".to_json()) {
+          if code == Some(Json("read_from_aborted_append")) {
             let read_seq = v3_capture_seq(
               required(fields, "readSeq", "list finding"),
               "read sequence",
@@ -650,7 +646,7 @@ fn classification_models_v3_direct(
             match by_item.get(item_id) {
               Some(index) => {
                 let item = parsed.items[index]
-                if item.key.to_json() == required(fields, "key", "list finding") &&
+                if Json(item.key) == required(fields, "key", "list finding") &&
                   item.seq < read_seq &&
                   !source_mismatches
                   .get_or_default(read_id, Map([]))
@@ -670,7 +666,7 @@ fn classification_models_v3_direct(
               None => ()
             }
           }
-          if code == Some("read_from_reverted_append".to_json()) {
+          if code == Some(Json("read_from_reverted_append")) {
             result["G1b"] = classification_models_v3_rule(
               "unknown", "reverted-list-effect-classification-not-supported", finding,
             )
@@ -702,7 +698,7 @@ fn classification_models_v3_direct(
             if program.status != Committed {
               continue
             }
-            let state : Map[String, Array[Int]] = Map([])
+            let state : Map[String, Array[Int32]] = Map([])
             let full : Map[String, Bool] = Map([])
             for action in program.actions {
               match action {
@@ -712,9 +708,7 @@ fn classification_models_v3_direct(
                   state[key] = current
                 }
                 ReadList(key, observed, seq) => {
-                  if invalid_reads.contains(
-                      seq.to_double().to_json().stringify(),
-                    ) {
+                  if invalid_reads.contains(Json(seq.to_double()).stringify()) {
                     continue
                   }
                   match state.get(key) {
@@ -741,17 +735,17 @@ fn classification_models_v3_direct(
                           "refuted",
                           "list-read-disagrees-with-most-recent-internal-state",
                           {
-                            "tx": program.id.to_json(),
-                            "readSeq": seq.to_double().to_json(),
-                            "expectedIds": expected
-                            .map(i => parsed.items[i].id)
-                            .to_json(),
-                            "expectedComplete": full
-                            .get_or_default(key, false)
-                            .to_json(),
-                            "observedIds": observed
-                            .map(i => parsed.items[i].id)
-                            .to_json(),
+                            "tx": Json(program.id),
+                            "readSeq": Json(seq.to_double()),
+                            "expectedIds": Json(
+                              expected.map(i => parsed.items[i].id),
+                            ),
+                            "expectedComplete": Json(
+                              full.get_or_default(key, false),
+                            ),
+                            "observedIds": Json(
+                              observed.map(i => parsed.items[i].id),
+                            ),
                           },
                         )
                       }
@@ -773,7 +767,7 @@ fn classification_models_v3_direct(
                           producer.status == Unknown {
                           continue
                         }
-                        let produced : Array[Int] = []
+                        let produced : Array[Int32] = []
                         for producer_action in producer.actions {
                           match producer_action {
                             Append(producer_key, item) if producer_key == key =>
@@ -788,22 +782,24 @@ fn classification_models_v3_direct(
                             "refuted",
                             "external-list-read-ends-in-nonfinal-append",
                             {
-                              "tx": program.id.to_json(),
-                              "writer": producer.id.to_json(),
-                              "readSeq": seq.to_double().to_json(),
-                              "lastObservedItem": last_item.id.to_json(),
+                              "tx": Json(program.id),
+                              "writer": Json(producer.id),
+                              "readSeq": Json(seq.to_double()),
+                              "lastObservedItem": Json(last_item.id),
                               "source": parsed.source_evidence[last],
-                              "writerOutcome": (if producer.status == Committed {
-                                "committed"
-                              } else {
-                                "aborted"
-                              }).to_json(),
-                              "writerFinalAppendIds": produced
-                              .map(i => parsed.items[i].id)
-                              .to_json(),
-                              "observedIds": observed
-                              .map(i => parsed.items[i].id)
-                              .to_json(),
+                              "writerOutcome": Json(
+                                if producer.status == Committed {
+                                  "committed"
+                                } else {
+                                  "aborted"
+                                },
+                              ),
+                              "writerFinalAppendIds": Json(
+                                produced.map(i => parsed.items[i].id),
+                              ),
+                              "observedIds": Json(
+                                observed.map(i => parsed.items[i].id),
+                              ),
                               "applicability": "complete source-valid list value, actual last item from a confirmed external non-final same-key append",
                             },
                           )
@@ -819,7 +815,7 @@ fn classification_models_v3_direct(
         }
         if graph.complete &&
           object_fields_unchecked_v3(result.at("G1b")).get("status") !=
-          Some("refuted".to_json()) {
+          Some(Json("refuted")) {
           result["G1b"] = classification_models_v3_rule(
             "checked-compatible",
             "single-append-per-transaction-key-profile",
@@ -843,9 +839,9 @@ fn classification_models_v3_direct(
   // records, an unproven writer scope or unmapped SQL cannot establish a proof.
   if gaps.any(gap => {
       let code = object_fields_unchecked_v3(gap).get("code")
-      code != Some("unsafe_read_source".to_json()) &&
-      code != Some("own_read_mismatch".to_json()) &&
-      code != Some("unsafe_write_source".to_json())
+      code != Some(Json("unsafe_read_source")) &&
+      code != Some(Json("own_read_mismatch")) &&
+      code != Some(Json("unsafe_write_source"))
     }) {
     return result
   }
@@ -897,7 +893,7 @@ fn classification_models_v3_direct(
       "observations",
     ) {
     let read = object_fields(raw, "observation")
-    if read.get("kind") == Some("write".to_json()) {
+    if read.get("kind") == Some(Json("write")) {
       let tx = identifier(required(read, "tx", "write"), "tx")
       let key = identifier(required(read, "key", "write"), "key")
       let keys = own_effects.get_or_default(tx, Map([]))
@@ -907,7 +903,7 @@ fn classification_models_v3_direct(
       own_effects[tx] = keys
       continue
     }
-    if read.get("kind") == Some("rollback_to".to_json()) {
+    if read.get("kind") == Some(Json("rollback_to")) {
       let group = revoked_at.get_or_default(
         required(read, "seq", "rollback").stringify(),
         [],
@@ -924,11 +920,11 @@ fn classification_models_v3_direct(
       }
       continue
     }
-    if read.get("kind") != Some("read".to_json()) {
+    if read.get("kind") != Some(Json("read")) {
       continue
     }
     let reader = identifier(required(read, "tx", "read"), "read.tx")
-    if outcomes.get(reader) != Some("committed".to_json()) {
+    if outcomes.get(reader) != Some(Json("committed")) {
       continue
     }
     let read_seq = v3_capture_seq(required(read, "seq", "read"), "read.seq")
@@ -944,8 +940,7 @@ fn classification_models_v3_direct(
       stack[stack.length() - 1]
     }
     if own != Json::null() {
-      if object_fields_unchecked_v3(own).get("version") !=
-        Some(version.to_json()) {
+      if object_fields_unchecked_v3(own).get("version") != Some(Json(version)) {
         result["INT"] = classification_models_v3_rule(
           "refuted",
           "read-does-not-observe-current-own-write",
@@ -956,7 +951,7 @@ fn classification_models_v3_direct(
       let previous = external_reads.get_or_default(reader, Map([]))
       match previous.get(key_name) {
         Some(before) if object_fields_unchecked_v3(before).get("version") !=
-          Some(version.to_json()) =>
+          Some(Json(version)) =>
           result["INT"] = classification_models_v3_rule(
             "refuted",
             "repeated-external-read-changes-without-an-own-write",
@@ -978,15 +973,15 @@ fn classification_models_v3_direct(
         if writer == reader || seq >= read_seq {
           continue
         }
-        if outcomes.get(writer) == Some("aborted".to_json()) {
+        if outcomes.get(writer) == Some(Json("aborted")) {
           result["G1a"] = classification_models_v3_rule(
             "refuted",
             "committed-read-from-confirmed-aborted-writer",
             { "read": raw, "sourceEffect": effect, "writerOutcome": "aborted" },
           )
         }
-        if outcomes.get(writer) == Some("committed".to_json()) &&
-          !finals.at(writer).contains(seq.to_double().to_json().stringify()) {
+        if outcomes.get(writer) == Some(Json("committed")) &&
+          !finals.at(writer).contains(Json(seq.to_double()).stringify()) {
           if source.get("revertedBy") == Some(Json::null()) {
             result["G1b"] = classification_models_v3_rule(
               "refuted",
@@ -994,15 +989,11 @@ fn classification_models_v3_direct(
               {
                 "read": raw,
                 "sourceEffect": effect,
-                "writerFinalWrites": finals
-                .at(writer)
-                .keys()
-                .collect()
-                .to_json(),
+                "writerFinalWrites": Json(finals.at(writer).keys().collect()),
               },
             )
           } else if object_fields_unchecked_v3(result.at("G1b")).get("status") !=
-            Some("refuted".to_json()) {
+            Some(Json("refuted")) {
             result["G1b"] = classification_models_v3_rule(
               "unknown", "revoked-effect-classification-not-supported", effect,
             )
@@ -1019,11 +1010,11 @@ fn classification_models_v3_direct(
 fn classification_models_v3_nonadj_dfs(
   graph : GraphIndex,
   edges : Array[Edge],
-  vertex : Int,
-  target : Int,
+  vertex : Int32,
+  target : Int32,
   previous_rw : Bool,
   seen : Array[Bool],
-  path : Array[Int],
+  path : Array[Int32],
   budget : ClassificationV3Budget,
 ) -> Array[Edge] {
   if !classification_v3_charge_state(budget) {
@@ -1136,7 +1127,7 @@ fn classification_models_v3_refutation_witness(
       Some(raw) => {
         let source = object_fields_unchecked_v3(raw)
         let evidence = source.get_or_default("evidence", Json::null())
-        if source.get("status") != Some("refuted".to_json()) ||
+        if source.get("status") != Some(Json("refuted")) ||
           evidence == Json::null() {
           continue
         }
@@ -1144,7 +1135,7 @@ fn classification_models_v3_refutation_witness(
           "G-nonadjacent-item"
         } else if source_rule == "G1c" &&
           object_fields_unchecked_v3(evidence).get("specificCategory") ==
-          Some("G0".to_json()) {
+          Some(Json("G0")) {
           "G0"
         } else {
           source_rule
@@ -1164,15 +1155,15 @@ fn classification_models_v3_refutation_witness(
         }
         if implications.contains(required_rule) {
           return Some({
-            "requiredRule": required_rule.to_json(),
-            "provedBy": source_rule.to_json(),
-            "specificAnomaly": specific.to_json(),
-            "impliedAnomalies": implications.to_json(),
+            "requiredRule": Json(required_rule),
+            "provedBy": Json(source_rule),
+            "specificAnomaly": Json(specific),
+            "impliedAnomalies": Json(implications),
             "requiredRuleStatus": object_fields_unchecked_v3(
               rules.at(required_rule),
-            ).get_or_default("status", "unknown".to_json()),
+            ).get_or_default("status", Json("unknown")),
             "sourceRuleStatus": "refuted",
-            "sourceEvidencePath": ["rules", source_rule.to_json(), "evidence"],
+            "sourceEvidencePath": ["rules", Json(source_rule), "evidence"],
           })
         }
       }
@@ -1194,7 +1185,7 @@ fn classification_models_v3_analysis(
     "trace",
   )
   let model = identifier(
-    root.get_or_default("dataModel", "point-register-v1".to_json()),
+    root.get_or_default("dataModel", Json("point-register-v1")),
     "dataModel",
   )
   let normalized = guarded_json(
@@ -1205,7 +1196,7 @@ fn classification_models_v3_analysis(
     limit=33554432,
   )
   let n = object_fields(normalized, "normalized")
-  if n.get("status") == Some("invalid".to_json()) {
+  if n.get("status") == Some(Json("invalid")) {
     fail("Invalid source capture")
   }
   let supported = model == "point-register-v1" || model == "append-list-v1"
@@ -1235,7 +1226,7 @@ fn classification_models_v3_analysis(
   for name in ["G1a", "G1b", "INT"] {
     match rules.get(name) {
       Some(rule) if object_fields_unchecked_v3(rule).get("status") ==
-        Some("refuted".to_json()) => {
+        Some(Json("refuted")) => {
         implied.push(name)
         if name != "INT" && !implied.contains("G1") {
           implied.push("G1")
@@ -1295,8 +1286,8 @@ fn classification_models_v3_analysis(
         evidence,
       ),
     )
-    fields["states"] = budget.states.to_json()
-    fields["edgeChecks"] = budget.edge_checks.to_json()
+    fields["states"] = Json(budget.states)
+    fields["edgeChecks"] = Json(budget.edge_checks)
     rules[category] = Json::object(fields)
     if rule_status == "refuted" {
       let implications = if category == "G-nonadjacent" {
@@ -1402,13 +1393,15 @@ fn classification_models_v3_analysis(
       },
     )
     let fields = object_fields_unchecked_v3(rule)
-    fields["states"] = budget.states.to_json()
-    fields["edgeChecks"] = budget.edge_checks.to_json()
-    fields["definition"] = (if category == "SSG1c" {
-      "a WW/WR/RT cycle containing a proven RT edge"
-    } else {
-      "a WW/WR/item-RW/RT cycle containing item RW; ordinary G2-item is included"
-    }).to_json()
+    fields["states"] = Json(budget.states)
+    fields["edgeChecks"] = Json(budget.edge_checks)
+    fields["definition"] = Json(
+      if category == "SSG1c" {
+        "a WW/WR/RT cycle containing a proven RT edge"
+      } else {
+        "a WW/WR/item-RW/RT cycle containing item RW; ordinary G2-item is included"
+      },
+    )
     rules[category] = rule
   }
   let model_results : Map[String, Json] = Map([])
@@ -1458,12 +1451,12 @@ fn classification_models_v3_analysis(
     let needs_internal_precondition = name == "adya-pl-3-v1" ||
       name == "strict-pl-ss-v1"
     let internal = object_fields_unchecked_v3(rules.at("INT"))
-    let internal_status = internal.get_or_default("status", "unknown".to_json())
+    let internal_status = internal.get_or_default("status", Json("unknown"))
     let applicability = if !needs_internal_precondition {
       "not-required-by-this-profile"
-    } else if internal_status == "checked-compatible".to_json() {
+    } else if internal_status == Json("checked-compatible") {
       "satisfied"
-    } else if internal_status == "refuted".to_json() {
+    } else if internal_status == Json("refuted") {
       "not-satisfied"
     } else {
       "unknown"
@@ -1481,44 +1474,43 @@ fn classification_models_v3_analysis(
       overall = if supported { "inconclusive" } else { "unsupported" }
     }
     model_results[name] = {
-      "definition": name.to_json(),
-      "status": status.to_json(),
-      "graphStatus": graph_status.to_json(),
-      "requiredRules": requirements.to_json(),
+      "definition": Json(name),
+      "status": Json(status),
+      "graphStatus": Json(graph_status),
+      "requiredRules": Json(requirements),
       "internalValidity": {
         "role": "applicability-precondition-for-operational-serial-checks",
-        "status": applicability.to_json(),
+        "status": Json(applicability),
         "rule": "INT",
         "evidence": internal.get_or_default("evidence", Json::null()),
       },
-      "refutedBy": refuted.to_json(),
-      "refutationWitnesses": refutation_witnesses.to_json(),
-      "incompleteRules": unknown.to_json(),
-      "unsupportedRules": unavailable.to_json(),
+      "refutedBy": Json(refuted),
+      "refutationWitnesses": Json(refutation_witnesses),
+      "incompleteRules": Json(unknown),
+      "unsupportedRules": Json(unavailable),
       "scope": "this supplied observed history and stated source facts only; not a database-wide isolation certification",
     }
   }
   {
     "schemaVersion": 3,
     "tool": "MoonTxnWitness",
-    "version": version().to_json(),
+    "version": Json(version()),
     "kind": "isolation-model-classification",
     "algorithm": "v3-isolation-model-1",
-    "dataModel": model.to_json(),
-    "status": overall.to_json(),
+    "dataModel": Json(model),
+    "status": Json(overall),
     "acceptsIsolationModels": true,
-    "sourceTraceText": source.trace_text.to_json(),
+    "sourceTraceText": Json(source.trace_text),
     "normalized": normalized,
-    "dependencies": graph.edges.map(edge_json).to_json(),
-    "realTimeDependencies": augmented.edges
-    .filter(e => e.kind == RT)
-    .map(edge_json)
-    .to_json(),
-    "dependencyGraphComplete": graph.complete.to_json(),
-    "validityGaps": graph.validity_gaps.to_json(),
-    "rules": rules.to_json(),
-    "models": model_results.to_json(),
-    "impliedAnomalies": implied.to_json(),
+    "dependencies": Json(graph.edges.map(edge_json)),
+    "realTimeDependencies": Json(
+      augmented.edges.filter(e => e.kind == RT).map(edge_json),
+    ),
+    "dependencyGraphComplete": Json(graph.complete),
+    "validityGaps": Json(graph.validity_gaps),
+    "rules": Json(rules),
+    "models": Json(model_results),
+    "impliedAnomalies": Json(implied),
     "intervalEvidence": intervals.evidence,
     "scope": "versioned register or the declared single-append list graph profile; model refutations and required checks are separate; source hashes do not authenticate the collector",
     "execution": {
@@ -1529,8 +1521,8 @@ fn classification_models_v3_analysis(
         "listCommittedTransactions": 6,
         "listOperations": 128,
         "edges": 50000,
-        "statesPerRule": options.category_options.max_states.to_json(),
-        "edgeChecksPerRule": options.category_options.max_edge_checks.to_json(),
+        "statesPerRule": Json(options.category_options.max_states),
+        "edgeChecksPerRule": Json(options.category_options.max_edge_checks),
       },
       "versionOrderCompletion": false,
     },

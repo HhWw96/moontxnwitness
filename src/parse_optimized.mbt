@@ -4,12 +4,12 @@
 priv struct HistoryScan {
   text : String
   strings : Map[String, String]
-  mut pos : Int
-  mut operations : Int
+  mut pos : Int32
+  mut operations : Int32
 }
 
 ///|
-fn HistoryScan::peek(self : HistoryScan) -> Int {
+fn HistoryScan::peek(self : HistoryScan) -> Int32 {
   if self.pos >= self.text.length() {
     -1
   } else {
@@ -30,7 +30,7 @@ fn HistoryScan::white(self : HistoryScan) -> Unit {
 }
 
 ///|
-fn HistoryScan::expect(self : HistoryScan, code : Int) -> Unit raise {
+fn HistoryScan::expect(self : HistoryScan, code : Int32) -> Unit raise {
   self.white()
   if self.peek() != code {
     fail("Unexpected history token")
@@ -39,7 +39,7 @@ fn HistoryScan::expect(self : HistoryScan, code : Int) -> Unit raise {
 }
 
 ///|
-fn HistoryScan::slice(self : HistoryScan, start : Int) -> String raise {
+fn HistoryScan::slice(self : HistoryScan, start : Int32) -> String raise {
   match self.text.get_view(start~, end=self.pos) {
     Some(view) => view.to_owned()
     None => fail("Invalid string boundary")
@@ -213,7 +213,7 @@ fn HistoryScan::timestamp(self : HistoryScan) -> Int64? raise {
 }
 
 ///|
-fn mark_field(seen : Int, flag : Int) -> Int raise {
+fn mark_field(seen : Int32, flag : Int32) -> Int32 raise {
   if (seen & flag) != 0 {
     fail("Duplicate history field")
   }
@@ -442,9 +442,9 @@ pub fn benchmark_parser_agreement(text : String) -> String {
     _ => false
   }
   let result : Json = {
-    "agrees": agrees.to_json(),
-    "fastPath": (fast is Ok(_)).to_json(),
-    "referenceValid": (reference is Ok(_)).to_json(),
+    "agrees": Json(agrees),
+    "fastPath": Json(fast is Ok(_)),
+    "referenceValid": Json(reference is Ok(_)),
   }
   result.stringify()
 }
