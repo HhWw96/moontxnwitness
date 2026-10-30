@@ -35,3 +35,21 @@ Windows 默认只对 Native 检查类型；支持 C 工具链的环境可运行 
 GitHub 和 Mooncakes 发布后继续匿名下载、核对发行摘要和实际上传的注册表 ZIP，并从新项目安装运行。`python scripts/verify_publication.py VERSION` 使用对应版本的原验证流程；公开 Linux 手动工作流可在受限本机网络之外执行相同逻辑，源码提交与工作流提交分别绑定。记录失败与重试，不能仅从“上传成功”推定公开验证通过。
 
 实际测试数量、跳过原因、独立审计原标签、旧包与失败记录均保留。公开发布、用户验收、生产采用及官方审核是不同状态；自动检查不能代填人工或官方回执。原历史计划见[固定原文](remaining-execution-plan-2026-10-21.md)，当前范围与后续安排分别维护。
+
+## Windows 本地验证的输出编码与临时目录
+
+验证器按 UTF-8 接收 Python 子进程输出。使用中文用户名或旧控制台编码的 Windows 环境，请先启用 Python UTF-8，避免测试已生成收据而汇总阶段无法按原路径读取。固定 ORM／驱动测试仍使用 `examples/orm-requirements.txt` 的版本；调整环境不能替代原有测试。
+
+在目标工作盘的检出目录执行：
+
+```powershell
+$env:PYTHONUTF8 = '1'
+$env:PYTHONIOENCODING = 'utf-8'
+$taskTemp = Join-Path (Get-Location) 'artifacts\test-temp'
+New-Item -ItemType Directory -Path $taskTemp -Force | Out-Null
+$env:TEMP = $taskTemp
+$env:TMP = $taskTemp
+npm test
+```
+
+环境变量只影响当前终端及其子进程。建议使用英文临时目录，并在运行前核对当前 Python 已安装固定 psycopg、SQLAlchemy 和可选编译依赖。未完成的执行、路径编码失败和环境修正应保留记录，不标记为完整回归通过。

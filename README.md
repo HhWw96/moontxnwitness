@@ -1,10 +1,14 @@
 # MoonTxnWitness
 
+MoonBit 通用事务异常分析基础库。以 Elle 的异常与模型定义为对照，提供可嵌入的分析、解释、缩减和证据回放。当前覆盖与待补能力见[Elle 对齐表](docs/elle-alignment.md)，后续按[开发顺序](docs/roadmap-v0.4.0.md)推进；定位不表示已完整兼容 Elle。
+
+仓库已开始分离当前源码与历史实验归档；原始材料通过提交／标签恢复，规则和精简计数见[仓库布局](docs/repository-layout.md)。
+
 自动诊断采集：使用 [`instrument_engine`／局部 psycopg 工厂](docs/diagnostic-instrumentation.md) 在业务启动时接入，保留实际执行和结果；通用入口输出执行诊断；配置化 [base-user 来源采集](docs/configured-user-profile.md) 可将受支持的按 ID 增删改查送入核心分析、缩减与重放。
 
 **把事务读写日志变成可解释、可缩减、可回放的反例。** MoonBit 实现离线分析核心，提供 Mooncakes 库、JavaScript SDK、命令行和可选 PostgreSQL 采集器。
 
-English: An offline MoonBit transaction-history checker with shortest-cycle witnesses, bounded serial completion, counterexample reduction and replay.
+English: A MoonBit transaction anomaly analysis library with explainable witnesses, bounded model analysis, counterexample reduction and evidence replay. See the explicit Elle alignment and coverage matrix.
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
@@ -122,7 +126,7 @@ node examples/list-roundtrip.mjs
 
 演示使用合成历史，将三个事务缩为两个事务的追加环反例，并保存分析、缩减、复现包及逐文件摘要。每个元素需要唯一身份，值为字符串且允许重复。精确分析最多六个已提交事务、128 个 append/read，默认最多 100,000 个状态和 1,000,000 次语义检查；缩减最多 256 次候选检查。来源不足、未知提交和计算未完成保持无法判定，`oneMinimal` 只表示同一规则下的事务单删最小。
 
-胶囊 `valid:true` 表示报告可重算，仍须读取 `status` 与覆盖标记；它也可能重放如实记录的 invalid 或 inconclusive 诊断。列表入口不提供自动 SQL 采集或完整隔离级别分类，语义与额度见[模型说明](docs/list-v3.md)。
+胶囊 `valid:true` 表示报告可重算，仍须读取 `status` 与覆盖标记；它也可能重放如实记录的 invalid 或 inconclusive 诊断。该精确入口与配置化 SQL 来源入口分别使用；列表逐模型分类仍有声明的图适用范围，语义与额度见[模型说明](docs/list-v3.md)及[支持矩阵](docs/stable-scope.md)。
 
 ## 有界关系集合
 

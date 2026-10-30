@@ -28,6 +28,10 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
+      - name: Check repository size and source boundaries
+        run: python scripts/repository_hygiene.py
+      - name: Test repository index protections
+        run: python -B -m unittest discover -s scripts -p test_repository_hygiene.py -v
       - name: Install official MoonBit (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
