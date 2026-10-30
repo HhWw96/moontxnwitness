@@ -32,7 +32,156 @@ fn v4_empty_category_graph(
 }
 
 ///|
-fn v4_category_graph(history : HistoryV4) -> V4CategoryGraph raise {
+fn v4_register_direct_gap(
+  gaps : Array[Json],
+  keyed : Map[String, Map[String, Bool]],
+  unkeyed : Map[String, Bool],
+  code : String,
+  edge : Edge,
+) -> Unit {
+  match edge.key {
+    Some(key) => {
+      let seen = keyed.get_or_default(code, Map([]))
+      if seen.contains(key) {
+        return
+      }
+      seen[key] = true
+      keyed[code] = seen
+    }
+    None => {
+      if unkeyed.contains(code) {
+        return
+      }
+      unkeyed[code] = true
+    }
+  }
+  gaps.push({
+    "code": Json(code),
+    "severity": "uncertainty",
+    "message": "A legacy serialization constraint lacks the resolved version order or source metadata required for a direct category RW edge",
+    "transactions": Json([edge.from, edge.to]),
+    "key": match edge.key {
+      Some(key) => Json(key)
+      None => Json::null()
+    },
+    "ops": Json(([] : Array[Json])),
+    "edge": edge_json(edge),
+  })
+}
+
+///|
+fn v4_register_rw_metadata(
+  by_id : Map[String, Transaction],
+  edge : Edge,
+) -> Bool {
+  match
+    (edge.key, edge.from_version, edge.to_version, edge.from_op, edge.to_op) {
+    (Some(key), Some(first), Some(last), Some(from_op), Some(to_op)) =>
+      match (by_id.get(edge.from), by_id.get(edge.to)) {
+        (Some(source), Some(target)) if source.status == Committed &&
+          target.status == Committed &&
+          from_op >= 0 &&
+          from_op < source.ops.length() &&
+          to_op >= 0 &&
+          to_op < target.ops.length() => {
+          let read = source.ops[from_op]
+          let write = target.ops[to_op]
+          read.kind == Read &&
+          read.key == key &&
+          read.version == first &&
+          write.kind == Write &&
+          write.key == key &&
+          write.version == last
+        }
+        _ => false
+      }
+    _ => false
+  }
+}
+
+///|
+/// The legacy analyzer also emits transitive serialization constraints. The
+/// category adapter retains RW only to the resolved immediate installed version.
+/// An own successor was removed by add_edge and must never be skipped here.
+fn v4_register_direct_category_edges(
+  history : History,
+  report : Report,
+) -> (Array[Edge], Array[Json]) {
+  let ranks : Map[String, Map[String, Int32]] = Map([])
+  for key, order in report.inferred_orders {
+    let positions : Map[String, Int32] = Map([])
+    for position, version in order {
+      positions[version] = position
+    }
+    ranks[key] = positions
+  }
+  let by_id : Map[String, Transaction] = Map([])
+  for transaction in history.transactions {
+    by_id[transaction.id] = transaction
+  }
+  let edges : Array[Edge] = []
+  let gaps : Array[Json] = []
+  let keyed : Map[String, Map[String, Bool]] = Map([])
+  let unkeyed : Map[String, Bool] = Map([])
+  for edge in report.edges {
+    if edge.kind != RW {
+      edges.push(edge)
+      continue
+    }
+    if !v4_register_rw_metadata(by_id, edge) {
+      v4_register_direct_gap(
+        gaps, keyed, unkeyed, "register_direct_rw_source_unresolved", edge,
+      )
+      continue
+    }
+    let key = edge.key.unwrap()
+    match ranks.get(key) {
+      None =>
+        v4_register_direct_gap(
+          gaps, keyed, unkeyed, "register_direct_rw_order_unresolved", edge,
+        )
+      Some(positions) => {
+        let first = positions.get_or_default(edge.from_version.unwrap(), -1)
+        let last = positions.get_or_default(edge.to_version.unwrap(), -1)
+        if first < 0 || last < 0 || last <= first {
+          v4_register_direct_gap(
+            gaps, keyed, unkeyed, "register_direct_rw_version_unresolved", edge,
+          )
+        } else if last == first + 1 {
+          edges.push(edge)
+        }
+      }
+    }
+  }
+  (edges, gaps)
+}
+
+///|
+fn v4_category_graph(
+  history : HistoryV4,
+  list_graph : String,
+  max_list_graph_checks : Int32,
+) -> V4CategoryGraph raise {
+  if list_graph == "effective-v1" {
+    return match history.payload {
+      ListSnapshot(parsed) => {
+        let result = list_graph_effective_v4(
+          parsed,
+          max_checks=max_list_graph_checks,
+        )
+        {
+          base: result.base,
+          inferences: {
+            "listGraph": list_graph_effective_v4_summary_json(result),
+          },
+        }
+      }
+      _ =>
+        v4_empty_category_graph(
+          history, "effective-list-graph-requires-append-list-v1",
+        )
+    }
+  }
   match history.payload {
     RegisterSnapshot(Some(input), normalized) => {
       let raw_operations = match normalized {
@@ -57,19 +206,24 @@ fn v4_category_graph(history : HistoryV4) -> V4CategoryGraph raise {
       // Real-time edges have their own categories; never mix them into G0/G1c/G2.
       let data_history : History = { ..input, model: Serializable, }
       let report = analyze_internal(data_history, false, complete_search=false)
+      let (direct_edges, direct_gaps) = v4_register_direct_category_edges(
+        data_history, report,
+      )
+      let validity_gaps = report.findings
+        .filter(f => f.severity == "error" || f.severity == "uncertainty")
+        .map(finding_json)
+      for gap in direct_gaps {
+        validity_gaps.push(gap)
+      }
       let complete = !report.graph.edge_budget_exceeded &&
-        !report.findings.any(f => {
-          f.severity == "error" || f.severity == "uncertainty"
-        })
+        validity_gaps.is_empty()
       {
         base: {
           normalized: normalized.unwrap_or(Json::object(Map([]))),
           transactions: data_history.transactions,
-          edges: report.edges,
+          edges: direct_edges,
           sources: Map([]),
-          validity_gaps: report.findings
-          .filter(f => f.severity == "error" || f.severity == "uncertainty")
-          .map(finding_json),
+          validity_gaps,
           history: Some(data_history),
           list_parsed: None,
           complete,
@@ -193,12 +347,20 @@ fn v4_classification_record(
   categories : Array[String],
   max_states : Int32,
   max_edge_checks : Int32,
+  list_graph : String,
+  max_list_graph_checks : Int32,
 ) -> ClassificationV4 {
   let record : Json = {
     "format": "moontxnwitness-classification/v4",
     "schemaVersion": 4,
     "semanticContract": "moontxnwitness-category-classification-v4-1",
-    "algorithm": "v4-source-bound-category-bfs-1",
+    "algorithm": Json(
+      if categories.contains("G-single") {
+        "v4-source-bound-category-g-single-1"
+      } else {
+        "v4-source-bound-category-bfs-1"
+      },
+    ),
     "dataModel": Json(v4_model_name(history.data_model)),
     "observations": {
       "sourceFormat": Json(history.source_format),
@@ -210,7 +372,13 @@ fn v4_classification_record(
     "judgment": {
       "status": Json(status),
       "acceptsIsolationModels": false,
-      "scope": "requested dependency-cycle categories only; checked-compatible does not accept a complete isolation model or certify a database",
+      "scope": Json(
+        if categories.contains("G-single") {
+          "requested point-register-v1/append-list-v1 item-dependency categories only; G-single has exactly one item RW edge; checked-compatible does not accept a complete isolation model or certify a database"
+        } else {
+          "requested dependency-cycle categories only; checked-compatible does not accept a complete isolation model or certify a database"
+        },
+      ),
       "dependencyGraphComplete": Json(graph.base.complete),
       "dependencies": Json(graph.base.edges.map(edge_json)),
       "sourceOrOrderGaps": Json(graph.base.validity_gaps),
@@ -218,7 +386,13 @@ fn v4_classification_record(
       "impliedAnomalies": Json(implied),
     },
     "execution": {
-      "counterContract": "v4-category-seed-bfs-counters-1",
+      "counterContract": Json(
+        if categories.contains("G-single") {
+          "v4-category-g-single-seed-bfs-counters-1"
+        } else {
+          "v4-category-seed-bfs-counters-1"
+        },
+      ),
       "categories": Json(categories.copy()),
       "versionOrderCompletion": false,
       "limits": {
@@ -232,6 +406,31 @@ fn v4_classification_record(
       },
     },
   }
+  if list_graph == "effective-v1" {
+    let root = object_fields_unchecked_v3(record)
+    root["algorithm"] = Json("v4-source-bound-category-list-effective-1")
+    let judgment = object_fields_unchecked_v3(root.at("judgment"))
+    judgment["scope"] = Json(
+      "requested append-list-v1 effective item-dependency categories only; source-incompatible keys are isolated; checked-compatible does not accept a complete isolation model or certify a database",
+    )
+    let execution = object_fields_unchecked_v3(root.at("execution"))
+    execution["counterContract"] = Json("v4-list-effective-category-counters-1")
+    execution["listGraph"] = Json(list_graph)
+    match graph.inferences {
+      Object(inferences) =>
+        match inferences.get("listGraph") {
+          Some(Object(summary)) =>
+            execution["listGraphConstruction"] = summary.at("execution")
+          _ => ()
+        }
+      _ => ()
+    }
+    let limits = object_fields_unchecked_v3(execution.at("limits"))
+    let _ = limits.remove("listCommittedTransactions")
+    limits["listTransactions"] = Json(128)
+    limits["listOperations"] = Json(4096)
+    limits["listGraphChecks"] = Json(max_list_graph_checks)
+  }
   { status, record, }
 }
 
@@ -242,12 +441,15 @@ pub fn classify_v4(
   categories~ : Array[String] = ["G0", "G1c", "G2-item"],
   max_states~ : Int32 = 100000,
   max_edge_checks~ : Int32 = 1000000,
+  list_graph~ : String = "legacy",
+  max_list_graph_checks~ : Int32 = 1000000,
 ) -> ClassificationV4 {
   let categories = categories.copy()
   let seen : Map[String, Bool] = Map([])
   let valid = !categories.is_empty() &&
     categories.all(category => {
-      if !["G0", "G1c", "G2-item"].contains(category) || seen.contains(category) {
+      if !["G0", "G1c", "G2-item", "G-single"].contains(category) ||
+        seen.contains(category) {
         false
       } else {
         seen[category] = true
@@ -257,7 +459,11 @@ pub fn classify_v4(
     max_states >= 0 &&
     max_states <= 100000 &&
     max_edge_checks >= 0 &&
-    max_edge_checks <= 1000000
+    max_edge_checks <= 1000000 &&
+    ["legacy", "effective-v1"].contains(list_graph) &&
+    max_list_graph_checks >= 0 &&
+    max_list_graph_checks <= 1000000 &&
+    (list_graph == "effective-v1" || max_list_graph_checks == 1000000)
   if !valid {
     return v4_classification_record(
       history,
@@ -268,9 +474,11 @@ pub fn classify_v4(
       categories,
       max_states,
       max_edge_checks,
+      list_graph,
+      max_list_graph_checks,
     )
   }
-  let graph = v4_category_graph(history) catch {
+  let graph = v4_category_graph(history, list_graph, max_list_graph_checks) catch {
     _ =>
       return v4_classification_record(
         history,
@@ -281,6 +489,8 @@ pub fn classify_v4(
         categories,
         max_states,
         max_edge_checks,
+        list_graph,
+        max_list_graph_checks,
       )
   }
   let index = adjacency(graph.base.transactions, graph.base.edges)
@@ -296,14 +506,24 @@ pub fn classify_v4(
       limited: false,
       reason: "complete",
     }
-    let cycle = classification_v3_cycle(
-      graph.base.transactions,
-      graph.base.edges,
-      index,
-      category,
-      budget,
-    )
-    let rule_status = if history.data_model == RelationSetV4 {
+    let cycle = if category == "G-single" {
+      g_single_cycle_v4(
+        graph.base.transactions.length(),
+        graph.base.edges,
+        index,
+        budget,
+      )
+    } else {
+      classification_v3_cycle(
+        graph.base.transactions,
+        graph.base.edges,
+        index,
+        category,
+        budget,
+      )
+    }
+    let rule_status = if history.data_model == RelationSetV4 ||
+      (list_graph == "effective-v1" && history.data_model != AppendListV4) {
       "unsupported"
     } else if !cycle.is_empty() {
       "refuted"
@@ -328,7 +548,15 @@ pub fn classify_v4(
       } else {
         "G1c"
       }
-      for label in classification_v3_implications(specific) {
+      let implications = if category == "G-single" {
+        [
+          "G-single-item", "G-single", "G-nonadjacent-item", "G-nonadjacent", "G2-item",
+          "G2",
+        ]
+      } else {
+        classification_v3_implications(specific)
+      }
+      for label in implications {
         if !implied.contains(label) {
           implied.push(label)
         }
@@ -347,10 +575,26 @@ pub fn classify_v4(
       "edgeChecks": Json(budget.edge_checks),
       "evidence": if cycle.is_empty() {
         Json::null()
-      } else if history.data_model == RegisterV4 {
-        v4_register_category_witness(graph.base, cycle)
       } else {
-        classification_models_v3_witness(graph.base, cycle)
+        let witness = if history.data_model == RegisterV4 {
+          v4_register_category_witness(graph.base, cycle)
+        } else {
+          classification_models_v3_witness(graph.base, cycle)
+        }
+        if list_graph == "effective-v1" {
+          let fields = object_fields_unchecked_v3(witness)
+          fields["kind"] = Json(
+            "source-checked-effective-list-dependency-cycle",
+          )
+          fields["sourceScope"] = Json(
+            "raw delivered reads with effective own suffix at each program position, final committed append groups, and validated external item order; not SQL authenticity",
+          )
+        }
+        if category == "G-single" {
+          g_single_category_witness_v4(witness, cycle)
+        } else {
+          witness
+        }
       },
     }
   }
@@ -363,6 +607,8 @@ pub fn classify_v4(
     categories,
     max_states,
     max_edge_checks,
+    list_graph,
+    max_list_graph_checks,
   )
 }
 
@@ -383,7 +629,16 @@ pub fn verify_classification_v4(
   categories~ : Array[String] = ["G0", "G1c", "G2-item"],
   max_states~ : Int32 = 100000,
   max_edge_checks~ : Int32 = 1000000,
+  list_graph~ : String = "legacy",
+  max_list_graph_checks~ : Int32 = 1000000,
 ) -> Bool {
   supplied ==
-  classify_v4(history, categories~, max_states~, max_edge_checks~).record
+  classify_v4(
+    history,
+    categories~,
+    max_states~,
+    max_edge_checks~,
+    list_graph~,
+    max_list_graph_checks~,
+  ).record
 }

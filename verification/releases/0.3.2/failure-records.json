@@ -6,7 +6,10 @@
     "Concurrent cache directory creation and no-clobber publication, complete blob-only offline restoration and selected portable input fingerprint checks were corrected.",
     "Exact public-API consumer example blobs were added to the source boundary policy; extra or modified unreviewed sources remain refused.",
     "Initial workflow validation rejected runner.temp at job-level env; corrected to github.workspace.",
-    "The original publication deadline-policy test refused extra overrides in new consumers. The default deadlines were retained and a checksum-verified shared public-input cache avoids redundant cold downloads; all 39 original tests pass."
+    "The original publication deadline-policy test refused extra overrides in new consumers. The default deadlines were retained and a checksum-verified shared public-input cache avoids redundant cold downloads; all 39 original tests pass.",
+    "Current ignored CI integration and package receipts are now explicitly retained with their actual versions and checksums.",
+    "The publisher read an invented publicV031CompatibilityTests alias instead of the actual public031CompatibilityTests field. The field was corrected, three rejection tests were added, and CI now checks the real generated receipt before staging.",
+    "The v4 register category graph previously used all-later serial-order constraints as direct RW edges, including a jump over the reader own immediate successor. Only proved direct successors now enter category search; legacy analysis, full edges and released replay are unchanged. Independent SDK and source/portable consumer gates cover the frozen counterexamples."
   ],
   "incompleteRuns": [
     {
@@ -26,6 +29,28 @@
         41084324519
       ],
       "testsExecuted": false
+    },
+    {
+      "kind": "local-package",
+      "status": "interrupted",
+      "reason": "Disk exhaustion during fresh consumer extraction; original logs and checksum-verified recovery records retained. No local package success was claimed."
+    },
+    {
+      "kind": "publisher-preflight",
+      "status": "failed",
+      "sourceCommit": "30ba37c3c095fa4cc9a6bc4757b08f2ec1e9ac3a",
+      "ciPassedRun": 41109613309,
+      "publiclyPublished": false,
+      "reason": "Compatibility receipt field-name mismatch detected before publication; new regression and exact-commit validation required."
+    },
+    {
+      "kind": "formal-category-counterexample",
+      "status": "failed",
+      "sourceCommit": "2d270b75fa6d2802ee1967972d1f12ccc73ccb11",
+      "ciPassedRun": 41119958552,
+      "freshConsumerChecks": 134,
+      "publiclyPublished": false,
+      "reason": "Independent next-version reference detected extra G2-item classification despite self-replay validity. Publication remained held until v4 direct graph correction and new frozen-source verification."
     }
   ],
   "finalRegression": {
