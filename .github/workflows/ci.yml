@@ -77,6 +77,8 @@ jobs:
         run: node scripts/moon.mjs test --target native --deny-warn
       - name: Verify fresh source and portable consumers
         run: npm run package
+      - name: Validate actual integration compatibility receipt
+        run: python scripts/release.py --check-compatibility-receipt
       - name: Stage current-run evidence and exact current-version downloads
         if: always()
         run: python scripts/stage_ci_evidence.py

@@ -473,5 +473,36 @@ class IgnoredCurrentCiReceiptTests(unittest.TestCase):
         copied = json.loads((self.root/'artifacts/ci-evidence/verification/summary.json').read_text())
         self.assertIs(copied['passed'], False)
 
+class CompatibilityReleaseReceiptTests(unittest.TestCase):
+    def fixture(self):
+        return {'public031CompatibilityTests': {
+            'passed': True, 'publicVersion': '0.3.1', 'currentVersion': '0.3.2',
+            'publishedMemberCount': 580, 'usesPublishedRuntimeOnly': True,
+            'historicalSourceSnapshotCreated': False}}
+
+    def test_actual_integration_field_is_consumed(self):
+        from release import validate_public031_compatibility_receipt
+        value = self.fixture()
+        self.assertIs(validate_public031_compatibility_receipt(value, '0.3.2'), value['public031CompatibilityTests'])
+
+    def test_invented_alias_does_not_replace_the_actual_receipt(self):
+        from release import validate_public031_compatibility_receipt
+        value = self.fixture()
+        value['publicV031CompatibilityTests'] = value.pop('public031CompatibilityTests')
+        with self.assertRaises(KeyError):
+            validate_public031_compatibility_receipt(value, '0.3.2')
+
+    def test_failed_stale_or_nonpublic_receipts_are_rejected(self):
+        from release import validate_public031_compatibility_receipt
+        for key, value in [('passed', False), ('passed', 1), ('currentVersion', '0.3.1'),
+                           ('publicVersion', '0.3.0'), ('publishedMemberCount', 579),
+                           ('usesPublishedRuntimeOnly', False), ('historicalSourceSnapshotCreated', True)]:
+            with self.subTest(field=key, value=value):
+                receipt = self.fixture()
+                receipt['public031CompatibilityTests'][key] = value
+                with self.assertRaises(AssertionError):
+                    validate_public031_compatibility_receipt(receipt, '0.3.2')
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

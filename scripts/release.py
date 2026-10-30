@@ -17,6 +17,16 @@ MODULE = 'HhWw96/moontxnwitness'
 ENV = dict(os.environ)
 
 
+def validate_public031_compatibility_receipt(summary, version):
+    """Consume the field actually produced by the unchanged integration runner."""
+    original31 = summary['public031CompatibilityTests']
+    assert original31['passed'] is True and original31['publicVersion'] == '0.3.1'
+    assert original31['currentVersion'] == version and original31['publishedMemberCount'] == 580
+    assert original31['usesPublishedRuntimeOnly'] is True
+    assert original31['historicalSourceSnapshotCreated'] is False
+    return original31
+
+
 def validate_scoped_acceptance(acceptance, manifest):
     """Validate the declared stable profiles, without promoting preview goals."""
     assert acceptance['policy'] in ('scoped-stable-v1', 'scoped-stable-v2')
@@ -235,10 +245,7 @@ def validate_scoped_acceptance(acceptance, manifest):
         assert summary['v4IndependentAudit']['passed'] and summary['v4IndependentAudit']['checks'] >= 9
         v4 = summary['v4HostTests']
         assert v4['passed'] and v4['checks'] >= 73 and v4['legacyWorkers'] == 0
-        original31 = summary['publicV031CompatibilityTests']
-        assert original31['passed'] and original31['publicVersion'] == '0.3.1'
-        assert original31['currentVersion'] == VERSION and original31['publishedMemberCount'] == 580
-        assert original31['usesPublishedRuntimeOnly'] and not original31['historicalSourceSnapshotCreated']
+        validate_public031_compatibility_receipt(summary, VERSION)
         for kind in ('source', 'portable'):
             assert kind + ' public031 original SDK/capsules and corrupted runtime refusal' in package['checks']
             assert kind + ' v4 typed analysis, explicit reduction and independently budgeted replay' in package['checks']
@@ -542,4 +549,15 @@ def publish():
 
 
 if __name__ == '__main__':
-    publish()
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--check-compatibility-receipt', action='store_true')
+    arguments = parser.parse_args()
+    if arguments.check_compatibility_receipt:
+        summary = json.loads((ROOT / 'verification/summary.json').read_text(encoding='utf8'))
+        assert summary['passed'] is True and summary['version'] == VERSION
+        if tuple(map(int, VERSION.split('.'))) >= (0, 3, 2):
+            validate_public031_compatibility_receipt(summary, VERSION)
+        print('Current integration compatibility receipt contract passed: ' + VERSION)
+    else:
+        publish()
