@@ -7,7 +7,9 @@ from __future__ import annotations
 
 from collections import defaultdict
 import json
+from evidence_json import load_receipt
 from pathlib import Path, PurePosixPath
+from input_cache import public_cached_entries
 
 EXCLUDED_DIRS = {'.git', '_build', '.mooncakes', 'node_modules', 'artifacts',
                  'dist', '__pycache__', '.venv-pg'}
@@ -59,7 +61,8 @@ def select_distribution_files(root, public_names, tested_files, version):
     package_release.py, not a second approximation of its input rules.
     """
     root = Path(root).resolve()
-    public_names = {safe_name(n) for n in public_names}
+    cached = public_cached_entries(root)
+    public_names = {safe_name(n) for n in public_names} | set(cached)
     tested_files = {safe_name(n): value for n, value in tested_files.items()}
     reasons = defaultdict(set)
     required = set()
@@ -70,6 +73,8 @@ def select_distribution_files(root, public_names, tested_files, version):
         path = root / name
         if not path.is_file() or path.is_symlink():
             missing.append({'file': name, 'reason': reason, 'problem': 'missing or non-regular input'})
+        elif name in cached and (path.stat().st_size != cached[name]['bytes'] or tested_files.get(name) != cached[name]['sha256']):
+            missing.append({'file': name, 'reason': reason, 'problem': 'frozen input differs from independently verified fingerprint'})
         elif name not in public_names and not name.startswith('dist/'):
             missing.append({'file': name, 'reason': reason, 'problem': 'not in public inventory; never add ignored private evidence'})
         else:
@@ -259,7 +264,7 @@ def select_distribution_files(root, public_names, tested_files, version):
             if isinstance(acceptance.get(field), str):
                 target = receipt_pointer(acceptance[field], parent, 'current acceptance direct ' + field + ' receipt')
                 if field == 'databaseEvidence' and target in required:
-                    evidence = json.loads((root / target).read_text(encoding='utf8'))
+                    evidence = load_receipt(root / target)
                     for label, record in evidence.get('receipts', {}).items():
                         if isinstance(record, dict) and isinstance(record.get('path'), str):
                             receipt_pointer(record['path'], 'verification', 'current database ' + label + ' complete public recorded run', tree=True)
@@ -286,6 +291,7 @@ def select_distribution_files(root, public_names, tested_files, version):
     # Source consumers build dist themselves, but every non-dist fingerprint input
     # must survive, even if a future fixed input uses a formerly excluded suffix.
     source.update(n for n in required if not n.startswith('dist/'))
+    source.difference_update(cached)
 
     portable = {'README.md', 'LICENSE', 'CHANGELOG.md', 'THIRD_PARTY.md', 'run-demo.cmd'}
     for folder in ('dist', 'docs', 'examples', 'integrations', 'experiments'):
@@ -337,6 +343,11 @@ def select_distribution_files(root, public_names, tested_files, version):
     if tuple(map(int, version.split('.'))) >= (0, 3, 0):
         portable.update(n for n in public_names if n.startswith('fixtures/compat-v028/'))
         portable.update(('scripts/compat-v028-test.mjs', 'scripts/public028-fixture-binding.mjs'))
+    if tuple(map(int, version.split('.'))) >= (0, 3, 2):
+        require('scripts/public031-compatibility-test.mjs', 'fresh-consumer exact public031 runtime compatibility')
+        portable.add('scripts/public031-compatibility-test.mjs')
+        require('scripts/v4-sdk-test.mjs', 'fresh-consumer typed v4 interfaces and explicit-budget replay')
+        portable.add('scripts/v4-sdk-test.mjs')
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))
@@ -345,6 +356,8 @@ def select_distribution_files(root, public_names, tested_files, version):
     for name in sorted(source | portable):
         if not (root / name).is_file() or (root / name).is_symlink():
             missing.append({'file': name, 'problem': 'selected item missing or non-regular'})
+        elif name in cached and ((root / name).stat().st_size != cached[name]['bytes'] or tested_files.get(name) != cached[name]['sha256']):
+            missing.append({'file': name, 'problem': 'selected frozen input lacks its verified fingerprint'})
     return {'source': sorted(source), 'portable': sorted(portable),
             'requiredInputs': sorted(required), 'retainedVerification': sorted(n for n in required if n.startswith('verification/')),
             'reasons': {n: sorted(v) for n, v in sorted(reasons.items())}, 'missingInputs': missing}

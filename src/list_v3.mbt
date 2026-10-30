@@ -795,6 +795,14 @@ fn list_v3_analysis(text : String, options_text : String) -> Json raise {
         "invalid_capture",
       )
   }
+  list_v3_analyze_parsed(parsed, options)
+}
+
+///|
+fn list_v3_analyze_parsed(
+  parsed : ListV3Parsed,
+  options : ListV3Options,
+) -> Json raise {
   let status = object_fields_unchecked_v3(parsed.normalized).at("status")
   if status != Json("ready") {
     return list_v3_report(

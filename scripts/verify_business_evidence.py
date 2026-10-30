@@ -8,6 +8,7 @@ import hashlib
 import json
 import subprocess
 from pathlib import Path, PurePosixPath
+from input_cache import public_cached_entries, verify_file
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -17,9 +18,19 @@ def verify(use_git=False):
     receipts += sorted((ROOT / "verification/provenance-presence").glob("run-*/presence-receipt.json"))
     if not receipts:
         raise ValueError("No completed business receipt is present")
+    pinned = public_cached_entries(ROOT)
+    if use_git:
+        public = set(subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT).decode('utf8').split('\0')) | set(pinned)
+        receipts = [p for p in receipts if p.relative_to(ROOT).as_posix() in public]
+        if not receipts:
+            raise ValueError('No public receipt is present')
     files = 0
 
     def content(path):
+        name = path.relative_to(ROOT).as_posix()
+        if name in pinned:
+            verify_file(path, pinned[name])
+            return path.read_bytes()
         if use_git:
             return subprocess.check_output(["git", "show", "HEAD:" + path.relative_to(ROOT).as_posix()], cwd=ROOT)
         return path.read_bytes()
@@ -56,7 +67,7 @@ def verify(use_git=False):
                     raise ValueError("Published artifact bytes differ: " + target.relative_to(ROOT).as_posix())
                 files += 1
     return {"passed": True, "receipts": len(receipts), "artifactBindings": files,
-            "source": "HEAD git blobs" if use_git else "working tree",
+            "source": "HEAD active blobs and checksum-pinned public archive inputs" if use_git else "working tree",
             "actualDatabaseExecution": False,
             "scope": "Byte bindings only; does not authenticate collection or certify application behavior"}
 

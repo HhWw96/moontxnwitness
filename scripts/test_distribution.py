@@ -351,5 +351,80 @@ class Public027PortableRegressionTests(unittest.TestCase):
         with self.assertRaises(AssertionError):
             inventory.assert_complete(selected)
 
+class ThinCachedDistributionTests(unittest.TestCase):
+    """A thin source keeps restoration tools; portable retains its consumed facts."""
+    @classmethod
+    def setUpClass(cls):
+        import hashlib
+        fixture_type = type('_ThinInventoryFixture', (DistributionTests,), {})
+        fixture_type.setUpClass()
+        cls.root, cls.public, cls.tested = fixture_type.root, set(fixture_type.public), dict(fixture_type.tested)
+        cls.name = 'fixtures/classification-v3/source-closed-noisy-g2.json'
+        raw = (cls.root / cls.name).read_bytes()
+        cls.cache = {cls.name: {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()}}
+        cls.tested[cls.name] = cls.cache[cls.name]['sha256']
+        cls.public.remove(cls.name)
+        cls.providers = ('scripts/input_cache.py', 'scripts/frozen-inputs.json', 'scripts/frozen-inputs-v031.json.gz')
+        for name in cls.providers:
+            path = cls.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b'synthetic source inventory member; never executed')
+            cls.public.add(name)
+
+    def select(self, tested=None, public=None):
+        with patch.object(inventory, 'public_cached_entries', return_value=self.cache):
+            return inventory.select_distribution_files(self.root,
+                self.public if public is None else public,
+                self.tested if tested is None else tested, '0.1.2')
+
+    def test_thin_source_omits_payload_and_keeps_recovery_tools(self):
+        selected = self.select()
+        inventory.assert_complete(selected)
+        self.assertNotIn(self.name, selected['source'])
+        for name in self.providers:
+            self.assertIn(name, selected['source'])
+        self.assertTrue((self.root / self.name).is_file())
+
+    def test_portable_keeps_its_exact_cached_consumer_input(self):
+        selected = self.select()
+        inventory.assert_complete(selected)
+        self.assertIn(self.name, selected['portable'])
+        self.assertIn(self.name, selected['requiredInputs'])
+
+    def test_known_cached_input_does_not_require_readding_payload_to_git(self):
+        self.assertNotIn(self.name, self.public)
+        inventory.assert_complete(self.select())
+
+    def test_cached_input_requires_matching_verified_fingerprint(self):
+        for tested in [dict(self.tested, **{self.name: '0' * 64}),
+                       {k: v for k, v in self.tested.items() if k != self.name}]:
+            with self.subTest(fingerprint=tested.get(self.name)):
+                selected = self.select(tested=tested)
+                self.assertTrue(any(row['file'] == self.name for row in selected['missingInputs']))
+                with self.assertRaises(AssertionError):
+                    inventory.assert_complete(selected)
+
+    def test_missing_cached_payload_is_a_failure_instead_of_a_skipped_test(self):
+        source = self.root / self.name
+        raw = source.read_bytes()
+        try:
+            source.unlink()
+            selected = self.select()
+            self.assertTrue(any(row['file'] == self.name for row in selected['missingInputs']))
+            with self.assertRaises(AssertionError):
+                inventory.assert_complete(selected)
+        finally:
+            source.write_bytes(raw)
+
+    def test_cached_provider_does_not_authorize_unindexed_private_input(self):
+        name = 'fixtures/private-unindexed.json'
+        target = self.root / name
+        target.write_text('{"private":true}', encoding='utf8')
+        selected = self.select(tested={**self.tested, name: 'not-a-verified-public-hash'})
+        self.assertTrue(any(row['file'] == name for row in selected['missingInputs']))
+        with self.assertRaises(AssertionError):
+            inventory.assert_complete(selected)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

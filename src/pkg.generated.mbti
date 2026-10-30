@@ -4,7 +4,11 @@ package "HhWw96/moontxnwitness"
 // Values
 pub fn analysis_options(max_attempts? : Int32, max_operation_checks? : Int32, max_cached_states? : Int32) -> AnalysisOptions
 
+pub fn analysis_options_v4(max_attempts? : Int32, max_states? : Int32, max_operation_checks? : Int32, max_cached_states? : Int32) -> AnalysisOptionsV4
+
 pub fn analysis_result_json(AnalysisResult) -> Json
+
+pub fn analysis_v4_json(AnalysisV4) -> Json
 
 pub fn analyze(History) -> Report
 
@@ -13,6 +17,10 @@ pub fn analyze_json(String) -> String
 pub fn analyze_options_json(String, String) -> String
 
 pub fn analyze_v3_json(String, String) -> String
+
+pub fn analyze_v4(HistoryV4, options? : AnalysisOptionsV4) -> AnalysisV4
+
+pub fn analyze_v4_json(String, String) -> String
 
 pub fn analyze_with_options(History, options? : AnalysisOptions) -> AnalysisResult
 
@@ -34,7 +42,15 @@ pub fn capsule_content_json(String) -> String
 
 pub fn capsule_v3_content_json(String) -> String
 
+pub fn capsule_v4_content_json(String) -> String
+
+pub fn classification_v4_json(ClassificationV4) -> Json
+
 pub fn classify_v3_json(String, String) -> String
+
+pub fn classify_v4(HistoryV4, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32) -> ClassificationV4
+
+pub fn classify_v4_json(String, String) -> String
 
 pub fn compare_models(History) -> Json
 
@@ -43,6 +59,8 @@ pub fn compare_models_json(String) -> String
 pub fn dislock_sql_v3_proof_json(String) -> String
 
 pub fn history_json(History) -> Json
+
+pub fn history_v4_json(HistoryV4) -> Json
 
 pub fn inspect_execution_failures_v3_json(String) -> String
 
@@ -70,11 +88,17 @@ pub fn parse_history(String) -> Result[History, String]
 
 pub fn parse_history_optimized(String) -> Result[History, String]
 
+pub fn parse_history_v4(String) -> Result[HistoryV4, String]
+
 pub fn reduce_classification_v3_json(String, String) -> String
 
 pub fn reduce_history(History, max_checks? : Int32) -> Reduction
 
 pub fn reduce_v3_json(String, String) -> String
+
+pub fn reduce_v4(HistoryV4, preserve~ : Model, max_checks? : Int32, options? : AnalysisOptionsV4) -> ReductionV4
+
+pub fn reduce_v4_json(String, String) -> String
 
 pub fn reduce_with_options(History, options? : ReductionOptions) -> ReductionResult
 
@@ -83,6 +107,16 @@ pub fn reduction_json(Reduction) -> Json
 pub fn reduction_options(max_checks? : Int32, analysis? : AnalysisOptions) -> ReductionOptions
 
 pub fn reduction_result_json(ReductionResult) -> Json
+
+pub fn reduction_v4_json(ReductionV4) -> Json
+
+pub fn register_history_v4(History) -> Result[HistoryV4, String]
+
+pub fn render_analysis_v4(AnalysisV4) -> String
+
+pub fn render_classification_v4(ClassificationV4) -> String
+
+pub fn render_reduction_v4(ReductionV4) -> String
 
 pub fn render_report(Report, String) -> String
 
@@ -102,9 +136,21 @@ pub fn verify_certificate_json(String, String) -> String
 
 pub fn verify_classification_v3_json(String, String) -> String
 
+pub fn verify_classification_v4(HistoryV4, Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32) -> Bool
+
+pub fn verify_classification_v4_json(String, String, String) -> String
+
 pub fn verify_cycle(History, Array[Edge]) -> Bool
 
+pub fn verify_reduction_v4(HistoryV4, Json, preserve~ : Model, max_checks? : Int32, options? : AnalysisOptionsV4) -> Bool
+
+pub fn verify_reduction_v4_json(String, String, String) -> String
+
 pub fn verify_v3_json(String, String) -> String
+
+pub fn verify_v4(HistoryV4, Json, options? : AnalysisOptionsV4) -> Bool
+
+pub fn verify_v4_json(String, String, String) -> String
 
 pub fn version() -> String
 
@@ -119,6 +165,15 @@ pub(all) struct AnalysisOptions {
 pub fn AnalysisOptions::equal(Self, Self) -> Bool
 pub fn AnalysisOptions::not_equal(Self, Self) -> Bool
 
+pub(all) struct AnalysisOptionsV4 {
+  max_attempts : Int32
+  max_states : Int32
+  max_operation_checks : Int32
+  max_cached_states : Int32
+} derive(Eq)
+pub fn AnalysisOptionsV4::equal(Self, Self) -> Bool
+pub fn AnalysisOptionsV4::not_equal(Self, Self) -> Bool
+
 pub(all) struct AnalysisResult {
   report : Report
   options : AnalysisOptions
@@ -127,6 +182,25 @@ pub(all) struct AnalysisResult {
 } derive(Eq)
 pub fn AnalysisResult::equal(Self, Self) -> Bool
 pub fn AnalysisResult::not_equal(Self, Self) -> Bool
+
+pub struct AnalysisV4 {
+  // private fields
+}
+pub fn AnalysisV4::data_model(Self) -> DataModelV4
+pub fn AnalysisV4::outcome(Self) -> Outcome
+
+pub struct ClassificationV4 {
+  // private fields
+}
+pub fn ClassificationV4::status(Self) -> String
+
+pub(all) enum DataModelV4 {
+  RegisterV4
+  AppendListV4
+  RelationSetV4
+} derive(Eq)
+pub fn DataModelV4::equal(Self, Self) -> Bool
+pub fn DataModelV4::not_equal(Self, Self) -> Bool
 
 pub(all) enum Dependency {
   WR
@@ -185,6 +259,12 @@ pub(all) struct History {
 } derive(Eq)
 pub fn History::equal(Self, Self) -> Bool
 pub fn History::not_equal(Self, Self) -> Bool
+
+pub struct HistoryV4 {
+  // private fields
+}
+pub fn HistoryV4::data_model(Self) -> DataModelV4
+pub fn HistoryV4::source_text(Self) -> String
 
 pub(all) struct KeyCoverage {
   key : String
@@ -253,6 +333,15 @@ pub(all) struct ReductionResult {
 } derive(Eq)
 pub fn ReductionResult::equal(Self, Self) -> Bool
 pub fn ReductionResult::not_equal(Self, Self) -> Bool
+
+pub struct ReductionV4 {
+  // private fields
+}
+pub fn ReductionV4::analysis(Self) -> AnalysisV4
+pub fn ReductionV4::checks(Self) -> Int32
+pub fn ReductionV4::history(Self) -> HistoryV4
+pub fn ReductionV4::one_minimal(Self) -> Bool
+pub fn ReductionV4::status(Self) -> String
 
 pub(all) struct Report {
   outcome : Outcome

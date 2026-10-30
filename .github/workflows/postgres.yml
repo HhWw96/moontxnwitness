@@ -28,6 +28,7 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       MOONBIT_INSTALL_VERSION: 0.10.16+b1a0e846e
+      MTW_INPUT_CACHE: ${{ runner.temp }}/mtw-input-cache
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -43,6 +44,8 @@ jobs:
           set -euo pipefail
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$MOONBIT_INSTALL_VERSION"
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Restore checksum-pinned public test inputs
+        run: python scripts/input_cache.py prepare --scope tests
       - name: Build offline analyzer
         run: npm run build
       - name: Record database input bindings before execution

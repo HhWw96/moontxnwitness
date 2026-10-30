@@ -174,3 +174,57 @@ pub fn reduce_classification_v3_json(text : String, options : String) -> String 
 pub fn verify_classification_v3_json(text : String, report : String) -> String {
   @txn.verify_classification_v3_json(text, report)
 }
+
+///|
+#export_name("analyze_v4_json")
+pub fn analyze_v4_json(text : String, options : String) -> String {
+  @txn.analyze_v4_json(text, options)
+}
+
+///|
+#export_name("classify_v4_json")
+pub fn classify_v4_json(text : String, options : String) -> String {
+  @txn.classify_v4_json(text, options)
+}
+
+///|
+#export_name("reduce_v4_json")
+pub fn reduce_v4_json(text : String, options : String) -> String {
+  @txn.reduce_v4_json(text, options)
+}
+
+///|
+#export_name("verify_v4_json")
+pub fn verify_v4_json(
+  text : String,
+  report : String,
+  options : String,
+) -> String {
+  @txn.verify_v4_json(text, report, options)
+}
+
+///|
+#export_name("verify_classification_v4_json")
+pub fn verify_classification_v4_json(
+  text : String,
+  report : String,
+  options : String,
+) -> String {
+  @txn.verify_classification_v4_json(text, report, options)
+}
+
+///|
+#export_name("verify_reduction_v4_json")
+pub fn verify_reduction_v4_json(
+  text : String,
+  report : String,
+  options : String,
+) -> String {
+  @txn.verify_reduction_v4_json(text, report, options)
+}
+
+///|
+#export_name("capsule_v4_content_json")
+pub fn capsule_v4_content_json(text : String) -> String {
+  @txn.capsule_v4_content_json(text)
+}

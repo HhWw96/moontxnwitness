@@ -16,6 +16,7 @@ jobs:
       PYTHONUTF8: "1"
       PYTHONIOENCODING: utf-8
       MOONBIT_INSTALL_VERSION: 0.10.16+b1a0e846e
+      MTW_INPUT_CACHE: ${{ runner.temp }}/mtw-input-cache
     steps:
       - name: Enable long paths for the Windows checkout
         if: runner.os == 'Windows'
@@ -34,6 +35,10 @@ jobs:
         run: python scripts/repository_hygiene.py
       - name: Test repository index protections
         run: python -B -m unittest discover -s scripts -p test_repository_hygiene.py -v
+      - name: Test bounded receipt storage
+        run: python -B -m unittest discover -s scripts -p test_evidence_json.py -v
+      - name: Test frozen input cache faults
+        run: python -B -m unittest discover -s scripts -p test_input_cache.py -v
       - name: Install official MoonBit (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -54,6 +59,8 @@ jobs:
         run: node scripts/toolchain-policy-test.mjs
       - name: Run the MoonBit library example
         run: node scripts/moon.mjs run --target wasm-gc src/demo
+      - name: Restore checksum-pinned public test inputs
+        run: python scripts/input_cache.py prepare --scope tests
       - name: Check publication privacy including history
         run: python scripts/publication_privacy.py --history
       - name: Verify committed business and presence capture byte bindings

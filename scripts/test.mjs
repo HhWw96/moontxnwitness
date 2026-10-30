@@ -1,3 +1,4 @@
+import {prepareInputs} from './input-cache.mjs';
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -7,6 +8,7 @@ import {verificationFingerprint} from './verification-fingerprint.mjs';
 import {writeVerifiedJson,writeImmutableEvidence} from './performance-evidence.mjs';
 import {tmpdir} from 'node:os';
 import {relativeEvidencePath} from './evidence-reference.mjs';
+prepareInputs(root,'tests');
 await import('./evidence-reference-test.mjs');
 
 // Default tests cover the shipped JS runtime and both bundled Wasm runtimes.
@@ -29,6 +31,14 @@ const testedFiles=verificationFingerprint(root);
 const public030Check=spawnSync(process.execPath,['scripts/public030-compatibility-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:4*1024*1024});
 if(public030Check.error||public030Check.status!==0)throw Error('Public030 compatibility failed: '+public030Check.stdout+public030Check.stderr);
 
+const public031Check=spawnSync(process.execPath,['scripts/public031-compatibility-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:4*1024*1024});
+if(public031Check.error||public031Check.status!==0)throw Error('Public031 compatibility failed: '+public031Check.stdout+public031Check.stderr);
+const public031Compatibility=JSON.parse(public031Check.stdout);assert.equal(public031Compatibility.passed,true);
+const v4Check=spawnSync(process.execPath,['scripts/v4-sdk-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:4*1024*1024});
+if(v4Check.error||v4Check.status!==0)throw Error('V4 SDK failed: '+v4Check.stdout+v4Check.stderr);
+const v4Audit=spawnSync(process.execPath,['scripts/v4-independent-audit-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:4*1024*1024});
+if(v4Audit.error||v4Audit.status!==0)throw Error('Independent V4 audit failed: '+v4Audit.stdout+v4Audit.stderr);
+const v4IndependentAudit=JSON.parse(v4Audit.stdout);assert.equal(v4IndependentAudit.passed,true);
 const parser = (await import('./parser-test.mjs')).runParserTests();
 const oracle = (await import('./oracle.mjs')).runOracle();
 const cli = (await import('./cli-test.mjs')).runCliTests();
@@ -289,8 +299,11 @@ function independentNodeAudit(script,label){
 const sqlDiagnostic=independentNodeAudit('verification/v3/tools/dislock_sql_proof_audit.mjs','Independent fixed SQL diagnostic');
 const sqlPolicy=independentNodeAudit('verification/v3/tools/dislock_explicit_policy_audit.mjs','Independent explicit SQL policy');
 console.log(`Independent v3 reference ${v3Oracle.cases} traces; ${v3Acceptance.checks} SDK/CLI/evidence checks; journal ${journalReceipt.testsRun-journalReceipt.skipped.length} executed, ${journalReceipt.skipped.length} skipped.`);
-const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version, passed: true, checkedTargets: ['js', 'wasm-gc', 'wasm', 'native'], executedTargets: targets, coreTestsPerTarget: coreTestCount(), parserDifferentialInputs: parser.checked, oracleHistories: oracle.counts.exhaustive + oracle.counts.generated + oracle.counts.completion, verifiedCycleCertificates: oracle.counts.certificates, cliChecks: cli.checks, node: process.version, generatedAt: new Date().toISOString(), boundaries: ['Database observations do not certify every database execution', 'Public release and organizer states are recorded separately'] };
+const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version, passed: true, checkedTargets: ['js', 'wasm-gc', 'wasm', 'native'], executedTargets: targets, coreTestsPerTarget: coreTestCount(), parserDifferentialInputs: parser.checked, oracleHistories: oracle.counts.exhaustive + oracle.counts.generated + oracle.counts.completion, verifiedCycleCertificates: oracle.counts.certificates, cliChecks: cli.checks, node: process.version, generatedAt: new Date().toISOString(), boundaries: ['Database observations do not certify every database execution', 'Public package publication is verified separately'] };
 mkdirSync(resolve(root, 'verification'), { recursive: true });
+receipt.v4HostTests = JSON.parse(v4Check.stdout);
+receipt.v4IndependentAudit = v4IndependentAudit;
+receipt.public031CompatibilityTests = public031Compatibility;
 receipt.captureCliChecks = capture.checks;
 receipt.experimentalPresenceCliChecks = presence.checks;
 receipt.experimentalOrmSourceChecks = ormSource;

@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
+from evidence_json import load_receipt
 from pathlib import Path
 from package_archive import sha256, write_archive
 from publication_privacy import private_home_paths
@@ -35,7 +36,7 @@ current_source = subprocess.check_output([NODE, '--input-type=module', '-e',
 assert current_source == MANIFEST['sourceSha256'], 'MoonBit source changed after the verified build'
 for runtime, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'captureCoreSha256')):
     assert hashlib.sha256((ROOT / 'dist' / runtime).read_bytes()).hexdigest() == MANIFEST[field], 'Compiled runtime changed after build'
-for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'demo.mjs', 'postgres-demo.mjs'):
+for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'v4.mjs', 'demo.mjs', 'postgres-demo.mjs'):
     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
 
 
@@ -53,7 +54,7 @@ for helper in ('legacy-v027.mjs', 'legacy-v027-runtime.mjs', 'legacy-v027-worker
 subprocess.check_call([NODE, '--input-type=module', '-e',
     "import{verifyPublicV027Runtime as source}from'./cmd/legacy-v027-runtime.mjs';import{verifyPublicV027Runtime as installed}from'./dist/legacy-v027-runtime.mjs';const a=source(),b=installed();if(a.manifestSha256!==b.manifestSha256||a.workerSha256!==b.workerSha256)throw Error('Copied public27 runtime differs');"], cwd=ROOT)
 
-for helper in ('legacy-v028.mjs', 'legacy-v028-runtime.mjs', 'legacy-v028-worker.mjs', 'legacy-v028-policy.mjs', 'legacy-v028-dispatch.mjs','legacy-v030.mjs', 'legacy-v028-binding.mjs'):
+for helper in ('legacy-v028.mjs', 'legacy-v028-runtime.mjs', 'legacy-v028-worker.mjs', 'legacy-v028-policy.mjs', 'legacy-v028-dispatch.mjs','legacy-v030.mjs','legacy-v031.mjs','legacy-v031-binding.mjs', 'legacy-v028-binding.mjs'):
     assert (ROOT / 'cmd' / helper).read_bytes() == (ROOT / 'dist' / helper).read_bytes(), 'Fixed public28 helper changed after build: ' + helper
 subprocess.check_call([NODE, '--input-type=module', '-e',
     "import{verifyPublicV028Runtime as source}from'./cmd/legacy-v028-runtime.mjs';import{verifyPublicV028Runtime as installed}from'./dist/legacy-v028-runtime.mjs';const a=source(),b=installed();if(a.manifestSha256!==b.manifestSha256)throw Error('Copied public28 runtime differs');"], cwd=ROOT)
@@ -113,6 +114,7 @@ for kind in ("portable", "source"):
     consumer = destination / NAME
     assert not (consumer / ".local-toolchain.json").exists(), "Source must not depend on private toolchain config"
     if kind == "source":
+        run([sys.executable, "scripts/input_cache.py", "prepare", "--scope", "tests"], consumer, timeout=900)
         assert not (consumer / "dist").exists()
         run([NODE, "scripts/build.mjs"], consumer)
         checks.append("source rebuilt using external MoonBit installation, no local config")
@@ -124,6 +126,16 @@ for kind in ("portable", "source"):
         checks.append(f"source fresh JS core tests: {test_count} passed")
     assert run([NODE, "dist/moontxnwitness.mjs", "--version"], consumer).strip() == VERSION
     checks.append(kind + " version")
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 2):
+        public031 = json.loads(run([NODE, 'scripts/public031-compatibility-test.mjs',
+            '--runtime', str(consumer / 'dist'), '--producer-runtime', str(consumer / 'dist/legacy/v031'),
+            '--output-root', str(work / ('public031-' + kind))], consumer, timeout=300))
+        assert public031['passed'] and public031['publicVersion'] == '0.3.1' and public031['currentVersion'] == VERSION
+        assert public031['usesPublishedRuntimeOnly'] and not public031['historicalSourceSnapshotCreated']
+        checks.append(kind + ' public031 original SDK/capsules and corrupted runtime refusal')
+        typed_v4 = json.loads(run([NODE, 'scripts/v4-sdk-test.mjs'], consumer, timeout=180))
+        assert typed_v4['passed'] and typed_v4['failed'] == 0 and typed_v4['legacyWorkers'] == 0
+        checks.append(kind + ' v4 typed analysis, explicit reduction and independently budgeted replay')
     public024 = json.loads(run([NODE,'scripts/compat-v024-test.mjs',str(consumer/'dist'),str(consumer/'fixtures/compat-v024'),str(work/('public024-'+kind))],consumer))
     assert public024['passed'] and public024['currentRuntimeVersion'] == VERSION and public024['checks'] == 107
     checks.append(kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay')
@@ -436,7 +448,7 @@ for kind in ("portable", "source"):
             assert observed['sha256'] == sha256(package_only / path)
         checks.append(kind + ' standalone presence package import without optional driver or experiments')
         declaration = json.loads((consumer / ('verification/releases/' + VERSION + '/acceptance.json')).read_text(encoding='utf8'))
-        database = json.loads((consumer / ('verification/releases/' + VERSION) / declaration['databaseEvidence']).read_text(encoding='utf8'))
+        database = load_receipt(consumer / ('verification/releases/' + VERSION) / declaration['databaseEvidence'])
         presence_run = 'verification/' + database['receipts']['presence']['path']
         presence_receipt = json.loads((consumer / presence_run / 'presence-receipt.json').read_text(encoding='utf8'))
         ready = [row for row in presence_receipt['scenarios'] if row['expectedStatus'] == 'ready']

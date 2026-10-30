@@ -460,3 +460,6 @@ export function replayExecutionCapsuleV3(text) {
     traceSha256: expected.traceSha256, diagnosticSha256: expected.diagnosticSha256,
     diagnostic: recomputed, scope: executionScopeV3()};
 }
+
+export {analyzeV4, classifyV4, reduceV4, verifyV4, verifyClassificationV4, verifyReductionV4,
+  makeCapsuleV4, makeClassificationCapsuleV4, makeReductionCapsuleV4, replayCapsuleV4, V4_LIMITS} from './v4.mjs';

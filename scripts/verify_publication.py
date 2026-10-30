@@ -206,6 +206,30 @@ test "published incomplete capture refuses a history" {{
 }}
 '''
         expected_tests += 2
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 2):
+        test += f'''\n///|\ntest "published typed v4 analysis and independent verification" {{
+  let h = match @txn.parse_history_v4({history('write-skew')}) {{
+    Ok(h) => h
+    Err(message) => abort(message)
+  }}
+  let report = @txn.analyze_v4(h)
+  assert_true(report.outcome() == @txn.Violation)
+  assert_true(@txn.verify_v4(h, @txn.analysis_v4_json(report)))
+  assert_true(@txn.verify_classification_v4(h, @txn.classification_v4_json(@txn.classify_v4(h))))
+}}
+
+///|
+test "published typed v4 explicit model reduction" {{
+  let h = match @txn.parse_history_v4({history('noisy-write-skew')}) {{
+    Ok(h) => h
+    Err(message) => abort(message)
+  }}
+  let result = @txn.reduce_v4(h, preserve=@txn.Serializable)
+  assert_true(result.analysis().outcome() == @txn.Violation)
+  assert_true(@txn.verify_reduction_v4(h, @txn.reduction_v4_json(result), preserve=@txn.Serializable))
+}}
+'''
+        expected_tests += 2
     (consumer / 'consumer_wbtest.mbt').write_text(test, encoding='utf-8')
     run([MOON, 'add', MODULE + '@' + VERSION], consumer)
     assert not (consumer / 'moon.work').exists()

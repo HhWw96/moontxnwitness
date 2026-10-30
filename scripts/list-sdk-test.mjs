@@ -229,7 +229,7 @@ try {
   check('example-wrong-model-preserves-a-failure-receipt', () => {
     const isolated = resolve(output, 'wrong-model-example');
     mkdirSync(resolve(isolated, 'examples'), {recursive: true}); mkdirSync(resolve(isolated, 'dist'));
-    for (const name of ['sdk.mjs', 'core.mjs', 'capture-core.mjs', 'evidence.mjs']) {
+    for (const name of readdirSync(runtime).filter(name => name.endsWith('.mjs'))) {
       copyFileSync(resolve(runtime, name), resolve(isolated, 'dist', name));
     }
     copyFileSync(resolve(exampleRoot, 'examples/list-roundtrip.mjs'), resolve(isolated, 'examples/list-roundtrip.mjs'));

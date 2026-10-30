@@ -1,3 +1,5 @@
+import {copyPublic031} from './legacy-v031-runtime.mjs';
+import {prepareInputs} from './input-cache.mjs';
 import {copyPublic030} from './legacy-v030-runtime.mjs';
 import { mkdirSync, copyFileSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -13,6 +15,7 @@ import {copyFrozenLegacyV027} from './legacy-v027-runtime.mjs';
 import {copyFrozenLegacyV028} from './legacy-v028-runtime.mjs';
 import { resolveMoonRuntimeNotices } from './moon-runtime-notices.mjs';
 
+prepareInputs(root,'runtime');
 const runtimeNotices = resolveMoonRuntimeNotices({ root });
 const home = runtimeNotices.home;
 // Bind only this build process to the verified logical toolchain home.
@@ -22,7 +25,7 @@ const output = resolve(root, 'dist');
 mkdirSync(output, { recursive: true });
 copyFileSync(resolve(root, '_build/js/release/build/bridge/bridge.js'), resolve(output, 'core.mjs'));
 copyFileSync(resolve(root, '_build/js/release/build/capture_bridge/capture_bridge.js'), resolve(output, 'capture-core.mjs'));
-for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
+for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'v4.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
 copyFileSync(resolve(root,'cmd/legacy-v024.mjs'),resolve(output,'legacy-v024.mjs'));
 copyFrozenLegacyV024(root,output);
 for(const name of ['legacy-v025.mjs','legacy-v025-runtime.mjs','legacy-v025-worker.mjs','legacy-v025-binding.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
@@ -34,6 +37,7 @@ await copyFrozenLegacyV027(root,output);
 for(const name of ['legacy-v028.mjs','legacy-v028-runtime.mjs','legacy-v028-worker.mjs','legacy-v028-policy.mjs','legacy-v028-dispatch.mjs','legacy-v028-binding.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
 await copyFrozenLegacyV028(root,output);
 await copyPublic030(root,output);
+await copyPublic031(root,output);
 const core = await import(pathToFileURL(resolve(output, 'core.mjs')).href + `?build=${Date.now()}`);
 const packageVersion = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
 const sourceVersion = readFileSync(resolve(root, 'moon.mod'), 'utf8').match(/^version\s*=\s*"([^"]+)"/m)?.[1];

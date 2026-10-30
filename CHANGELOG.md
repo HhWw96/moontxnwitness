@@ -1,3 +1,11 @@
+# 0.3.2 — 2026-10-30
+
+- Add typed v4 register, append-list and relation analysis, explicit-model reduction and independent report verification, with SDK and CLI entry points.
+- Add bounded category checks for register/list histories; relation category classification remains explicitly unsupported in this version.
+- Separate semantic, algorithm and counter contracts from product metadata. Replay uses caller-authorized budgets and verifies observations, options and report bindings.
+- Replace checked-in historical runtimes and large frozen inputs with a checksum-pinned, bounded, concurrency-safe cache. Preserve complete original test inputs and public v0.3.1 replay.
+- Keep the direct MoonBit library usable without historical-input downloads; full source SDK builds restore pinned dependencies, while portable downloads include their runtime closure.
+
 # 0.3.1 — 2026-10-30
 
 - Require moonc ≥0.10.16 and pin current CI to 0.10.16+b1a0e846e.

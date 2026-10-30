@@ -1417,6 +1417,14 @@ fn relation_v3_analysis(text : String, o : String, v? : Json) -> Json raise {
         "invalid_capture",
       )
   }
+  relation_v3_analyze_parsed(parsed, options)
+}
+
+///|
+fn relation_v3_analyze_parsed(
+  parsed : RelationV3Parsed,
+  options : ListV3Options,
+) -> Json raise {
   let committed = parsed.programs.filter(program => program.status == Committed)
   let status = object_fields_unchecked_v3(parsed.normalized).at("status")
   if committed.length() > 6 || parsed.operations > 128 {

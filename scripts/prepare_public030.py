@@ -5,6 +5,15 @@ import hashlib,json,zipfile,sys
 
 root=Path(sys.argv[1]).resolve()
 cache=root/'artifacts/compat-v030';cache.mkdir(parents=True,exist_ok=True)
+ready=cache/'runtime/public-runtime-manifest.json'
+if ready.is_file() and hashlib.sha256(ready.read_bytes()).hexdigest()=='80c462863a0036a867b5a18b65bd496ea992f1111ec5eb2ca0a313f7b41ce73d':
+ manifest=json.loads(ready.read_bytes())
+ for name,entry in manifest['files'].items():
+  member=ready.parent/name
+  assert member.is_file() and not member.is_symlink() and member.stat().st_size==entry['bytes']
+  assert hashlib.sha256(member.read_bytes()).hexdigest()==entry['sha256']
+ print(json.dumps({'files':len(manifest['files']),'manifestSha256':hashlib.sha256(ready.read_bytes()).hexdigest(),'root':str(ready.parent)}))
+ raise SystemExit(0)
 archive=cache/'public-portable.zip'
 expected='c6a65dc689d98576a4711e1d22414d7534b1f2d68d9e08147d539adb5326f0ee'
 url='https://github.com/HhWw96/moontxnwitness/releases/download/v0.3.0/MoonTxnWitness-v0.3.0-portable.zip'

@@ -6,6 +6,7 @@ import subprocess
 import sys
 import time
 import zipfile
+from evidence_json import load_receipt
 from pathlib import Path
 from package_archive import sha256
 from publication_ci import ci_details_ready
@@ -230,6 +231,18 @@ def validate_scoped_acceptance(acceptance, manifest):
             assert kind + ' genuine public028 three-context 156 original cases and 24 CLI replays' in package['checks']
             assert kind + ' native HTTP same623 real observations, deadlock diagnosis and exact offline replay' in package['checks']
 
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 2):
+        assert summary['v4IndependentAudit']['passed'] and summary['v4IndependentAudit']['checks'] >= 9
+        v4 = summary['v4HostTests']
+        assert v4['passed'] and v4['checks'] >= 73 and v4['legacyWorkers'] == 0
+        original31 = summary['publicV031CompatibilityTests']
+        assert original31['passed'] and original31['publicVersion'] == '0.3.1'
+        assert original31['currentVersion'] == VERSION and original31['publishedMemberCount'] == 580
+        assert original31['usesPublishedRuntimeOnly'] and not original31['historicalSourceSnapshotCreated']
+        for kind in ('source', 'portable'):
+            assert kind + ' public031 original SDK/capsules and corrupted runtime refusal' in package['checks']
+            assert kind + ' v4 typed analysis, explicit reduction and independently budgeted replay' in package['checks']
+
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names
     for item in package['archives']:
@@ -239,7 +252,7 @@ def validate_scoped_acceptance(acceptance, manifest):
             assert len(packed.infolist()) == item['files']
     expected_sums = ''.join(item['sha256'] + '  ' + item['file'] + '\n' for item in package['archives'])
     assert (ROOT / ('artifacts/MoonTxnWitness-v' + VERSION + '-SHA256SUMS.txt')).read_text(encoding='utf8') == expected_sums, 'Public digest manifest differs from tested archives'
-    actual = json.loads((ROOT / 'verification/releases' / VERSION / acceptance['databaseEvidence']).read_text(encoding='utf8'))
+    actual = load_receipt(ROOT / 'verification/releases' / VERSION / acceptance['databaseEvidence'])
     assert actual['passed'] is True and actual['actualDatabaseExecution'] is True
     assert actual['buildManifestBefore'] == manifest and actual['buildManifestAfter'] == manifest
     assert actual['exitCode'] == 0
@@ -502,6 +515,17 @@ def publish():
             'See the [HTTP case and new-run instructions](https://github.com/' + MODULE + '/blob/' + tag + '/docs/mlflow-http-case.md) and '
             '[support matrix](https://github.com/' + MODULE + '/blob/' + tag + '/docs/stable-scope.md). '
             'Install with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for Node.js.\n', encoding='utf8')
+
+    if VERSION == '0.3.2':
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- Add typed v4 register, append-list and relation analysis, explicit-model reduction and independent verification, with JavaScript SDK and CLI entry points.\n'
+            '- Keep raw observations, effects, inference, judgment and execution budgets separate. Replay uses caller-authorized options and fixed semantic contracts.\n'
+            '- Move historical runtimes and large frozen inputs out of the active source tree. Restore the original bytes through a bounded checksum-pinned cache; the portable ZIP retains the full offline compatibility closure.\n'
+            '- Preserve public v0.3.1 SDK and capsule replay with the exact original runtime and unchanged original expectations.\n\n'
+            'See the [v4 API](https://github.com/' + MODULE + '/blob/' + tag + '/docs/v4-api.md) and '
+            '[input-cache instructions](https://github.com/' + MODULE + '/blob/' + tag + '/docs/input-cache.md). '
+            'Register/list category checks are available; relation category classification remains unsupported in this version.\n\n'
+            'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or download the portable ZIP (Node.js >=20).\n', encoding='utf8')
 
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
     if performance_path.exists() and not scoped:

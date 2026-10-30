@@ -1,3 +1,4 @@
+import {frozenInputs} from './input-cache.mjs';
 import {createHash} from 'node:crypto';
 import {readdirSync,readFileSync,existsSync} from 'node:fs';
 import {resolve} from 'node:path';
@@ -5,7 +6,8 @@ import {resolve} from 'node:path';
 // Bind the executed sources and shipped runtime, not just the MoonBit module.
 // Documentation edits do not require rerunning code; executable edits do.
 export function verificationFingerprint(root,{includeDist=true}={}) {
-  const names=['moon.mod','package.json'];
+  const pinned=frozenInputs(root);
+  const names=['moon.mod','package.json','scripts/frozen-inputs-v031.json.gz',...Object.keys(pinned).filter(n=>!n.startsWith('artifacts/'))];
   function visit(folder,bindAll=false) {
     for(const entry of readdirSync(resolve(root,folder),{withFileTypes:true})) {
       if(entry.name==='__pycache__')continue;
@@ -38,6 +40,8 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   names.push('examples/model-profile-roundtrip.mjs');
   names.push('examples/classification-roundtrip.mjs');
   names.push('examples/classification-models-roundtrip.mjs');
-  return Object.fromEntries(names.sort().map(name=>[name,
+  const result=Object.fromEntries([...new Set(names)].sort().map(name=>[name,
     createHash('sha256').update(readFileSync(resolve(root,name))).digest('hex')]));
+  for(const[name,record]of Object.entries(pinned))if(!name.startsWith('artifacts/')&&result[name]!==record.sha256)throw Error('Frozen input differs from pinned bytes: '+name);
+  return result;
 }

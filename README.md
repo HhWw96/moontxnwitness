@@ -12,6 +12,12 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
+## v0.3.2
+
+新增[三模型结构化 v4 接口](docs/v4-api.md)：MoonBit 的 `HistoryV4`、`analyze_v4`、`classify_v4`、`reduce_v4`、`verify_v4`，以及对应 SDK 和命令行入口。缩减显式指定保留的模型反证，验证使用调用者自己的预算；旧入口保持。
+
+源码包移出历史运行时和大语料，通过[按摘要校验的输入缓存](docs/input-cache.md)恢复。直接运行 MoonBit 核心无需下载这些材料；完整 SDK 构建与测试首次需要联网，之后可离线复用缓存。旧公开 v0.3.1 证据使用原运行时回放。
+
 ## v0.3.1
 
 需要 MoonBit moonc ≥0.10.16。当前构建与 CI 固定使用 0.10.16+b1a0e846e。JSON 转换已迁移至新标准库接口，并在构建前检查编译器版本。
@@ -91,7 +97,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.3.1
+moon add HhWw96/moontxnwitness@0.3.2
 ```
 
 ```javascript
