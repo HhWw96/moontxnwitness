@@ -426,5 +426,83 @@ class ThinCachedDistributionTests(unittest.TestCase):
             inventory.assert_complete(selected)
 
 
+
+class IgnoredCurrentCiReceiptTests(unittest.TestCase):
+    def setUp(self):
+        parent = ROOT / 'artifacts/distribution-tests'
+        parent.mkdir(parents=True, exist_ok=True)
+        self.root = Path(tempfile.mkdtemp(prefix='ignored-receipts-', dir=parent)).resolve()
+        (self.root / '.gitignore').write_text('verification/\nartifacts/\ndist/\n', encoding='utf8')
+        (self.root / 'package.json').write_text('{"version":"0.3.2"}', encoding='utf8')
+        subprocess.check_call(['git','init','--quiet',str(self.root)])
+        subprocess.check_call(['git','-C',str(self.root),'add','.'])
+        subprocess.check_call(['git','-C',str(self.root),'-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','-q','-m','receipt fixture'])
+        (self.root / 'verification').mkdir()
+
+    def write(self, name, value):
+        (self.root / 'verification' / name).write_text(json.dumps(value), encoding='utf8')
+
+    def staged(self):
+        with patch.dict(os.environ, {'GITHUB_ACTIONS':'true'}), contextlib.redirect_stdout(io.StringIO()):
+            ci.stage(self.root)
+        index = json.loads((self.root / 'artifacts/ci-evidence/current-run-index.json').read_text())
+        return {row['file']:row for row in index['files']}
+
+    def test_ignored_current_summary_and_package_are_digest_bound(self):
+        import hashlib
+        for name in ('summary.json','package.json'):
+            self.write(name, {'version':'0.3.2','passed':True,'checks':17})
+        self.write('private.json', {'private':'not-public'})
+        selected = self.staged()
+        for name in ('summary.json','package.json'):
+            path = 'verification/' + name
+            self.assertIn(path, selected)
+            self.assertEqual(selected[path]['sha256'], hashlib.sha256((self.root/path).read_bytes()).hexdigest())
+        self.assertNotIn('verification/private.json', selected)
+
+    def test_older_or_invalid_ignored_receipts_are_not_promoted(self):
+        self.write('summary.json', {'version':'0.3.1','passed':True})
+        (self.root/'verification/package.json').write_text('{broken', encoding='utf8')
+        selected = self.staged()
+        self.assertNotIn('verification/summary.json', selected)
+        self.assertNotIn('verification/package.json', selected)
+
+    def test_current_failed_receipt_is_retained_without_claiming_success(self):
+        self.write('summary.json', {'version':'0.3.2','passed':False})
+        self.assertIn('verification/summary.json', self.staged())
+        copied = json.loads((self.root/'artifacts/ci-evidence/verification/summary.json').read_text())
+        self.assertIs(copied['passed'], False)
+
+class CompatibilityReleaseReceiptTests(unittest.TestCase):
+    def fixture(self):
+        return {'public031CompatibilityTests': {
+            'passed': True, 'publicVersion': '0.3.1', 'currentVersion': '0.3.2',
+            'publishedMemberCount': 580, 'usesPublishedRuntimeOnly': True,
+            'historicalSourceSnapshotCreated': False}}
+
+    def test_actual_integration_field_is_consumed(self):
+        from release import validate_public031_compatibility_receipt
+        value = self.fixture()
+        self.assertIs(validate_public031_compatibility_receipt(value, '0.3.2'), value['public031CompatibilityTests'])
+
+    def test_invented_alias_does_not_replace_the_actual_receipt(self):
+        from release import validate_public031_compatibility_receipt
+        value = self.fixture()
+        value['publicV031CompatibilityTests'] = value.pop('public031CompatibilityTests')
+        with self.assertRaises(KeyError):
+            validate_public031_compatibility_receipt(value, '0.3.2')
+
+    def test_failed_stale_or_nonpublic_receipts_are_rejected(self):
+        from release import validate_public031_compatibility_receipt
+        for key, value in [('passed', False), ('passed', 1), ('currentVersion', '0.3.1'),
+                           ('publicVersion', '0.3.0'), ('publishedMemberCount', 579),
+                           ('usesPublishedRuntimeOnly', False), ('historicalSourceSnapshotCreated', True)]:
+            with self.subTest(field=key, value=value):
+                receipt = self.fixture()
+                receipt['public031CompatibilityTests'][key] = value
+                with self.assertRaises(AssertionError):
+                    validate_public031_compatibility_receipt(receipt, '0.3.2')
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

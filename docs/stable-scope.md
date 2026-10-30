@@ -1,5 +1,19 @@
 # v0.3.0 支持矩阵补充
 
+## v0.3.2 结构化基础库
+
+`HistoryV4` 保留已核验的结构化快照，提供分析、类别检查、显式目标缩减和验证。MoonBit、JavaScript SDK 与 CLI 使用同一核心。
+
+| 数据模型 | v4 分析、验证与显式模型缩减 | v4 类别检查 |
+| --- | --- | --- |
+| 唯一版本点寄存器 | 支持；声明历史可选择 Serializable／StrictSerializable，采集历史使用 Serializable | G0、G1c、G2-item |
+| 追加列表 | 支持既有唯一身份与来源规则下的 Serializable 分析 | 既有受支持图范围内的 G0、G1c、G2-item |
+| 关系集合 | 支持既有关系精确解释器及来源闭合缩减 | 本版返回 unsupported |
+
+验证与胶囊重放由调用者提供独立预算，不接受报告自行授予更高预算。缩减候选来源闭合但分析未判定时，不声明事务单最小。原 v1/v2/v3 接口与已公开的重放规则继续保留。
+
+接口、模型限额和命令见 [v4 API](v4-api.md)；完整测试的冻结输入和旧运行时见 [输入缓存](input-cache.md)。直接 MoonBit 示例见 `examples/core-v4/`。
+
 v0.3.0 汇总下列已有稳定入口，保持原分析上限、版本顺序要求、预算和覆盖缺口。新增加原生 MLflow HTTP 执行故障的完整实验链路、623 键实际缩减与同一请求修复回归，及其[离线证据示例](../examples/mlflow-http-roundtrip.mjs)。该示例重放既有真实采集，不新执行数据库；死锁属于执行故障，不能替代 G2 或隔离级别反证。
 
 `install_user_profile()` 和 `install_model_profile()` 新增可选 `source_write_buffer_bytes`，默认 0 保留旧同步路径，显式非零采用有界文件缓冲并在封存前等待 flush/fsync/索引。实际数据库验证分别保留受支持路径和无法判定路径；通用 `instrument_engine()` 不会因此获得完整来源。见[配置与性能](performance-v0.3.0-capture.md)。

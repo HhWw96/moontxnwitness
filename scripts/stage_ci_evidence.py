@@ -33,6 +33,18 @@ def stage(root=ROOT):
     # Small current summary receipts may be byte-identical to the committed copy.
     selected.update(p.relative_to(root).as_posix() for p in (root / 'verification').glob('*')
                     if p.is_file() and p.relative_to(root).as_posix() in public)
+    # These two generated receipts are intentionally ignored by Git in thin
+    # checkouts. Retain only matching current-version records, not arbitrary
+    # ignored files or a receipt left by another release.
+    for name in ('verification/summary.json', 'verification/package.json'):
+        path = root / name
+        if name not in public and path.is_file() and not path.is_symlink():
+            try:
+                receipt = json.loads(path.read_text(encoding='utf8'))
+            except (ValueError, UnicodeError):
+                continue
+            if isinstance(receipt, dict) and receipt.get('version') == version and isinstance(receipt.get('passed'), bool):
+                selected.add(name)
     for folder in ('dist', 'cmd', 'integrations/python/moontxnwitness_capture'):
         for p in (root / folder).rglob('*'):
             name = p.relative_to(root).as_posix()

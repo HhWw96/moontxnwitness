@@ -1,0 +1,131 @@
+{
+  "schema": 1,
+  "status": "ready",
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "history": {
+    "schemaVersion": 1,
+    "model": "serializable",
+    "initial": {
+      "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"a\"]": "4891cf49-6230-4f6d-9ae7-1c1309d1fb05",
+      "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"b\"]": "dcc7b5f1-083d-4fd6-9a96-1dbaf6df53fe",
+      "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"never\"]": "a0fc9d62-3ef5-42bc-a755-2880519dd809"
+    },
+    "versionOrders": {
+      "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"a\"]": [
+        "4891cf49-6230-4f6d-9ae7-1c1309d1fb05",
+        "b0f72609-4551-4b42-93ac-dbb2f0b03fc1"
+      ],
+      "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"b\"]": [
+        "dcc7b5f1-083d-4fd6-9a96-1dbaf6df53fe",
+        "67352d78-947b-4437-a00b-ac7aa914c9be"
+      ],
+      "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"never\"]": [
+        "a0fc9d62-3ef5-42bc-a755-2880519dd809"
+      ]
+    },
+    "transactions": [
+      {
+        "id": "tx-1",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "read",
+            "key": "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"b\"]",
+            "version": "dcc7b5f1-083d-4fd6-9a96-1dbaf6df53fe"
+          },
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"a\"]",
+            "version": "b0f72609-4551-4b42-93ac-dbb2f0b03fc1"
+          }
+        ],
+        "start": 156000,
+        "end": 187000
+      },
+      {
+        "id": "tx-2",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "read",
+            "key": "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"a\"]",
+            "version": "4891cf49-6230-4f6d-9ae7-1c1309d1fb05"
+          },
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"b\"]",
+            "version": "67352d78-947b-4437-a00b-ac7aa914c9be"
+          }
+        ],
+        "start": 171000,
+        "end": 187000
+      }
+    ]
+  },
+  "projection": {
+    "version": "column-presence-register-v0.1.2-experimental",
+    "scope": "unique-version point-register projection"
+  },
+  "sourceFacts": {
+    "schema": 1,
+    "projection": "column-presence-register-v0.1.2-experimental",
+    "initial": [
+      {
+        "key": "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"a\"]",
+        "version": "4891cf49-6230-4f6d-9ae7-1c1309d1fb05",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"b\"]",
+        "version": "dcc7b5f1-083d-4fd6-9a96-1dbaf6df53fe",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"never\"]",
+        "version": "a0fc9d62-3ef5-42bc-a755-2880519dd809",
+        "present": false
+      }
+    ],
+    "reads": [
+      {
+        "seq": 6,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"b\"]",
+        "version": "dcc7b5f1-083d-4fd6-9a96-1dbaf6df53fe",
+        "present": false
+      },
+      {
+        "seq": 11,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"a\"]",
+        "version": "4891cf49-6230-4f6d-9ae7-1c1309d1fb05",
+        "present": false
+      }
+    ],
+    "writes": [
+      {
+        "seq": 15,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"a\"]",
+        "version": "b0f72609-4551-4b42-93ac-dbb2f0b03fc1",
+        "predecessor": "4891cf49-6230-4f6d-9ae7-1c1309d1fb05",
+        "oldPresent": false,
+        "newPresent": true,
+        "action": "insert"
+      },
+      {
+        "seq": 19,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_v032_6b6ad2f8.presence_skew\",\"text\",\"b\"]",
+        "version": "67352d78-947b-4437-a00b-ac7aa914c9be",
+        "predecessor": "dcc7b5f1-083d-4fd6-9a96-1dbaf6df53fe",
+        "oldPresent": false,
+        "newPresent": true,
+        "action": "insert"
+      }
+    ]
+  }
+}
