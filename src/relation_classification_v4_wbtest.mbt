@@ -79,15 +79,15 @@ test "relation classification 01 defaults cover six distinct categories with new
   )
   assert_eq(
     capture_field(report, "algorithm"),
-    Json("v4-relation-point-category-4"),
+    Json("v4-relation-point-category-5"),
   )
   assert_eq(
     capture_field(report, "semanticContract"),
-    Json("moontxnwitness-relation-point-category-classification-v4-4"),
+    Json("moontxnwitness-relation-point-category-classification-v4-5"),
   )
   assert_eq(
     v4_test_at(report, ["execution", "counterContract"]),
-    Json("v4-relation-point-category-counters-4"),
+    Json("v4-relation-point-category-counters-5"),
   )
   assert_eq(
     v4_test_at(report, ["execution", "categories"]),

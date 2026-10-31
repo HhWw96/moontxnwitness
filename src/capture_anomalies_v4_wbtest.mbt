@@ -367,11 +367,11 @@ test "capture034 42 zero exact and exhausted work budgets" {
   let zero = cap034_report(source, max_checks=0)
   assert_eq(v4_test_at(zero, ["execution", "checks"]), Json(0))
   assert_eq(v4_test_at(zero, ["execution", "limited"]), Json(true))
-  let exact = cap034_report(source, max_checks=3)
+  let exact = cap034_report(source, max_checks=4)
   assert_eq(v4_test_at(exact, ["status"]), Json("checked"))
   assert_eq(v4_test_at(exact, ["execution", "limited"]), Json(false))
   assert_eq(
-    v4_test_at(cap034_report(source, max_checks=2), ["status"]),
+    v4_test_at(cap034_report(source, max_checks=3), ["status"]),
     Json("unknown"),
   )
 }

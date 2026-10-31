@@ -23,6 +23,7 @@ priv struct CaptureSourceAnomalyWorkV4 {
   positions : Map[String, Map[String, Int32]]
   append_counts : Map[String, Map[String, Int32]]
   initial : Map[String, Array[String]]
+  mut window : CaptureWindowV5?
 }
 
 ///|
@@ -113,6 +114,26 @@ fn capture_source_effect_ref_v4(
   work : CaptureSourceAnomalyWorkV4,
   effect : CaptureSourceAnomalyEffectV4,
 ) -> Json {
+  let complete = match work.window {
+    Some(w) => w.closed.get_or_default(effect.tx, false)
+    _ => false
+  }
+  let aborted = work.outcomes.get(effect.tx) == Some("aborted")
+  let prefix = effect.revoked is Some(at) &&
+    capture_prefix_known_v5(work.window, effect.tx, at)
+  let known = complete || aborted || prefix
+  let trusted = if aborted && !prefix {
+    object_fields_unchecked_v3(
+      work.transactions.get_or_default(effect.tx, Json::null()),
+    ).get_or_default("endSeq", Json::null())
+  } else if known {
+    match effect.revoked {
+      Some(seq) => Json(seq.to_double())
+      None => Json::null()
+    }
+  } else {
+    Json::null()
+  }
   {
     "eventSeq": Json(effect.seq.to_double()),
     "transaction": if effect.tx == "" {
@@ -127,7 +148,10 @@ fn capture_source_effect_ref_v4(
     } else {
       Json(work.outcomes.get_or_default(effect.tx, "unknown"))
     },
-    "revertedBy": match effect.revoked {
+    "writeJournalComplete": Json(complete),
+    "revocationKnown": Json(known),
+    "revertedBy": trusted,
+    "observedLedgerRevertedBy": match effect.revoked {
       Some(seq) => Json(seq.to_double())
       None => Json::null()
     },
@@ -151,7 +175,7 @@ fn capture_source_proof_v4(
     "basis": Json(basis),
     "observation": capture_source_event_ref_v4(event),
     "sourceEffect": capture_source_effect_ref_v4(work, source),
-    "originalObservationPointer": "observations.document.events[eventSeq-1]",
+    "originalObservationPointer": "observations.document.events where seq equals observation.eventSeq",
     "sourceIdentityComparedBy": "key-and-unique-version-or-item-identity",
     "clientSequenceIsCommitOrder": false,
   }
@@ -235,7 +259,11 @@ fn capture_source_classify_ref_v4(
   }
   let outcome = work.outcomes.get_or_default(source.tx, "unknown")
   // Confirmed revocation is useful even when the enclosing outcome is unknown.
-  if outcome == "aborted" || source.revoked is Some(_) {
+  let known_revocation = match source.revoked {
+    Some(at) => capture_prefix_known_v5(work.window, source.tx, at)
+    None => false
+  }
+  if outcome == "aborted" || known_revocation {
     capture_source_proof_v4(
       work,
       if writing {
@@ -252,12 +280,28 @@ fn capture_source_classify_ref_v4(
       source,
       None,
     )
+  } else if source.revoked is Some(_) {
+    capture_source_gap_v4(work, "revocation-window-unproven", {
+      "observation": capture_source_event_ref_v4(event),
+      "sourceEffect": capture_source_effect_ref_v4(work, source),
+    })
   } else if outcome != "committed" {
     capture_source_gap_v4(work, "unknown-source-outcome", {
       "observation": capture_source_event_ref_v4(event),
       "sourceEffect": capture_source_effect_ref_v4(work, source),
     })
   } else if intermediate && !writing {
+    let source_closed = match work.window {
+      Some(w) => w.closed.get_or_default(source.tx, false)
+      _ => false
+    }
+    if !source_closed {
+      capture_source_gap_v4(work, "final-effect-window-unproven", {
+        "observation": capture_source_event_ref_v4(event),
+        "sourceEffect": capture_source_effect_ref_v4(work, source),
+      })
+      return
+    }
     match work.finals.get_or_default(source.tx, Map([])).get(source.key) {
       Some(final_effect) if final_effect.seq != source.seq =>
         capture_source_proof_v4(
@@ -371,7 +415,11 @@ fn capture_source_index_v4(
     let sources = work.sources.get_or_default(key, Map([]))
     sources[effect.identity] = effect
     work.sources[key] = sources
-    if effect.revoked is None {
+    if effect.revoked is None &&
+      (match work.window {
+        Some(w) => w.closed.get_or_default(tx, false)
+        _ => false
+      }) {
       let finals = work.finals.get_or_default(tx, Map([]))
       finals[key] = effect
       work.finals[tx] = finals
@@ -398,6 +446,18 @@ fn capture_source_register_v4(
   let writing = e.at("kind") == Json("write")
   let key = capture_source_string_v4(e.at("key"))
   if writing {
+    let observer = capture_source_string_v4(e.at("tx"))
+    if !(match work.window {
+        Some(w) => w.closed.get_or_default(observer, false)
+        _ => false
+      }) {
+      capture_source_gap_v4(
+        work,
+        "write-effect-survival-window-unproven",
+        capture_source_event_ref_v4(event),
+      )
+      return
+    }
     let id = capture_source_string_v4(e.at("version"))
     let effect = work.sources.get_or_default(key, Map([])).at(id)
     if effect.revoked is Some(_) {
@@ -509,6 +569,7 @@ pub fn inspect_capture_anomalies_v4(
     positions: Map([]),
     append_counts: Map([]),
     initial: Map([]),
+    window: None,
   }
   let normalized = match history.payload {
     RegisterSnapshot(_, Some(n)) => Some(n)
@@ -529,6 +590,11 @@ pub fn inspect_capture_anomalies_v4(
         break
       }
       capture_source_gap_v4(work, "normalization-coverage-gap", gap)
+    }
+    if !work.limited {
+      work.window = Some(
+        capture_window_v5(history, n, fn() { capture_source_charge_v4(work) }),
+      )
     }
     if !work.limited {
       capture_source_index_v4(work, n, history.data_model)
@@ -602,9 +668,9 @@ pub fn inspect_capture_anomalies_v4(
     record: {
       "format": "moontxnwitness-captured-source-anomalies/v4",
       "schemaVersion": 4,
-      "semanticContract": "moontxnwitness-captured-source-anomalies-v4-1",
-      "algorithm": "v4-capture-effective-source-anomalies-1",
-      "profile": "raw-capture-source-anomalies/v1",
+      "semanticContract": "moontxnwitness-captured-source-anomalies-v4-2",
+      "algorithm": "v4-capture-effective-source-anomalies-2",
+      "profile": "raw-capture-source-anomalies/v2",
       "dataModel": Json(v4_model_name(history.data_model)),
       "status": Json(
         if !valid_budget {
@@ -639,7 +705,7 @@ pub fn inspect_capture_anomalies_v4(
       },
       "checks": Json(rules),
       "execution": {
-        "counterContract": "v4-capture-source-reference-checks-1",
+        "counterContract": "v4-capture-source-reference-checks-2",
         "checks": Json(work.checks),
         "limited": Json(work.limited),
         "limits": { "maxChecks": Json(max_checks), "findingsAndGaps": 256 },

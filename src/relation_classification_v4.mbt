@@ -168,8 +168,8 @@ fn relation_classification_cycle_witness_v4(
 fn relation_classification_inferences_v4(graph : RelationPointGraphV4) -> Json {
   let index = graph.index
   {
-    "graphAlgorithm": "relation-point-row-graph-4",
-    "indexAlgorithm": "relation-point-local-effect-journal-3",
+    "graphAlgorithm": "relation-point-row-graph-5",
+    "indexAlgorithm": "relation-point-local-effect-journal-4",
     "internalConsistencyRule": "delivered-point-read-versus-known-nearest-read-or-own-write; write-source-mismatch-is-not-a-read/v1",
     "itemAntiDependencyRule": "external-read-to-next-installed-row-version; never skip own successor/v1",
     "versionOrderCompletion": false,
@@ -244,8 +244,8 @@ fn relation_classification_record_v4(
   let record : Json = {
     "format": "moontxnwitness-relation-classification/v4",
     "schemaVersion": 4,
-    "semanticContract": "moontxnwitness-relation-point-category-classification-v4-4",
-    "algorithm": "v4-relation-point-category-4",
+    "semanticContract": "moontxnwitness-relation-point-category-classification-v4-5",
+    "algorithm": "v4-relation-point-category-5",
     "dataModel": Json(v4_model_name(history.data_model)),
     "observations": {
       "sourceFormat": Json(history.source_format),
@@ -298,9 +298,9 @@ fn relation_classification_record_v4(
       "impliedAnomalies": Json(implied),
     },
     "execution": {
-      "counterContract": "v4-relation-point-category-counters-4",
+      "counterContract": "v4-relation-point-category-counters-5",
       "categories": Json(categories.copy()),
-      "graphCounterContract": "relation-point-construction-checks-4",
+      "graphCounterContract": "relation-point-construction-checks-5",
       "graphChecks": Json(
         match graph {
           Some(g) => g.checks

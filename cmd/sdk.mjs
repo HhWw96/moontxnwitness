@@ -468,3 +468,5 @@ export {analyzeV4, classifyV4, reduceV4, verifyV4, verifyClassificationV4, verif
 export {classifyRelationV4,verifyRelationClassificationV4,inspectCaptureAnomaliesV4,verifyCaptureAnomaliesV4,
   inspectInternalConsistencyV4,verifyInternalConsistencyV4,makeRelationClassificationCapsuleV4,makeCaptureAnomaliesCapsuleV4,
   makeInternalConsistencyCapsuleV4,replayRelationCapsuleV4,SOURCE_RULES_V4_LIMITS} from './relation-v4.mjs';
+
+export {reduceRelationCategoryV4,verifyRelationCategoryReductionV4,makeRelationCategoryReductionCapsuleV4,replayRelationCategoryReductionCapsuleV4,parseRelationReductionOptionsV4} from "./relation-reduction-v4.mjs";

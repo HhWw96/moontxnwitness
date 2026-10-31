@@ -1,0 +1,211 @@
+{
+  "traceSchema": 3,
+  "dataModel": "relation-set-v1",
+  "relationSchema": {
+    "items": {
+      "primaryKey": "id",
+      "columns": {
+        "id": "int64",
+        "value": "text"
+      }
+    }
+  },
+  "clockDomain": "relation-reduction-example",
+  "scope": {
+    "exclusiveWriters": true,
+    "completeSnapshotTables": [
+      "items"
+    ]
+  },
+  "events": [
+    {
+      "seq": 1,
+      "time": 0,
+      "kind": "snapshot",
+      "initial": {
+        "items": [
+          {
+            "key": "1",
+            "version": "v0",
+            "values": {
+              "value": "same"
+            }
+          },
+          {
+            "key": "2",
+            "version": "u0",
+            "values": {
+              "value": "same"
+            }
+          },
+          {
+            "key": "3",
+            "version": "z0",
+            "values": {
+              "value": "same"
+            }
+          }
+        ]
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "time": 1,
+      "kind": "begin",
+      "tx": "noise",
+      "connection": "noise"
+    },
+    {
+      "seq": 3,
+      "time": 2,
+      "kind": "row_read",
+      "tx": "noise",
+      "relation": "items",
+      "predicate": [
+        {
+          "column": "id",
+          "op": "eq",
+          "value": "3"
+        }
+      ],
+      "rows": [
+        {
+          "key": "3",
+          "version": "z0",
+          "values": {
+            "value": "same"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 4,
+      "time": 3,
+      "kind": "commit_request",
+      "tx": "noise"
+    },
+    {
+      "seq": 5,
+      "time": 4,
+      "kind": "commit_ok",
+      "tx": "noise"
+    },
+    {
+      "seq": 6,
+      "time": 5,
+      "kind": "begin",
+      "tx": "A",
+      "connection": "A"
+    },
+    {
+      "seq": 7,
+      "time": 6,
+      "kind": "begin",
+      "tx": "B",
+      "connection": "B"
+    },
+    {
+      "seq": 8,
+      "time": 7,
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "items",
+      "predicate": [
+        {
+          "column": "id",
+          "op": "eq",
+          "value": "1"
+        }
+      ],
+      "rows": [
+        {
+          "key": "1",
+          "version": "v0",
+          "values": {
+            "value": "same"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 9,
+      "time": 8,
+      "kind": "row_read",
+      "tx": "B",
+      "relation": "items",
+      "predicate": [
+        {
+          "column": "id",
+          "op": "eq",
+          "value": "2"
+        }
+      ],
+      "rows": [
+        {
+          "key": "2",
+          "version": "u0",
+          "values": {
+            "value": "same"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "seq": 10,
+      "time": 9,
+      "kind": "row_write",
+      "tx": "A",
+      "relation": "items",
+      "key": "2",
+      "action": "update",
+      "version": "u1",
+      "predecessor": "u0",
+      "values": {
+        "value": "same"
+      }
+    },
+    {
+      "seq": 11,
+      "time": 10,
+      "kind": "row_write",
+      "tx": "B",
+      "relation": "items",
+      "key": "1",
+      "action": "update",
+      "version": "v1",
+      "predecessor": "v0",
+      "values": {
+        "value": "same"
+      }
+    },
+    {
+      "seq": 12,
+      "time": 11,
+      "kind": "commit_request",
+      "tx": "A"
+    },
+    {
+      "seq": 13,
+      "time": 12,
+      "kind": "commit_ok",
+      "tx": "A"
+    },
+    {
+      "seq": 14,
+      "time": 13,
+      "kind": "commit_request",
+      "tx": "B"
+    },
+    {
+      "seq": 15,
+      "time": 14,
+      "kind": "commit_ok",
+      "tx": "B"
+    }
+  ],
+  "gaps": []
+}

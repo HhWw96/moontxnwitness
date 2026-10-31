@@ -126,6 +126,10 @@ pub fn reduce_classification_v3_json(String, String) -> String
 
 pub fn reduce_history(History, max_checks? : Int32) -> Reduction
 
+pub fn reduce_relation_category_v4(HistoryV4, category~ : String, max_checks? : Int32, max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> RelationCategoryReductionV4
+
+pub fn reduce_relation_category_v4_json(String, String) -> String
+
 pub fn reduce_v3_json(String, String) -> String
 
 pub fn reduce_v4(HistoryV4, preserve~ : Model, max_checks? : Int32, options? : AnalysisOptionsV4) -> ReductionV4
@@ -144,9 +148,15 @@ pub fn reduction_v4_json(ReductionV4) -> Json
 
 pub fn register_history_v4(History) -> Result[HistoryV4, String]
 
+pub fn relation_category_reduction_v4_json(RelationCategoryReductionV4) -> Json
+
 pub fn relation_classification_v4_json(RelationClassificationV4) -> Json
 
 pub fn relation_point_graph_v4_json(RelationPointGraphV4) -> Json
+
+pub fn relation_reduction_capsule_v4_content_json(String) -> String
+
+pub fn relation_reduction_report_v4_content_json(String) -> String
 
 pub fn render_analysis_v4(AnalysisV4) -> String
 
@@ -201,6 +211,10 @@ pub fn verify_lost_updates_v4_json(String, String, String) -> String
 pub fn verify_reduction_v4(HistoryV4, Json, preserve~ : Model, max_checks? : Int32, options? : AnalysisOptionsV4) -> Bool
 
 pub fn verify_reduction_v4_json(String, String, String) -> String
+
+pub fn verify_relation_category_reduction_v4(HistoryV4, Json, category~ : String, max_checks? : Int32, max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> Bool
+
+pub fn verify_relation_category_reduction_v4_json(String, String, String) -> String
 
 pub fn verify_relation_classification_v4(HistoryV4, Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> Bool
 
@@ -414,6 +428,11 @@ pub fn ReductionV4::checks(Self) -> Int32
 pub fn ReductionV4::history(Self) -> HistoryV4
 pub fn ReductionV4::one_minimal(Self) -> Bool
 pub fn ReductionV4::status(Self) -> String
+
+pub struct RelationCategoryReductionV4 {
+  // private fields
+}
+pub fn RelationCategoryReductionV4::history(Self) -> HistoryV4
 
 pub struct RelationClassificationV4 {
   // private fields

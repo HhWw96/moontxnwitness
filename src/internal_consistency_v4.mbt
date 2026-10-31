@@ -175,7 +175,7 @@ fn internal_proof_v4(
     "evidence": {
       "expected": expected,
       "actualObservation": internal_ref_v4(actual),
-      "observationPointer": "observations.document.events[eventSeq-1]",
+      "observationPointer": "observations.document.events where seq equals actualObservation.eventSeq",
       "rule": "nearest-delivered-read-or-current-effective-own-write; rollback-revokes-writes-only",
       "databaseProductIsolationLevelAsserted": false,
     },
@@ -190,6 +190,15 @@ fn internal_index_v4(
 ) -> Unit {
   let n = object_fields_unchecked_v3(normalized)
   let original = object_fields_unchecked_v3(history.source_document)
+  let window = capture_window_v5(history, normalized, fn() {
+    internal_charge_v4(work)
+  })
+  if work.limited {
+    return
+  }
+  for id, at in window.uncertain_after {
+    work.uncertain_after[id] = at
+  }
   let window_missing = !internal_array_v4(
     original.get_or_default("gaps", Json(([] : Array[Json]))),
   ).is_empty()
@@ -737,9 +746,9 @@ pub fn inspect_internal_consistency_v4(
     record: {
       "format": "moontxnwitness-internal-consistency/v4",
       "schemaVersion": 4,
-      "semanticContract": "moontxnwitness-internal-consistency-v4-1",
-      "algorithm": "v4-effective-overlay-internal-consistency-1",
-      "profile": "captured-formal-int/v1",
+      "semanticContract": "moontxnwitness-internal-consistency-v4-2",
+      "algorithm": "v4-effective-overlay-internal-consistency-2",
+      "profile": "captured-formal-int/v2",
       "definition": {
         "id": "elle-int-effective-overlay-v1",
         "referenceCommit": "4e359e597c52938b0afebb8bc42273914d68a424",
@@ -779,7 +788,7 @@ pub fn inspect_internal_consistency_v4(
         "findingsTruncated": Json(work.truncated),
       },
       "execution": {
-        "counterContract": "v4-internal-overlay-reference-checks-1",
+        "counterContract": "v4-internal-overlay-reference-checks-2",
         "checks": Json(work.checks),
         "limited": Json(work.limited),
         "limits": { "maxChecks": Json(max_checks), "findingsAndGaps": 256 },

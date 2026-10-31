@@ -332,3 +332,34 @@ pub fn source_rules_report_v4_content_json(text : String) -> String {
 pub fn source_rules_capsule_v4_content_json(text : String) -> String {
   @txn.source_rules_capsule_v4_content_json(text)
 }
+
+///|
+#export_name("reduce_relation_category_v4_json")
+pub fn reduce_relation_category_v4_json(
+  text : String,
+  options : String,
+) -> String {
+  @txn.reduce_relation_category_v4_json(text, options)
+}
+
+///|
+#export_name("verify_relation_category_reduction_v4_json")
+pub fn verify_relation_category_reduction_v4_json(
+  text : String,
+  report : String,
+  options : String,
+) -> String {
+  @txn.verify_relation_category_reduction_v4_json(text, report, options)
+}
+
+///|
+#export_name("relation_reduction_report_v4_content_json")
+pub fn relation_reduction_report_v4_content_json(text : String) -> String {
+  @txn.relation_reduction_report_v4_content_json(text)
+}
+
+///|
+#export_name("relation_reduction_capsule_v4_content_json")
+pub fn relation_reduction_capsule_v4_content_json(text : String) -> String {
+  @txn.relation_reduction_capsule_v4_content_json(text)
+}

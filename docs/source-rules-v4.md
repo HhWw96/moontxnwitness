@@ -60,9 +60,9 @@ Pinned report identities:
 
 | Operation | Semantic contract | Algorithm | Counter contract |
 |---|---|---|---|
-| Relation point categories | `moontxnwitness-relation-point-category-classification-v4-4` | `v4-relation-point-category-4` | `v4-relation-point-category-counters-4` |
-| Raw captured source anomalies | `moontxnwitness-captured-source-anomalies-v4-1` | `v4-capture-effective-source-anomalies-1` | `v4-capture-source-reference-checks-1` |
-| Internal consistency | `moontxnwitness-internal-consistency-v4-1` | `v4-effective-overlay-internal-consistency-1` | `v4-internal-overlay-reference-checks-1` |
+| Relation point categories | `moontxnwitness-relation-point-category-classification-v4-5` | `v4-relation-point-category-5` | `v4-relation-point-category-counters-5` |
+| Raw captured source anomalies | `moontxnwitness-captured-source-anomalies-v4-2` | `v4-capture-effective-source-anomalies-2` | `v4-capture-source-reference-checks-2` |
+| Internal consistency | `moontxnwitness-internal-consistency-v4-2` | `v4-effective-overlay-internal-consistency-2` | `v4-internal-overlay-reference-checks-2` |
 
 ## Command line
 
@@ -79,3 +79,12 @@ node dist/moontxnwitness.mjs replay-relation-v4 CAPSULE.json --options EXPECTED.
 `--options` is optional. Inspection and classification may write a capsule with `--capsule`; existing files and input paths are never overwritten. Verification/replay exit 0 only when valid, and 2 otherwise. Classification/inspection use 1 for refuted, 0 for checked within their stated rule scope, 2 for invalid input, and 3 for unknown or unsupported.
 
 Category-preserving relation reduction is not part of these entries.
+
+
+## Capture window and proof boundaries
+
+Raw source-anomaly and formal-INT profiles use counter/semantic revision 2. The normalized observation sequence is checked without renumbering. A sequence hole, an unlocated input gap, or an unprojected SQL/condition operation prevents later final-effect and own-state claims for the affected transaction window. A complete local prefix can still retain an already established INT proof or a confirmed savepoint revocation. A later unknown operation cannot erase that earlier evidence.
+
+A confirmed whole-transaction abort is separate from a revocation inferred from the effective-write journal. A uniquely identified delivered read of a confirmed aborted producer can prove G1a even when other producer events are missing; this does not establish a final committed effect. An actual write using that source also needs its own surviving write-effect window to prove dirty-update. G1b requires a complete producer window, because a missing rollback could change which write is final. Evidence exposes `writeJournalComplete`, `revocationKnown`, trusted `revertedBy` and the separate untrusted `observedLedgerRevertedBy` reference.
+
+The standalone formal-INT entry applies the same unknown-program boundary to register and list overlays. Missing rollback observations are not replaced with invented rollback facts. Source and relation-category reductions keep the original capture sequence-window requirement, so candidate renumbering cannot repair an already incomplete input.

@@ -399,11 +399,10 @@ fn relation_point_journal_v4(
                   match index.versions.get(version) {
                     Some(prior) if index.parsed.sources[prior].writer ==
                       Some(program.id) &&
-                      index.parsed.sources[prior].seq < source.seq => {
+                      index.parsed.sources[prior].seq < source.seq =>
                       relation_point_unproven_write_v4(
                         index, source_index, "own-predecessor-not-active",
                       )
-                    }
                     _ => ()
                   }
                 _ => ()
@@ -751,11 +750,7 @@ fn relation_point_external_read_rule_v4(
       if index.outcomes.get(writer) == Some(Aborted) ||
         !index.surviving[source_index] {
         relation_point_direct_v4(
-          index,
-          "G1a",
-          "read-from-aborted-or-revoked-row-effect",
-          read,
-          source_index,
+          index, "G1a", "read-from-aborted-or-revoked-row-effect", read, source_index,
         )
         return "aborted-or-revoked-row-read-source"
       }
@@ -764,11 +759,7 @@ fn relation_point_external_read_rule_v4(
       }
       if !index.final_set[source_index] {
         relation_point_direct_v4(
-          index,
-          "G1b",
-          "read-from-intermediate-row-effect",
-          read,
-          source_index,
+          index, "G1b", "read-from-intermediate-row-effect", read, source_index,
         )
         return "intermediate-row-read-source"
       }
@@ -880,11 +871,7 @@ fn relation_point_reads_v4(
       match source.writer {
         Some(writer) if writer == read.tx => {
           relation_point_direct_v4(
-            index,
-            "INT",
-            "own-row-source-not-active-at-read",
-            read,
-            source_index,
+            index, "INT", "own-row-source-not-active-at-read", read, source_index,
           )
           relation_point_reject_read_v4(
             index, read, "own-row-source-not-active-at-read",
@@ -1326,12 +1313,20 @@ fn relation_graph_point_v4(
     reason: "complete",
   }
   let index = relation_point_empty_index_v4(parsed)
-  index.window_unproven = window_unproven
+  let sequence_loss = relation_point_sequence_loss_v5(parsed)
+  index.window_unproven = window_unproven || sequence_loss
   let capacity = parsed.programs.length() <= 128 && parsed.operations <= 4096
   let valid = max_checks >= 0 && max_checks <= 1000000
   let edges : Array[Edge] = []
   let sources : Map[Edge, Array[Json]] = Map([])
-  if valid && capacity {
+  if valid && capacity && index.window_unproven {
+    // Incomplete windows cannot establish absence of rollback or final effects.
+    // Build only independent must-direct proofs; no completed journal/graph.
+    relation_point_window_direct_v5(index, budget, !window_unproven)
+    relation_point_gap_v4(
+      index, "relation-original-event-window-incomplete", -1, 0L,
+    )
+  } else if valid && capacity {
     relation_point_journal_v4(index, budget)
     if index.journal_complete && !budget.limited {
       relation_point_orders_v4(index, budget)
@@ -1429,12 +1424,12 @@ pub fn relation_point_graph_v4_json(result : RelationPointGraphV4) -> Json {
   let record : Json = {
     "format": "moontxnwitness-relation-point-graph/v4",
     "schemaVersion": 4,
-    "semanticContract": "moontxnwitness-relation-point-source-graph-v4-4",
+    "semanticContract": "moontxnwitness-relation-point-source-graph-v4-5",
     "dataModel": "relation-set-v1",
     "acceptsIsolationModels": false,
     "scope": "single-primary-key equality row effects and item dependencies only; no predicate classification or database authentication",
-    "algorithm": "relation-point-row-graph-4",
-    "indexAlgorithm": "relation-point-local-effect-journal-3",
+    "algorithm": "relation-point-row-graph-5",
+    "indexAlgorithm": "relation-point-local-effect-journal-4",
     "internalConsistencyRule": "delivered-point-read-versus-known-nearest-read-or-own-write; write-source-mismatch-is-not-a-read/v1",
     "itemAntiDependencyRule": "external-read-to-next-installed-row-version; never skip own successor/v1",
     "complete": Json(result.base.complete),
@@ -1520,7 +1515,7 @@ pub fn relation_point_graph_v4_json(result : RelationPointGraphV4) -> Json {
     "execution": {
       "constructionChecks": Json(result.checks),
       "limited": Json(result.limited),
-      "counterContract": "relation-point-construction-checks-4",
+      "counterContract": "relation-point-construction-checks-5",
       "limits": {
         "transactions": 128,
         "operations": 4096,
