@@ -39,6 +39,8 @@ jobs:
         run: python -B -m unittest discover -s scripts -p test_evidence_json.py -v
       - name: Test frozen input cache faults
         run: python -B -m unittest discover -s scripts -p test_input_cache.py -v
+      - name: Check package and publication contracts before compilation
+        run: python -B scripts/preflight_release.py
       - name: Install official MoonBit (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
