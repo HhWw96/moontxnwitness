@@ -12,7 +12,7 @@ from evidence_json import load_receipt
 from pathlib import Path
 from package_archive import sha256, write_archive
 from publication_privacy import private_home_paths
-from distribution_manifest import select_distribution_files, assert_complete, relation034_available, predicate035_available, models036_available
+from distribution_manifest import select_distribution_files, assert_complete, relation034_available, predicate035_available, models036_available, configured037_available
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -21,6 +21,7 @@ assert re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", VERSION), "Release version must b
 RELATION034 = relation034_available(ROOT, VERSION)
 PREDICATE035 = predicate035_available(ROOT, VERSION)
 MODELS036 = models036_available(ROOT, VERSION)
+CONFIGURED037 = configured037_available(ROOT, VERSION)
 NAME = "MoonTxnWitness-v" + VERSION
 ARTIFACTS = ROOT / "artifacts"
 NODE = os.environ.get("MTW_NODE", "node")
@@ -41,6 +42,13 @@ for runtime, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'capture
     assert hashlib.sha256((ROOT / 'dist' / runtime).read_bytes()).hexdigest() == MANIFEST[field], 'Compiled runtime changed after build'
 for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'v4.mjs', 'demo.mjs', 'postgres-demo.mjs'):
     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
+
+if CONFIGURED037:
+    assert set(MANIFEST['configuredCoreSha256']) == {'configured-session-core.mjs','source-components-core.mjs','sql-projection-core.mjs','sql-fetch-core.mjs'}, 'Configured runtime inventory differs'
+    for runtime, digest in MANIFEST['configuredCoreSha256'].items():
+        assert hashlib.sha256((ROOT/'dist'/runtime).read_bytes()).hexdigest() == digest, 'Configured runtime changed after build'
+    for runtime in ('configured-v4.mjs','configured-session-v4.mjs','source-components-v4.mjs','sql-candidate-v1.mjs','sql-fetch-v1.mjs'):
+        assert (ROOT/'cmd'/runtime).read_bytes() == (ROOT/'dist'/runtime).read_bytes(), 'Configured wrapper differs: '+runtime
 
 if RELATION034:
     for runtime in ('relation-v4.mjs', 'relation-reduction-v4.mjs'):
@@ -119,6 +127,7 @@ checks = []
 relation034_consumers = {}
 predicate035_consumers = {}
 models036_consumers = {}
+configured037_consumers = {}
 
 
 def run(args, cwd, expected=0, timeout=180):
@@ -288,6 +297,15 @@ for kind in ("portable", "source"):
         capability['results']['rowModelsExample'] = example
         checks.append(kind + ' runnable atomic row fourteen-model example and original-program evidence replay')
         models036_consumers[kind] = capability
+    if CONFIGURED037:
+        result = json.loads(run([NODE,'scripts/configured-session-runtime-test.mjs'],consumer))
+        assert result['passed'] is True and result['checks'] == 14 and result['failed'] == 0
+        assert result['requiresSourceTree'] is False and result['sourceAuditPerformed'] is False
+        assert result['actualDatabaseExecution'] is False
+        assert result['sourceFactsProduced'] is False and result['writerWindowVerified'] is False and result['isolationAnalysisReady'] is False
+        assert result['runtimeSha256'] == MANIFEST['configuredCoreSha256']['configured-session-core.mjs']
+        configured037_consumers[kind] = result
+        checks.append(kind+' configured session runtime-only 14 diagnostics CLI and independent-caller capsule checks')
     public024 = json.loads(run([NODE,'scripts/compat-v024-test.mjs',str(consumer/'dist'),str(consumer/'fixtures/compat-v024'),str(work/('public024-'+kind))],consumer))
     assert public024['passed'] and public024['currentRuntimeVersion'] == VERSION and public024['checks'] == 107
     checks.append(kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay')
@@ -808,6 +826,8 @@ if PREDICATE035:
     receipt['predicate035Consumers'] = predicate035_consumers
 if MODELS036:
     receipt['models036Consumers'] = models036_consumers
+if CONFIGURED037:
+    receipt['configured037Consumers'] = configured037_consumers
 (ROOT / "verification/package.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / "release-index.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / (NAME + "-release.json")).write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

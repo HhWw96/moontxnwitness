@@ -1,0 +1,23 @@
+// Build only the independent SQL candidate bridge; no historical inputs are restored.
+import assert from 'node:assert/strict';
+import {mkdirSync,copyFileSync,readFileSync,writeFileSync} from 'node:fs';
+import {resolve,delimiter} from 'node:path';
+import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {sourceFingerprint} from './build-fingerprint.mjs';
+const root=resolve(import.meta.dirname,'..'),home=process.env.MOON_HOME;
+assert(home,'Set MOON_HOME to the compatible MoonBit toolchain explicitly');
+const temp=resolve(root,'artifacts/sql-compiler-temp');mkdirSync(temp,{recursive:true});
+const env={...process.env,TEMP:temp,TMP:temp},inherited=Object.entries(env).find(([name])=>name.toLowerCase()==='path')?.[1]||'';
+for(const key of Object.keys(env))if(key.toLowerCase()==='path')delete env[key];
+env.PATH=[resolve(home,'bin'),resolve(process.execPath,'..'),inherited].join(delimiter);
+const moon=resolve(home,'bin',process.platform==='win32'?'moon.exe':'moon');
+const result=spawnSync(moon,['build','src/sql_projection_bridge','--target','js','--release','--deny-warn','--jobs','1'],{cwd:root,env,encoding:'utf8',windowsHide:true,maxBuffer:6*1024*1024});
+writeFileSync(resolve(temp,'build.txt'),(result.stdout||'')+(result.stderr||''));
+assert.equal(result.status,0,result.stderr);
+const dist=resolve(root,'dist');mkdirSync(dist,{recursive:true});
+copyFileSync(resolve(root,'_build/js/release/build/sql_projection_bridge/sql_projection_bridge.js'),resolve(dist,'sql-projection-core.mjs'));
+copyFileSync(resolve(root,'cmd/sql-candidate-v1.mjs'),resolve(dist,'sql-candidate-v1.mjs'));
+const hash=path=>createHash('sha256').update(readFileSync(path)).digest('hex');
+const receipt={format:'independent-sql-bridge-build/v1',sourceFingerprint:sourceFingerprint(root),coreSha256:hash(resolve(dist,'sql-projection-core.mjs')),sdkSha256:hash(resolve(dist,'sql-candidate-v1.mjs')),actualDatabaseExecution:false,historicalInputsRestored:false,publicReleasePerformed:false};
+writeFileSync(resolve(root,'artifacts/sql-projection-build.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));

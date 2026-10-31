@@ -63,6 +63,13 @@ jobs:
           JS
       - name: Install frozen optional database driver
         run: python -m pip install --require-hashes -r examples/postgres-requirements.txt
+      - name: Install checksum-pinned configured SQL adapter
+        run: python -m pip install --require-hashes -r integrations/python/requirements-configured-sql.txt
+      - name: Verify configured same-connection initial diagnostics on three tables
+        env:
+          MTW_CONFIGURED_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: |
+          python -B scripts/configured-session-ci-postgres.py --execute --owned-database --dsn-env MTW_CONFIGURED_PG_DSN --output verification/configured-session-v4/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Capture all ten configured model scenarios and verify the current build
         shell: bash
         env:

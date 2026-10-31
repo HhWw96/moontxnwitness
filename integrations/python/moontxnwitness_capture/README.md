@@ -252,3 +252,8 @@ and [v3 journal](../../../docs/capture-journal-v3.md) for their current scopes.
 - [psycopg cursor API](https://www.psycopg.org/psycopg3/docs/api/cursors.html)
 - [psycopg async usage](https://www.psycopg.org/psycopg3/docs/advanced/async.html)
 - [PostgreSQL explicit table locks](https://www.postgresql.org/docs/18/explicit-locking.html)
+
+
+## Optional configured SQL recognition
+
+The independent `configured_sql` module recognizes configured PostgreSQL single-table SQL into immutable candidate descriptions. It preserves the original SQL, never executes or rewrites it, and produces no transaction facts. The optional parser is hash-pinned SQLGlot 30.26.0 (MIT); existing fixed source profiles retain their original contracts. See [configuration, supported structures and required source verification](../../../docs/configured-sql-candidate.md).

@@ -1,0 +1,14 @@
+import { readFile } from 'node:fs/promises';
+import { resolve, dirname } from 'node:path';
+import { pathToFileURL, fileURLToPath } from 'node:url';
+import { createSourceComponentsV4 } from '../cmd/source-components-v4.mjs';
+const root = resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const args = process.argv.slice(2);
+if (args.length !== 2 || args[0] !== '--runtime') throw new Error('Usage: node scripts/replay-source-components-v4.mjs --runtime <compiled-source-components-bridge.mjs>');
+const core = await import(pathToFileURL(resolve(args[1])).href);
+const sdk = createSourceComponentsV4(core);
+const fixture = resolve(root,'fixtures/source-components-v4');
+const input = Object.fromEntries(await Promise.all([['config','config.json'],['policy','policy.json'],['log','control.jsonl'],['receipt','receipt.json']].map(async ([key,name]) => [key,await readFile(resolve(fixture,name),'utf8')])));
+const report = sdk.verifySourceInstallationV4(input);
+if (report.status !== 'matched-components' || report.initialRows !== 260 || report.sourceFactsProduced !== false || !sdk.verifySourceInstallationReportV4(input,report)) throw new Error('Actual installation replay failed');
+process.stdout.write(`${JSON.stringify(report,null,2)}\n`);

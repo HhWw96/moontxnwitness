@@ -72,9 +72,25 @@ pub fn classify_v4(HistoryV4, categories? : Array[String], max_states? : Int32, 
 
 pub fn classify_v4_json(String, String) -> String
 
+pub fn compare_configured_c_text_v1(String, String) -> Int32
+
 pub fn compare_models(History) -> Json
 
 pub fn compare_models_json(String) -> String
+
+pub fn configured_fetch_check_v1_json(ConfiguredFetchCheckV1) -> Json
+
+pub fn configured_session_bundle_v4_json(String) -> String
+
+pub fn configured_session_diagnostic_v4_json(ConfiguredSessionDiagnosticV4) -> Json
+
+pub fn configured_session_options_v4(max_journal_checks? : Int32, max_results? : Int32, max_installation_checks? : Int32, max_fetch_checks? : Int32, max_result_checks? : Int32, max_source_checks? : Int32) -> Result[ConfiguredSessionOptionsV4, String]
+
+pub fn configured_session_options_v4_json(String) -> String
+
+pub fn diagnose_configured_session_v4(SQLConfigV1, String, String, Json, options? : ConfiguredSessionOptionsV4) -> ConfiguredSessionDiagnosticV4
+
+pub fn diagnose_configured_session_v4_json(String, String, String, String, String) -> String
 
 pub fn dislock_sql_v3_proof_json(String) -> String
 
@@ -128,11 +144,17 @@ pub fn normalize_capture_v3_json(String) -> String
 
 pub fn normalize_capture_v3_options_json(String, String) -> String
 
+pub fn normalize_configured_sql_v1_json(String, String, String, String) -> String
+
 pub fn normalize_list_capture_v3_json(String) -> String
 
 pub fn normalize_presence_capture_json(String) -> String
 
 pub fn normalize_relation_capture_v3_json(String) -> String
+
+pub fn normalize_sql_candidate_v1(SQLConfigV1, String, Json, options? : SQLVerificationOptionsV1) -> SQLCandidateCheckV1
+
+pub fn normalize_sql_config_v1_json(String) -> String
 
 pub fn options_v4_content_json(String) -> String
 
@@ -147,6 +169,8 @@ pub fn parse_history(String) -> Result[History, String]
 pub fn parse_history_optimized(String) -> Result[History, String]
 
 pub fn parse_history_v4(String) -> Result[HistoryV4, String]
+
+pub fn parse_sql_config_v1(String) -> Result[SQLConfigV1, String]
 
 pub fn project_list_prefix_v4(HistoryV4, max_checks? : Int32) -> Result[ListPrefixProjectionV4, String]
 
@@ -230,9 +254,19 @@ pub fn shrink_json(String) -> String
 
 pub fn shrink_options_json(String, String) -> String
 
+pub fn source_fetch_mapping_v4_json(SourceFetchMappingV4) -> Json
+
+pub fn source_installation_check_v4_json(SourceInstallationCheckV4) -> Json
+
 pub fn source_rules_capsule_v4_content_json(String) -> String
 
 pub fn source_rules_report_v4_content_json(String) -> String
+
+pub fn sql_candidate_check_v1_json(SQLCandidateCheckV1) -> Json
+
+pub fn sql_config_v1_json(SQLConfigV1) -> Json
+
+pub fn sql_verification_options_v1(max_checks? : Int32, max_tokens? : Int32, max_sql_bytes? : Int32) -> SQLVerificationOptionsV1
 
 pub fn verify_anomalies_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
 
@@ -247,6 +281,16 @@ pub fn verify_classification_v3_json(String, String) -> String
 pub fn verify_classification_v4(HistoryV4, Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, list_graph? : String, max_list_graph_checks? : Int32) -> Bool
 
 pub fn verify_classification_v4_json(String, String, String) -> String
+
+pub fn verify_configured_fetch_v1(SQLConfigV1, Json, Json, Json, max_checks? : Int32, grammar_options? : SQLVerificationOptionsV1) -> ConfiguredFetchCheckV1
+
+pub fn verify_configured_fetch_v1_json(String, String, String, String, String) -> String
+
+pub fn verify_configured_session_diagnostic_v4(SQLConfigV1, String, String, Json, Json, expected_options? : ConfiguredSessionOptionsV4) -> Bool
+
+pub fn verify_configured_session_diagnostic_v4_json(String, String, String, String, String, String) -> Bool
+
+pub fn verify_configured_sql_v1_json(String, String, String, String, String) -> String
 
 pub fn verify_cycle(History, Array[Edge]) -> Bool
 
@@ -289,6 +333,20 @@ pub fn verify_relation_row_projection_v4(HistoryV4, Json, max_checks? : Int32) -
 pub fn verify_scoped_category_v4(ScopedDependencyGraphV4, Json, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> Bool
 
 pub fn verify_si_extension_v4(ScopedDependencyGraphV4, Json, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> Bool
+
+pub fn verify_source_fetch_mapping_report_v4_json(String, String, String, String, String, String, String, String, String, String) -> Bool
+
+pub fn verify_source_fetch_mapping_v4(SourceInstallationCheckV4, Json, Json, Json, Json, max_checks? : Int32, max_fetch_checks? : Int32, grammar_options? : SQLVerificationOptionsV1) -> SourceFetchMappingV4
+
+pub fn verify_source_fetch_mapping_v4_json(String, String, String, String, String, String, String, String, String) -> String
+
+pub fn verify_source_installation_report_v4_json(String, String, String, String, String, String) -> Bool
+
+pub fn verify_source_installation_v4(SQLConfigV1, Json, String, Json, max_checks? : Int32) -> SourceInstallationCheckV4
+
+pub fn verify_source_installation_v4_json(String, String, String, String, String) -> String
+
+pub fn verify_sql_candidate_v1(SQLConfigV1, String, Json, Json, options? : SQLVerificationOptionsV1) -> SQLCandidateCheckV1
 
 pub fn verify_v3_json(String, String) -> String
 
@@ -341,6 +399,18 @@ pub struct ClassificationV4 {
   // private fields
 }
 pub fn ClassificationV4::status(Self) -> String
+
+pub struct ConfiguredFetchCheckV1 {
+  // private fields
+}
+
+pub struct ConfiguredSessionDiagnosticV4 {
+  // private fields
+}
+
+pub struct ConfiguredSessionOptionsV4 {
+  // private fields
+}
 
 pub(all) enum DataModelV4 {
   RegisterV4
@@ -634,6 +704,18 @@ pub(all) struct Report {
 pub fn Report::equal(Self, Self) -> Bool
 pub fn Report::not_equal(Self, Self) -> Bool
 
+pub struct SQLCandidateCheckV1 {
+  // private fields
+}
+
+pub struct SQLConfigV1 {
+  // private fields
+}
+
+pub struct SQLVerificationOptionsV1 {
+  // private fields
+}
+
 pub(all) enum ScopedCategoryV4 {
   ScopedG0
   ScopedG1c
@@ -721,6 +803,14 @@ pub(all) struct SearchInfo {
 } derive(Eq)
 pub fn SearchInfo::equal(Self, Self) -> Bool
 pub fn SearchInfo::not_equal(Self, Self) -> Bool
+
+pub struct SourceFetchMappingV4 {
+  // private fields
+}
+
+pub struct SourceInstallationCheckV4 {
+  // private fields
+}
 
 pub(all) struct Transaction {
   id : String

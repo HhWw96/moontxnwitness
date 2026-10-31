@@ -473,3 +473,9 @@ export {classifyRelationPredicateV4,verifyRelationPredicateClassificationV4,make
 export {reduceRelationCategoryV4,verifyRelationCategoryReductionV4,makeRelationCategoryReductionCapsuleV4,replayRelationCategoryReductionCapsuleV4,parseRelationReductionOptionsV4} from "./relation-reduction-v4.mjs";
 
 export {classifyModelsV4,verifyModelsV4,makeModelsCapsuleV4,replayModelsCapsuleV4,parseModelOptionsV4,ELLE_CORE_MODELS_V4,MODEL_V4_LIMITS} from "./models-v4.mjs";
+
+export {diagnoseConfiguredSessionTextV4,diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,
+ normalizeConfiguredSessionOptionsV4,makeConfiguredSessionCapsuleV4,replayConfiguredSessionCapsuleV4,
+ verifySourceInstallationV4,verifySourceInstallationReportV4,mapInitialSourceFetchV4,
+ verifyInitialSourceFetchReportV4,normalizeSQLConfigV1,normalizeSQLCandidateV1,verifySQLCandidateV1,
+ compareConfiguredCTextV1,verifyConfiguredFetchV1,CONFIGURED_SESSION_LIMITS} from './configured-v4.mjs';

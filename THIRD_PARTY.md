@@ -92,3 +92,10 @@ The unmodified Elle `txn.clj`, `project.clj` and `LICENSE` in `fixtures/register
 ## Recorded execution diagnostic fixtures
 
 The two capture/receipt pairs in `fixtures/execution-v3/mlflow/` are unmodified recorded component-fixture observations from the existing MLflow rehearsal. `source-origin.json` binds their original paths and exact bytes, the fixed upstream commits and the historical unbound capture.py dependency. The original MLflow Apache-2.0 LICENSE.txt is retained for each fixed revision; no upstream application code is copied into these fixture files. Offline diagnostic replay does not execute MLflow or authenticate the original database.
+
+
+## SQLGlot 30.26.0 (optional Python adapter)
+
+SQLGlot is an optional dependency for structural PostgreSQL SQL recognition. Its implementation is installed separately and is not copied into the source tree or required by the MoonBit core. The exact pure wheel is pinned by SHA-256 in `integrations/python/requirements-configured-sql.txt`.
+
+The actual wheel METADATA declares `License-Expression: MIT`; its LICENSE is Copyright (c) 2026 Toby Mao. The complete original license is retained at [SQLGlot MIT license](integrations/python/licenses/SQLGlot-30.26.0-MIT.txt). Upstream: https://github.com/tobymao/sqlglot ; release: https://pypi.org/project/sqlglot/30.26.0/ .

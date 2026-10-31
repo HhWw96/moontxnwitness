@@ -27,8 +27,14 @@ import { analyzeModelProfileV3, verifyModelProfileV3, makeModelProfileCapsuleV3,
 
 import {classifyModelsV4,verifyModelsV4,makeModelsCapsuleV4,replayModelsCapsuleV4,parseModelOptionsV4} from "./models-v4.mjs";
 
+import {diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,normalizeConfiguredSessionOptionsV4,
+ makeConfiguredSessionCapsuleV4,replayConfiguredSessionCapsuleV4} from './configured-v4.mjs';
+
 const help = `MoonTxnWitness v${version()}
 用法：
+  node dist/moontxnwitness.mjs diagnose-configured-session-v4 SESSION.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs verify-configured-session-v4 SESSION.json REPORT.json [--options EXPECTED.json] [--output VERIFIED.json]
+  node dist/moontxnwitness.mjs replay-configured-session-v4 CAPSULE.json [--options EXPECTED.json] [--output REPLAY.json]
   node dist/moontxnwitness.mjs classify-models-v4 SOURCE.json [--options OPTIONS.json] [--models elle-core|NAME,...] [--list-profile native|captured-list-prefix-state/v2|captured-list-original-serial/v1] [--output REPORT.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs verify-models-v4 SOURCE.json REPORT.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs replay-models-v4 CAPSULE.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
@@ -186,6 +192,19 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (['diagnose-configured-session-v4','verify-configured-session-v4','replay-configured-session-v4'].includes(args[0])) {
+    const command=args[0],verify=command==='verify-configured-session-v4',replay=command==='replay-configured-session-v4';
+    const {paths,options}=localArgs(args.slice(1),['--options','--output',...(!verify&&!replay?['--capsule']:[])],verify?2:1);
+    const inputs=[...paths,...(options['--options']?[options['--options']]:[])];
+    if(inputs.filter(p=>p==='-').length>1)throw Error('Only one configured diagnostic input may use standard input');
+    const expected=normalizeConfiguredSessionOptionsV4(options['--options']?readBounded(options['--options'],8192):{});
+    const source=readBounded(paths[0],replay?134217728:33554432);
+    const result=replay?replayConfiguredSessionCapsuleV4(source,expected):
+      verify?{valid:verifyConfiguredSessionV4(source,readBounded(paths[1],67108864),expected)}:
+      diagnoseConfiguredSessionV4(source,expected);
+    const companions=options['--capsule']?[[options['--capsule'],makeConfiguredSessionCapsuleV4(source,expected)]]:[];
+    emitJSON(result,options['--output'],inputs,companions);
+    process.exitCode=verify||replay?(result.valid?0:2):result.status==='input-unverified'?3:result.resultConsistency==='mismatch'?1:0;
   } else if (['classify-models-v4','verify-models-v4','replay-models-v4'].includes(args[0])) {
     const command=args[0],isVerify=command==='verify-models-v4',isReplay=command==='replay-models-v4';
     const {paths,options}=localArgs(args.slice(1),['--options','--models','--list-profile','--output',...(!isVerify&&!isReplay?['--capsule']:[])],isVerify?2:1);

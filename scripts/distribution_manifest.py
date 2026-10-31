@@ -148,6 +148,31 @@ def models036_available(root, version):
     return sdk.is_file() and 'classifyModelsV4' in sdk.read_text(encoding='utf8')
 
 
+CONFIGURED037_SOURCE_INPUTS = (
+ 'cmd/configured-v4.mjs','cmd/configured-session-v4.mjs','cmd/source-components-v4.mjs',
+ 'scripts/configured-session-integration-test.mjs','scripts/configured-session-v4-test.mjs',
+ 'scripts/configured-session-host-test.mjs',
+ 'scripts/source-components-v4-test.mjs','scripts/source-select-session-integration-test.mjs',
+ 'scripts/configured-session-unit-test.py','scripts/configured-session-postgres.py',
+ 'scripts/configured-session-pure-test.py','scripts/configured-session-ci-postgres.py',
+)
+CONFIGURED037_PORTABLE_INPUTS = (
+ 'scripts/configured-session-runtime-test.mjs',
+ 'scripts/diagnose-configured-session-v4.mjs',
+ 'docs/configured-session-v4.md','docs/source-select-revision2.md',
+)
+CONFIGURED037_RUNTIME_INPUTS = (
+ 'dist/configured-session-core.mjs','dist/source-components-core.mjs',
+ 'dist/sql-projection-core.mjs','dist/sql-fetch-core.mjs',
+ 'dist/configured-v4.mjs','dist/configured-session-v4.mjs','dist/source-components-v4.mjs',
+ 'dist/sql-candidate-v1.mjs','dist/sql-fetch-v1.mjs',
+)
+
+
+def configured037_available(root,version):
+    return tuple(map(int,version.split('.'))) >= (0,3,7)
+
+
 def safe_name(name: str) -> str:
     path = PurePosixPath(name)
     if (not name or '\\' in name or path.is_absolute() or ':' in name or
@@ -411,6 +436,15 @@ def select_distribution_files(root, public_names, tested_files, version):
         for name in MODELS036_MOONBIT_EXAMPLES:
             require(name, 'direct MoonBit model examples and module-version dependency closure')
 
+    configured037 = configured037_available(root, version)
+    if configured037:
+        for name in CONFIGURED037_SOURCE_INPUTS + CONFIGURED037_PORTABLE_INPUTS + CONFIGURED037_RUNTIME_INPUTS:
+            require(name, 'configured session current source/runtime and independent-option diagnostic replay closure')
+        require_tree('fixtures/source-components-v4', 'original installation, actual other-cluster fetch and explicit synthetic mapping controls')
+        require_tree('examples/configured-session', 'startup configuration and explicit installation controller')
+        require('integrations/python/requirements-configured-sql.txt', 'optional parser version/hash and license closure')
+        require('integrations/python/licenses/SQLGlot-30.26.0-MIT.txt', 'original optional parser license')
+
     source = set()
     for name in public_names:
         path = PurePosixPath(name)
@@ -506,6 +540,9 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.update(PREDICATE035_PORTABLE_INPUTS)
     if models036:
         portable.update(MODELS036_PORTABLE_INPUTS)
+    if configured037:
+        portable.update(CONFIGURED037_PORTABLE_INPUTS)
+        portable.update(n for n in public_names if n.startswith('fixtures/source-components-v4/'))
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))

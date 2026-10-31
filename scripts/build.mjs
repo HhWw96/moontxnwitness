@@ -27,6 +27,14 @@ const output = resolve(root, 'dist');
 mkdirSync(output, { recursive: true });
 copyFileSync(resolve(root, '_build/js/release/build/bridge/bridge.js'), resolve(output, 'core.mjs'));
 copyFileSync(resolve(root, '_build/js/release/build/capture_bridge/capture_bridge.js'), resolve(output, 'capture-core.mjs'));
+const configuredCores={
+ 'configured-session-core.mjs':'configured_session_bridge',
+ 'source-components-core.mjs':'source_components_bridge',
+ 'sql-projection-core.mjs':'sql_projection_bridge',
+ 'sql-fetch-core.mjs':'sql_fetch_bridge',
+};
+for(const [name,folder]of Object.entries(configuredCores))copyFileSync(resolve(root,'_build/js/release/build',folder,'bridge.js'),resolve(output,name));
+for(const name of ['configured-v4.mjs','configured-session-v4.mjs','source-components-v4.mjs','sql-candidate-v1.mjs','sql-fetch-v1.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
 for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'v4.mjs', 'relation-v4.mjs', 'relation-reduction-v4.mjs', 'models-v4.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
 copyFileSync(resolve(root,'cmd/legacy-v024.mjs'),resolve(output,'legacy-v024.mjs'));
 copyFrozenLegacyV024(root,output);
@@ -52,5 +60,5 @@ writeFileSync(resolve(output, 'THIRD_PARTY_NOTICES.txt'), notices);
 function componentVersion(binary,args,pattern){const result=spawnSync(binary,args,{encoding:'utf8',windowsHide:true,env:{...process.env,...(home?{MOON_HOME:home}:{})}});if(result.status!==0)throw Error('Cannot identify compilation toolchain');const match=(result.stdout+result.stderr).match(pattern);if(!match)throw Error('Unexpected toolchain version output');return match[0];}
 const suffix=process.platform==='win32'?'.exe':'';
 const toolchain={compiler:componentVersion(home?resolve(home,'bin/moonc'+suffix):'moonc',['-v'],/v?[0-9][A-Za-z0-9+._()-]*/),moon:componentVersion(home?resolve(home,'bin/moon'+suffix):'moon',['--version'],/moon\s+[0-9][A-Za-z0-9+._()-]*/)};
-writeFileSync(resolve(output,'build-manifest.json'),JSON.stringify({version:packageVersion,toolchain,sourceSha256:sourceFingerprint(root),coreSha256:createHash('sha256').update(readFileSync(resolve(output,'core.mjs'))).digest('hex'),captureCoreSha256:createHash('sha256').update(readFileSync(resolve(output,'capture-core.mjs'))).digest('hex')},null,2)+'\n');
+writeFileSync(resolve(output,'build-manifest.json'),JSON.stringify({configuredCoreSha256:Object.fromEntries(Object.keys(configuredCores).map(name=>[name,createHash('sha256').update(readFileSync(resolve(output,name))).digest('hex')])),version:packageVersion,toolchain,sourceSha256:sourceFingerprint(root),coreSha256:createHash('sha256').update(readFileSync(resolve(output,'core.mjs'))).digest('hex'),captureCoreSha256:createHash('sha256').update(readFileSync(resolve(output,'capture-core.mjs'))).digest('hex')},null,2)+'\n');
 console.log(`Built MoonTxnWitness v${core.version()}: portable MoonBit core + local Node.js CLI.`);

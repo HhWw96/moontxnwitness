@@ -1,5 +1,15 @@
 # 0.3.6 — development
 
+## v0.3.7
+
+- Add a configured session namespace joining original SQL, parameters, native-result bytes, actual fetch delivery and optional source-installation diagnostics.
+- Share one PostgreSQL structural parser across configured table layouts, preserving existing model, list and relation namespaces.
+- Add local synchronous/asynchronous connection factories, engine instrumentation, explicit same-connection installation and sealed original-observation bundles.
+- Add bounded SDK/CLI diagnostic verification and source-bound capsules with independent caller limits.
+- Include source-component revision2 returned-row WHERE/PK checks and the fixed optional SQLGlot MIT dependency.
+- Keep writer-window closure, authenticated source facts and automatic isolation analysis unproven in this namespace; expose concrete gaps.
+
+
 - Add a separate canonical-model namespace for fourteen fixed Elle definitions, with source-rule, category and completion obligations recorded independently.
 - Keep register, append-list and explicit atomic-primary-key row projections separate; verify concrete certificates against the original programs and caller budgets.
 - Expose model classification, verification and replay in MoonBit, SDK and CLI without changing the older category defaults.

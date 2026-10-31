@@ -207,3 +207,9 @@ npm run package
 性能优化保持完整报告、依赖来源及预算语义。测量和环境见[性能报告](docs/performance.md)，进一步提速与扩容按[后续路线](docs/remaining-execution-plan.md)推进。
 
 Apache-2.0。依赖和参考来源见 [THIRD_PARTY.md](THIRD_PARTY.md)；逐版测试与下载记录在 `verification/releases/`，详细证据见[开发记录](docs/development-status.md)。
+
+## 配置化 SQL 与实际结果诊断
+
+v0.3.7 增加统一的配置化采集会话：按表名、主键、列和类型配置 PostgreSQL 单表 SELECT/INSERT/UPDATE/DELETE，由可选 SQLGlot 30.26.0 识别结构，MoonBit 独立重算语法、参数、原生结果字节、实际 fetch 交付和来源安装记录。同步与异步 psycopg 包装、局部连接工厂及 SQLAlchemy engine 使用同一配置入口。
+
+参见 [启动示例](examples/configured-session/README.md) 和 [统一会话接口](docs/configured-session-v4.md)。默认只采集诊断，不执行 DDL。来源安装需要显式启用；独立校验报告不会把局部结果或安装成功升级为完整写者窗口、来源认证或隔离模型结论。诊断命令、调用者预算核验和自包含证据重放均在 SDK 与 CLI 中提供。现有事务历史与模型接口保持原语义。

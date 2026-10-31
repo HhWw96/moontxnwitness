@@ -1,0 +1,104 @@
+{
+  "format": "moontxnwitness-configured-sql/v1",
+  "tables": [
+    {
+      "schema": "ledger",
+      "table": "accounts",
+      "primaryKey": "account_no",
+      "columns": [
+        {
+          "name": "account_no",
+          "type": "int64",
+          "comparison": null
+        },
+        {
+          "name": "balance",
+          "type": "int64",
+          "comparison": null
+        },
+        {
+          "name": "active",
+          "type": "bool",
+          "comparison": null
+        },
+        {
+          "name": "version",
+          "type": "text",
+          "comparison": "postgres-c-utf8-v1"
+        }
+      ],
+      "model": "relation-set-v1"
+    },
+    {
+      "schema": "Feature-X",
+      "table": "Flag.Store",
+      "primaryKey": "Feature Key",
+      "columns": [
+        {
+          "name": "Feature Key",
+          "type": "text",
+          "comparison": "postgres-c-utf8-v1"
+        },
+        {
+          "name": "enabled",
+          "type": "bool",
+          "comparison": null
+        },
+        {
+          "name": "source id",
+          "type": "text",
+          "comparison": "postgres-c-utf8-v1"
+        }
+      ],
+      "model": "relation-set-v1"
+    },
+    {
+      "schema": "app_objects",
+      "table": "Object Space",
+      "primaryKey": "Key",
+      "columns": [
+        {
+          "name": "Key",
+          "type": "int64",
+          "comparison": null
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "comparison": "postgres-c-utf8-v1"
+        },
+        {
+          "name": "score",
+          "type": "int64",
+          "comparison": null
+        },
+        {
+          "name": "flag",
+          "type": "bool",
+          "comparison": null
+        },
+        {
+          "name": "region",
+          "type": "text",
+          "comparison": "postgres-c-utf8-v1"
+        },
+        {
+          "name": "revision",
+          "type": "text",
+          "comparison": "postgres-c-utf8-v1"
+        }
+      ],
+      "model": "relation-set-v1"
+    }
+  ],
+  "defaultSchema": "ledger",
+  "limits": {
+    "max_sql_bytes": 65536,
+    "max_tokens": 8192,
+    "max_ast_nodes": 4096,
+    "max_nesting": 64,
+    "max_terms": 128,
+    "max_insert_rows": 128,
+    "max_text_bytes": 65536
+  }
+}

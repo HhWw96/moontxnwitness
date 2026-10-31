@@ -124,6 +124,21 @@ for (const [field,script] of [
   if(typeof output.outputRoot==='string')output.outputRoot=relativeEvidencePath(root,output.outputRoot);
   foundation035[field]=output;
 }
+const configured037Child=spawnSync(process.execPath,['scripts/configured-session-integration-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:16*1024*1024});
+if(configured037Child.error||configured037Child.status!==0)throw Error('Configured session integration failed: '+configured037Child.stdout+configured037Child.stderr);
+const foundation037=JSON.parse(configured037Child.stdout);assert.equal(foundation037.passed,true);
+const configuredUnits=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),['-B','scripts/configured-session-unit-test.py'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:4*1024*1024,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
+if(configuredUnits.error||configuredUnits.status!==0)throw Error('Configured session producer tests failed: '+configuredUnits.stdout+configuredUnits.stderr);
+assert.match(configuredUnits.stdout+configuredUnits.stderr,/Ran 18 tests/);
+foundation037.producerTests={passed:true,checks:18,actualDatabaseExecution:false};
+const configuredPure=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),['-B','scripts/configured-session-pure-test.py'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
+if(configuredPure.error||configuredPure.status!==0)throw Error('Configured pure producer/installer checks failed: '+configuredPure.stdout+configuredPure.stderr);
+foundation037.pureProducerTests=JSON.parse(configuredPure.stdout);assert.equal(foundation037.pureProducerTests.passed,true);
+const configuredInput=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),['-B','scripts/configured-sql-cross-inputs.py'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:8*1024*1024,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
+if(configuredInput.error||configuredInput.status!==0)throw Error('Actual configured parser inputs failed: '+configuredInput.stdout+configuredInput.stderr);
+const configuredCross=spawnSync(process.execPath,['scripts/configured-sql-cross-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:8*1024*1024});
+if(configuredCross.error||configuredCross.status!==0)throw Error('Independent configured grammar cross-check failed: '+configuredCross.stdout+configuredCross.stderr);
+foundation037.sqlGrammarCrossCheck=JSON.parse(configuredCross.stdout);assert.equal(foundation037.sqlGrammarCrossCheck.passed,true);
 const foundation036 = {newIndependentReviewPerformed:false,finalCoreElle2000Executed:false,formalPerformanceMeasurement:false};
 for(const [field,script,count] of [
   ['modelsHostTests','scripts/models-v4-sdk-test.mjs',90],
@@ -423,6 +438,7 @@ receipt.foundation033 = foundation033;
 receipt.foundation034 = foundation034;
 receipt.foundation035 = foundation035;
 receipt.foundation036 = foundation036;
+receipt.foundation037 = foundation037;
 receipt.public032CompatibilityTests = public032Compatibility;
 receipt.public033CompatibilityTests = public033Compatibility;
 receipt.v4IndependentAudit = v4IndependentAudit;

@@ -141,6 +141,29 @@ def validate_models036_receipts(summary, package, version):
     return package['models036Consumers']
 
 
+def validate_configured037_receipts(summary, package):
+    foundation=summary['foundation037']
+    assert foundation['passed'] is True and foundation['actualDatabaseExecution'] is False
+    for key,count in (('hostEnvelope',8),('sessionSdk',25),('sourceComponents',56),('selectConstraints',14),('runtimeConsumer',14)):
+        assert foundation['results'][key] == {'passed':True,'checks':count}
+    assert foundation['producerTests'] == {'passed':True,'checks':18,'actualDatabaseExecution':False}
+    assert foundation['pureProducerTests']['passed'] is True
+    assert foundation['pureProducerTests']['ASTFiles']==6
+    for name,count in (('session',18),('sql',86),('fetch',29),('source',39)):
+        assert foundation['pureProducerTests']['results'][name]['tests']==count
+        assert foundation['pureProducerTests']['results'][name]['passed'] is True
+    assert foundation['sqlGrammarCrossCheck']['passed'] is True
+    for kind in ('source','portable'):
+        value=package['configured037Consumers'][kind]
+        assert value['passed'] is True and value['checks']==14 and value['failed']==0
+        assert value['requiresSourceTree'] is False and value['sourceAuditPerformed'] is False
+        for key in ('actualDatabaseExecution','sourceFactsProduced','writerWindowVerified','isolationAnalysisReady'):
+            assert value[key] is False
+        assert value['runtimeSha256']==summary['buildManifest']['configuredCoreSha256']['configured-session-core.mjs']
+        assert kind+' configured session runtime-only 14 diagnostics CLI and independent-caller capsule checks' in package['checks']
+    return package['configured037Consumers']
+
+
 def validate_scoped_acceptance(acceptance, manifest):
     """Validate the declared stable profiles, without promoting preview goals."""
     assert acceptance['policy'] in ('scoped-stable-v1', 'scoped-stable-v2')
@@ -395,6 +418,9 @@ def validate_scoped_acceptance(acceptance, manifest):
 
     if tuple(map(int, VERSION.split('.'))) >= (0, 3, 6):
         validate_models036_receipts(summary, package, VERSION)
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 7):
+        validate_configured037_receipts(summary, package)
 
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names

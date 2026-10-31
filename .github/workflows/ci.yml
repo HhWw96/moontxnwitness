@@ -70,6 +70,8 @@ jobs:
       - name: Install frozen optional compiler and driver for fixture tests
         # Fixed ORM compilation and protocol fixtures do not use a database.
         run: python -m pip install --require-hashes -r examples/orm-requirements.txt
+      - name: Install checksum-pinned optional configured SQL parser
+        run: python -m pip install --require-hashes -r integrations/python/requirements-configured-sql.txt
       - name: Verify core, independent oracle, CLI and actual SQLite
         run: npm test
       - name: Verify benchmark evidence under filesystem faults
