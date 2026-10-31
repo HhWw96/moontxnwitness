@@ -1,14 +1,14 @@
 {
-  "suite": "compact-runtime-loader-synthetic-faults-v2",
+  "suite": "compact-runtime-loader-synthetic-faults-v3",
   "kind": "implementation-tests",
   "passed": true,
-  "checks": 40,
-  "passedChecks": 38,
-  "skippedChecks": 2,
+  "checks": 41,
+  "passedChecks": 41,
+  "skippedChecks": 0,
   "failedChecks": 0,
   "public032BindingTested": false,
   "workerRoutingTested": false,
-  "contentReuseScope": "one get call; precise inode metadata only; all source/destination paths still verified",
+  "contentReuseScope": "none; every selected source and destination pathname is fully hashed on every get",
   "results": [
     {
       "name": "exact full runtime bytes and inventory with hardlink reuse",
@@ -68,13 +68,11 @@
     },
     {
       "name": "destination file symlink is refused even with expected bytes",
-      "status": "skipped",
-      "reason": "File symlink creation unavailable on this OS account"
+      "status": "passed"
     },
     {
       "name": "source file symlink is refused even with expected bytes",
-      "status": "skipped",
-      "reason": "File symlink creation unavailable on this OS account"
+      "status": "passed"
     },
     {
       "name": "file link metadata rejection is covered without OS symlink privileges",
@@ -129,7 +127,7 @@
       "status": "passed"
     },
     {
-      "name": "a link change during a digest cache hit requires a complete rehash",
+      "name": "a link change during a repeated path check requires a complete rehash",
       "status": "passed"
     },
     {
@@ -141,7 +139,7 @@
       "status": "passed"
     },
     {
-      "name": "one call hashes stable shared inode content once while checking every path",
+      "name": "every selected source and destination alias is fully hashed",
       "status": "passed"
     },
     {
@@ -149,7 +147,7 @@
       "status": "passed"
     },
     {
-      "name": "call-local content records are never reused by the next call",
+      "name": "every validation repeats the complete content audit",
       "status": "passed"
     },
     {
@@ -161,7 +159,11 @@
       "status": "passed"
     },
     {
-      "name": "a cache hit still checks final descriptor metadata before acceptance",
+      "name": "repeated source validation rejects mutation at the final descriptor check",
+      "status": "passed"
+    },
+    {
+      "name": "unchanged metadata cannot authorize bytes changed between source validations",
       "status": "passed"
     },
     {
@@ -169,12 +171,12 @@
       "status": "passed"
     },
     {
-      "name": "unknown inode identities disable content reuse",
+      "name": "content is fully verified even when inode identity caching is unavailable",
       "status": "passed"
     }
   ],
   "testedFileSha256": {
-    "cmd/compact-runtime.mjs": "5ce18aae49a7c1b2b952fe45fe9b1adcc17212247b32e3442555e6a5d7909899",
-    "scripts/compact-runtime-test.mjs": "34a2471205d039dafa4d9dfe754ae83a1032a384718b957b494487a279b1fd66"
+    "cmd/compact-runtime.mjs": "6ec8aa31b64f075cb4e6c28244cd81192830663d900c767b814e5c797c1c89dd",
+    "scripts/compact-runtime-test.mjs": "dad5f5ed50bf1b0272466eda24638a170d422013fda4b7e187317ee1259b4b47"
   }
 }
