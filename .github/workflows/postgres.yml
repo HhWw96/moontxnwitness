@@ -39,6 +39,8 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
+      - name: Test configured owned-controller startup and retained diagnostics
+        run: python -B -m unittest discover -s scripts -p test_configured_session_ci.py -v
       - name: Install pinned MoonBit
         run: |
           set -euo pipefail
@@ -235,5 +237,6 @@ jobs:
             verification/faults/mlflow/ci/
             verification/faults/mlflow/ci-model/
             verification/model-profile-v3/postgres-ci-*/
+            verification/configured-session-v4/postgres-ci-*/
             verification/postgres-ci-runtime/${{ github.run_id }}-${{ github.run_attempt }}/
             dist/

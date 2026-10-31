@@ -8,6 +8,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import secrets
 import subprocess
 import sys
@@ -17,8 +18,70 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'integrations/python'))
 from moontxnwitness_capture.configured_sql import SQLCaptureConfig
-from moontxnwitness_capture.configured_source import identifier
+from moontxnwitness_capture.configured_source import identifier, SourceInstallPolicy, VERSION_COLUMN
 from moontxnwitness_capture.configured_session import canonical, write_new
+
+
+def source_policy(token, writer):
+    """Validate the private namespace before any role or table is created."""
+    if not re.fullmatch('[0-9a-f]{12}', token):
+        raise ValueError('Owned fixture token must be twelve lowercase hexadecimal characters')
+    return SourceInstallPolicy('mtw_source_cs_' + token, (writer,), 4096, 8388608)
+
+
+def initial_request(table, key):
+    fields = ','.join(identifier(column.name) for column in table.columns)
+    fields += ',' + identifier(VERSION_COLUMN)
+    return {'sql': 'SELECT ' + fields + ' FROM ' + identifier(table.schema) + '.' +
+            identifier(table.table) + ' WHERE ' + identifier(table.primary_key) + '=%s',
+            'parameters': [key]}
+
+
+def retain_controller_result(out, completed, *, timed_out=False):
+    """Keep exact owned-fixture streams; emit only allowlisted diagnostics.
+
+    The raw streams are retained in the uploaded owned-CI attempt, never printed
+    to the console. An untrusted exception message/DSN is not a safe log summary.
+    """
+    stdout = completed.stdout or b''; stderr = completed.stderr or b''
+    if isinstance(stdout, str): stdout = stdout.encode('utf8')
+    if isinstance(stderr, str): stderr = stderr.encode('utf8')
+    write_new(out/'controller-stdout.json', stdout)
+    write_new(out/'controller-stderr.json', stderr)
+    diagnostic = {'format': 'configured-session-controller-diagnostic/v1',
+                  'exitCode': completed.returncode, 'timedOut': timed_out,
+                  'stdout': {'path': 'controller-stdout.json', 'bytes': len(stdout), 'sha256': hashlib.sha256(stdout).hexdigest()},
+                  'stderr': {'path': 'controller-stderr.json', 'bytes': len(stderr), 'sha256': hashlib.sha256(stderr).hexdigest()},
+                  'reasonCode': 'timeout' if timed_out else 'inspect-retained-controller-streams',
+                  'sourceFactsProduced': False, 'isolationAnalysisReady': False}
+    text = stderr[-65536:].decode('utf8', errors='replace')
+    reasons = [('Explicit private mtw_source_* namespace required', 'invalid-private-source-namespace'),
+               ('OptionalParserUnavailable', 'optional-sql-parser-unavailable'),
+               ('No module named', 'python-module-unavailable'),
+               ('Execution needs at least 1GiB', 'execution-resource-reserve'),
+               ('Caller-pinned runtime bytes differ', 'diagnostic-runtime-digest-mismatch'),
+               ('Self-contained compiled diagnostic bridge required', 'diagnostic-runtime-is-not-self-contained')]
+    if not timed_out:
+        for marker, code in reasons:
+            if marker in text:
+                diagnostic['reasonCode'] = code; break
+    safe_errors = {'ValueError','TypeError','ImportError','ModuleNotFoundError','OptionalParserUnavailable',
+                   'SourceInstallError','RecognitionError','OperationalError','ProgrammingError','RuntimeError',
+                   'OSError','FileNotFoundError','PermissionError','AssertionError'}
+    for line in reversed(text.splitlines()):
+        first = line.split(':',1)[0].rsplit('.',1)[-1]
+        if first in safe_errors:
+            diagnostic['controllerErrorClass'] = first; break
+        try: value = json.loads(line)
+        except (ValueError, TypeError): continue
+        if isinstance(value, dict):
+            error_class = value.get('errorClass')
+            if isinstance(error_class, str) and error_class in safe_errors: diagnostic['controllerErrorClass'] = error_class
+            if value.get('failedStage') in ('connect','installation-and-original-initial-reads','independent-diagnostic-replay'):
+                diagnostic['controllerFailedStage'] = value['failedStage']
+            break
+    write_new(out/'controller-diagnostic.json', canonical(diagnostic) + '\n')
+    return diagnostic
 
 
 def main():
@@ -37,12 +100,15 @@ def main():
         raise ValueError('New independent attempt directory required')
     out.mkdir(parents=True)
     stage = 'setup'
+    controller_diagnostic = None
     try:
         import psycopg
         base = SQLCaptureConfig.from_json(
             (ROOT / 'examples/configured-session/config.json').read_text('utf8'))
         token = secrets.token_hex(6)
         owner, writer = 'mtw_cs_owner_' + token, 'mtw_cs_writer_' + token
+        stage = 'validate-owned-source-policy'
+        validated_policy = source_policy(token, writer)
         config = replace(base, tables=tuple(
             replace(table, schema='mtw_cs_' + token + '_' + str(index))
             for index, table in enumerate(base.tables)),
@@ -51,6 +117,7 @@ def main():
         rows = [(1, 100, True, 'seed-a'), ('feature-a', True, 'seed-b'),
                 (1, 'row', 23, False, 'east', 'seed-c')]
         queries = []
+        stage = 'create-owned-tables'
         with psycopg.connect(os.environ[args.dsn_env], autocommit=True) as admin:
             assert admin.execute('SHOW server_version_num').fetchone()[0].startswith('18')
             for role in (owner, writer):
@@ -73,14 +140,10 @@ def main():
                               ','.join('%s' for _ in values) + ')', values)
                 admin.execute('GRANT USAGE ON SCHEMA ' + q(table.schema) + ' TO ' + q(writer))
                 admin.execute('GRANT SELECT,INSERT,UPDATE,DELETE ON ' + target + ' TO ' + q(writer))
-                fields = ','.join(q(column.name) for column in table.columns)
-                fields += ',' + q('__mtw_source_version')
-                queries.append({'sql': 'SELECT ' + fields + ' FROM ' + target + ' WHERE ' +
-                                q(table.primary_key) + '=%s', 'parameters': [values[0]]})
+                queries.append(initial_request(table, values[0]))
         configuration, policy, requests = out/'config.json', out/'policy.json', out/'requests.json'
         write_new(configuration, canonical(config.to_dict()) + '\n')
-        write_new(policy, canonical({'namespace': 'mtw_cs_source_' + token, 'writers': [writer],
-                                    'maxInitialRows': 4096, 'maxLogBytes': 8388608}) + '\n')
+        write_new(policy, canonical(validated_policy.to_dict()) + '\n')
         write_new(requests, canonical(queries) + '\n')
         runtime = ROOT/'dist/configured-session-core.mjs'
         runtime_sha = hashlib.sha256(runtime.read_bytes()).hexdigest()
@@ -91,9 +154,14 @@ def main():
                    '--output', str(out/'attempt'), '--execute', '--dsn-env', args.dsn_env,
                    '--owner-role', owner, '--runtime', str(runtime), '--runtime-sha256', runtime_sha,
                    '--node', os.environ.get('MTW_NODE', 'node')]
-        completed = subprocess.run(command, cwd=ROOT, env=env, capture_output=True, timeout=180)
-        write_new(out/'controller-stdout.json', completed.stdout)
-        write_new(out/'controller-stderr.json', completed.stderr)
+        try:
+            completed = subprocess.run(command, cwd=ROOT, env=env, capture_output=True, timeout=180,
+                                       creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+        except subprocess.TimeoutExpired as error:
+            completed = subprocess.CompletedProcess([], 124, error.stdout or b'', error.stderr or b'')
+            controller_diagnostic = retain_controller_result(out, completed, timed_out=True)
+            raise RuntimeError('Configured execution controller timed out') from error
+        controller_diagnostic = retain_controller_result(out, completed)
         if completed.returncode:
             raise RuntimeError('Configured execution controller failed')
         diagnosis = out/'attempt/diagnosis.json'
@@ -119,6 +187,8 @@ def main():
                    'stage': stage, 'errorClass': type(error).__name__, 'actualDatabaseExecution': None,
                    'sourceFactsProduced': False, 'writerWindowVerified': False,
                    'isolationAnalysisReady': False, 'retryPerformed': False}
+        if controller_diagnostic is not None:
+            failure['controllerDiagnostic'] = controller_diagnostic
         write_new(out/'failure.json', canonical(failure) + '\n')
         print(canonical(failure), file=sys.stderr)
         return 2

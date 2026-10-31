@@ -302,7 +302,8 @@ test "session47 14 opaque result getters do not alias the next observation" {
     Json::null(),
   )
   let detached = configured_session_diagnostic_v4_json(result)
-  source_object_v4(detached)["results"] = Json([])
+  let empty_results : Array[Json] = []
+  source_object_v4(detached)["results"] = Json(empty_results)
   assert_eq(
     orm_array(
       source_object_v4(configured_session_diagnostic_v4_json(result)).at(
