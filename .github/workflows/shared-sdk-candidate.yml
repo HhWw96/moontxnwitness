@@ -47,7 +47,7 @@ jobs:
           value={'format':'actual-compiler-interface-generation/v1','sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'runId':os.environ['GITHUB_RUN_ID'],'compilerGenerationExecuted':True,'files':{p:{'bytes':len(Path(p).read_bytes()),'sha256':hashlib.sha256(Path(p).read_bytes()).hexdigest()}for p in paths}}
           Path('artifacts/shared-sdk-candidate/interfaces.json').write_text(json.dumps(value,indent=2)+'\n')
           PY
-          git diff --exit-code -- src/pkg.generated.mbti
+          git diff --exit-code -- src/pkg.generated.mbti src/bridge/pkg.generated.mbti
       - name: Build six genuine runtime roles
         run: node scripts/build.mjs
       - name: Execute shared and standalone conformance
