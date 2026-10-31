@@ -201,14 +201,14 @@ for kind in ("portable", "source"):
                     ('relation-category-reduction-sdk-test.mjs', 'relation category reduction complete-source SDK and CLI audit'),
                     ('v034-maintenance-bindings-test.mjs', 'current relation build-source binding guard tests'),
                     ('v034-public-boundary-independent-test.mjs', '84 maintained relation/source public-boundary semantic checks')):
-                result = json.loads(run([NODE, 'scripts/' + script], consumer, timeout=300))
+                result = json.loads(run([NODE, 'scripts/' + script], consumer))
                 assert result['passed'] is True and result['checks'] > 0
                 if script == 'v034-public-boundary-independent-test.mjs':
                     assert result['executed'] is True and result['checks'] == 84 and result['failed'] == 0
                 capability['results'][script] = {'passed': True, 'checks': result['checks']}
                 checks.append(kind + ' ' + label)
         else:
-            result = json.loads(run([NODE, 'scripts/v034-portable-runtime-test.mjs'], consumer, timeout=300))
+            result = json.loads(run([NODE, 'scripts/v034-portable-runtime-test.mjs'], consumer))
             assert result['passed'] is True and result['checks'] >= 16 and result['failed'] == 0
             assert result['requiresSourceTree'] is False and result['requiresCommandSource'] is False
             assert result['sourceAuditPerformed'] is False and result['semantic84AuditClaimed'] is False
