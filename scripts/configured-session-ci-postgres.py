@@ -55,7 +55,8 @@ def main():
             assert admin.execute('SHOW server_version_num').fetchone()[0].startswith('18')
             for role in (owner, writer):
                 admin.execute('CREATE ROLE ' + q(role) +
-                              ' NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS')
+                              (' NOLOGIN' if role == owner else ' LOGIN') +
+                              ' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS')
             database = admin.execute('SELECT current_database()').fetchone()[0]
             admin.execute('GRANT CREATE ON DATABASE ' + q(database) + ' TO ' + q(owner))
             admin.execute('SET ROLE ' + q(owner))
