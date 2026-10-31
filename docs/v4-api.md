@@ -383,3 +383,7 @@ The CLI uses the same bounded options, duplicate-key guard, diagnostic exit code
 and safe output reservation as source inspection. Run
 `node scripts/lost-update-sdk-test.mjs` for source-bound proofs, independent
 budgets, capsule tampering and CLI checks.
+
+### 读取自身未来写入的分类依据
+
+`inspectAnomaliesV4` 的 `future-read` 证明使用已提交事务内的原始操作位置与唯一写入身份；跨事务的客户端事件先后不构成此证明。它沿用固定 Elle 提交 [4e359e5 的异常蕴含定义](https://github.com/jepsen-io/elle/blob/4e359e597c52938b0afebb8bc42273914d68a424/src/elle/consistency_model.clj#L142-L147)：读取本事务稍后才执行的写入视为退化的事务自 WR 依赖，映射到 `G1c`、`G1`。这与类别搜索返回的多事务环证据分别记录；来源诊断不表示已完成全部隔离模型检查，也不表示运行过 Elle 的寄存器检查器。

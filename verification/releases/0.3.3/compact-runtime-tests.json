@@ -1,0 +1,180 @@
+{
+  "suite": "compact-runtime-loader-synthetic-faults-v2",
+  "kind": "implementation-tests",
+  "passed": true,
+  "checks": 40,
+  "passedChecks": 38,
+  "skippedChecks": 2,
+  "failedChecks": 0,
+  "public032BindingTested": false,
+  "workerRoutingTested": false,
+  "contentReuseScope": "one get call; precise inode metadata only; all source/destination paths still verified",
+  "results": [
+    {
+      "name": "exact full runtime bytes and inventory with hardlink reuse",
+      "status": "passed"
+    },
+    {
+      "name": "temporary runtime cannot be placed inside installation",
+      "status": "passed"
+    },
+    {
+      "name": "PIN is detached from later caller mutation",
+      "status": "passed"
+    },
+    {
+      "name": "unreferenced immutable source pool files are inert",
+      "status": "passed"
+    },
+    {
+      "name": "unsafe destinations and sources are rejected before allocation",
+      "status": "passed"
+    },
+    {
+      "name": "case aliases and file-directory collisions are rejected",
+      "status": "passed"
+    },
+    {
+      "name": "member count size total depth and invalid PIN budgets reject early",
+      "status": "passed"
+    },
+    {
+      "name": "missing source fails without an incomplete runtime",
+      "status": "passed"
+    },
+    {
+      "name": "changed source before first use is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "every call rechecks source and never repairs a poisoned loader",
+      "status": "passed"
+    },
+    {
+      "name": "changed destination remains unchanged after failed verification",
+      "status": "passed"
+    },
+    {
+      "name": "missing destination is not rebuilt",
+      "status": "passed"
+    },
+    {
+      "name": "extra destination file is refused",
+      "status": "passed"
+    },
+    {
+      "name": "extra empty destination directory is refused",
+      "status": "passed"
+    },
+    {
+      "name": "destination file symlink is refused even with expected bytes",
+      "status": "skipped",
+      "reason": "File symlink creation unavailable on this OS account"
+    },
+    {
+      "name": "source file symlink is refused even with expected bytes",
+      "status": "skipped",
+      "reason": "File symlink creation unavailable on this OS account"
+    },
+    {
+      "name": "file link metadata rejection is covered without OS symlink privileges",
+      "status": "passed"
+    },
+    {
+      "name": "source directory junction cannot escape immutable pools",
+      "status": "passed"
+    },
+    {
+      "name": "destination directory junction is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "readonly installation is neither changed nor used as a cache",
+      "status": "passed"
+    },
+    {
+      "name": "hardlink-unavailable filesystem falls back to exclusive verified copies",
+      "status": "passed"
+    },
+    {
+      "name": "partial copy failure removes only this new runtime",
+      "status": "passed"
+    },
+    {
+      "name": "below 500 MiB free refuses temporary writes",
+      "status": "passed"
+    },
+    {
+      "name": "cleanup unlinks an injected child link without touching its target",
+      "status": "passed"
+    },
+    {
+      "name": "cleanup refuses a replaced runtime root and never follows it",
+      "status": "passed"
+    },
+    {
+      "name": "explicit cleanup is idempotent and a disposed loader cannot rebuild",
+      "status": "passed"
+    },
+    {
+      "name": "child process exit automatically recycles only its private tree",
+      "status": "passed"
+    },
+    {
+      "name": "concurrent parent processes have isolated temporary runtimes",
+      "status": "passed"
+    },
+    {
+      "name": "link creation between pathname stat and open forces a full fresh hash",
+      "status": "passed"
+    },
+    {
+      "name": "a link change during a digest cache hit requires a complete rehash",
+      "status": "passed"
+    },
+    {
+      "name": "continuous concurrent link changes stop at three validations and poison the loader",
+      "status": "passed"
+    },
+    {
+      "name": "a concurrent link never authorizes modified bytes or heals a poisoned loader",
+      "status": "passed"
+    },
+    {
+      "name": "one call hashes stable shared inode content once while checking every path",
+      "status": "passed"
+    },
+    {
+      "name": "different inodes with identical SHA are each hashed",
+      "status": "passed"
+    },
+    {
+      "name": "call-local content records are never reused by the next call",
+      "status": "passed"
+    },
+    {
+      "name": "same inode cannot satisfy a conflicting expected hash or size",
+      "status": "passed"
+    },
+    {
+      "name": "source mutation between source paths is detected within the same call",
+      "status": "passed"
+    },
+    {
+      "name": "a cache hit still checks final descriptor metadata before acceptance",
+      "status": "passed"
+    },
+    {
+      "name": "writing through a destination hardlink poisons rather than repairs its source",
+      "status": "passed"
+    },
+    {
+      "name": "unknown inode identities disable content reuse",
+      "status": "passed"
+    }
+  ],
+  "testedFileSha256": {
+    "cmd/compact-runtime.mjs": "5ce18aae49a7c1b2b952fe45fe9b1adcc17212247b32e3442555e6a5d7909899",
+    "scripts/compact-runtime-test.mjs": "34a2471205d039dafa4d9dfe754ae83a1032a384718b957b494487a279b1fd66"
+  }
+}

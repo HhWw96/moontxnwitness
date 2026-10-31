@@ -1,0 +1,36 @@
+{
+  "version": "0.3.3",
+  "firstFullRegression": {
+    "passed": false,
+    "logSha256": "ff1a731d6e2b09150c30cd9a982e0c20df35228d6783bb0a7858cadb1eacfb9c",
+    "coreTestsPerTarget": 977,
+    "executedCoreTargets": [
+      "js",
+      "wasm-gc",
+      "wasm"
+    ],
+    "public032CompatibilityChecksPassed": 47,
+    "failure": "Concurrent replay created legitimate hardlinks to shared immutable sources; inode ctime and nlink changed between path and descriptor metadata checks, causing a false refusal before fault injection."
+  },
+  "correction": {
+    "sha256": "5ce18aae49a7c1b2b952fe45fe9b1adcc17212247b32e3442555e6a5d7909899",
+    "policy": "Link-count-only changes force a complete hash; post-read instability permits at most three fresh validations. Wrong bytes or other identity/metadata changes fail immediately and poison the loader.",
+    "originalCasesRetained": 36,
+    "newDeterministicCases": 4,
+    "implementationTestsPassed": 38,
+    "platformSkips": 2,
+    "independentCorrectionProbesPassed": 7
+  },
+  "firstDatabaseReceipt": {
+    "passed": true,
+    "sha256": "4885dd22c4a2ff62af2371f74506edd0d45412b11b1be0163e3f6659cf319252",
+    "finalCandidateFingerprint": false
+  },
+  "finalFullRegression": {
+    "passed": true,
+    "receipt": "tests.json.gz",
+    "coreTestsPerTarget": 977,
+    "public032Checks": 47
+  },
+  "formalPerformanceMeasured": false
+}

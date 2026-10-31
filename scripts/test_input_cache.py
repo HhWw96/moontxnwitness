@@ -305,6 +305,15 @@ class InputCacheTests(unittest.TestCase):
         with self.assertRaises(EOFError):
             cache.load_index(self.root)
 
+    def test_fixed_runtime_components_use_their_own_inert_namespace(self):
+        original = self.entries['cmd/legacy/unit/identity.txt']
+        name = 'cmd/legacy-components/v032/core.mjs'
+        changed = {**self.entries, name: {**original}}
+        self.write_index(changed)
+        manifest, entries = cache.load_index(self.root)
+        self.assertEqual(entries[name], original)
+        self.assertEqual(manifest['fileCount'], len(changed))
+
     def test_unsafe_names_and_active_source_replacement_are_rejected(self):
         for name in ['', '../escape', '/absolute', 'fixtures//x', 'fixtures/../src/x', 'fixtures/./x', 'fixtures\\x', 'C:/x']:
             with self.subTest(name=name):

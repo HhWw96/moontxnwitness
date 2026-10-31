@@ -8,6 +8,7 @@ import {verificationFingerprint} from './verification-fingerprint.mjs';
 import {writeVerifiedJson,writeImmutableEvidence} from './performance-evidence.mjs';
 import {tmpdir} from 'node:os';
 import {relativeEvidencePath} from './evidence-reference.mjs';
+import {PUBLIC032_GROUPS,collectPublic032Groups} from './public032-compatibility-groups.mjs';
 prepareInputs(root,'tests');
 await import('./evidence-reference-test.mjs');
 
@@ -43,6 +44,33 @@ const directCategoryChild=spawnSync(process.execPath,['scripts/register-direct-v
 if(directCategoryChild.error||directCategoryChild.status!==0)throw Error('Independent direct-category audit failed: '+directCategoryChild.stdout+directCategoryChild.stderr);
 const directCategoryAudit=JSON.parse(directCategoryChild.stdout);assert.equal(directCategoryAudit.passed,true);
 directCategoryAudit.runtime=relativeEvidencePath(root,directCategoryAudit.runtime);
+const public032Parts=[];
+for(const group of Object.keys(PUBLIC032_GROUPS)){
+ const destination=resolve(root,'artifacts/public032-full-test',group);
+ const child=spawnSync(process.execPath,['scripts/public032-compatibility-test.mjs','--group',group,'--output-root',destination],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:8*1024*1024});
+ if(child.error||child.status!==0)throw Error('Public032 '+group+' compatibility failed: '+child.stdout+child.stderr);
+ const result=JSON.parse(child.stdout);assert.equal(result.passed,true);public032Parts.push(result);
+}
+const public032Compatibility=collectPublic032Groups(public032Parts);
+for(const result of public032Compatibility.receipts){result.runtime=relativeEvidencePath(root,result.runtime);result.runDirectory=relativeEvidencePath(root,result.runDirectory);}
+const foundation033 = {};
+for (const [field,script] of [
+  ['sourceAnomalyHostTests','v033-sdk-test.mjs'],
+  ['lostUpdateHostTests','lost-update-sdk-test.mjs'],
+  ['effectiveListHostTests','list-effective-sdk-test.mjs'],
+  ['independentAnomalyAudit','v033-independent-anomalies-test.mjs'],
+  ['compactRuntimeFrameworkTests','compact-runtime-test.mjs'],
+  ['compatibilityGroupContractTests','public032-group-contract-test.mjs'],
+  ['anomalyExample','../examples/v4-anomalies-roundtrip.mjs'],
+]) {
+  const child=spawnSync(process.execPath,['scripts/'+script],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
+  if(child.error||child.status!==0)throw Error(script+' failed: '+child.stdout+child.stderr);
+  const result=JSON.parse(child.stdout);assert.equal(result.passed,true);foundation033[field]=result;
+}
+const staging033=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),
+  ['-X','utf8','scripts/test_compat032_staging.py'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
+if(staging033.error||staging033.status!==0)throw Error('Compatibility staging faults failed: '+staging033.stdout+staging033.stderr);
+foundation033.compatibilityStagingTests=JSON.parse(staging033.stdout);assert.equal(foundation033.compatibilityStagingTests.passed,true);
 const parser = (await import('./parser-test.mjs')).runParserTests();
 const oracle = (await import('./oracle.mjs')).runOracle();
 const cli = (await import('./cli-test.mjs')).runCliTests();
@@ -306,6 +334,8 @@ console.log(`Independent v3 reference ${v3Oracle.cases} traces; ${v3Acceptance.c
 const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version, passed: true, checkedTargets: ['js', 'wasm-gc', 'wasm', 'native'], executedTargets: targets, coreTestsPerTarget: coreTestCount(), parserDifferentialInputs: parser.checked, oracleHistories: oracle.counts.exhaustive + oracle.counts.generated + oracle.counts.completion, verifiedCycleCertificates: oracle.counts.certificates, cliChecks: cli.checks, node: process.version, generatedAt: new Date().toISOString(), boundaries: ['Database observations do not certify every database execution', 'Public package publication is verified separately'] };
 mkdirSync(resolve(root, 'verification'), { recursive: true });
 receipt.v4HostTests = JSON.parse(v4Check.stdout);
+receipt.foundation033 = foundation033;
+receipt.public032CompatibilityTests = public032Compatibility;
 receipt.v4IndependentAudit = v4IndependentAudit;
 receipt.registerDirectCategoryAudit = directCategoryAudit;
 receipt.public031CompatibilityTests = public031Compatibility;

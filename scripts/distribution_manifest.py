@@ -350,6 +350,12 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.add('scripts/v4-sdk-test.mjs')
         require('scripts/register-direct-v4-audit.mjs', 'fresh-consumer independent direct-register category reference')
         portable.add('scripts/register-direct-v4-audit.mjs')
+    if tuple(map(int, version.split('.'))) >= (0, 3, 3):
+        for name in ('scripts/v033-sdk-test.mjs', 'scripts/lost-update-sdk-test.mjs',
+                     'scripts/list-effective-sdk-test.mjs', 'scripts/v033-independent-anomalies-test.mjs',
+                     'scripts/public032-compatibility-test.mjs', 'scripts/public032-compatibility-groups.mjs'):
+            require(name, 'fresh-consumer current source profiles and exact public032 compatibility')
+            portable.add(name)
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))

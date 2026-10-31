@@ -27,7 +27,7 @@ fn rdc_history(own_read~ : Bool = false, back_read~ : Bool = true) -> History {
 
 ///|
 fn rdc_graph(input : History) -> V4CategoryGraph raise {
-  v4_category_graph(register_history_v4(input).unwrap())
+  v4_category_graph(register_history_v4(input).unwrap(), "legacy", 1000000)
 }
 
 ///|

@@ -1,6 +1,6 @@
 name = "HhWw96/moontxnwitness"
 
-version = "0.3.2"
+version = "0.3.3"
 
 source = "src"
 
