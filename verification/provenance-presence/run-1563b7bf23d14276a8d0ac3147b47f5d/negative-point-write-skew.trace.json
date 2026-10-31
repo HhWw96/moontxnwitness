@@ -1,0 +1,316 @@
+{
+  "traceSchema": 2,
+  "clockDomain": "python-monotonic-5c4e955342204374a6b8f3dfc7c3f5bc",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 47000,
+      "initial": {
+        "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"a\"]": "46818283-f04f-4c34-8066-5ee57a14c973",
+        "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"b\"]": "8c0e8a14-c4e3-45ed-a0e6-a1d04ac6e270",
+        "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"never\"]": "4eea23d0-d129-4734-beee-7b6f59d7634a"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 172000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 172000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_skew\" WHERE \"id\"=%s",
+      "parameters": [
+        "b"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 172000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_e779b0a0c272b045_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_skew\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_e779b0a0c272b045_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 172000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          false,
+          null,
+          "8c0e8a14-c4e3-45ed-a0e6-a1d04ac6e270",
+          false,
+          null
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "op",
+      "time": 172000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"b\"]",
+        "version": "8c0e8a14-c4e3-45ed-a0e6-a1d04ac6e270"
+      }
+    },
+    {
+      "seq": 7,
+      "kind": "begin",
+      "time": 172000,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 172000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_skew\" WHERE \"id\"=%s",
+      "parameters": [
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 9,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_e779b0a0c272b045_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_skew\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_e779b0a0c272b045_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 10,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          false,
+          null,
+          "46818283-f04f-4c34-8066-5ee57a14c973",
+          false,
+          null
+        ]
+      ],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 11,
+      "kind": "op",
+      "time": 188000,
+      "tx": "tx-2",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"a\"]",
+        "version": "46818283-f04f-4c34-8066-5ee57a14c973"
+      }
+    },
+    {
+      "seq": 12,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "execute-request",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_skew\" (\"id\",\"value\") VALUES (%s,%s)",
+      "parameters": [
+        "a",
+        "occupied"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 13,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "execute-ack",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_skew\" (\"id\",\"value\") VALUES (%s,%s) RETURNING \"mtwp_e779b0a0c272b045_version\"::text,\"mtw_provenance_v033_1563b7bf\".\"mtwp_e779b0a0c272b045_predecessor\"(\"mtwp_e779b0a0c272b045_version\")::text",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 14,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          "93c6adf6-21b2-43bf-8a46-bdc44ce0bb49",
+          "46818283-f04f-4c34-8066-5ee57a14c973"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 15,
+      "kind": "op",
+      "time": 188000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"a\"]",
+        "version": "93c6adf6-21b2-43bf-8a46-bdc44ce0bb49"
+      }
+    },
+    {
+      "seq": 16,
+      "kind": "sql",
+      "time": 188000,
+      "phase": "execute-request",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_skew\" (\"id\",\"value\") VALUES (%s,%s)",
+      "parameters": [
+        "b",
+        "occupied"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 17,
+      "kind": "sql",
+      "time": 203000,
+      "phase": "execute-ack",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_skew\" (\"id\",\"value\") VALUES (%s,%s) RETURNING \"mtwp_e779b0a0c272b045_version\"::text,\"mtw_provenance_v033_1563b7bf\".\"mtwp_e779b0a0c272b045_predecessor\"(\"mtwp_e779b0a0c272b045_version\")::text",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 18,
+      "kind": "sql",
+      "time": 203000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          "fdfe6456-3d96-4f44-8edd-8109743499c5",
+          "8c0e8a14-c4e3-45ed-a0e6-a1d04ac6e270"
+        ]
+      ],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 19,
+      "kind": "op",
+      "time": 203000,
+      "tx": "tx-2",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"b\"]",
+        "version": "fdfe6456-3d96-4f44-8edd-8109743499c5"
+      }
+    },
+    {
+      "seq": 20,
+      "kind": "sql",
+      "time": 203000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 21,
+      "kind": "end",
+      "time": 203000,
+      "tx": "tx-1",
+      "status": "committed"
+    },
+    {
+      "seq": 22,
+      "kind": "sql",
+      "time": 203000,
+      "phase": "commit-ack",
+      "tx": "tx-2"
+    },
+    {
+      "seq": 23,
+      "kind": "end",
+      "time": 203000,
+      "tx": "tx-2",
+      "status": "committed"
+    }
+  ],
+  "gaps": [],
+  "presenceFacts": {
+    "schema": 1,
+    "projection": "column-presence-register-v0.1.2-experimental",
+    "initial": [
+      {
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"a\"]",
+        "version": "46818283-f04f-4c34-8066-5ee57a14c973",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"b\"]",
+        "version": "8c0e8a14-c4e3-45ed-a0e6-a1d04ac6e270",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"never\"]",
+        "version": "4eea23d0-d129-4734-beee-7b6f59d7634a",
+        "present": false
+      }
+    ],
+    "reads": [
+      {
+        "seq": 6,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"b\"]",
+        "version": "8c0e8a14-c4e3-45ed-a0e6-a1d04ac6e270",
+        "present": false
+      },
+      {
+        "seq": 11,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"a\"]",
+        "version": "46818283-f04f-4c34-8066-5ee57a14c973",
+        "present": false
+      }
+    ],
+    "writes": [
+      {
+        "seq": 15,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"a\"]",
+        "version": "93c6adf6-21b2-43bf-8a46-bdc44ce0bb49",
+        "predecessor": "46818283-f04f-4c34-8066-5ee57a14c973",
+        "oldPresent": false,
+        "newPresent": true,
+        "action": "insert"
+      },
+      {
+        "seq": 19,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_skew\",\"text\",\"b\"]",
+        "version": "fdfe6456-3d96-4f44-8edd-8109743499c5",
+        "predecessor": "8c0e8a14-c4e3-45ed-a0e6-a1d04ac6e270",
+        "oldPresent": false,
+        "newPresent": true,
+        "action": "insert"
+      }
+    ]
+  }
+}

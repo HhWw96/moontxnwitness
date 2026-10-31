@@ -1,0 +1,14 @@
+{"record":"header","traceSchema":1,"clockDomain":"python-monotonic-830e3529708a465d87473be49cdd3232","scope":{"exclusiveWriters":true}}
+{"record":"event","event":{"seq":1,"kind":"snapshot","time":0,"initial":{"[\"mtw_capture_9807b37f86414234a19c9ba7753bc2e3.registers\",\"text\",\"x\"]":"x0","[\"mtw_capture_9807b37f86414234a19c9ba7753bc2e3.registers\",\"text\",\"y\"]":"y0"},"consistent":true}}
+{"record":"event","event":{"seq":2,"kind":"begin","time":78000,"tx":"tx-1"}}
+{"record":"event","event":{"seq":3,"kind":"sql","time":78000,"phase":"execute-request","sql":"SELECT value,version FROM \"mtw_capture_9807b37f86414234a19c9ba7753bc2e3\".registers WHERE key=%s","parameters":["x"],"mapped":true,"tx":"tx-1"}}
+{"record":"event","event":{"seq":4,"kind":"sql","time":78000,"phase":"execute-ack","affectedRows":1,"tx":"tx-1"}}
+{"record":"event","event":{"seq":5,"kind":"sql","time":78000,"phase":"fetch","returnedRows":1,"exhausted":true,"rows":[[1,"x0"]],"tx":"tx-1"}}
+{"record":"event","event":{"seq":6,"kind":"op","time":78000,"tx":"tx-1","op":{"type":"read","key":"[\"mtw_capture_9807b37f86414234a19c9ba7753bc2e3.registers\",\"text\",\"x\"]","version":"x0"}}}
+{"record":"event","event":{"seq":7,"kind":"sql","time":78000,"phase":"execute-request","sql":"UPDATE \"mtw_capture_9807b37f86414234a19c9ba7753bc2e3\".registers SET value=%s,version=%s WHERE key=%s","parameters":[5,"x-aborted","x"],"mapped":true,"tx":"tx-1"}}
+{"record":"event","event":{"seq":8,"kind":"sql","time":78000,"phase":"execute-ack","affectedRows":1,"tx":"tx-1"}}
+{"record":"event","event":{"seq":9,"kind":"op","time":78000,"tx":"tx-1","op":{"type":"write","key":"[\"mtw_capture_9807b37f86414234a19c9ba7753bc2e3.registers\",\"text\",\"x\"]","version":"x-aborted"}}}
+{"record":"event","event":{"seq":10,"kind":"sql","time":78000,"phase":"rollback-ack","tx":"tx-1"}}
+{"record":"event","event":{"seq":11,"kind":"end","time":78000,"tx":"tx-1","status":"aborted"}}
+{"record":"event","event":{"seq":12,"kind":"sql","time":78000,"phase":"commit-ack"}}
+{"record":"footer","eventCount":12,"gapCount":0,"sha256":"bcedbc00287d213b3894e92f1d134a7f0de59038361f71473755958e1e316e23"}

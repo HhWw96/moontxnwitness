@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 2,
+  "tool": "MoonTxnWitness",
+  "version": "0.3.3",
+  "status": "consistent",
+  "model": "serializable",
+  "scope": "versioned point-read/write registers; supplied history and asserted version orders",
+  "complete": true,
+  "stats": {
+    "transactions": 3,
+    "committed": 3,
+    "operations": 4,
+    "dependencies": 3
+  },
+  "findings": [],
+  "edges": [
+    {
+      "from": "tx-1",
+      "to": "tx-2",
+      "kind": "ww",
+      "key": "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"a\"]",
+      "fromOp": 0,
+      "toOp": 0,
+      "fromVersion": "ed4f2394-7668-4324-9d0a-ae22e961dbcb",
+      "toVersion": "ee831bdb-33b0-4611-bf26-5516dd3d961f",
+      "reason": "The asserted per-key version order puts this write before the next write."
+    },
+    {
+      "from": "tx-2",
+      "to": "tx-3",
+      "kind": "ww",
+      "key": "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"a\"]",
+      "fromOp": 0,
+      "toOp": 1,
+      "fromVersion": "ee831bdb-33b0-4611-bf26-5516dd3d961f",
+      "toVersion": "4ba14e1f-8bea-4aba-8db2-07c75b20db27",
+      "reason": "The asserted per-key version order puts this write before the next write."
+    },
+    {
+      "from": "tx-2",
+      "to": "tx-3",
+      "kind": "wr",
+      "key": "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"a\"]",
+      "fromOp": 0,
+      "toOp": 0,
+      "fromVersion": "ee831bdb-33b0-4611-bf26-5516dd3d961f",
+      "toVersion": "ee831bdb-33b0-4611-bf26-5516dd3d961f",
+      "reason": "The reader observes the unique final version written by the source transaction."
+    }
+  ],
+  "witness": null,
+  "serialOrder": [
+    "tx-1",
+    "tx-2",
+    "tx-3"
+  ],
+  "versionOrders": {
+    "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"a\"]": [
+      "9e7830c7-cca5-4ae6-816e-5c22e59fa0dc",
+      "ed4f2394-7668-4324-9d0a-ae22e961dbcb",
+      "ee831bdb-33b0-4611-bf26-5516dd3d961f",
+      "4ba14e1f-8bea-4aba-8db2-07c75b20db27"
+    ],
+    "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"b\"]": [
+      "860b9e7d-1960-416f-a737-53dbb1e435f2"
+    ],
+    "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"never\"]": [
+      "03cf3fd5-2070-4fd0-9604-b484f1e781d8"
+    ]
+  },
+  "versionOrderSources": {
+    "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"a\"]": "asserted",
+    "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"b\"]": "asserted",
+    "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"never\"]": "asserted"
+  },
+  "graph": {
+    "analyzed": true,
+    "components": 3,
+    "cyclicComponents": 0,
+    "cyclicTransactions": 0,
+    "bfsRoots": 0,
+    "edgeBudgetExceeded": false
+  },
+  "coverage": [
+    {
+      "key": "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"a\"]",
+      "committedReads": 1,
+      "committedFinalWrites": 3,
+      "unresolvedReads": 0,
+      "versionOrderSource": "asserted",
+      "sourceLabel": "采集声明的版本链"
+    },
+    {
+      "key": "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"b\"]",
+      "committedReads": 0,
+      "committedFinalWrites": 0,
+      "unresolvedReads": 0,
+      "versionOrderSource": "asserted",
+      "sourceLabel": "采集声明的版本链"
+    },
+    {
+      "key": "[\"mtw_provenance_v033_1563b7bf.presence_rc\",\"text\",\"never\"]",
+      "committedReads": 0,
+      "committedFinalWrites": 0,
+      "unresolvedReads": 0,
+      "versionOrderSource": "asserted",
+      "sourceLabel": "采集声明的版本链"
+    }
+  ],
+  "nextSteps": [],
+  "search": {
+    "status": "not-needed",
+    "reason": "No bounded completion search was required."
+  },
+  "algorithm": "bounded-register-v2.1",
+  "effectiveLimits": {
+    "transactions": 12,
+    "operations": 512,
+    "keys": 128,
+    "attempts": 100000,
+    "operationChecks": 1000000,
+    "cachedStates": 50000
+  },
+  "analysisOptions": {
+    "maxAttempts": 100000,
+    "maxOperationChecks": 1000000,
+    "maxCachedStates": 50000
+  },
+  "metrics": {
+    "attempts": 0,
+    "operationChecks": 0,
+    "cacheHits": 0,
+    "cachedStates": 0,
+    "blockers": []
+  }
+}
