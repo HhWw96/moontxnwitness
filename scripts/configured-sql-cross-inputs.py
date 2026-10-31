@@ -2,8 +2,18 @@
 from pathlib import Path
 import argparse,json,hashlib,sys
 root=Path(__file__).resolve().parents[1]
-args=argparse.ArgumentParser();args.add_argument('--dependency-root',required=True);options=args.parse_args()
-sys.dont_write_bytecode=True;sys.path.insert(0,str(root/'integrations/python'));sys.path.insert(0,str(Path(options.dependency_root).resolve()))
+def dependency_options(argv=None):
+ parser=argparse.ArgumentParser(description=__doc__)
+ parser.add_argument('--dependency-root',help='Existing explicit SQLGlot target; default uses the installed pinned parser')
+ options=parser.parse_args(argv)
+ if options.dependency_root is None:return None
+ dependency=Path(options.dependency_root).resolve()
+ if not dependency.is_dir():parser.error('Explicit optional dependency directory is missing')
+ return dependency
+
+dependency=dependency_options()
+sys.dont_write_bytecode=True;sys.path.insert(0,str(root/'integrations/python'))
+if dependency is not None:sys.path.insert(0,str(dependency))
 from moontxnwitness_capture.configured_sql import ColumnConfig,TableConfig,SQLCaptureConfig,ConfiguredSQLParser,TEXT_COMPARISON
 c=lambda name,kind:ColumnConfig(name,kind,TEXT_COMPARISON if kind=='text' else None)
 tables=(TableConfig('ledger','accounts','account_no',(c('account_no','int64'),c('balance','int64'),c('active','bool'),c('label','text'))),
