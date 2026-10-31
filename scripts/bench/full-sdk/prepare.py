@@ -9,6 +9,30 @@ BASE_SDK='534b4c0a2767aee02a7d090c4ce51d49a67f05ccde18424d2a2944df559f407d'
 ARCHIVE='05ce492f51c75f99dc49a1d95658d0d128102913cab6c806956493f1b79b2597'
 BASE_URL='https://github.com/HhWw96/moontxnwitness/releases/download/v0.3.1/MoonTxnWitness-v0.3.1-portable.zip'
 BASE_BYTES=83038095
+CONFIGURED_BRIDGES={
+    'configured-session-core.mjs':'configured_session_bridge',
+    'source-components-core.mjs':'source_components_bridge',
+    'sql-projection-core.mjs':'sql_projection_bridge',
+    'sql-fetch-core.mjs':'sql_fetch_bridge',
+}
+
+
+def configured_bridge_plan(root):
+    """Materialize the entire declared configured SDK closure before timing."""
+    root=Path(root)
+    present=[name for name in CONFIGURED_BRIDGES.values() if (root/'src'/name).exists()]
+    if not present:return []
+    if len(present)!=len(CONFIGURED_BRIDGES):
+        raise ValueError('Incomplete configured bridge source closure')
+    result=[]
+    for runtime,folder in CONFIGURED_BRIDGES.items():
+        source=root/'src'/folder
+        for leaf in ('moon.pkg','bridge.mbt'):
+            path=source/leaf
+            if not path.is_file() or path.is_symlink():
+                raise ValueError('Missing or linked configured bridge source: '+folder+'/'+leaf)
+        result.append((runtime,folder))
+    return result
 
 def sha(path):
     h=hashlib.sha256()
@@ -153,6 +177,9 @@ def prepare_candidate(root,out):
     command([moon,'check','src','--target','js','--deny-warn','--jobs','1'],root,out,'moon-check-js',env)
     command([moon,'build','src/bridge','--target','js','--release','--deny-warn','--jobs','1'],root,out,'main-bridge-build',env)
     command([moon,'build','src/capture_bridge','--target','js','--release','--deny-warn','--jobs','1'],root,out,'capture-bridge-build',env)
+    configured=configured_bridge_plan(root)
+    for runtime,folder in configured:
+        command([moon,'build','src/'+folder,'--target','js','--release','--deny-warn','--jobs','1'],root,out,folder+'-build',env)
     command(['git','diff','--exit-code','--','src','cmd','moon.mod'],root,out,'tracked-source-clean-after-build',env)
     stage=out/'runtime/candidate';stage.mkdir(parents=True)
     version=re.search(r'^version\s*=\s*"([^"]+)"',(root/'moon.mod').read_text(encoding='utf-8'),re.M).group(1)
@@ -162,6 +189,11 @@ def prepare_candidate(root,out):
     main=root/'_build/js/release/build/bridge/bridge.js'
     capture=root/'_build/js/release/build/capture_bridge/capture_bridge.js'
     shutil.copyfile(main,stage/'core.mjs');shutil.copyfile(capture,stage/'capture-core.mjs')
+    configured_files={}
+    for runtime,folder in configured:
+        compiled=root/'_build/js/release/build'/folder/(folder+'.js')
+        shutil.copyfile(compiled,stage/runtime)
+        configured_files[runtime]={'sourcePackage':'src/'+folder,'actualCompiledPath':str(compiled),'sha256':sha(compiled),'bytes':compiled.stat().st_size}
     names=subprocess.check_output(['git','ls-files','-z','--','src','cmd','moon.mod'],cwd=root).decode('utf-8').split('\0')
     files={n:{'path':str(root/n),'sha256':sha(root/n),'bytes':(root/n).stat().st_size} for n in sorted(n for n in names if n)}
     digest=hashlib.sha256(''.join(n+'\0'+files[n]['sha256']+'\n' for n in files).encode()).hexdigest()
@@ -174,6 +206,7 @@ def prepare_candidate(root,out):
             'sourceFingerprint':repository_fingerprint,'sourceFingerprintContract':'scripts/build-fingerprint.mjs raw moon.mod/src-mbt/moon.pkg bytes with path-NUL framing','sourceFingerprintHelperSha256':sha(fingerprint_helper),
             'trackedSourceClosureSha256':digest,'trackedSourceClosureContract':'sha256 of sorted tracked src/cmd/moon.mod path-NUL-content-SHA256-LF entries','allSourceFiles':files,'actualMainCoreSha256':sha(main),
             'actualCaptureCoreSha256':sha(capture),
+            'actualConfiguredCoreFiles':configured_files,
             'toolchain':{'compiler':VERSION,'compilerOutput':compiler.strip(),'compilerBinarySha256':sha(moonc),'moonOutput':moon_version.strip()},
             'sourceState':'actual tracked source unchanged after info/check/build',
             'runtimeAttribution':attribution,

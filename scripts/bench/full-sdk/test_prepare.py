@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 import tempfile
 import unittest
-from prepare import validate_baseline_index_row, stage_candidate_notices, refs
+from prepare import validate_baseline_index_row, stage_candidate_notices, refs, configured_bridge_plan, CONFIGURED_BRIDGES
 
 
 class PublicBaselineIndexTests(unittest.TestCase):
@@ -75,6 +75,41 @@ class PublicBaselineIndexTests(unittest.TestCase):
             (root/'subject').mkdir()
             with self.assertRaises(FileNotFoundError):
                 stage_candidate_notices(root, root/'missing-toolchain', root/'subject', '0.3.6')
+
+
+class ConfiguredBridgePreparationTests(unittest.TestCase):
+    def make_sources(self, root):
+        for folder in CONFIGURED_BRIDGES.values():
+            target=root/'src'/folder
+            target.mkdir(parents=True)
+            for leaf in ('moon.pkg','bridge.mbt'):
+                (target/leaf).write_text('// setup-only fixture\n', encoding='utf8')
+
+    def test_original_two_bridge_candidate_is_unchanged(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.assertEqual(configured_bridge_plan(Path(directory)), [])
+
+    def test_all_four_actual_package_filenames_are_required(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);self.make_sources(root)
+            self.assertEqual(configured_bridge_plan(root),list(CONFIGURED_BRIDGES.items()))
+            self.assertEqual(len({folder for _,folder in configured_bridge_plan(root)}),4)
+
+    def test_partial_optional_closure_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);self.make_sources(root)
+            import shutil
+            shutil.rmtree(root/'src'/'sql_fetch_bridge')
+            with self.assertRaisesRegex(ValueError,'Incomplete'):
+                configured_bridge_plan(root)
+
+    def test_package_and_source_are_independently_mandatory(self):
+        for leaf in ('moon.pkg','bridge.mbt'):
+            with self.subTest(leaf=leaf),tempfile.TemporaryDirectory() as directory:
+                root=Path(directory);self.make_sources(root)
+                (root/'src'/'configured_session_bridge'/leaf).unlink()
+                with self.assertRaisesRegex(ValueError,'Missing or linked'):
+                    configured_bridge_plan(root)
 
 
 class StaticSDKReferenceTests(unittest.TestCase):
