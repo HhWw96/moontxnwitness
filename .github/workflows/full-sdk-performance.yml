@@ -1,0 +1,112 @@
+name: Full SDK paired performance (Linux)
+on:
+  push:
+    paths:
+      - '.github/workflows/full-sdk-performance.yml'
+      - 'scripts/bench/full-sdk/**'
+  workflow_dispatch:
+    inputs:
+      candidate_ref:
+        description: 'Candidate source ref; empty means this benchmark ref'
+        required: false
+        type: string
+      reason:
+        description: 'New candidate or recorded infrastructure repair; no threshold chasing'
+        required: true
+        default: 'explicit candidate verification'
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: full-sdk-paired-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  paired-linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      MOONBIT_INSTALL_VERSION: 0.10.16+b1a0e846e
+      NODE_OPTIONS: ''
+      NODE_DISABLE_COMPILE_CACHE: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      MTW_BENCH_OUT: ${{ github.workspace }}/artifacts/full-sdk-perf
+      MTW_PERF_REASON: ${{ inputs.reason || 'initial/path-filtered benchmark push' }}
+    steps:
+      - name: Checkout benchmark harness
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: harness
+          fetch-depth: 1
+      - name: Checkout candidate source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: candidate
+          ref: ${{ inputs.candidate_ref || github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.13.0'
+          architecture: x64
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Create pre-measurement intent receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python harness/scripts/bench/full-sdk/prepare.py init \
+            --candidate-root "$GITHUB_WORKSPACE/candidate" \
+            --output "$MTW_BENCH_OUT" \
+            --baseline-cache "$RUNNER_TEMP/moontxnwitness-public031/portable.zip"
+      - name: Check runner syntax before downloads or compilation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = "v24.13.0"
+          for script in harness/scripts/bench/full-sdk/*.mjs; do
+            node --check "$script"
+          done
+          python -c "import ast,pathlib; ast.parse(pathlib.Path('harness/scripts/bench/full-sdk/prepare.py').read_text())"
+      - name: Restore checksum-pinned public031 download cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ runner.temp }}/moontxnwitness-public031/portable.zip
+          key: mtw-public031-portable-05ce492f51c75f99dc49a1d95658d0d128102913cab6c806956493f1b79b2597
+      - name: Install exact official MoonBit before timing
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh -o "$RUNNER_TEMP/moon-install.sh"
+          bash "$RUNNER_TEMP/moon-install.sh" "$MOONBIT_INSTALL_VERSION" \
+            2>&1 | tee "$MTW_BENCH_OUT/setup/moon-install.log"
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+          echo "MOON_HOME=$HOME/.moon" >> "$GITHUB_ENV"
+      - name: Verify baseline and build actual candidate JS subjects
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          python harness/scripts/bench/full-sdk/prepare.py prepare \
+            --candidate-root "$GITHUB_WORKSPACE/candidate" \
+            --output "$MTW_BENCH_OUT" \
+            --baseline-cache "$RUNNER_TEMP/moontxnwitness-public031/portable.zip"
+          node "$MTW_BENCH_OUT/runner/prepare-protocol.mjs"
+      - name: Verify all eight complete SDK results and six negative controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          node "$MTW_BENCH_OUT/runner/preflight.mjs" --preflight-only
+      - name: Measure sequential paired workers after all setup completes
+        shell: bash
+        run: |
+          set -euo pipefail
+          node "$MTW_BENCH_OUT/runner/measure.mjs" --measure --paired-job-confirmed
+      - name: Upload actual subjects, raw timings and bounded complete evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: full-sdk-linux-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/full-sdk-perf/
+          if-no-files-found: error
+          compression-level: 6
