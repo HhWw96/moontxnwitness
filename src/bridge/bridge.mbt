@@ -363,3 +363,22 @@ pub fn relation_reduction_report_v4_content_json(text : String) -> String {
 pub fn relation_reduction_capsule_v4_content_json(text : String) -> String {
   @txn.relation_reduction_capsule_v4_content_json(text)
 }
+
+///|
+#export_name("classify_relation_predicate_v4_json")
+pub fn classify_relation_predicate_v4_json(
+  text : String,
+  options : String,
+) -> String {
+  @txn.classify_relation_predicate_v4_json(text, options)
+}
+
+///|
+#export_name("verify_relation_predicate_classification_v4_json")
+pub fn verify_relation_predicate_classification_v4_json(
+  text : String,
+  report : String,
+  options : String,
+) -> String {
+  @txn.verify_relation_predicate_classification_v4_json(text, report, options)
+}

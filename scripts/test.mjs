@@ -71,6 +71,8 @@ for (const [field,script] of [
 const foundation034 = {};
 for (const [field,script] of [
   ['sourceRulesHostTests','scripts/v034-source-rules-sdk-test.mjs'],
+  ['predicateCategoryHostTests','scripts/relation-predicate-sdk-test.mjs'],
+  ['predicateCategoryExample','examples/relation-predicate-categories.mjs'],
   ['categoryReductionHostTests','scripts/relation-category-reduction-sdk-test.mjs'],
   ['currentBuildBindingTests','scripts/v034-maintenance-bindings-test.mjs'],
   ['publicBoundaryRegression','scripts/v034-public-boundary-independent-test.mjs'],

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {classifyRelationPredicateV4,makeRelationPredicateClassificationCapsuleV4,replayRelationCapsuleV4} from '../dist/sdk.mjs';
+const source=readFileSync(new URL('./relation-predicate-categories.json',import.meta.url),'utf8');
+const options={category:'G2',ruleSet:'adya-2000-scoped-categories-v1'};
+const predicate=classifyRelationPredicateV4(source,options);
+const item=classifyRelationPredicateV4(source,{...options,category:'G2-item'});
+assert.equal(predicate.status,'refuted');assert.equal(item.status,'checked-compatible');
+const replay=replayRelationCapsuleV4(makeRelationPredicateClassificationCapsuleV4(source,options),options);
+assert.equal(replay.valid,true);
+console.log(JSON.stringify({passed:true,predicate:predicate.status,item:item.status,replayValid:replay.valid,acceptsIsolationModels:predicate.acceptsIsolationModels}));

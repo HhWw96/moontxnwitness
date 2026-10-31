@@ -94,6 +94,19 @@ pub fn classify_relation_predicate_v4(
     record: {
       "format": "moontxnwitness-relation-predicate-category/v4",
       "schemaVersion": 4,
+      "dataModel": "relation-set-v1",
+      "profile": "relation-predicate-categories/v4-1",
+      "execution": {
+        "counterContract": "relation-predicate-category-composite-counters-1",
+        "limits": {
+          "maxGraphChecks": Json(max_graph_checks),
+          "maxPredicateChecks": Json(max_predicate_checks),
+          "maxCandidateVisits": Json(max_candidate_visits),
+          "maxStates": Json(max_states),
+          "maxEdgeChecks": Json(max_edge_checks),
+        },
+        "counts": "predicateGraph.execution and search.execution retain their independent counter contracts",
+      },
       "semanticContract": "relation-predicate-category-on-keyslots-v1",
       "algorithm": "relation-predicate-scoped-category-1",
       "sourceSha256": Json(v3_dislock_sha256(history.source_text)),

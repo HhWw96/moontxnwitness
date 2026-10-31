@@ -2,6 +2,7 @@
 
 - Connect original relation predicate observations to dedicated G0, G1c, G2-item, G2, G-single-item, G-single and G-nonadjacent searches with explicit formal rule selection.
 - Retain item/predicate scope, complete-query evidence, effect provenance and independent verification budgets.
+- Expose explicit predicate category selection in the SDK and CLI, with source-bound evidence capsules and independently selected replay options.
 - Add a directly runnable MoonBit predicate-only write-skew example and reject missing capture timestamps without a parser panic.
 - Reuse complete report encoding across transport fields while preserving every output byte and standard JSON escaping.
 # 0.3.4 — development

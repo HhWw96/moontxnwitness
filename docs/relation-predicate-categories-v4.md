@@ -33,3 +33,29 @@ The adapter uses persistent typed primary-key slots, original write-effect journ
 Construction, predicate evaluations, candidate visits and category search have separate recorded budgets. An unfinished search returns `unknown`; a valid discovered witness remains a refutation. Verification recomputes from the original source and the caller's selected category, rule definition and budgets. Hashes bind supplied observations, rather than authenticate a database observer.
 
 The report transport also reuses the encoded complete report instead of building a second report object tree. JSON, text, Markdown and DOT presentations retain their original bytes and standard JSON escaping. New timing and memory claims require measurements of the final integrated build.
+
+The SDK exposes the same explicit selectors:
+
+```js
+import {classifyRelationPredicateV4, makeRelationPredicateClassificationCapsuleV4,
+  replayRelationCapsuleV4} from './dist/sdk.mjs';
+const options = {category: 'G2', ruleSet: 'adya-2000-scoped-categories-v1'};
+const report = classifyRelationPredicateV4(sourceText, options);
+const capsule = makeRelationPredicateClassificationCapsuleV4(sourceText, options);
+const replay = replayRelationCapsuleV4(capsule, options);
+```
+
+```text
+node examples/relation-predicate-categories.mjs
+node dist/moontxnwitness.mjs classify-relation-predicate-v4 examples/relation-predicate-categories.json --options options.json --output report.json --capsule evidence.json
+node dist/moontxnwitness.mjs verify-relation-predicate-v4 examples/relation-predicate-categories.json report.json --options options.json
+node dist/moontxnwitness.mjs replay-relation-v4 evidence.json --options options.json
+```
+
+Save the following as `options.json` for the commands above:
+
+```json
+{"category":"G2","ruleSet":"adya-2000-scoped-categories-v1"}
+```
+
+Both `category` and `ruleSet` are mandatory. Optional limits are `maxGraphChecks`, `maxPredicateChecks`, `maxCandidateVisits`, `maxStates` and `maxEdgeChecks`. Verification and capsule replay require independently supplied expected options. The CLI returns 1 for a refutation, 0 for a completed compatible check, 3 for an unfinished check and 2 for invalid input or failed verification.

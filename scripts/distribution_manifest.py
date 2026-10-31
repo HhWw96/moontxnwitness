@@ -58,6 +58,7 @@ FIXED_VERIFICATION_FILES = {
 # Source audits intentionally stay out of the portable runtime-only package.
 RELATION034_SOURCE_INPUTS = (
     'scripts/v034-source-rules-sdk-test.mjs',
+    'scripts/relation-predicate-sdk-test.mjs',
     'scripts/relation-category-reduction-sdk-test.mjs',
     'scripts/v034-public-boundary-independent-test.mjs',
     'scripts/v034-maintenance-bindings.mjs',
@@ -68,6 +69,8 @@ RELATION034_SOURCE_INPUTS = (
 )
 RELATION034_PORTABLE_INPUTS = (
     'scripts/v034-portable-runtime-test.mjs',
+    'examples/relation-predicate-categories.mjs',
+    'examples/relation-predicate-categories.json',
     'examples/source-rules-v4-roundtrip.mjs',
     'examples/relation-category-reduction.mjs',
     'examples/relation-category-reduction.json',

@@ -1,6 +1,7 @@
 // Independent relation categories and raw-source rules. Existing v4 APIs are unchanged.
 import {createHash} from 'node:crypto';
 import {classify_relation_v4_json,verify_relation_classification_v4_json,
+  classify_relation_predicate_v4_json,verify_relation_predicate_classification_v4_json,
   inspect_capture_anomalies_v4_json,verify_capture_anomalies_v4_json,
   inspect_internal_consistency_v4_json,verify_internal_consistency_v4_json,
   source_rules_report_v4_content_json,source_rules_capsule_v4_content_json,
@@ -10,7 +11,10 @@ export const SOURCE_RULES_V4_LIMITS=Object.freeze({sourceUtf8Bytes:8*MiB,options
 const SCOPE='semantic reproduction under caller-supplied options; source observations are not authenticated';
 const FORMAT='moontxnwitness-source-rules-replay/v4';
 const categories=Object.freeze(['G0','G1a','G1b','G1c','G2-item','INT']);
+const predicateCategories=Object.freeze(['G0','G1c','G2-item','G2','G-single-item','G-single','G-nonadjacent']);
+const predicateRules=Object.freeze(['adya-2000-scoped-categories-v1','elle-4e359e5-scoped-categories-v1']);
 const definitions=Object.freeze({
+  'relation-predicate-classification':Object.freeze({run:classify_relation_predicate_v4_json,verify:verify_relation_predicate_classification_v4_json,format:'moontxnwitness-relation-predicate-category/v4',semanticContract:'relation-predicate-category-on-keyslots-v1',algorithm:'relation-predicate-scoped-category-1',counterContract:'relation-predicate-category-composite-counters-1',profile:'relation-predicate-categories/v4-1'}),
   'relation-classification':Object.freeze({run:classify_relation_v4_json,verify:verify_relation_classification_v4_json,format:'moontxnwitness-relation-classification/v4',semanticContract:'moontxnwitness-relation-point-category-classification-v4-5',algorithm:'v4-relation-point-category-5',counterContract:'v4-relation-point-category-counters-5',profile:'relation-point-categories/v4-5'}),
   'capture-anomalies':Object.freeze({run:inspect_capture_anomalies_v4_json,verify:verify_capture_anomalies_v4_json,format:'moontxnwitness-captured-source-anomalies/v4',semanticContract:'moontxnwitness-captured-source-anomalies-v4-2',algorithm:'v4-capture-effective-source-anomalies-2',counterContract:'v4-capture-source-reference-checks-2',profile:'raw-capture-source-anomalies/v2'}),
   'internal-consistency':Object.freeze({run:inspect_internal_consistency_v4_json,verify:verify_internal_consistency_v4_json,format:'moontxnwitness-internal-consistency/v4',semanticContract:'moontxnwitness-internal-consistency-v4-2',algorithm:'v4-effective-overlay-internal-consistency-2',counterContract:'v4-internal-overlay-reference-checks-2',profile:'captured-formal-int/v2'}),
@@ -42,6 +46,13 @@ function integer(value,fallback,maximum,label){
 }
 function normalize(operation,value){
   plain(value,'source rules options');
+  if(operation==='relation-predicate-classification'){
+    const allowed=['category','ruleSet','maxGraphChecks','maxPredicateChecks','maxCandidateVisits','maxStates','maxEdgeChecks'];
+    for(const key of Object.keys(value))if(!allowed.includes(key))throw new TypeError('Unknown relation predicate option: '+key);
+    if(!predicateCategories.includes(value.category))throw new TypeError('category must explicitly select '+predicateCategories.join(', '));
+    if(!predicateRules.includes(value.ruleSet))throw new TypeError('ruleSet must explicitly select '+predicateRules.join(', '));
+    return {category:value.category,ruleSet:value.ruleSet,maxGraphChecks:integer(value.maxGraphChecks,1000000,1000000,'maxGraphChecks'),maxPredicateChecks:integer(value.maxPredicateChecks,1000000,1000000,'maxPredicateChecks'),maxCandidateVisits:integer(value.maxCandidateVisits,100000,100000,'maxCandidateVisits'),maxStates:integer(value.maxStates,100000,100000,'maxStates'),maxEdgeChecks:integer(value.maxEdgeChecks,1000000,1000000,'maxEdgeChecks')};
+  }
   const relation=operation==='relation-classification',allowed=relation?['categories','maxStates','maxEdgeChecks','maxGraphChecks']:['maxChecks'];
   for(const key of Object.keys(value))if(!allowed.includes(key))throw new TypeError('Unknown source rules option: '+key);
   if(!relation)return {maxChecks:integer(value.maxChecks,1000000,1000000,'maxChecks')};
@@ -68,6 +79,7 @@ function inspect(operation,source,options){
   const sourceText=bounded(source,SOURCE_RULES_V4_LIMITS.sourceUtf8Bytes,'source rules source');
   return run(operation,sourceText,prepared(operation,options).optionsText).report;
 }
+export function classifyRelationPredicateV4(source,options){return inspect('relation-predicate-classification',source,options);}
 export function classifyRelationV4(source,options={}){return inspect('relation-classification',source,options);}
 export function inspectCaptureAnomaliesV4(source,options={}){return inspect('capture-anomalies',source,options);}
 export function inspectInternalConsistencyV4(source,options={}){return inspect('internal-consistency',source,options);}
@@ -78,6 +90,7 @@ function verify(operation,source,report,expectedOptions){
     return JSON.parse(definitions[operation].verify(sourceText,reportText,prepared(operation,expectedOptions).optionsText));
   }catch(error){return {valid:false,reason:error.message,scope:SCOPE};}
 }
+export function verifyRelationPredicateClassificationV4(source,report,expectedOptions){return verify('relation-predicate-classification',source,report,expectedOptions);}
 export function verifyRelationClassificationV4(source,report,expectedOptions={}){return verify('relation-classification',source,report,expectedOptions);}
 export function verifyCaptureAnomaliesV4(source,report,expectedOptions={}){return verify('capture-anomalies',source,report,expectedOptions);}
 export function verifyInternalConsistencyV4(source,report,expectedOptions={}){return verify('internal-consistency',source,report,expectedOptions);}
@@ -86,6 +99,7 @@ function make(operation,source,options){
   const {optionsText}=prepared(operation,options),{reportText,report}=run(operation,sourceText,optionsText);
   return bounded({format:FORMAT,schemaVersion:4,tool:'MoonTxnWitness',producer:{version:version()},operation,...identity(operation,report),sourceText,sourceSha256:hash(sourceText),optionsText,optionsSha256:hash(optionsText),reportText,reportSha256:hash(reportText)},SOURCE_RULES_V4_LIMITS.capsuleUtf8Bytes,'source rules capsule');
 }
+export function makeRelationPredicateClassificationCapsuleV4(source,options){return make('relation-predicate-classification',source,options);}
 export function makeRelationClassificationCapsuleV4(source,options={}){return make('relation-classification',source,options);}
 export function makeCaptureAnomaliesCapsuleV4(source,options={}){return make('capture-anomalies',source,options);}
 export function makeInternalConsistencyCapsuleV4(source,options={}){return make('internal-consistency',source,options);}
