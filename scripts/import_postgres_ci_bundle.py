@@ -14,6 +14,15 @@ COMMIT = re.compile(r'[0-9a-f]{40}\Z')
 MANDATORY = {'receipt.json', 'capture.json', 'rr.capsule.json', 'serial.capsule.json', 'mini.capsule.json'}
 REPRO_FORMAT = 'moontxnwitness-ci-reproduction/v1'
 FULL_FORMAT = 'moontxnwitness-postgres-ci-import/v2'
+CONFIGURED_FORMAT = 'moontxnwitness-postgres-ci-import/v3'
+CONFIGURED_PROFILE = 'moontxnwitness-configured-compiled-slots/v1'
+CONFIGURED_ALGORITHM = 'exact-source-bridge-and-observed-output-sha256/v1'
+CONFIGURED_SLOTS = {
+    'configured-session-core.mjs':'configured_session_bridge',
+    'source-components-core.mjs':'source_components_bridge',
+    'sql-projection-core.mjs':'sql_projection_bridge',
+    'sql-fetch-core.mjs':'sql_fetch_bridge',
+}
 ATTEMPT = re.compile(r'attempt-(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)\.json\Z')
 IMPLEMENTATION = {'moontxnwitness_capture/'+name for name in ('__init__.py','capture.py','_provenance.py','_column_profile.py','_initialization_guard.py','_source_inventory.py','presence.py')}
 PRESENCE_BINDINGS = {'trace','coverage','audit','history','report','capsule','tamperChecks','reduction','protocol'}
@@ -69,13 +78,63 @@ def source_fingerprint(root):
         h.update(name.encode()); h.update(bytes([0])); h.update(raw); h.update(bytes([0]))
     return h.hexdigest()
 
+def configured_required(version):
+    require(isinstance(version,str) and re.fullmatch(r'\d+\.\d+\.\d+',version), 'Invalid runtime profile version')
+    return tuple(map(int,version.split('.'))) >= (0,3,7)
+
+def full_format(version):
+    return CONFIGURED_FORMAT if configured_required(version) else FULL_FORMAT
+
+def configured_source_binding(root, tested):
+    """Read the exact build declaration and bridge files, not a report assertion."""
+    name = 'scripts/build.mjs'; raw = no_links(root,name).read_bytes()
+    require(len(raw) <= 1024*1024 and tested.get(name) == digest(raw), 'Actual build declaration differs from current executed inputs')
+    matches = list(re.finditer(r'\bconst\s+configuredCores\s*=\s*\{([^{}]*)\}\s*;',raw.decode('utf8')))
+    require(len(matches) == 1, 'Exactly one literal configured build declaration is required')
+    body = matches[0][1]; pairs = list(re.finditer(r"(['\"])([^'\"]+)\1\s*:\s*(['\"])([^'\"]+)\3",body))
+    mapping = {m[2]:m[4] for m in pairs}
+    remaining = body
+    for match in reversed(pairs): remaining = remaining[:match.start()]+remaining[match.end():]
+    require(len(pairs) == 4 and mapping == CONFIGURED_SLOTS and re.fullmatch(r'[\s,]*',remaining), 'Configured build slots/bridge mapping differs from the exact four declarations')
+    files = {name:{'bytes':len(raw),'sha256':digest(raw)}}
+    for bridge in CONFIGURED_SLOTS.values():
+        for leaf in ('moon.pkg','bridge.mbt'):
+            name = 'src/'+bridge+'/'+leaf; raw = no_links(root,name).read_bytes()
+            require(0 < len(raw) <= 1024*1024 and tested.get(name) == digest(raw), 'Actual configured bridge differs from executed inputs: '+name)
+            files[name] = {'bytes':len(raw),'sha256':digest(raw)}
+    return {'format':CONFIGURED_PROFILE,'algorithm':CONFIGURED_ALGORITHM,'slots':dict(CONFIGURED_SLOTS),'sourceFiles':files}
+
+def configured_runtime_binding(payload, expected, pg, tested):
+    """Only these exact, independently source-bound and raw-checked slots vary."""
+    current = expected['buildManifest']; current_tested = expected['testedFileSha256']
+    source = expected.get('configuredRuntimeSource'); current_files = expected.get('configuredRuntimeFiles')
+    require(isinstance(source,dict) and source.get('format') == CONFIGURED_PROFILE and source.get('algorithm') == CONFIGURED_ALGORITHM and source.get('slots') == CONFIGURED_SLOTS, 'Missing/unknown actual configured source binding')
+    names = {'scripts/build.mjs'} | {'src/'+bridge+'/'+leaf for bridge in CONFIGURED_SLOTS.values() for leaf in ('moon.pkg','bridge.mbt')}
+    rows = source.get('sourceFiles'); require(isinstance(rows,dict) and set(rows) == names, 'Incomplete/extra configured source bridge inventory')
+    for name, row in rows.items():
+        require(isinstance(row,dict) and type(row.get('bytes')) is int and 0 < row['bytes'] <= 1024*1024 and isinstance(row.get('sha256'),str) and SHA.fullmatch(row['sha256']) and row['sha256'] == current_tested.get(name) == tested.get(name), 'Configured source bridge/build input differs: '+name)
+    current_hashes = current.get('configuredCoreSha256'); pg_hashes = pg.get('configuredCoreSha256')
+    require(isinstance(current_hashes,dict) and isinstance(pg_hashes,dict) and set(current_hashes) == set(pg_hashes) == set(CONFIGURED_SLOTS), 'Manifest requires exactly four configured runtime slots')
+    require(isinstance(current_files,dict) and set(current_files) == set(CONFIGURED_SLOTS), 'Actual current configured runtime file inventory is incomplete/extra')
+    manifest_raw = payload.get('dist/build-manifest.json')
+    require(isinstance(manifest_raw,bytes) and len(manifest_raw) <= 1024*1024 and digest(manifest_raw) == tested.get('dist/build-manifest.json') and json_bytes(manifest_raw) == pg, 'Actual PostgreSQL configured build manifest differs from executed inputs')
+    observed = {}
+    for name in CONFIGURED_SLOTS:
+        path = 'dist/'+name; row = current_files[name]
+        require(isinstance(row,dict) and type(row.get('bytes')) is int and 0 < row['bytes'] <= MAX_MEMBER and isinstance(row.get('sha256'),str) and SHA.fullmatch(row['sha256']) and row['sha256'] == current_hashes[name] == current_tested.get(path), 'Current configured runtime/manifest/execution digest differs: '+name)
+        require(isinstance(pg_hashes[name],str) and SHA.fullmatch(pg_hashes[name]) and pg_hashes[name] == tested.get(path), 'PostgreSQL configured manifest/execution digest differs: '+name)
+        require(path in payload and isinstance(payload[path],bytes) and 0 < len(payload[path]) <= MAX_MEMBER and digest(payload[path]) == pg_hashes[name], 'Actual PostgreSQL configured runtime bytes differ: '+name)
+        observed[name] = {'bytes':len(payload[path]),'sha256':digest(payload[path])}
+    return {'format':CONFIGURED_PROFILE,'algorithm':CONFIGURED_ALGORITHM,'slots':dict(CONFIGURED_SLOTS),'sourceFiles':rows,'consumerFiles':current_files,'postgresFiles':observed,'postgresManifestFile':{'bytes':len(manifest_raw),'sha256':digest(manifest_raw)},'actualPostgresBytesVerified':True,'compiledBytesEqual':{name:observed[name]['sha256'] == current_files[name]['sha256'] for name in CONFIGURED_SLOTS}}
+
 def checkout_identity(root):
     root = Path(root).resolve()
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
     require(bool(COMMIT.fullmatch(commit)), 'Invalid checked-out source commit')
     version = json_bytes((root/'package.json').read_bytes())['version']
     require(bool(re.fullmatch(r'\d+\.\d+\.\d+', version)), 'Invalid current version')
-    manifest = json_bytes((root/'dist/build-manifest.json').read_bytes())
+    manifest_raw = (root/'dist/build-manifest.json').read_bytes()
+    manifest = json_bytes(manifest_raw)
     require(manifest.get('version') == version and manifest.get('sourceSha256') == source_fingerprint(root), 'Current build/source mismatch')
     for name, field in [('core.mjs','coreSha256'), ('capture-core.mjs','captureCoreSha256')]:
         require(digest((root/'dist'/name).read_bytes()) == manifest.get(field), 'Current runtime digest mismatch')
@@ -85,7 +144,16 @@ def checkout_identity(root):
         cwd=root)
     tested = json_bytes(raw)
     require(isinstance(tested,dict) and 0<len(tested)<=50000, 'Invalid current executable fingerprint')
-    return {'commit':commit, 'version':version, 'buildManifest':manifest, 'testedFileSha256':tested}
+    identity = {'commit':commit, 'version':version, 'buildManifest':manifest, 'testedFileSha256':tested}
+    if configured_required(version):
+        require(tested.get('dist/build-manifest.json') == digest(manifest_raw), 'Actual current build manifest differs from executed inputs')
+        identity['configuredRuntimeSource'] = configured_source_binding(root,tested)
+        files = {}
+        for name in CONFIGURED_SLOTS:
+            raw = no_links(root,'dist/'+name).read_bytes(); files[name] = {'bytes':len(raw),'sha256':digest(raw)}
+        identity['configuredRuntimeFiles'] = files
+        configured_runtime_binding({**{'dist/'+name:no_links(root,'dist/'+name).read_bytes() for name in CONFIGURED_SLOTS},'dist/build-manifest.json':manifest_raw},identity,manifest,tested)
+    return identity
 
 def validate_run(run, repository, expected, pr_head=None):
     require(run.get('repository',{}).get('full_name','').lower() == repository.lower(), 'Wrong workflow repository')
@@ -115,6 +183,10 @@ def validate_payload(payload, run, artifact, expected, *, require_runtime_bytes=
     current_tested = expected.get('testedFileSha256')
     require(isinstance(current_tested,dict) and current_tested, 'Missing current executable fingerprint')
     platform_members = {'dist/core.mjs','dist/capture-core.mjs','dist/build-manifest.json'}
+    configured = None
+    if configured_required(version):
+        configured = configured_runtime_binding(payload,expected,pg,tested)
+        platform_members.update('dist/'+name for name in CONFIGURED_SLOTS)
     shared = {k:v for k,v in tested.items() if k not in platform_members}
     current_shared = {k:v for k,v in current_tested.items() if k not in platform_members}
     require(shared == current_shared, 'PostgreSQL SQL/adapter/fixture executable fingerprints differ')
@@ -154,6 +226,10 @@ def validate_payload(payload, run, artifact, expected, *, require_runtime_bytes=
     selected = {prefix+n:payload[prefix+n] for n in sorted(names)}
     imported_bindings = {'source.json':payload[source_name], 'runtime-before.json':payload[before_name], 'runtime-after.json':payload[after_name]}
     for name, raw in imported_bindings.items(): selected[f'verification/releases/{version}/postgres-ci-import/{name}'] = raw
+    if configured is not None:
+        for name in CONFIGURED_SLOTS:
+            selected[f'verification/releases/{version}/postgres-ci-import/bound-runtimes/'+name] = payload['dist/'+name]
+        selected[f'verification/releases/{version}/postgres-ci-import/bound-runtimes/build-manifest.json'] = payload['dist/build-manifest.json']
     require(sum(map(len,selected.values())) <= MAX_PACKET, 'Imported packet budget exceeded')
     comparison = {'sourceVersionCompilerMatch':True,
                   'sharedExecutableInputsSha256':digest(json.dumps(shared,sort_keys=True,separators=(',',':')).encode()),
@@ -164,6 +240,7 @@ def validate_payload(payload, run, artifact, expected, *, require_runtime_bytes=
                   'captureBytesEqual':pg.get('captureCoreSha256') == current.get('captureCoreSha256'),
                   'toolchainsEqual':pg.get('toolchain') == current.get('toolchain')}
     if attempts: comparison['attempts'] = attempts
+    if configured is not None: comparison['configuredRuntimeBinding'] = configured
     return selected, comparison
 
 def validate_artifact_metadata(run, artifact):
@@ -199,6 +276,7 @@ def validate_archive(path, run, artifact, expected, repository, pr_head=None, *,
             require(0 <= member.file_size <= MAX_MEMBER, 'Artifact member size exceeded');total+=member.file_size;require(total<=MAX_TOTAL,'Artifact expansion budget exceeded')
             if member.is_dir():continue
             keep=name.startswith(prefix) or name in ['verification/postgres-ci-source.json',binding+'postgres-ci-runtime-before.json',binding+'postgres-ci-runtime-after.json','dist/core.mjs','dist/capture-core.mjs']
+            if configured_required(expected['version']) and name in {'dist/'+x for x in CONFIGURED_SLOTS}|{'dist/build-manifest.json'}: keep = True
             if reproduction:
                 keep = keep or name.startswith(f"verification/provenance-presence/ci-{run['id']}-{run['run_attempt']}/") or name.startswith(f"verification/releases/{expected['version']}/capture/") or name in ('verification/postgres.json','verification/capture-postgres.json')
             raw=bytearray() if keep else None;read=0
@@ -331,6 +409,7 @@ def validate_reproduction_payload(payload, run, artifact, expected, *, require_r
 
 def install(root, files, record):
     root=Path(root).resolve();version=record['version'];index=f'verification/releases/{version}/postgres-ci-import/receipt.json'
+    require(not configured_required(version), 'Configured compiled slots require the full v3 reproduction importer')
     record={**record,'format':FORMAT,'files':{n:{'bytes':len(v),'sha256':digest(v)} for n,v in sorted(files.items())}}
     encoded=(json.dumps(record,sort_keys=True,indent=2)+'\n').encode();all_files={**files,index:encoded}
     for name,raw in all_files.items():
@@ -392,6 +471,13 @@ def install_reproduction(root, files, record):
     index = f'verification/releases/{version}/postgres-ci-import/receipt.json'
     require(index not in files, 'Import receipt cannot be supplied as raw evidence')
     files = dict(files); previous = []
+    if configured_required(version):
+        binding = record.get('comparison',{}).get('configuredRuntimeBinding',{})
+        require(binding.get('format') == CONFIGURED_PROFILE and binding.get('algorithm') == CONFIGURED_ALGORITHM and binding.get('slots') == CONFIGURED_SLOTS and binding.get('actualPostgresBytesVerified') is True, 'Configured installation requires the new actual-byte runtime binding')
+        for name in [*CONFIGURED_SLOTS,'build-manifest.json']:
+            key = f'verification/releases/{version}/postgres-ci-import/bound-runtimes/'+name
+            spec = binding.get('postgresManifestFile') if name == 'build-manifest.json' else binding.get('postgresFiles',{}).get(name)
+            require(key in files and isinstance(spec,dict) and {'bytes':len(files[key]),'sha256':digest(files[key])} == spec, 'Configured installation lost a verified raw runtime/manifest')
     for name in files: require(_reproduction_scope(name,version,record['run'],record['comparison']), 'Reproduction destination outside verified scope')
     # Only producer-owned rolling pointers may differ from checkout bytes. Retain
     # their exact tracked originals before atomically installing current-run data.
@@ -405,7 +491,8 @@ def install_reproduction(root, files, record):
             original = no_links(root,backup).read_bytes(); require(original == _original_pointer(root,name), 'Retained rolling pointer is not the original tracked file')
             files[backup] = original; previous.append(backup)
     origins = {name:{'sourcePath':'verification/'+name.split('/')[-1],'sourceCommit':record['sourceCommit'],'bytes':len(files[name]),'sha256':digest(files[name])} for name in previous}
-    record = {**record,'format':FULL_FORMAT,'previousPointerFiles':previous,'previousPointerOrigins':origins,'files':{n:{'bytes':len(v),'sha256':digest(v)} for n,v in sorted(files.items())}}
+    record = {**record,'format':full_format(version),'previousPointerFiles':previous,'previousPointerOrigins':origins,'files':{n:{'bytes':len(v),'sha256':digest(v)} for n,v in sorted(files.items())}}
+    if configured_required(version): record['runtimeBindingAlgorithm'] = CONFIGURED_ALGORITHM
     encoded = (json.dumps(record,sort_keys=True,indent=2)+'\n').encode(); all_files = {**files,index:encoded}
     for name, raw in all_files.items():
         path = no_links(root,name)
@@ -434,7 +521,7 @@ def validated_ci_reproduction_files(root, version):
     """Production allowlist: only a fully revalidated exact-run reproduction packet."""
     root = Path(root).resolve(); name = f'verification/releases/{version}/postgres-ci-import/receipt.json'; path = no_links(root,name)
     if not path.exists(): return {}
-    record = json_bytes(path.read_bytes()); require(record.get('format') == FULL_FORMAT and record.get('version') == version, 'A narrow/legacy import cannot authorize reproduction files')
+    record = json_bytes(path.read_bytes()); require(record.get('format') == full_format(version) and record.get('version') == version, 'A narrow/legacy import cannot authorize reproduction files')
     expected = checkout_identity(root); require(record.get('sourceCommit') == expected['commit'], 'Stale reproduction source')
     rows = record.get('files'); require(isinstance(rows,dict) and 20 <= len(rows) <= 2200, 'Invalid reproduction closure')
     run = record['run']; artifact = record['artifact']; repository = os.environ.get('GITHUB_REPOSITORY',record['repository'])
@@ -453,6 +540,10 @@ def validated_ci_reproduction_files(root, version):
     translated['verification/postgres-ci-source.json'] = payload[base+'source.json']
     translated[binding+'postgres-ci-runtime-before.json'] = payload[base+'runtime-before.json']
     translated[binding+'postgres-ci-runtime-after.json'] = payload[base+'runtime-after.json']
+    if configured_required(version):
+        for member in CONFIGURED_SLOTS: translated['dist/'+member] = payload[base+'bound-runtimes/'+member]
+        translated['dist/build-manifest.json'] = payload[base+'bound-runtimes/build-manifest.json']
+        require(record.get('runtimeBindingAlgorithm') == CONFIGURED_ALGORITHM, 'Configured import algorithm is unknown')
     rebuilt, comparison = validate_reproduction_payload(translated,run,artifact,expected,require_runtime_bytes=False)
     previous = record.get('previousPointerFiles',[]); require(isinstance(previous,list) and len(previous) <= 2 and len(set(previous)) == len(previous), 'Invalid previous-pointer inventory')
     for member in previous:

@@ -1,3 +1,11 @@
+# 0.3.8 — development
+
+- Return complete native JavaScript report objects from the legacy and balanced SDK analysis entries; preserve the original text APIs and analysis budgets.
+- Keep edge provenance, null/empty/zero values, field order, escaping and caller-owned mutable results consistent with parsed original JSON.
+- Add JS-only DTO boundary tests and current source/portable consumer checks, retaining configured-source, row, model and legacy compatibility suites.
+- Record the paired public031 native-transport experiment: 2.2315336480 geometric-mean speedup and 0.7778597016 peak-RSS ratio across five target scenarios, with three controls. Results bind experimental candidate988 and its exact Linux runtime; integrated0.3.8 performance requires its own recorded run.
+- See [the performance scope and evidence](docs/native-report-performance.md).
+
 # 0.3.6 — development
 
 ## v0.3.7

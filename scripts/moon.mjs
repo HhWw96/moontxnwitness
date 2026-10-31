@@ -14,7 +14,7 @@ export function coreTestCount(directory = resolve(root, 'src')) {
   }
   return count;
 }
-export function runMoon(args) {
+export function runMoon(args, {captureOutput = false} = {}) {
   const localPath = resolve(root, '.local-toolchain.json');
   const local = existsSync(localPath) ? JSON.parse(readFileSync(localPath, 'utf8')).moonHome : null;
   const home = process.env.MOON_HOME || local;
@@ -27,9 +27,13 @@ export function runMoon(args) {
     env.PATH = [resolve(home, 'bin'), dirname(process.execPath), inherited].join(delimiter);
   }
   const binary = home ? resolve(home, 'bin', process.platform === 'win32' ? 'moon.exe' : 'moon') : 'moon';
-  const result = spawnSync(binary, args, { cwd: root, env, stdio: 'inherit' });
+  const result = spawnSync(binary, args, captureOutput
+    ? {cwd:root,env,encoding:'utf8',maxBuffer:64*1024*1024,windowsHide:true}
+    : {cwd:root,env,stdio:'inherit'});
+  if(captureOutput){if(result.stdout)process.stdout.write(result.stdout);if(result.stderr)process.stderr.write(result.stderr);}
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`MoonBit exited with ${result.status}`);
+  return captureOutput ? result.stdout + '\n' + result.stderr : undefined;
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try { runMoon(process.argv.slice(2)); } catch (e) { console.error(e.message); process.exitCode = 2; }

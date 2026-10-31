@@ -75,6 +75,10 @@ jobs:
         run: python -m pip install --require-hashes -r examples/orm-requirements.txt
       - name: Install checksum-pinned optional configured SQL parser
         run: python -m pip install --require-hashes -r integrations/python/requirements-configured-sql.txt
+      - name: Verify configured parser CLI before core compilation
+        run: |
+          python -I -S -B -m unittest discover -s scripts -p test_configured_cross_cli.py -v
+          python -B scripts/configured-sql-cross-inputs.py
       - name: Verify core, independent oracle, CLI and actual SQLite
         run: npm test
       - name: Verify benchmark evidence under filesystem faults

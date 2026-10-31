@@ -172,6 +172,9 @@ CONFIGURED037_RUNTIME_INPUTS = (
 )
 
 
+NATIVE038_PORTABLE_INPUTS = ('scripts/native-report-sdk-test.mjs', 'docs/native-report-performance.md', 'docs/native-report-performance.json')
+
+
 def configured037_available(root,version):
     return tuple(map(int,version.split('.'))) >= (0,3,7)
 
@@ -452,6 +455,10 @@ def select_distribution_files(root, public_names, tested_files, version):
         require('integrations/python/requirements-configured-sql.txt', 'optional parser version/hash and license closure')
         require('integrations/python/licenses/SQLGlot-30.26.0-MIT.txt', 'original optional parser license')
 
+    if tuple(map(int, version.split('.'))) >= (0, 3, 8):
+        for name in NATIVE038_PORTABLE_INPUTS:
+            require(name, 'native JS report current SDK and digest-bound performance scope')
+
     source = set()
     for name in public_names:
         path = PurePosixPath(name)
@@ -552,6 +559,8 @@ def select_distribution_files(root, public_names, tested_files, version):
     if configured037:
         portable.update(CONFIGURED037_PORTABLE_INPUTS)
         portable.update(n for n in public_names if n.startswith('fixtures/source-components-v4/'))
+    if tuple(map(int, version.split('.'))) >= (0, 3, 8):
+        portable.update(NATIVE038_PORTABLE_INPUTS)
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))

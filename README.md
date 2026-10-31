@@ -12,6 +12,10 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
+## v0.3.8 候选：完整 JavaScript 报告对象
+
+`analyze` 与 `analyzeWithOptions` 使用原生对象传输完整报告，保留原分析、预算、字段顺序与旧文本接口；旧运行时继续使用原回退路径。固定公开 v0.3.1 基线的同作业配对实验中，五个目标场景几何均值速度为 **2.2315 倍**、峰值 RSS 比为 **0.77786**，三个控制场景通过，完整保留 49,770 条依赖边。数据绑定实验候选与实际 Linux 运行文件；本集成版本的性能需单独测量。实测覆盖两个 JavaScript 分析入口；v4 分类与其他模型接口的性能未包含在此结果中。见[完整协议、结果与边界](docs/native-report-performance.md)。
+
 ## v0.3.6 候选：独立模型与原子关系行接口
 
 新模型命名空间按固定 Elle 定义组合 14 个规范模型的必要检查，并分别保留完成、反证和无法判定。寄存器、捕获列表以及显式选择的原子主键行配置使用各自的来源核验和原程序证书；旧分类入口的默认含义保持。运行 `node examples/models-v4-roundtrip.mjs` 和 `node examples/relation-atomic-models-roundtrip.mjs`，详见[模型规则](docs/model-obligations-v4.md)与[关系行配置](docs/relation-atomic-models-v4.md)。最终候选的构建、模型对照和性能验收按实际记录分别完成。
@@ -117,7 +121,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.3.6
+moon add HhWw96/moontxnwitness@0.3.8
 ```
 
 ```javascript

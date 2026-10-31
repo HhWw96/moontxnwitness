@@ -1,3 +1,4 @@
+import {parseMoonTestTotal,jsCoreTestCount} from './core-test-counts.mjs';
 import {prepareInputs} from './input-cache.mjs';
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -24,9 +25,22 @@ const pythonPreflight=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(pro
 if(pythonPreflight.error||pythonPreflight.status!==0)throw Error('Install the fixed test dependencies from examples/orm-requirements.txt before npm test: '+(pythonPreflight.stderr||''));
 await import('./toolchain-policy-test.mjs');
 const testedSources=verificationFingerprint(root,{includeDist:false});
+await import('./core-test-counts-test.mjs');
+for(const pattern of ['test_core_test_counts.py','test_configured_cross_cli.py','test_native038_contract.py']){
+ const check=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),['-B','-m','unittest','discover','-s','scripts','-p',pattern,'-v'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:4*1024*1024,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
+ if(check.error||check.status!==0)throw Error(pattern+' contract failed: '+check.stdout+check.stderr);
+ if(check.stdout)process.stdout.write(check.stdout);if(check.stderr)process.stderr.write(check.stderr);
+}
 runMoon(['fmt', '--check']);
 runMoon(['check', '--target', 'all', '--deny-warn', '--jobs', '1']);
-for (const target of targets) runMoon(['test', '--target', target, '--deny-warn', '--jobs', '1']);
+const coreTestCountsByTarget={};
+for (const target of targets){
+ const output=runMoon(['test','--target',target,'--deny-warn','--jobs','1'],{captureOutput:true});
+ coreTestCountsByTarget[target]=parseMoonTestTotal(output,target);
+}
+const commonCoreTestCount=Math.min(...Object.values(coreTestCountsByTarget));
+const jsOnlyCoreTests=(readFileSync(resolve(root,'src/native_report_js_wbtest.mbt'),'utf8').match(/^test\s+"/gm)||[]).length;
+jsCoreTestCount({coreTestsPerTarget:commonCoreTestCount,coreTestCountsByTarget,executedTargets:targets},{expectedJS:coreTestCount(),jsOnly:jsOnlyCoreTests});
 await import('./build.mjs');
 assert.deepEqual(verificationFingerprint(root,{includeDist:false}),testedSources,'Executable sources changed during core verification');
 const testedFiles=verificationFingerprint(root);
@@ -124,6 +138,14 @@ for (const [field,script] of [
   if(typeof output.outputRoot==='string')output.outputRoot=relativeEvidencePath(root,output.outputRoot);
   foundation035[field]=output;
 }
+const native038Receipt=resolve(mkdtempSync(resolve(root,'artifacts/native-report-main-')),'receipt.json');
+const native038Child=spawnSync(process.execPath,['scripts/native-report-sdk-test.mjs',resolve(root,'dist'),native038Receipt],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:4*1024*1024});
+if(native038Child.error||native038Child.status!==0)throw Error('Native report SDK checks failed: '+JSON.stringify({status:native038Child.status,signal:native038Child.signal,error:native038Child.error?{code:native038Child.error.code,message:native038Child.error.message}:null})+'\n'+native038Child.stdout+native038Child.stderr);
+const native038Output=JSON.parse(native038Child.stdout);assert.equal(native038Output.passed,true);assert.equal(native038Output.tests,39);assert.equal(native038Output.formalPerformanceMeasurement,false);
+const native038Evidence=JSON.parse(readFileSync(native038Receipt,'utf8'));const native038Manifest=JSON.parse(readFileSync(resolve(root,'dist/build-manifest.json'),'utf8'));
+assert.equal(native038Evidence.coreSha256,native038Manifest.coreSha256);assert.equal(native038Evidence.runtimeUnchanged,true);assert.equal(native038Evidence.textAPIUnchanged,true);
+assert.equal(native038Evidence.results.length,39);assert(native038Evidence.results.every(r=>r.passed===true));
+const foundation038={passed:true,tests:39,results:native038Evidence.results,coreSha256:native038Evidence.coreSha256,sdkSha256:native038Evidence.sdkSha256,receipt:relativeEvidencePath(root,native038Receipt),formalPerformanceMeasurement:false};
 const configured037Child=spawnSync(process.execPath,['scripts/configured-session-integration-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:16*1024*1024});
 if(configured037Child.error||configured037Child.status!==0)throw Error('Configured session integration failed: '+configured037Child.stdout+configured037Child.stderr);
 const foundation037=JSON.parse(configured037Child.stdout);assert.equal(foundation037.passed,true);
@@ -431,7 +453,7 @@ function independentNodeAudit(script,label){
 const sqlDiagnostic=independentNodeAudit('verification/v3/tools/dislock_sql_proof_audit.mjs','Independent fixed SQL diagnostic');
 const sqlPolicy=independentNodeAudit('verification/v3/tools/dislock_explicit_policy_audit.mjs','Independent explicit SQL policy');
 console.log(`Independent v3 reference ${v3Oracle.cases} traces; ${v3Acceptance.checks} SDK/CLI/evidence checks; journal ${journalReceipt.testsRun-journalReceipt.skipped.length} executed, ${journalReceipt.skipped.length} skipped.`);
-const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version, passed: true, checkedTargets: ['js', 'wasm-gc', 'wasm', 'native'], executedTargets: targets, coreTestsPerTarget: coreTestCount(), parserDifferentialInputs: parser.checked, oracleHistories: oracle.counts.exhaustive + oracle.counts.generated + oracle.counts.completion, verifiedCycleCertificates: oracle.counts.certificates, cliChecks: cli.checks, node: process.version, generatedAt: new Date().toISOString(), boundaries: ['Database observations do not certify every database execution', 'Public package publication is verified separately'] };
+const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version, passed: true, checkedTargets: ['js', 'wasm-gc', 'wasm', 'native'], executedTargets: targets, coreTestsPerTarget: commonCoreTestCount, coreTestCountsByTarget, parserDifferentialInputs: parser.checked, oracleHistories: oracle.counts.exhaustive + oracle.counts.generated + oracle.counts.completion, verifiedCycleCertificates: oracle.counts.certificates, cliChecks: cli.checks, node: process.version, generatedAt: new Date().toISOString(), boundaries: ['Database observations do not certify every database execution', 'Public package publication is verified separately'] };
 mkdirSync(resolve(root, 'verification'), { recursive: true });
 receipt.v4HostTests = JSON.parse(v4Check.stdout);
 receipt.foundation033 = foundation033;
@@ -439,6 +461,7 @@ receipt.foundation034 = foundation034;
 receipt.foundation035 = foundation035;
 receipt.foundation036 = foundation036;
 receipt.foundation037 = foundation037;
+receipt.foundation038 = foundation038;
 receipt.public032CompatibilityTests = public032Compatibility;
 receipt.public033CompatibilityTests = public033Compatibility;
 receipt.v4IndependentAudit = v4IndependentAudit;

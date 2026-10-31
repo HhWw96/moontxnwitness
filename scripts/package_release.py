@@ -128,6 +128,7 @@ relation034_consumers = {}
 predicate035_consumers = {}
 models036_consumers = {}
 configured037_consumers = {}
+native038_consumers = {}
 
 
 def run(args, cwd, expected=0, timeout=180):
@@ -154,7 +155,7 @@ for kind in ("portable", "source"):
         # A clean source consumer links multiple test packages. Bound concurrent
         # compiler processes without changing test cases or compiler optimization.
         core_tests = run([NODE, "scripts/moon.mjs", "test", "--target", "js", "--deny-warn", "--jobs", "1"], consumer)
-        test_count = SUMMARY["coreTestsPerTarget"]
+        test_count = SUMMARY.get("coreTestCountsByTarget", {}).get("js", SUMMARY["coreTestsPerTarget"])
         assert f"Total tests: {test_count}, passed: {test_count}, failed: 0." in core_tests
         checks.append(f"source fresh JS core tests: {test_count} passed")
     assert run([NODE, "dist/moontxnwitness.mjs", "--version"], consumer).strip() == VERSION
@@ -306,6 +307,18 @@ for kind in ("portable", "source"):
         assert result['runtimeSha256'] == MANIFEST['configuredCoreSha256']['configured-session-core.mjs']
         configured037_consumers[kind] = result
         checks.append(kind+' configured session runtime-only 14 diagnostics CLI and independent-caller capsule checks')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 8):
+        native_receipt_path = work / ('native-report-' + kind + '.json')
+        result = json.loads(run([NODE, 'scripts/native-report-sdk-test.mjs', str(consumer / 'dist'), str(native_receipt_path)], consumer))
+        assert result['passed'] is True and result['tests'] == 39 and result['formalPerformanceMeasurement'] is False
+        native_receipt = load_receipt(native_receipt_path)
+        assert native_receipt['passed'] is True and native_receipt['tests'] == 39
+        assert native_receipt['coreSha256'] == MANIFEST['coreSha256']
+        assert native_receipt['sdkSha256'] == sha256(consumer / 'dist/sdk.mjs')
+        assert native_receipt['runtimeUnchanged'] is True and native_receipt['textAPIUnchanged'] is True
+        assert len(native_receipt['results']) == 39 and all(r['passed'] is True for r in native_receipt['results'])
+        native038_consumers[kind] = native_receipt
+        checks.append(kind + ' native full-report SDK original 39 boundary and feature-fallback checks')
     public024 = json.loads(run([NODE,'scripts/compat-v024-test.mjs',str(consumer/'dist'),str(consumer/'fixtures/compat-v024'),str(work/('public024-'+kind))],consumer))
     assert public024['passed'] and public024['currentRuntimeVersion'] == VERSION and public024['checks'] == 107
     checks.append(kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay')
@@ -843,6 +856,8 @@ if MODELS036:
     receipt['models036Consumers'] = models036_consumers
 if CONFIGURED037:
     receipt['configured037Consumers'] = configured037_consumers
+if tuple(map(int, VERSION.split('.'))) >= (0, 3, 8):
+    receipt['native038Consumers'] = native038_consumers
 (ROOT / "verification/package.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / "release-index.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / (NAME + "-release.json")).write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

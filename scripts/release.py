@@ -164,6 +164,44 @@ def validate_configured037_receipts(summary, package):
     return package['configured037Consumers']
 
 
+def validate_native038_receipts(summary, package, version):
+    if tuple(map(int, version.split('.'))) < (0, 3, 8):
+        return
+    current = summary['foundation038']
+    manifest = summary['buildManifest']
+    sdk = summary['testedFileSha256']['dist/sdk.mjs']
+    assert current['passed'] is True and current['tests'] == 39
+    assert current['coreSha256'] == manifest['coreSha256'] and current['sdkSha256'] == sdk
+    assert current['formalPerformanceMeasurement'] is False
+    assert len(current['results']) == 39 and all(r['passed'] is True for r in current['results'])
+    for kind in ('source', 'portable'):
+        actual = package['native038Consumers'][kind]
+        assert actual['passed'] is True and actual['tests'] == 39
+        assert actual['coreSha256'] == manifest['coreSha256'] and actual['sdkSha256'] == sdk
+        assert actual['runtimeUnchanged'] is True and actual['textAPIUnchanged'] is True
+        assert actual['formalPerformanceMeasurement'] is False
+        assert actual['results'] == current['results']
+        assert kind + ' native full-report SDK original 39 boundary and feature-fallback checks' in package['checks']
+
+
+def validate_core_test_counts(summary):
+    common = summary['coreTestsPerTarget']
+    assert type(common) is int and common > 0
+    if 'coreTestCountsByTarget' not in summary:
+        return common
+    counts = summary['coreTestCountsByTarget']
+    targets = summary['executedTargets']
+    assert isinstance(counts, dict) and isinstance(targets, list)
+    assert len(set(targets)) == len(targets) and 'js' in targets
+    assert set(counts) == set(targets) and set(targets) <= {'js', 'wasm-gc', 'wasm', 'native'}
+    assert all(type(n) is int and n > 0 for n in counts.values())
+    assert common == min(counts.values())
+    assert all(n == common for t, n in counts.items() if t != 'js')
+    js_only = sum(line.startswith('test "') for line in (ROOT / 'src/native_report_js_wbtest.mbt').read_text(encoding='utf8').splitlines())
+    assert counts['js'] == common + js_only
+    return counts['js']
+
+
 def validate_scoped_acceptance(acceptance, manifest):
     """Validate the declared stable profiles, without promoting preview goals."""
     assert acceptance['policy'] in ('scoped-stable-v1', 'scoped-stable-v2')
@@ -181,7 +219,8 @@ def validate_scoped_acceptance(acceptance, manifest):
     assert {'js', 'wasm-gc', 'wasm'}.issubset(summary['executedTargets'])
     assert package['passed'] and package['version'] == VERSION and package['sourceRebuilt']
     assert package['freshConsumerChecks'] == len(package['checks'])
-    assert 'source fresh JS core tests: ' + str(summary['coreTestsPerTarget']) + ' passed' in package['checks']
+    assert 'source fresh JS core tests: ' + str(validate_core_test_counts(summary)) + ' passed' in package['checks']
+    validate_native038_receipts(summary, package, VERSION)
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 3):
         assert summary['ormPlanUnitTests']['passed'] and summary['ormPlanUnitTests']['tests'] > 0
         for kind in ('source', 'portable'):
