@@ -125,6 +125,8 @@ MODELS036_SOURCE_INPUTS = (
 )
 MODELS036_PORTABLE_INPUTS = (
     'scripts/models-v4-sdk-test.mjs', 'scripts/models-row-v4-sdk-test.mjs',
+    'fixtures/models-row-v4/rc-reread-original-failure.json',
+    'fixtures/models-row-v4/rc-reread-original-failure.origin.json',
     'examples/models-v4-roundtrip.mjs', 'examples/models-v4-register.json',
     'examples/models-v4-list.json', 'examples/relation-atomic-point.json',
     'examples/relation-atomic-models-roundtrip.mjs',

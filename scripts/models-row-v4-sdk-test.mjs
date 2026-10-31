@@ -36,10 +36,8 @@ test('all actual external reads preserve RC while the snapshot model is refuted'
  const o={models:['read-committed','snapshot-isolation'],relationProfile:profile},r=run(h,o);
  assert.equal(r.models[0].status,'checked-compatible');assert.equal(r.models[1].status,'refuted');assert.equal(verify(h,r,o).valid,true);
 });
-const oldFailure=resolve(root,'artifacts/row-validation/external-reread-RC-before-fix.json');
-if(process.env.MTW_ROW_PREVIOUS_FAILURE){
- test('exact original RC counterexample is now compatible while SI is refuted',()=>{const h=JSON.parse(readFileSync(process.env.MTW_ROW_PREVIOUS_FAILURE||oldFailure,'utf8')).input;const o={models:['read-committed','snapshot-isolation'],relationProfile:profile};const r=run(h,o);assert.equal(r.models[0].status,'checked-compatible');assert.equal(r.models[1].status,'refuted');assert.equal(verify(h,r,o).valid,true);writeFileSync(resolve(dir,'external-reread-after-fix.json'),JSON.stringify({input:h,options:o,actualReport:r},null,2)+'\n');});
-}
+const oldFailure=resolve(root,'fixtures/models-row-v4/rc-reread-original-failure.json');
+test('exact original RC counterexample is now compatible while SI is refuted',()=>{const bytes=readFileSync(process.env.MTW_ROW_PREVIOUS_FAILURE||oldFailure);assert.equal(sha(bytes),'384b0a884239c9c7414a9ef0be5d0c7cfb669075efd3151940d53018d9ab4278','Original retained RC failure bytes changed');const h=JSON.parse(bytes).input;const o={models:['read-committed','snapshot-isolation'],relationProfile:profile};const r=run(h,o);assert.equal(r.models[0].status,'checked-compatible');assert.equal(r.models[1].status,'refuted');assert.equal(verify(h,r,o).valid,true);writeFileSync(resolve(dir,'external-reread-after-fix.json'),JSON.stringify({input:h,options:o,actualReport:r},null,2)+'\n');});
 test('detached reports cannot mutate later source analysis',()=>{const r=run(sample,options);r.observations.history.events.length=0;assert.equal(JSON.stringify(sample),beforeSource);assert.equal(run(sample,options).status,'checked-compatible');});
 const cliPath=resolve(root,'dist/moontxnwitness.mjs'),sourcePath=resolve(dir,'source.json'),optsPath=resolve(dir,'options.json'),reportPath=resolve(dir,'cli-report.json'),capsulePath=resolve(dir,'cli-capsule.json');
 writeFileSync(sourcePath,JSON.stringify(sample));writeFileSync(optsPath,JSON.stringify(options));
