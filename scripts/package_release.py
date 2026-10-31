@@ -45,6 +45,9 @@ if RELATION034:
         assert (ROOT/'cmd'/runtime).read_bytes() == (ROOT/'dist'/runtime).read_bytes(), 'Relation runtime wrapper changed after build: ' + runtime
 
 
+if 'classifyModelsV4' in (ROOT/'cmd/sdk.mjs').read_text(encoding='utf8'):
+    assert (ROOT/'cmd/models-v4.mjs').read_bytes() == (ROOT/'dist/models-v4.mjs').read_bytes(), 'Model wrapper changed after build'
+
 assert (ROOT/'cmd/legacy-v024.mjs').read_bytes() == (ROOT/'dist/legacy-v024.mjs').read_bytes(), 'Frozen ORM dispatch changed after build'
 subprocess.check_call([NODE,'--input-type=module','-e',
     "import{verifyFrozenLegacyV024}from'./scripts/legacy-v024-runtime.mjs';verifyFrozenLegacyV024(process.cwd());verifyFrozenLegacyV024(process.cwd(),process.cwd()+'/dist/legacy/v024');"],cwd=ROOT)

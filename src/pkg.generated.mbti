@@ -54,6 +54,10 @@ pub fn capture_anomalies_v4_json(CaptureAnomaliesV4) -> Json
 
 pub fn classification_v4_json(ClassificationV4) -> Json
 
+pub fn classify_models_v4(ModelFactsV4, ModelOptionsV4) -> ModelClassificationV4
+
+pub fn classify_models_v4_json(String, String) -> String
+
 pub fn classify_relation_point_v4(HistoryV4, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> RelationClassificationV4
 
 pub fn classify_relation_predicate_v4(HistoryV4, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32, max_states? : Int32, max_edge_checks? : Int32) -> Result[RelationPredicateClassificationV4, String]
@@ -73,6 +77,8 @@ pub fn compare_models(History) -> Json
 pub fn compare_models_json(String) -> String
 
 pub fn dislock_sql_v3_proof_json(String) -> String
+
+pub fn elle_core_models_v4() -> Array[ElleModelV4]
 
 pub fn history_json(History) -> Json
 
@@ -100,7 +106,21 @@ pub fn internal_consistency_v4_json(InternalConsistencyV4) -> Json
 
 pub fn list_graph_effective_v4_json(EffectiveListGraphV4) -> Json
 
+pub fn list_prefix_projection_v4_json(ListPrefixProjectionV4) -> Json
+
+pub fn model_capsule_v4_content_json(String) -> String
+
+pub fn model_classification_v4_json(ModelClassificationV4) -> Json
+
+pub fn model_facts_v4(HistoryV4, clients? : Array[ModelClientV4], clients_complete? : Bool) -> Result[ModelFactsV4, String]
+
+pub fn model_options_v4(models? : Array[ElleModelV4], max_source_checks? : Int32, max_states? : Int32, max_edge_checks? : Int32, relation_profile? : ModelRelationProfileV4, list_profile? : ModelListProfileV4, completion_policy? : ModelCompletionPolicyV4) -> Result[ModelOptionsV4, String]
+
+pub fn model_options_v4_content_json(String) -> String
+
 pub fn model_profile_source_v3_json(String, String) -> String
+
+pub fn model_report_v4_content_json(String) -> String
 
 pub fn normalize_capture_json(String) -> String
 
@@ -127,6 +147,8 @@ pub fn parse_history(String) -> Result[History, String]
 pub fn parse_history_optimized(String) -> Result[History, String]
 
 pub fn parse_history_v4(String) -> Result[HistoryV4, String]
+
+pub fn project_list_prefix_v4(HistoryV4, max_checks? : Int32) -> Result[ListPrefixProjectionV4, String]
 
 pub fn reduce_classification_v3_json(String, String) -> String
 
@@ -224,9 +246,15 @@ pub fn verify_internal_consistency_v4(HistoryV4, Json, max_checks? : Int32) -> B
 
 pub fn verify_internal_consistency_v4_json(String, String, String) -> String
 
+pub fn verify_list_prefix_projection_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
+
 pub fn verify_lost_updates_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
 
 pub fn verify_lost_updates_v4_json(String, String, String) -> String
+
+pub fn verify_model_classification_v4_json(String, String, String) -> String
+
+pub fn verify_models_v4(ModelFactsV4, Json, ModelOptionsV4) -> Bool
 
 pub fn verify_reduction_v4(HistoryV4, Json, preserve~ : Model, max_checks? : Int32, options? : AnalysisOptionsV4) -> Bool
 
@@ -341,6 +369,25 @@ pub struct EffectiveListGraphV4 {
   // private fields
 }
 
+pub(all) enum ElleModelV4 {
+  ElleReadUncommitted
+  ElleReadCommitted
+  ElleRepeatableRead
+  ElleSerializable
+  ElleStrictSerializable
+  ElleSnapshotIsolation
+  ElleConsistentView
+  ElleSessionReadUncommitted
+  ElleStrongReadUncommitted
+  ElleSessionReadCommitted
+  ElleStrongReadCommitted
+  ElleSessionSerializable
+  ElleSessionSnapshotIsolation
+  ElleStrongSnapshotIsolation
+} derive(Eq)
+pub fn ElleModelV4::equal(Self, Self) -> Bool
+pub fn ElleModelV4::not_equal(Self, Self) -> Bool
+
 pub(all) struct Finding {
   code : String
   severity : String
@@ -391,12 +438,56 @@ pub(all) struct KeyCoverage {
 pub fn KeyCoverage::equal(Self, Self) -> Bool
 pub fn KeyCoverage::not_equal(Self, Self) -> Bool
 
+pub struct ListPrefixProjectionV4 {
+  // private fields
+}
+pub fn ListPrefixProjectionV4::dependency_edge_count(Self) -> Int32
+pub fn ListPrefixProjectionV4::is_projected(Self) -> Bool
+
 pub(all) enum Model {
   Serializable
   StrictSerializable
 } derive(Eq)
 pub fn Model::equal(Self, Self) -> Bool
 pub fn Model::not_equal(Self, Self) -> Bool
+
+pub struct ModelClassificationV4 {
+  // private fields
+}
+
+pub(all) struct ModelClientV4 {
+  id : String
+  transactions : Array[String]
+}
+
+pub(all) enum ModelCompletionPolicyV4 {
+  ModelObservationOnlyCompletion
+  ModelGivenSnapshotsUnsupported
+} derive(Eq)
+pub fn ModelCompletionPolicyV4::equal(Self, Self) -> Bool
+pub fn ModelCompletionPolicyV4::not_equal(Self, Self) -> Bool
+
+pub struct ModelFactsV4 {
+  // private fields
+}
+
+pub(all) enum ModelListProfileV4 {
+  ModelListNative
+  ModelListPrefixStates
+} derive(Eq)
+pub fn ModelListProfileV4::equal(Self, Self) -> Bool
+pub fn ModelListProfileV4::not_equal(Self, Self) -> Bool
+
+pub struct ModelOptionsV4 {
+  // private fields
+}
+
+pub(all) enum ModelRelationProfileV4 {
+  ModelRelationPoint
+  ModelRelationPredicateKeySlots
+} derive(Eq)
+pub fn ModelRelationProfileV4::equal(Self, Self) -> Bool
+pub fn ModelRelationProfileV4::not_equal(Self, Self) -> Bool
 
 pub(all) enum OpKind {
   Read

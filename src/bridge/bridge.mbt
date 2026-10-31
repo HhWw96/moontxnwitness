@@ -382,3 +382,37 @@ pub fn verify_relation_predicate_classification_v4_json(
 ) -> String {
   @txn.verify_relation_predicate_classification_v4_json(text, report, options)
 }
+
+///|
+#export_name("classify_models_v4_json")
+pub fn classify_models_v4_json(text : String, options : String) -> String {
+  @txn.classify_models_v4_json(text, options)
+}
+
+///|
+#export_name("verify_model_classification_v4_json")
+pub fn verify_model_classification_v4_json(
+  text : String,
+  report : String,
+  options : String,
+) -> String {
+  @txn.verify_model_classification_v4_json(text, report, options)
+}
+
+///|
+#export_name("model_options_v4_content_json")
+pub fn model_options_v4_content_json(text : String) -> String {
+  @txn.model_options_v4_content_json(text)
+}
+
+///|
+#export_name("model_report_v4_content_json")
+pub fn model_report_v4_content_json(text : String) -> String {
+  @txn.model_report_v4_content_json(text)
+}
+
+///|
+#export_name("model_capsule_v4_content_json")
+pub fn model_capsule_v4_content_json(text : String) -> String {
+  @txn.model_capsule_v4_content_json(text)
+}

@@ -335,6 +335,12 @@ def select_distribution_files(root, public_names, tested_files, version):
         for name in RELATION034_RUNTIME_INPUTS:
             require(name, 'actual compiled relation/source interfaces and shipped build identities')
 
+    if (root/'cmd/sdk.mjs').is_file() and 'classifyModelsV4' in (root/'cmd/sdk.mjs').read_text(encoding='utf8'):
+        for name in ('cmd/models-v4.mjs', 'scripts/models-v4-sdk-test.mjs', 'dist/models-v4.mjs',
+                     'docs/model-obligations-v4.md', 'examples/models-v4-roundtrip.mjs',
+                     'examples/models-v4-register.json', 'examples/models-v4-list.json'):
+            require(name, 'current model namespace requires its SDK, audit and offline source-bound consumer')
+
     source = set()
     for name in public_names:
         path = PurePosixPath(name)
@@ -358,6 +364,8 @@ def select_distribution_files(root, public_names, tested_files, version):
                     and item.name != 'package.json' and (folder == 'dist' or name in public_names)):
                 portable.add(name)
     portable.update(n for n in required if n.startswith(('verification/', 'dist/')))
+    if (root/'cmd/sdk.mjs').is_file() and 'classifyModelsV4' in (root/'cmd/sdk.mjs').read_text(encoding='utf8'):
+        portable.add('scripts/models-v4-sdk-test.mjs')
     if tuple(map(int, version.split('.'))) >= (0, 2, 1):
         # Explicit small consumer inputs; no baseline binaries or historical runs.
         for name in ('scripts/v020-compatibility-test.mjs', 'scripts/v020-invalid-compatibility-test.mjs'):

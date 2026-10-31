@@ -25,8 +25,13 @@ import {analyzeV4, classifyV4, reduceV4, verifyV4, verifyClassificationV4, verif
 import { analyzeModelProfileV3, verifyModelProfileV3, makeModelProfileCapsuleV3,
   replayModelProfileCapsuleV3 } from './model-profile.mjs';
 
+import {classifyModelsV4,verifyModelsV4,makeModelsCapsuleV4,replayModelsCapsuleV4,parseModelOptionsV4} from "./models-v4.mjs";
+
 const help = `MoonTxnWitness v${version()}
 用法：
+  node dist/moontxnwitness.mjs classify-models-v4 SOURCE.json [--options OPTIONS.json] [--models elle-core|NAME,...] [--list-profile native|captured-list-prefix-state/v2] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs verify-models-v4 SOURCE.json REPORT.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
+  node dist/moontxnwitness.mjs replay-models-v4 CAPSULE.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs check HISTORY.json [--format text|json|markdown|dot] [--output FILE] [--witness FILE]
   node dist/moontxnwitness.mjs verify HISTORY.json CERTIFICATE.json
   node dist/moontxnwitness.mjs reduce-relation-category-v4 SOURCE.json --category G2-item [--options OPTIONS.json] [--max-checks 256] [--output REPORT.json] [--source REDUCED.json] [--capsule CAPSULE.json]
@@ -181,6 +186,21 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (['classify-models-v4','verify-models-v4','replay-models-v4'].includes(args[0])) {
+    const command=args[0],isVerify=command==='verify-models-v4',isReplay=command==='replay-models-v4';
+    const {paths,options}=localArgs(args.slice(1),['--options','--models','--list-profile','--output',...(!isVerify&&!isReplay?['--capsule']:[])],isVerify?2:1);
+    const inputs=[...paths,...(options['--options']?[options['--options']]:[])];
+    if(inputs.filter(p=>p==='-').length>1)throw new Error('Only one model input may use standard input');
+    const requested=options['--options']?parseModelOptionsV4(readBounded(options['--options'],8192)):{};
+    if(options['--models']!==undefined){if(Object.hasOwn(requested,'models'))throw new Error('models must be supplied once');requested.models=options['--models']==='elle-core'?'elle-core':options['--models'].split(',');}
+    if(options['--list-profile']!==undefined){if(Object.hasOwn(requested,'listProfile'))throw new Error('listProfile must be supplied once');requested.listProfile=options['--list-profile'];}
+    const source=readBounded(paths[0],isReplay?64*1024*1024:8*1024*1024),companions=[];let result;
+    if(isReplay)result=replayModelsCapsuleV4(source,requested);
+    else if(isVerify)result=verifyModelsV4(source,readBounded(paths[1],32*1024*1024),requested);
+    else if(options['--capsule']){const capsule=makeModelsCapsuleV4(source,requested);result=JSON.parse(JSON.parse(capsule).reportText);companions.push([options['--capsule'],capsule+'\n']);}
+    else result=classifyModelsV4(source,requested);
+    emitJSON(result,options['--output'],inputs,companions);
+    process.exitCode=isVerify||isReplay?(result.valid===true?0:2):result.status==='checked-compatible'?0:result.status==='refuted'?1:result.status==='invalid'?2:3;
   } else if (['reduce-relation-category-v4','verify-relation-category-reduction-v4','replay-relation-category-reduction-v4'].includes(args[0])) {
     const command=args[0],isVerify=command.startsWith('verify-'),isReplay=command.startsWith('replay-');
     const {paths,options}=localArgs(args.slice(1),['--category','--options','--max-checks','--output',...(!isVerify&&!isReplay?['--source','--capsule']:[])],isVerify?2:1);

@@ -1,0 +1,11 @@
+# Model source mappings, v4 development checkpoint
+
+The `captured-register-full-program/v2` profile reconstructs model inputs from the original `point-register-v1` capture. It retains every delivered read and every write, plus original begin/savepoint/rollback/release/commit events, immutable version identities, effective final writes and the actual per-transaction outcomes. The complete capture window, every producer and each installed writer chain are rechecked. A write predecessor is a lineage constraint; it does not create a SELECT observation.
+
+Only when these source obligations finish can an acyclic extension graph produce a generalized SI completion with an explicit commit order and visible prefix per transaction. CV uses an independently checked per-key rank certificate and the active own overlay at each delivered read. Raw register semantics and source counters have separate revision-2 identities. The existing declared-register profile and original six model APIs retain their definitions.
+
+Unknown SQL/conditions, missing events, ambiguous write chains, missing versions, unconfirmed outcomes or exhausted budgets prevent acceptance. A reliable raw G1a/G1b/INT or graph counterexample remains visible even when another obligation is unknown. RC may accept external rereads of different committed versions; full INT is a separate stronger-model obligation. Given logical SSG/snapshot assertions remain unsupported, and a client BEGIN is not interpreted as a database logical snapshot.
+
+The developer oracle replays 1,000 distinct original event programs against the emitted CO/VIS evidence. It applies savepoint rollback to writes while retaining earlier delivered reads; it does not use the model graph, inferred writer-order builder or the model acceptance status as its oracle. Boundary tests cover source/window gaps, invalid own lineage, complete and partial budgets, all-read WR cycles, caller budget authorization, dirty-update implication and evidence mutation. This is developer verification, not an external adoption or production claim.
+
+See the public-API [captured-register example](../examples/captured-models-v4/README.md). Unique-identity lists and relation rows retain their existing direct source/category checks; theorem-equivalent point projections for those models are separate work and remain pending until verified.

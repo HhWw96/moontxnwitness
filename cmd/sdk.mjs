@@ -471,3 +471,5 @@ export {classifyRelationPredicateV4,verifyRelationPredicateClassificationV4,make
   makeInternalConsistencyCapsuleV4,replayRelationCapsuleV4,SOURCE_RULES_V4_LIMITS} from './relation-v4.mjs';
 
 export {reduceRelationCategoryV4,verifyRelationCategoryReductionV4,makeRelationCategoryReductionCapsuleV4,replayRelationCategoryReductionCapsuleV4,parseRelationReductionOptionsV4} from "./relation-reduction-v4.mjs";
+
+export {classifyModelsV4,verifyModelsV4,makeModelsCapsuleV4,replayModelsCapsuleV4,parseModelOptionsV4,ELLE_CORE_MODELS_V4,MODEL_V4_LIMITS} from "./models-v4.mjs";

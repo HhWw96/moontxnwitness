@@ -692,5 +692,46 @@ class Relation034InventoryTests(unittest.TestCase):
         self.assertNotIn('scripts/private-relations.mjs', selected['portable'])
 
 
+class Models036InventoryTests(unittest.TestCase):
+    run_git = classmethod(DistributionTests.run_git.__func__)
+
+    @classmethod
+    def setUpClass(cls):
+        DistributionTests.setUpClass.__func__(cls)
+        names = {'cmd/models-v4.mjs', 'scripts/models-v4-sdk-test.mjs', 'dist/models-v4.mjs',
+                 'docs/model-obligations-v4.md', 'examples/models-v4-roundtrip.mjs',
+                 'examples/models-v4-register.json', 'examples/models-v4-list.json'}
+        for name in names:
+            path = cls.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('{}' if name.endswith('.json') else '// tiny model consumer fixture\n', encoding='utf8')
+        (cls.root / 'cmd/sdk.mjs').write_text('export const classifyModelsV4 = true;\n', encoding='utf8')
+        cls.public = cls.public | {name for name in names if not name.startswith('dist/')}
+
+    def select_models(self):
+        return inventory.select_distribution_files(self.root, self.public, self.tested, '0.1.2')
+
+    def test_model_namespace_includes_runtime_and_offline_consumer(self):
+        selected = self.select_models()
+        inventory.assert_complete(selected)
+        self.assertIn('cmd/models-v4.mjs', selected['source'])
+        self.assertIn('dist/models-v4.mjs', selected['portable'])
+        self.assertIn('scripts/models-v4-sdk-test.mjs', selected['portable'])
+        self.assertIn('examples/models-v4-register.json', selected['portable'])
+        self.assertIn('examples/models-v4-list.json', selected['portable'])
+        self.assertNotIn('cmd/models-v4.mjs', selected['portable'])
+
+    def test_missing_compiled_model_wrapper_blocks_distribution(self):
+        path = self.root / 'dist/models-v4.mjs'
+        saved = path.with_suffix('.fixture-saved')
+        path.rename(saved)
+        try:
+            selected = self.select_models()
+            self.assertTrue(any(row['file'] == 'dist/models-v4.mjs' for row in selected['missingInputs']))
+            with self.assertRaises(AssertionError): inventory.assert_complete(selected)
+        finally:
+            saved.rename(path)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

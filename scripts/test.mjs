@@ -27,6 +27,7 @@ runMoon(['fmt', '--check']);
 runMoon(['check', '--target', 'all', '--deny-warn', '--jobs', '1']);
 for (const target of targets) runMoon(['test', '--target', target, '--deny-warn', '--jobs', '1']);
 await import('./build.mjs');
+await import('./models-v4-sdk-test.mjs');
 assert.deepEqual(verificationFingerprint(root,{includeDist:false}),testedSources,'Executable sources changed during core verification');
 const testedFiles=verificationFingerprint(root);
 const public030Check=spawnSync(process.execPath,['scripts/public030-compatibility-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:4*1024*1024});
