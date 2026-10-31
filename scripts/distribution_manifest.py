@@ -10,7 +10,7 @@ import json
 from evidence_json import load_receipt
 from pathlib import Path, PurePosixPath
 from input_cache import public_cached_entries
-from import_postgres_ci_bundle import validated_postgres_import_files
+from import_postgres_ci_bundle import validated_ci_reproduction_files
 
 EXCLUDED_DIRS = {'.git', '_build', '.mooncakes', 'node_modules', 'artifacts',
                  'dist', '__pycache__', '.venv-pg'}
@@ -166,7 +166,7 @@ def select_distribution_files(root, public_names, tested_files, version):
     package_release.py, not a second approximation of its input rules.
     """
     root = Path(root).resolve()
-    imported_pg = validated_postgres_import_files(root, version)
+    imported_pg = validated_ci_reproduction_files(root, version)
     cached = public_cached_entries(root)
     public_names = {safe_name(n) for n in public_names} | set(cached) | set(imported_pg)
     tested_files = {safe_name(n): value for n, value in tested_files.items()}
