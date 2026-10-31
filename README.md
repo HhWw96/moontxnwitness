@@ -12,6 +12,10 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
+## v0.3.9 候选：共享 SDK 核心
+
+默认 SDK 的配置化诊断与 SQL 接口共用主 MoonBit 实例，原同步接口、预算和证据规则保持；四个独立工具仍保留。新候选分别核验共享入口、独立入口的完整响应及实际执行文件摘要，详见[实现与验证方式](docs/shared-sdk-core-v039.md)。本版本性能需要单独测量，不能沿用旧版本数字。
+
 ## v0.3.8 候选：完整 JavaScript 报告对象
 
 `analyze` 与 `analyzeWithOptions` 使用原生对象传输完整报告，保留原分析、预算、字段顺序与旧文本接口；旧运行时继续使用原回退路径。固定公开 v0.3.1 基线的同作业配对实验中，五个目标场景几何均值速度为 **2.2315 倍**、峰值 RSS 比为 **0.77786**，三个控制场景通过，完整保留 49,770 条依赖边。数据绑定实验候选与实际 Linux 运行文件；本集成版本的性能需单独测量。实测覆盖两个 JavaScript 分析入口；v4 分类与其他模型接口的性能未包含在此结果中。见[完整协议、结果与边界](docs/native-report-performance.md)。
@@ -121,7 +125,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.3.8
+moon add HhWw96/moontxnwitness@0.3.9
 ```
 
 ```javascript

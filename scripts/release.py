@@ -160,8 +160,28 @@ def validate_configured037_receipts(summary, package):
         for key in ('actualDatabaseExecution','sourceFactsProduced','writerWindowVerified','isolationAnalysisReady'):
             assert value[key] is False
         assert value['runtimeSha256']==summary['buildManifest']['configuredCoreSha256']['configured-session-core.mjs']
+        if tuple(map(int, summary['version'].split('.'))) >= (0, 3, 9):
+            dispatch=value['dispatchRuntimeBindings']
+            assert dispatch['format']=='configured-shared-runtime-role-bindings/v1'
+            assert dispatch['sharedFile']=='core.mjs' and dispatch['sharedSha256']==summary['buildManifest']['coreSha256']
+            assert dispatch['standaloneFile']=='configured-session-core.mjs' and dispatch['standaloneSha256']==value['runtimeSha256']
+            assert dispatch['actualSharedAndStandaloneExecution'] is True
+            assert dispatch['comparedCalls'].get('diagnoseConfiguredSessionV4',0)>0
+            assert dispatch['comparedCalls'].get('verifyConfiguredSessionV4',0)>0
         assert kind+' configured session runtime-only 14 diagnostics CLI and independent-caller capsule checks' in package['checks']
     return package['configured037Consumers']
+
+
+def validate_shared039_receipts(summary, package, version):
+    if tuple(map(int, version.split('.'))) < (0, 3, 9):
+        return
+    from shared_core_contract import validate_shared039_receipt
+    manifest=summary['buildManifest']
+    sdk=summary['testedFileSha256']['dist/sdk.mjs']
+    validate_shared039_receipt(summary['foundation039'],manifest,sdk)
+    for kind in ('source','portable'):
+        validate_shared039_receipt(package['shared039Consumers'][kind],manifest,sdk)
+        assert kind+' shared SDK all13 primitive parity and actual two-core runtime-role binding' in package['checks']
 
 
 def validate_native038_receipts(summary, package, version):
@@ -460,6 +480,7 @@ def validate_scoped_acceptance(acceptance, manifest):
 
     if tuple(map(int, VERSION.split('.'))) >= (0, 3, 7):
         validate_configured037_receipts(summary, package)
+    validate_shared039_receipts(summary, package, VERSION)
 
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names

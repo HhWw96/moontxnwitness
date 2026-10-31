@@ -49,6 +49,9 @@ if CONFIGURED037:
         assert hashlib.sha256((ROOT/'dist'/runtime).read_bytes()).hexdigest() == digest, 'Configured runtime changed after build'
     for runtime in ('configured-v4.mjs','configured-session-v4.mjs','source-components-v4.mjs','sql-candidate-v1.mjs','sql-fetch-v1.mjs'):
         assert (ROOT/'cmd'/runtime).read_bytes() == (ROOT/'dist'/runtime).read_bytes(), 'Configured wrapper differs: '+runtime
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 9):
+        for runtime in ('configured-shared-v4.mjs','sql-candidate-host-v1.mjs','sql-fetch-host-v1.mjs'):
+            assert (ROOT/'cmd'/runtime).read_bytes() == (ROOT/'dist'/runtime).read_bytes(), 'Shared configured wrapper differs: '+runtime
 
 if RELATION034:
     for runtime in ('relation-v4.mjs', 'relation-reduction-v4.mjs'):
@@ -129,6 +132,7 @@ predicate035_consumers = {}
 models036_consumers = {}
 configured037_consumers = {}
 native038_consumers = {}
+shared039_consumers = {}
 
 
 def run(args, cwd, expected=0, timeout=180):
@@ -305,8 +309,25 @@ for kind in ("portable", "source"):
         assert result['actualDatabaseExecution'] is False
         assert result['sourceFactsProduced'] is False and result['writerWindowVerified'] is False and result['isolationAnalysisReady'] is False
         assert result['runtimeSha256'] == MANIFEST['configuredCoreSha256']['configured-session-core.mjs']
+        if tuple(map(int, VERSION.split('.'))) >= (0, 3, 9):
+            dispatch = result['dispatchRuntimeBindings']
+            assert dispatch['format'] == 'configured-shared-runtime-role-bindings/v1'
+            assert dispatch['sharedFile'] == 'core.mjs' and dispatch['sharedSha256'] == MANIFEST['coreSha256']
+            assert dispatch['standaloneFile'] == 'configured-session-core.mjs' and dispatch['standaloneSha256'] == result['runtimeSha256']
+            assert dispatch['actualSharedAndStandaloneExecution'] is True
+            assert dispatch['comparedCalls'].get('diagnoseConfiguredSessionV4', 0) > 0
+            assert dispatch['comparedCalls'].get('verifyConfiguredSessionV4', 0) > 0
         configured037_consumers[kind] = result
         checks.append(kind+' configured session runtime-only 14 diagnostics CLI and independent-caller capsule checks')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 9):
+        shared_receipt_path = work / ('shared-core-' + kind + '.json')
+        result = json.loads(run([NODE, 'scripts/shared-core-runtime-test.mjs', str(shared_receipt_path)], consumer))
+        actual = load_receipt(shared_receipt_path)
+        from shared_core_contract import validate_shared039_receipt
+        validate_shared039_receipt(actual, MANIFEST, hashlib.sha256((consumer / 'dist/sdk.mjs').read_bytes()).hexdigest())
+        assert result['passed'] is True and result['checks'] == 11
+        shared039_consumers[kind] = actual
+        checks.append(kind + ' shared SDK all13 primitive parity and actual two-core runtime-role binding')
     if tuple(map(int, VERSION.split('.'))) >= (0, 3, 8):
         native_receipt_path = work / ('native-report-' + kind + '.json')
         result = json.loads(run([NODE, 'scripts/native-report-sdk-test.mjs', str(consumer / 'dist'), str(native_receipt_path)], consumer))
@@ -858,6 +879,8 @@ if CONFIGURED037:
     receipt['configured037Consumers'] = configured037_consumers
 if tuple(map(int, VERSION.split('.'))) >= (0, 3, 8):
     receipt['native038Consumers'] = native038_consumers
+if tuple(map(int, VERSION.split('.'))) >= (0, 3, 9):
+    receipt['shared039Consumers'] = shared039_consumers
 (ROOT / "verification/package.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / "release-index.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / (NAME + "-release.json")).write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

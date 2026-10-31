@@ -5,13 +5,28 @@ import {resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {sourceFingerprint} from './build-fingerprint.mjs';
-import {normalizeSQLCandidateV1,verifySQLCandidateV1,normalizeSQLConfigV1,compareConfiguredCTextV1} from '../dist/sql-candidate-v1.mjs';
+import * as standaloneSQL from '../dist/sql-candidate-v1.mjs';
+import * as sharedSDK from '../dist/sdk.mjs';
+const sharedCalls={};
+function bothSQL(name,args){
+ const outcome=fn=>{try{return {ok:true,value:fn(...args)};}catch(error){return {ok:false,error};}};
+ const original=outcome(standaloneSQL[name]),shared=outcome(sharedSDK[name]);
+ const description=x=>x.ok?{ok:true,value:x.value}:{ok:false,name:x.error.name,message:x.error.message};
+ assert.deepEqual(description(shared),description(original),'Shared/standalone SQL mismatch: '+name);
+ sharedCalls[name]=(sharedCalls[name]??0)+1;
+ if(!original.ok)throw original.error;
+ return original.value;
+}
+const normalizeSQLCandidateV1=(...args)=>bothSQL('normalizeSQLCandidateV1',args);
+const verifySQLCandidateV1=(...args)=>bothSQL('verifySQLCandidateV1',args);
+const normalizeSQLConfigV1=(...args)=>bothSQL('normalizeSQLConfigV1',args);
+const compareConfiguredCTextV1=(...args)=>bothSQL('compareConfiguredCTextV1',args);
 const root=resolve(import.meta.dirname,'..'),hash=x=>createHash('sha256').update(x).digest('hex');
 const path=resolve(root,'artifacts/sql-projection-cross-inputs.json'),raw=readFileSync(path),inputs=JSON.parse(raw);
 assert.equal(inputs.actualSQLGlotExecution,true);assert.equal(inputs.sqlglotVersion,'30.26.0');
 assert.equal(inputs.producerModuleSha256,hash(readFileSync(resolve(root,'integrations/python/moontxnwitness_capture/configured_sql.py'))));
 assert.equal(inputs.producerScriptSha256,hash(readFileSync(resolve(root,'scripts/configured-sql-cross-inputs.py'))));
-const sourceBefore=sourceFingerprint(root),coreBefore=hash(readFileSync(resolve(root,'dist/sql-projection-core.mjs'))),rows=[];
+const sourceBefore=sourceFingerprint(root),coreBefore=hash(readFileSync(resolve(root,'dist/sql-projection-core.mjs'))),sharedBefore=hash(readFileSync(resolve(root,'dist/core.mjs'))),rows=[];
 function check(name,fn){try{fn();rows.push({name,passed:true});}catch(error){rows.push({name,passed:false,error:error.message,stack:error.stack});}}
 function verify(c,options={}){return verifySQLCandidateV1(c.configText,c.sql,c.parametersText,c.candidateText,options);}
 const initial=inputs.cases[0];
@@ -52,6 +67,6 @@ const put=(name,text)=>{const path=resolve(dir,name);writeFileSync(path,text);re
 const config=put('config.json',initial.configText),sql=put('sql.txt',initial.sql),params=put('params.json',initial.parametersText),candidate=put('candidate.json',initial.candidateText);
 check('minimal CLI verifies file input without altering bytes',()=>{const before=[config,sql,params,candidate].map(p=>hash(readFileSync(p)));const r=spawnSync(process.execPath,[resolve(root,'scripts/verify-sql-candidate-v1.mjs'),config,sql,params,candidate],{encoding:'utf8',windowsHide:true,maxBuffer:4*1024*1024});assert.equal(r.status,0,r.stderr);assert.equal(JSON.parse(r.stdout).valid,true);assert.deepEqual([config,sql,params,candidate].map(p=>hash(readFileSync(p))),before);});
 check('minimal CLI source mismatch is rejected',()=>{const changed=put('params-changed.json','[18]');const r=spawnSync(process.execPath,[resolve(root,'scripts/verify-sql-candidate-v1.mjs'),config,sql,changed,candidate],{encoding:'utf8',windowsHide:true,maxBuffer:4*1024*1024});assert.equal(r.status,2,r.stderr);assert.equal(JSON.parse(r.stdout).valid,false);});
-check('source/runtime unchanged throughout independent cross-check',()=>{assert.equal(sourceFingerprint(root),sourceBefore);assert.equal(hash(readFileSync(resolve(root,'dist/sql-projection-core.mjs'))),coreBefore);});
-const failed=rows.filter(r=>!r.passed),receipt={format:'v037-independent-moonbit-sql-cross-validation/v1',passed:!failed.length,checks:rows.length,failed:failed.length,actualSQLGlotCases:inputs.cases.length,sourceFingerprint:sourceBefore,coreSha256:coreBefore,inputSha256:hash(raw),producerModuleSha256:inputs.producerModuleSha256,results:rows,actualDatabaseExecution:false,actualPostgreSQLTextComparison:false,sourceFactsProduced:false,fullDriverProjection:false,formalPerformanceMeasurement:false};
+check('source/runtime unchanged throughout independent cross-check',()=>{assert.equal(sourceFingerprint(root),sourceBefore);assert.equal(hash(readFileSync(resolve(root,'dist/sql-projection-core.mjs'))),coreBefore);assert.equal(hash(readFileSync(resolve(root,'dist/core.mjs'))),sharedBefore);});
+const failed=rows.filter(r=>!r.passed),receipt={format:'v037-independent-moonbit-sql-cross-validation/v1',passed:!failed.length,checks:rows.length,failed:failed.length,actualSQLGlotCases:inputs.cases.length,sourceFingerprint:sourceBefore,coreSha256:coreBefore,sharedCoreSha256:sharedBefore,sharedCalls,inputSha256:hash(raw),producerModuleSha256:inputs.producerModuleSha256,results:rows,actualDatabaseExecution:false,actualPostgreSQLTextComparison:false,sourceFactsProduced:false,fullDriverProjection:false,formalPerformanceMeasurement:false};
 writeFileSync(resolve(root,'artifacts/sql-projection-cross-validation.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify({passed:receipt.passed,checks:rows.length,failed:failed.length,actualSQLGlotCases:inputs.cases.length,failures:failed}));if(failed.length)process.exitCode=1;

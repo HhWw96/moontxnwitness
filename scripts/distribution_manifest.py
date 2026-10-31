@@ -174,6 +174,13 @@ CONFIGURED037_RUNTIME_INPUTS = (
 
 NATIVE038_PORTABLE_INPUTS = ('scripts/native-report-sdk-test.mjs', 'docs/native-report-performance.md', 'docs/native-report-performance.json')
 
+SHARED039_SOURCE_INPUTS = ('cmd/configured-shared-v4.mjs', 'cmd/sql-candidate-host-v1.mjs',
+                         'cmd/sql-fetch-host-v1.mjs', 'scripts/shared-core-host-test.mjs',
+                         'scripts/shared_core_contract.py', 'scripts/test_shared039_contract.py')
+SHARED039_PORTABLE_INPUTS = ('scripts/shared-core-runtime-test.mjs', 'scripts/bench/full-sdk/parse-static-imports.mjs',
+                           'docs/shared-sdk-core-v039.md')
+SHARED039_RUNTIME_INPUTS = ('dist/configured-shared-v4.mjs', 'dist/sql-candidate-host-v1.mjs', 'dist/sql-fetch-host-v1.mjs')
+
 
 def configured037_available(root,version):
     return tuple(map(int,version.split('.'))) >= (0,3,7)
@@ -458,6 +465,9 @@ def select_distribution_files(root, public_names, tested_files, version):
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         for name in NATIVE038_PORTABLE_INPUTS:
             require(name, 'native JS report current SDK and digest-bound performance scope')
+    if tuple(map(int, version.split('.'))) >= (0, 3, 9):
+        for name in SHARED039_SOURCE_INPUTS + SHARED039_PORTABLE_INPUTS + SHARED039_RUNTIME_INPUTS:
+            require(name, 'shared main-core SDK, genuine standalone routes and exact runtime-role conformance')
 
     source = set()
     for name in public_names:
@@ -561,6 +571,8 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.update(n for n in public_names if n.startswith('fixtures/source-components-v4/'))
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         portable.update(NATIVE038_PORTABLE_INPUTS)
+    if tuple(map(int, version.split('.'))) >= (0, 3, 9):
+        portable.update(SHARED039_PORTABLE_INPUTS)
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))

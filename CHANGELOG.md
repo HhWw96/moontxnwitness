@@ -1,3 +1,9 @@
+# 0.3.9 — development
+
+- Share configured-session, source, SQL and fetch entry points with the default SDK's main MoonBit instance while retaining all four independent compiled tools.
+- Reuse unchanged synchronous SQL host validation through core-free factories; preserve algorithms, budgets, counters, original text interfaces and caller-owned evidence.
+- Require actual shared/standalone primitive equality, a parsed two-core SDK closure and exact per-role consumer hashes. Keep v0.3.9 performance separate from earlier measurements.
+
 # 0.3.8 — development
 
 - Return complete native JavaScript report objects from the legacy and balanced SDK analysis entries; preserve the original text APIs and analysis budgets.

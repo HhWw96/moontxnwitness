@@ -26,7 +26,7 @@ if(pythonPreflight.error||pythonPreflight.status!==0)throw Error('Install the fi
 await import('./toolchain-policy-test.mjs');
 const testedSources=verificationFingerprint(root,{includeDist:false});
 await import('./core-test-counts-test.mjs');
-for(const pattern of ['test_core_test_counts.py','test_configured_cross_cli.py','test_native038_contract.py']){
+for(const pattern of ['test_core_test_counts.py','test_configured_cross_cli.py','test_native038_contract.py','test_shared039_contract.py']){
  const check=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),['-B','-m','unittest','discover','-s','scripts','-p',pattern,'-v'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:4*1024*1024,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
  if(check.error||check.status!==0)throw Error(pattern+' contract failed: '+check.stdout+check.stderr);
  if(check.stdout)process.stdout.write(check.stdout);if(check.stderr)process.stderr.write(check.stderr);
@@ -161,6 +161,16 @@ if(configuredInput.error||configuredInput.status!==0)throw Error('Actual configu
 const configuredCross=spawnSync(process.execPath,['scripts/configured-sql-cross-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:8*1024*1024});
 if(configuredCross.error||configuredCross.status!==0)throw Error('Independent configured grammar cross-check failed: '+configuredCross.stdout+configuredCross.stderr);
 foundation037.sqlGrammarCrossCheck=JSON.parse(configuredCross.stdout);assert.equal(foundation037.sqlGrammarCrossCheck.passed,true);
+const sharedHost=spawnSync(process.execPath,['scripts/shared-core-host-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:4*1024*1024});
+if(sharedHost.error||sharedHost.status!==0)throw Error('Shared SQL host checks failed: '+sharedHost.stdout+sharedHost.stderr);
+assert.equal(JSON.parse(sharedHost.stdout).checks,18);
+const sharedPath=resolve(mkdtempSync(resolve(root,'artifacts/shared-core-main-')),'receipt.json');
+const sharedRun=spawnSync(process.execPath,['scripts/shared-core-runtime-test.mjs',sharedPath],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:8*1024*1024});
+if(sharedRun.error||sharedRun.status!==0)throw Error('Shared SDK runtime parity failed: '+sharedRun.stdout+sharedRun.stderr);
+const foundation039=JSON.parse(readFileSync(sharedPath,'utf8'));
+assert.equal(foundation039.passed,true);assert.equal(foundation039.checks,11);assert.equal(foundation039.defaultSDKStaticModules,41);
+assert.equal(foundation039.roleHashes['core.mjs'],native038Manifest.coreSha256);
+assert.equal(foundation039.sdkSha256,native038Evidence.sdkSha256);
 const foundation036 = {newIndependentReviewPerformed:false,finalCoreElle2000Executed:false,formalPerformanceMeasurement:false};
 for(const [field,script,count] of [
   ['modelsHostTests','scripts/models-v4-sdk-test.mjs',90],
@@ -462,6 +472,7 @@ receipt.foundation035 = foundation035;
 receipt.foundation036 = foundation036;
 receipt.foundation037 = foundation037;
 receipt.foundation038 = foundation038;
+receipt.foundation039 = foundation039;
 receipt.public032CompatibilityTests = public032Compatibility;
 receipt.public033CompatibilityTests = public033Compatibility;
 receipt.v4IndependentAudit = v4IndependentAudit;
