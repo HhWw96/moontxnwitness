@@ -58,12 +58,45 @@ def validate_public033_compatibility_receipt(summary, version):
     return value
 
 
+def validate_public034_candidate_files(value, summary, notice_sha):
+    """Bind every observed top-level file to the current executed snapshot."""
+    files = value['candidateRuntimeFiles']
+    tested = summary['testedFileSha256']
+    expected = {name[5:]: digest for name, digest in tested.items()
+                if name.startswith('dist/') and '/' not in name[5:]}
+    notice = 'THIRD_PARTY_NOTICES.txt'
+    # Notices are shipped bytes, intentionally outside the executable fingerprint.
+    assert notice not in expected
+    expected[notice] = notice_sha
+    required = {'core.mjs', 'capture-core.mjs', 'sdk.mjs', 'moontxnwitness.mjs',
+                'evidence.mjs', 'build-manifest.json', 'compact-runtime.mjs',
+                'legacy-v028-dispatch.mjs', 'legacy-v034.mjs', 'legacy-v034-binding.mjs'}
+    slots = {'configured-session-core.mjs', 'source-components-core.mjs',
+             'sql-projection-core.mjs', 'sql-fetch-core.mjs'}
+    manifest = summary['buildManifest']
+    assert set(manifest['configuredCoreSha256']) == slots
+    assert required | slots <= set(expected)
+    assert isinstance(files, dict) and set(files) == set(expected)
+    for name, digest in expected.items():
+        assert name and '/' not in name and '\\' not in name and ':' not in name
+        row = files[name]
+        assert isinstance(row, dict) and set(row) == {'bytes', 'sha256'}
+        assert type(row['bytes']) is int and 0 <= row['bytes'] <= 768 * 1024 * 1024
+        assert isinstance(digest, str) and len(digest) == 64 and all(c in '0123456789abcdef' for c in digest)
+        assert row['sha256'] == digest
+    assert files['core.mjs']['sha256'] == manifest['coreSha256']
+    assert files['capture-core.mjs']['sha256'] == manifest['captureCoreSha256']
+    for name in slots:
+        assert files[name]['sha256'] == manifest['configuredCoreSha256'][name]
+    return files
+
+
 def validate_public034_compatibility_receipt(summary, version):
     value = summary['public034CompatibilityTests']
     assert value['passed'] is True and value['checks'] == 47 and value['groups'] == 7
     assert value['currentVersion'] == version and value['usesPublishedRuntimeOnly'] is True
     assert value['historicalSourceSnapshotCreated'] is False and value['sourcePoolUnchanged'] is True
-    assert value['candidateRuntimeFiles']['core.mjs']['sha256'] == summary['buildManifest']['coreSha256']
+    validate_public034_candidate_files(value, summary, sha256(ROOT / 'dist/THIRD_PARTY_NOTICES.txt'))
     # Reuse the complete executable receipt contract, including distinct case IDs,
     # all methods, every group's provenance and the exact candidate file inventory.
     checked = subprocess.run([os.environ.get('MTW_NODE', 'node'), '--input-type=module', '-e',
@@ -497,6 +530,7 @@ def validate_scoped_acceptance(acceptance, manifest):
                 'public034CompatibilityTests': actual['compatibility'],
                 'public034Schema1Tests': actual['schema1'],
                 'buildManifest': summary['buildManifest'],
+                'testedFileSha256': summary['testedFileSha256'],
             }, VERSION)
             for group in ('core', 'capture', 'models', 'classification', 'profiles', 'v4', 'integrity'):
                 assert kind + ' public034 original fixed compatibility group ' + group in package['checks']

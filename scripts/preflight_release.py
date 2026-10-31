@@ -40,7 +40,8 @@ def main():
     units=[]
     if not args.pins_only:
         for pattern in ('test_publication_ci.py','test_distribution.py','test_hosted_publication.py',
-                        'test_publication_download.py','test_package_archive.py','test_public025_package_gate.py'):
+                        'test_publication_download.py','test_package_archive.py','test_public025_package_gate.py',
+                        'test_compat_dispatch_staging.py','test_public034_receipt_binding.py'):
             result=subprocess.run([sys.executable,'-B','-m','unittest','discover','-s','scripts','-p',pattern,'-v'],cwd=ROOT)
             if result.returncode: raise SystemExit(result.returncode)
             units.append(pattern)
