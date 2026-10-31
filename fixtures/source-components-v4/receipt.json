@@ -1,0 +1,808 @@
+{
+  "format": "configured-source-installation/v1",
+  "config": {
+    "format": "moontxnwitness-configured-sql/v1",
+    "tables": [
+      {
+        "schema": "ledger",
+        "table": "accounts",
+        "primaryKey": "account_no",
+        "columns": [
+          {
+            "name": "account_no",
+            "type": "int64",
+            "comparison": null
+          },
+          {
+            "name": "balance",
+            "type": "int64",
+            "comparison": null
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "comparison": null
+          },
+          {
+            "name": "version",
+            "type": "text",
+            "comparison": "postgres-c-utf8-v1"
+          }
+        ],
+        "model": "relation-set-v1"
+      },
+      {
+        "schema": "Feature-X",
+        "table": "Flag.Store",
+        "primaryKey": "Feature Key",
+        "columns": [
+          {
+            "name": "Feature Key",
+            "type": "text",
+            "comparison": "postgres-c-utf8-v1"
+          },
+          {
+            "name": "enabled",
+            "type": "bool",
+            "comparison": null
+          },
+          {
+            "name": "source id",
+            "type": "text",
+            "comparison": "postgres-c-utf8-v1"
+          }
+        ],
+        "model": "relation-set-v1"
+      },
+      {
+        "schema": "业务",
+        "table": "Object Space",
+        "primaryKey": "Key",
+        "columns": [
+          {
+            "name": "Key",
+            "type": "int64",
+            "comparison": null
+          },
+          {
+            "name": "note",
+            "type": "text",
+            "comparison": "postgres-c-utf8-v1"
+          },
+          {
+            "name": "score",
+            "type": "int64",
+            "comparison": null
+          },
+          {
+            "name": "flag",
+            "type": "bool",
+            "comparison": null
+          },
+          {
+            "name": "region",
+            "type": "text",
+            "comparison": "postgres-c-utf8-v1"
+          },
+          {
+            "name": "revision",
+            "type": "text",
+            "comparison": "postgres-c-utf8-v1"
+          }
+        ],
+        "model": "relation-set-v1"
+      }
+    ],
+    "defaultSchema": "ledger",
+    "limits": {
+      "max_sql_bytes": 65536,
+      "max_tokens": 8192,
+      "max_ast_nodes": 4096,
+      "max_nesting": 64,
+      "max_terms": 128,
+      "max_insert_rows": 128,
+      "max_text_bytes": 65536
+    }
+  },
+  "policy": {
+    "namespace": "mtw_source_quote'\\safe",
+    "writers": [
+      "mtw_source_writer"
+    ],
+    "maxInitialRows": 4096,
+    "maxLogBytes": 16777216
+  },
+  "configSha256": "920bb811ff454e9c72817ffa8d6f2d3f87164bd448b00644c4c7f73fdebcd7fb",
+  "sourceFactsProduced": false,
+  "sourceAuthenticated": false,
+  "moonbitCatalogVerified": false,
+  "catalogVerified": true,
+  "initialSnapshotVerified": true,
+  "writerWindowVerified": false,
+  "driverFetchVerified": false,
+  "status": "installed-components-only",
+  "gaps": [
+    "complete-driver-source-projection-not-connected",
+    "writer-window-not-closed",
+    "privileged-DDL-exclusion-not-proven"
+  ],
+  "environment": {
+    "owner": "mtw_source_owner",
+    "writers": [
+      {
+        "name": "mtw_source_writer",
+        "login": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false,
+        "replication": false,
+        "ownerMembership": false,
+        "privilegedMembership": false,
+        "canSetReplicationRole": false
+      }
+    ],
+    "database": "postgres",
+    "ownerRole": {
+      "name": "mtw_source_owner",
+      "login": false,
+      "bypassRls": false,
+      "superuser": false,
+      "createRole": false,
+      "replication": false
+    },
+    "backendPid": 123792,
+    "databaseOid": 5,
+    "eventTriggers": [],
+    "clientEncoding": "UTF8",
+    "serverEncoding": "UTF8",
+    "replicationRole": "origin",
+    "serverVersionNum": "180006",
+    "standardConformingStrings": "on"
+  },
+  "initializationLocks": {
+    "pid": 123792,
+    "locks": [
+      {
+        "mode": "AccessExclusiveLock",
+        "granted": true,
+        "relation": 16388
+      },
+      {
+        "mode": "AccessExclusiveLock",
+        "granted": true,
+        "relation": 16397
+      },
+      {
+        "mode": "AccessExclusiveLock",
+        "granted": true,
+        "relation": 16406
+      }
+    ]
+  },
+  "sourceCatalog": {
+    "owner": "mtw_source_owner",
+    "objects": [
+      {
+        "kind": "r",
+        "name": "effects",
+        "owner": "mtw_source_owner"
+      },
+      {
+        "kind": "i",
+        "name": "effects_pkey",
+        "owner": "mtw_source_owner"
+      },
+      {
+        "kind": "r",
+        "name": "scope",
+        "owner": "mtw_source_owner"
+      },
+      {
+        "kind": "i",
+        "name": "scope_pkey",
+        "owner": "mtw_source_owner"
+      },
+      {
+        "kind": "S",
+        "name": "versions",
+        "owner": "mtw_source_owner"
+      }
+    ],
+    "sequence": {
+      "type": 20,
+      "cache": 1,
+      "cycle": false,
+      "start": 1,
+      "maximum": 9223372036854775807,
+      "minimum": 1,
+      "increment": 1
+    },
+    "namespace": "mtw_source_quote'\\safe",
+    "ownerMembers": [],
+    "functionCount": 2,
+    "nonOwnerGrants": []
+  },
+  "sourceScope": [
+    {
+      "primary_key": "Feature Key",
+      "relation_oid": 16397,
+      "config_sha256": "920bb811ff454e9c72817ffa8d6f2d3f87164bd448b00644c4c7f73fdebcd7fb",
+      "relation_table": "Flag.Store",
+      "relation_schema": "Feature-X"
+    },
+    {
+      "primary_key": "account_no",
+      "relation_oid": 16388,
+      "config_sha256": "920bb811ff454e9c72817ffa8d6f2d3f87164bd448b00644c4c7f73fdebcd7fb",
+      "relation_table": "accounts",
+      "relation_schema": "ledger"
+    },
+    {
+      "primary_key": "Key",
+      "relation_oid": 16406,
+      "config_sha256": "920bb811ff454e9c72817ffa8d6f2d3f87164bd448b00644c4c7f73fdebcd7fb",
+      "relation_table": "Object Space",
+      "relation_schema": "业务"
+    }
+  ],
+  "initialLedger": {
+    "rows": 260,
+    "nonInitial": 0
+  },
+  "actualCommitConfirmed": true,
+  "initialRows": 260,
+  "initialSnapshotSha256": "14bf94921bacb64a384eb79ba1522535eec2e3aa358454363b64c47d47fefc27",
+  "tables": [
+    {
+      "catalog": {
+        "oid": 16388,
+        "rls": false,
+        "kind": "r",
+        "owner": "mtw_source_owner",
+        "rules": false,
+        "table": "accounts",
+        "schema": "ledger",
+        "columns": [
+          {
+            "oid": 20,
+            "name": "account_no",
+            "number": 1,
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "typeKind": "b",
+            "collation": null,
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": null,
+            "collationProvider": null,
+            "collationDeterministic": null
+          },
+          {
+            "oid": 20,
+            "name": "balance",
+            "number": 2,
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "typeKind": "b",
+            "collation": null,
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": null,
+            "collationProvider": null,
+            "collationDeterministic": null
+          },
+          {
+            "oid": 16,
+            "name": "active",
+            "number": 3,
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "typeKind": "b",
+            "collation": null,
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": null,
+            "collationProvider": null,
+            "collationDeterministic": null
+          },
+          {
+            "oid": 25,
+            "name": "version",
+            "number": 4,
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "typeKind": "b",
+            "collation": "C",
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": "pg_catalog",
+            "collationProvider": "c",
+            "collationDeterministic": true
+          },
+          {
+            "oid": 20,
+            "name": "__mtw_source_version",
+            "number": 5,
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "typeKind": "b",
+            "collation": null,
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": null,
+            "collationProvider": null,
+            "collationDeterministic": null
+          }
+        ],
+        "forceRls": false,
+        "inherits": false,
+        "triggers": [
+          {
+            "body": "DECLARE v bigint; b bigint; k jsonb; oldk jsonb; vals jsonb; BEGIN IF NOT (SESSION_USER::text COLLATE pg_catalog.\"C\" = ANY(ARRAY['mtw_source_writer']::text[])) THEN RAISE EXCEPTION 'writer login outside source scope' USING ERRCODE='42501'; END IF; IF NOT EXISTS(SELECT 1 FROM \"mtw_source_quote'\\safe\".scope WHERE relation_oid=TG_RELID AND primary_key=TG_ARGV[0]) THEN RAISE EXCEPTION 'relation outside source scope' USING ERRCODE='42501'; END IF; IF TG_OP='DELETE' THEN v:=pg_catalog.nextval('\"mtw_source_quote''\\safe\".versions'::pg_catalog.regclass); b:=OLD.\"__mtw_source_version\"; k:=pg_catalog.to_jsonb(OLD)->TG_ARGV[0]; oldk:=k; vals:=NULL; ELSE v:=NEW.\"__mtw_source_version\"; k:=pg_catalog.to_jsonb(NEW)->TG_ARGV[0]; vals:=pg_catalog.to_jsonb(NEW)-'__mtw_source_version'; IF TG_OP='UPDATE' THEN b:=OLD.\"__mtw_source_version\"; oldk:=pg_catalog.to_jsonb(OLD)->TG_ARGV[0]; ELSE b:=NULL; oldk:=NULL; END IF; END IF; INSERT INTO \"mtw_source_quote'\\safe\".effects(version,base_version,relation_oid,operation,writer_xid,writer_login,writer_pid,row_key,old_key,row_values) VALUES(v,b,TG_RELID,TG_OP,pg_catalog.pg_current_xact_id()::text,SESSION_USER,pg_catalog.pg_backend_pid(),k,oldk,vals); RETURN NULL; END;",
+            "name": "__mtw_source_after",
+            "type": 29,
+            "owner": "mtw_source_owner",
+            "argsHex": "6163636f756e745f6e6f00",
+            "enabled": "A",
+            "argCount": 0,
+            "function": "after_write",
+            "parallel": "u",
+            "settings": [
+              "search_path=pg_catalog, pg_temp",
+              "standard_conforming_strings=on"
+            ],
+            "volatile": "v",
+            "noColumns": true,
+            "returnType": 2279,
+            "noCondition": true,
+            "functionSchema": "mtw_source_quote'\\safe",
+            "securityDefiner": true
+          },
+          {
+            "body": "BEGIN IF NOT (SESSION_USER::text COLLATE pg_catalog.\"C\" = ANY(ARRAY['mtw_source_writer']::text[])) THEN RAISE EXCEPTION 'writer login outside source scope' USING ERRCODE='42501'; END IF; IF NOT EXISTS(SELECT 1 FROM \"mtw_source_quote'\\safe\".scope WHERE relation_oid=TG_RELID AND primary_key=TG_ARGV[0]) THEN RAISE EXCEPTION 'relation outside source scope' USING ERRCODE='42501'; END IF; NEW.\"__mtw_source_version\" := pg_catalog.nextval('\"mtw_source_quote''\\safe\".versions'::pg_catalog.regclass); RETURN NEW; END;",
+            "name": "__mtw_source_before",
+            "type": 23,
+            "owner": "mtw_source_owner",
+            "argsHex": "6163636f756e745f6e6f00",
+            "enabled": "A",
+            "argCount": 0,
+            "function": "before_write",
+            "parallel": "u",
+            "settings": [
+              "search_path=pg_catalog, pg_temp",
+              "standard_conforming_strings=on"
+            ],
+            "volatile": "v",
+            "noColumns": true,
+            "returnType": 2279,
+            "noCondition": true,
+            "functionSchema": "mtw_source_quote'\\safe",
+            "securityDefiner": true
+          }
+        ],
+        "persistence": "p",
+        "primaryKeys": [
+          {
+            "keys": 1,
+            "ready": true,
+            "valid": true,
+            "columns": [
+              "account_no"
+            ],
+            "immediate": true
+          }
+        ],
+        "uniqueIndexes": [
+          {
+            "keys": 1,
+            "ready": true,
+            "valid": true,
+            "columns": [
+              "account_no"
+            ],
+            "immediate": true,
+            "noPredicate": true,
+            "noExpression": true
+          },
+          {
+            "keys": 1,
+            "ready": true,
+            "valid": true,
+            "columns": [
+              "__mtw_source_version"
+            ],
+            "immediate": true,
+            "noPredicate": true,
+            "noExpression": true
+          }
+        ]
+      },
+      "initialRows": 258
+    },
+    {
+      "catalog": {
+        "oid": 16397,
+        "rls": false,
+        "kind": "r",
+        "owner": "mtw_source_owner",
+        "rules": false,
+        "table": "Flag.Store",
+        "schema": "Feature-X",
+        "columns": [
+          {
+            "oid": 25,
+            "name": "Feature Key",
+            "number": 1,
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "typeKind": "b",
+            "collation": "C",
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": "pg_catalog",
+            "collationProvider": "c",
+            "collationDeterministic": true
+          },
+          {
+            "oid": 16,
+            "name": "enabled",
+            "number": 2,
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "typeKind": "b",
+            "collation": null,
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": null,
+            "collationProvider": null,
+            "collationDeterministic": null
+          },
+          {
+            "oid": 25,
+            "name": "source id",
+            "number": 3,
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "typeKind": "b",
+            "collation": "C",
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": "pg_catalog",
+            "collationProvider": "c",
+            "collationDeterministic": true
+          },
+          {
+            "oid": 20,
+            "name": "__mtw_source_version",
+            "number": 4,
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "typeKind": "b",
+            "collation": null,
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": null,
+            "collationProvider": null,
+            "collationDeterministic": null
+          }
+        ],
+        "forceRls": false,
+        "inherits": false,
+        "triggers": [
+          {
+            "body": "DECLARE v bigint; b bigint; k jsonb; oldk jsonb; vals jsonb; BEGIN IF NOT (SESSION_USER::text COLLATE pg_catalog.\"C\" = ANY(ARRAY['mtw_source_writer']::text[])) THEN RAISE EXCEPTION 'writer login outside source scope' USING ERRCODE='42501'; END IF; IF NOT EXISTS(SELECT 1 FROM \"mtw_source_quote'\\safe\".scope WHERE relation_oid=TG_RELID AND primary_key=TG_ARGV[0]) THEN RAISE EXCEPTION 'relation outside source scope' USING ERRCODE='42501'; END IF; IF TG_OP='DELETE' THEN v:=pg_catalog.nextval('\"mtw_source_quote''\\safe\".versions'::pg_catalog.regclass); b:=OLD.\"__mtw_source_version\"; k:=pg_catalog.to_jsonb(OLD)->TG_ARGV[0]; oldk:=k; vals:=NULL; ELSE v:=NEW.\"__mtw_source_version\"; k:=pg_catalog.to_jsonb(NEW)->TG_ARGV[0]; vals:=pg_catalog.to_jsonb(NEW)-'__mtw_source_version'; IF TG_OP='UPDATE' THEN b:=OLD.\"__mtw_source_version\"; oldk:=pg_catalog.to_jsonb(OLD)->TG_ARGV[0]; ELSE b:=NULL; oldk:=NULL; END IF; END IF; INSERT INTO \"mtw_source_quote'\\safe\".effects(version,base_version,relation_oid,operation,writer_xid,writer_login,writer_pid,row_key,old_key,row_values) VALUES(v,b,TG_RELID,TG_OP,pg_catalog.pg_current_xact_id()::text,SESSION_USER,pg_catalog.pg_backend_pid(),k,oldk,vals); RETURN NULL; END;",
+            "name": "__mtw_source_after",
+            "type": 29,
+            "owner": "mtw_source_owner",
+            "argsHex": "46656174757265204b657900",
+            "enabled": "A",
+            "argCount": 0,
+            "function": "after_write",
+            "parallel": "u",
+            "settings": [
+              "search_path=pg_catalog, pg_temp",
+              "standard_conforming_strings=on"
+            ],
+            "volatile": "v",
+            "noColumns": true,
+            "returnType": 2279,
+            "noCondition": true,
+            "functionSchema": "mtw_source_quote'\\safe",
+            "securityDefiner": true
+          },
+          {
+            "body": "BEGIN IF NOT (SESSION_USER::text COLLATE pg_catalog.\"C\" = ANY(ARRAY['mtw_source_writer']::text[])) THEN RAISE EXCEPTION 'writer login outside source scope' USING ERRCODE='42501'; END IF; IF NOT EXISTS(SELECT 1 FROM \"mtw_source_quote'\\safe\".scope WHERE relation_oid=TG_RELID AND primary_key=TG_ARGV[0]) THEN RAISE EXCEPTION 'relation outside source scope' USING ERRCODE='42501'; END IF; NEW.\"__mtw_source_version\" := pg_catalog.nextval('\"mtw_source_quote''\\safe\".versions'::pg_catalog.regclass); RETURN NEW; END;",
+            "name": "__mtw_source_before",
+            "type": 23,
+            "owner": "mtw_source_owner",
+            "argsHex": "46656174757265204b657900",
+            "enabled": "A",
+            "argCount": 0,
+            "function": "before_write",
+            "parallel": "u",
+            "settings": [
+              "search_path=pg_catalog, pg_temp",
+              "standard_conforming_strings=on"
+            ],
+            "volatile": "v",
+            "noColumns": true,
+            "returnType": 2279,
+            "noCondition": true,
+            "functionSchema": "mtw_source_quote'\\safe",
+            "securityDefiner": true
+          }
+        ],
+        "persistence": "p",
+        "primaryKeys": [
+          {
+            "keys": 1,
+            "ready": true,
+            "valid": true,
+            "columns": [
+              "Feature Key"
+            ],
+            "immediate": true
+          }
+        ],
+        "uniqueIndexes": [
+          {
+            "keys": 1,
+            "ready": true,
+            "valid": true,
+            "columns": [
+              "Feature Key"
+            ],
+            "immediate": true,
+            "noPredicate": true,
+            "noExpression": true
+          },
+          {
+            "keys": 1,
+            "ready": true,
+            "valid": true,
+            "columns": [
+              "__mtw_source_version"
+            ],
+            "immediate": true,
+            "noPredicate": true,
+            "noExpression": true
+          }
+        ]
+      },
+      "initialRows": 1
+    },
+    {
+      "catalog": {
+        "oid": 16406,
+        "rls": false,
+        "kind": "r",
+        "owner": "mtw_source_owner",
+        "rules": false,
+        "table": "Object Space",
+        "schema": "业务",
+        "columns": [
+          {
+            "oid": 20,
+            "name": "Key",
+            "number": 1,
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "typeKind": "b",
+            "collation": null,
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": null,
+            "collationProvider": null,
+            "collationDeterministic": null
+          },
+          {
+            "oid": 25,
+            "name": "note",
+            "number": 2,
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "typeKind": "b",
+            "collation": "C",
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": "pg_catalog",
+            "collationProvider": "c",
+            "collationDeterministic": true
+          },
+          {
+            "oid": 20,
+            "name": "score",
+            "number": 3,
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "typeKind": "b",
+            "collation": null,
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": null,
+            "collationProvider": null,
+            "collationDeterministic": null
+          },
+          {
+            "oid": 16,
+            "name": "flag",
+            "number": 4,
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "typeKind": "b",
+            "collation": null,
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": null,
+            "collationProvider": null,
+            "collationDeterministic": null
+          },
+          {
+            "oid": 25,
+            "name": "region",
+            "number": 5,
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "typeKind": "b",
+            "collation": "C",
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": "pg_catalog",
+            "collationProvider": "c",
+            "collationDeterministic": true
+          },
+          {
+            "oid": 25,
+            "name": "revision",
+            "number": 6,
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "typeKind": "b",
+            "collation": "C",
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": "pg_catalog",
+            "collationProvider": "c",
+            "collationDeterministic": true
+          },
+          {
+            "oid": 20,
+            "name": "__mtw_source_version",
+            "number": 7,
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "typeKind": "b",
+            "collation": null,
+            "generated": "",
+            "typeSchema": "pg_catalog",
+            "elementType": 0,
+            "collationSchema": null,
+            "collationProvider": null,
+            "collationDeterministic": null
+          }
+        ],
+        "forceRls": false,
+        "inherits": false,
+        "triggers": [
+          {
+            "body": "DECLARE v bigint; b bigint; k jsonb; oldk jsonb; vals jsonb; BEGIN IF NOT (SESSION_USER::text COLLATE pg_catalog.\"C\" = ANY(ARRAY['mtw_source_writer']::text[])) THEN RAISE EXCEPTION 'writer login outside source scope' USING ERRCODE='42501'; END IF; IF NOT EXISTS(SELECT 1 FROM \"mtw_source_quote'\\safe\".scope WHERE relation_oid=TG_RELID AND primary_key=TG_ARGV[0]) THEN RAISE EXCEPTION 'relation outside source scope' USING ERRCODE='42501'; END IF; IF TG_OP='DELETE' THEN v:=pg_catalog.nextval('\"mtw_source_quote''\\safe\".versions'::pg_catalog.regclass); b:=OLD.\"__mtw_source_version\"; k:=pg_catalog.to_jsonb(OLD)->TG_ARGV[0]; oldk:=k; vals:=NULL; ELSE v:=NEW.\"__mtw_source_version\"; k:=pg_catalog.to_jsonb(NEW)->TG_ARGV[0]; vals:=pg_catalog.to_jsonb(NEW)-'__mtw_source_version'; IF TG_OP='UPDATE' THEN b:=OLD.\"__mtw_source_version\"; oldk:=pg_catalog.to_jsonb(OLD)->TG_ARGV[0]; ELSE b:=NULL; oldk:=NULL; END IF; END IF; INSERT INTO \"mtw_source_quote'\\safe\".effects(version,base_version,relation_oid,operation,writer_xid,writer_login,writer_pid,row_key,old_key,row_values) VALUES(v,b,TG_RELID,TG_OP,pg_catalog.pg_current_xact_id()::text,SESSION_USER,pg_catalog.pg_backend_pid(),k,oldk,vals); RETURN NULL; END;",
+            "name": "__mtw_source_after",
+            "type": 29,
+            "owner": "mtw_source_owner",
+            "argsHex": "4b657900",
+            "enabled": "A",
+            "argCount": 0,
+            "function": "after_write",
+            "parallel": "u",
+            "settings": [
+              "search_path=pg_catalog, pg_temp",
+              "standard_conforming_strings=on"
+            ],
+            "volatile": "v",
+            "noColumns": true,
+            "returnType": 2279,
+            "noCondition": true,
+            "functionSchema": "mtw_source_quote'\\safe",
+            "securityDefiner": true
+          },
+          {
+            "body": "BEGIN IF NOT (SESSION_USER::text COLLATE pg_catalog.\"C\" = ANY(ARRAY['mtw_source_writer']::text[])) THEN RAISE EXCEPTION 'writer login outside source scope' USING ERRCODE='42501'; END IF; IF NOT EXISTS(SELECT 1 FROM \"mtw_source_quote'\\safe\".scope WHERE relation_oid=TG_RELID AND primary_key=TG_ARGV[0]) THEN RAISE EXCEPTION 'relation outside source scope' USING ERRCODE='42501'; END IF; NEW.\"__mtw_source_version\" := pg_catalog.nextval('\"mtw_source_quote''\\safe\".versions'::pg_catalog.regclass); RETURN NEW; END;",
+            "name": "__mtw_source_before",
+            "type": 23,
+            "owner": "mtw_source_owner",
+            "argsHex": "4b657900",
+            "enabled": "A",
+            "argCount": 0,
+            "function": "before_write",
+            "parallel": "u",
+            "settings": [
+              "search_path=pg_catalog, pg_temp",
+              "standard_conforming_strings=on"
+            ],
+            "volatile": "v",
+            "noColumns": true,
+            "returnType": 2279,
+            "noCondition": true,
+            "functionSchema": "mtw_source_quote'\\safe",
+            "securityDefiner": true
+          }
+        ],
+        "persistence": "p",
+        "primaryKeys": [
+          {
+            "keys": 1,
+            "ready": true,
+            "valid": true,
+            "columns": [
+              "Key"
+            ],
+            "immediate": true
+          }
+        ],
+        "uniqueIndexes": [
+          {
+            "keys": 1,
+            "ready": true,
+            "valid": true,
+            "columns": [
+              "Key"
+            ],
+            "immediate": true,
+            "noPredicate": true,
+            "noExpression": true
+          },
+          {
+            "keys": 1,
+            "ready": true,
+            "valid": true,
+            "columns": [
+              "__mtw_source_version"
+            ],
+            "immediate": true,
+            "noPredicate": true,
+            "noExpression": true
+          }
+        ]
+      },
+      "initialRows": 1
+    }
+  ],
+  "log": {
+    "sealed": true,
+    "records": 653,
+    "bytes": 574681,
+    "sha256": "0a2fb2cf4edd032144d48533cf9b5ac76cc867827feccd20b57d0bc59e4d7016"
+  }
+}

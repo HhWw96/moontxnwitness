@@ -1,0 +1,1053 @@
+{
+  "format": "source-components-independent-fetch-inputs/v4",
+  "actualDriverExecution": true,
+  "sameInstallationEpoch": false,
+  "sourceFactsProduced": false,
+  "cases": [
+    {
+      "config": {
+        "format": "moontxnwitness-configured-sql/v1",
+        "tables": [
+          {
+            "schema": "ledger",
+            "table": "accounts",
+            "primaryKey": "account_no",
+            "columns": [
+              {
+                "name": "account_no",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "balance",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "active",
+                "type": "bool",
+                "comparison": null
+              },
+              {
+                "name": "version",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              }
+            ],
+            "model": "relation-set-v1"
+          },
+          {
+            "schema": "Feature-X",
+            "table": "Flag.Store",
+            "primaryKey": "Feature Key",
+            "columns": [
+              {
+                "name": "Feature Key",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              },
+              {
+                "name": "enabled",
+                "type": "bool",
+                "comparison": null
+              },
+              {
+                "name": "source id",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              }
+            ],
+            "model": "relation-set-v1"
+          },
+          {
+            "schema": "业务",
+            "table": "Object Space",
+            "primaryKey": "Key",
+            "columns": [
+              {
+                "name": "Key",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "note",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              },
+              {
+                "name": "score",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "flag",
+                "type": "bool",
+                "comparison": null
+              },
+              {
+                "name": "region",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              },
+              {
+                "name": "revision",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              }
+            ],
+            "model": "relation-set-v1"
+          }
+        ],
+        "defaultSchema": "ledger",
+        "limits": {
+          "max_sql_bytes": 65536,
+          "max_tokens": 8192,
+          "max_ast_nodes": 4096,
+          "max_nesting": 64,
+          "max_terms": 128,
+          "max_insert_rows": 128,
+          "max_text_bytes": 65536
+        }
+      },
+      "execution": {
+        "candidate": {
+          "bindings": [
+            {
+              "reference": {
+                "kind": "named",
+                "type": "int64",
+                "value": "who"
+              },
+              "value": {
+                "type": "int64",
+                "value": "17"
+              }
+            }
+          ],
+          "configSha256": "920bb811ff454e9c72817ffa8d6f2d3f87164bd448b00644c4c7f73fdebcd7fb",
+          "descriptor": {
+            "assignments": [],
+            "captureFactsProduced": false,
+            "configSha256": "920bb811ff454e9c72817ffa8d6f2d3f87164bd448b00644c4c7f73fdebcd7fb",
+            "databaseSyntaxValidated": false,
+            "format": "moontxnwitness-sql-ast-candidate/v1",
+            "insertColumns": [],
+            "insertRows": [],
+            "moonbitProjectionVerified": false,
+            "operation": "select",
+            "ordering": [],
+            "originalSql": "SELECT \"account_no\",\"balance\",\"active\",\"version\" FROM \"ledger\".\"accounts\" WHERE \"account_no\"=%(who)s",
+            "parameters": [
+              {
+                "kind": "named",
+                "type": "int64",
+                "value": "who"
+              }
+            ],
+            "parserContract": "sqlglot-30.26-postgres-single-table/v1",
+            "predicates": [
+              {
+                "collation": null,
+                "column": "account_no",
+                "operator": "eq",
+                "value": {
+                  "kind": "named",
+                  "type": "int64",
+                  "value": "who"
+                }
+              }
+            ],
+            "projections": [
+              {
+                "column": "account_no",
+                "outputName": "account_no"
+              },
+              {
+                "column": "balance",
+                "outputName": "balance"
+              },
+              {
+                "column": "active",
+                "outputName": "active"
+              },
+              {
+                "column": "version",
+                "outputName": "version"
+              }
+            ],
+            "requiredProofs": [
+              "catalog-types-primary-key-and-text-collation",
+              "session-schema-resolution",
+              "server-encoding-and-string-literal-rules",
+              "actual-execution-and-delivered-result-shape",
+              "complete-fetch-for-predicate-read",
+              "installed-unique-version-sources-and-effective-write-ledger",
+              "same-statement-or-native-observed-read-version-identity",
+              "complete-source-window-and-writer-scope",
+              "independent-MoonBit-original-SQL-parameters-source-projection"
+            ],
+            "requiresNoParameterArgument": false,
+            "returning": [],
+            "returningIsPredicateRead": false,
+            "schemaResolution": "explicit-schema",
+            "sourceAuthenticated": false,
+            "sqlSha256": "e55e5fe4470c696e0566cbb2038adba886e74a4e4de0499938ed4cfe2823adc7",
+            "sqlglotVersion": "30.26.0",
+            "table": {
+              "columns": [
+                {
+                  "comparison": null,
+                  "name": "account_no",
+                  "type": "int64"
+                },
+                {
+                  "comparison": null,
+                  "name": "balance",
+                  "type": "int64"
+                },
+                {
+                  "comparison": null,
+                  "name": "active",
+                  "type": "bool"
+                },
+                {
+                  "comparison": "postgres-c-utf8-v1",
+                  "name": "version",
+                  "type": "text"
+                }
+              ],
+              "model": "relation-set-v1",
+              "primaryKey": "account_no",
+              "schema": "ledger",
+              "table": "accounts"
+            }
+          },
+          "format": "moontxnwitness-sql-binding-candidate/v1",
+          "parametersSha256": "76f2d1c50395ac96a1134783ff11cdd9122a28651a69d4a971c95c4c5efb5752",
+          "sqlSha256": "e55e5fe4470c696e0566cbb2038adba886e74a4e4de0499938ed4cfe2823adc7"
+        },
+        "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+        "cursor": "cursor-7ed7b7b9b17641a8b71347c1150cbc0e",
+        "format": "moontxnwitness-configured-execution/v1",
+        "parameters": {
+          "who": 17
+        },
+        "sourceFactsProduced": false,
+        "sql": "SELECT \"account_no\",\"balance\",\"active\",\"version\" FROM \"ledger\".\"accounts\" WHERE \"account_no\"=%(who)s",
+        "statementSeq": 3,
+        "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+      },
+      "native": {
+        "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+        "cursor": "cursor-7ed7b7b9b17641a8b71347c1150cbc0e",
+        "executionNoteSeq": 5,
+        "fields": [
+          {
+            "format": 0,
+            "name": "account_no",
+            "oid": 20,
+            "tableColumn": 1,
+            "tableOid": 16385,
+            "typmod": -1
+          },
+          {
+            "format": 0,
+            "name": "balance",
+            "oid": 20,
+            "tableColumn": 2,
+            "tableOid": 16385,
+            "typmod": -1
+          },
+          {
+            "format": 0,
+            "name": "active",
+            "oid": 16,
+            "tableColumn": 3,
+            "tableOid": 16385,
+            "typmod": -1
+          },
+          {
+            "format": 0,
+            "name": "version",
+            "oid": 25,
+            "tableColumn": 4,
+            "tableOid": 16385,
+            "typmod": -1
+          }
+        ],
+        "format": "moontxnwitness-native-result/v1",
+        "parametersSha256": "76f2d1c50395ac96a1134783ff11cdd9122a28651a69d4a971c95c4c5efb5752",
+        "resultId": "result-b1d3b7038db945848e3581d0469c0e68",
+        "rows": [
+          [
+            "MTc=",
+            "MTAw",
+            "dA==",
+            "dmVyc2lvbi3OsQ=="
+          ]
+        ],
+        "sourceFactsProduced": false,
+        "sqlSha256": "e55e5fe4470c696e0566cbb2038adba886e74a4e4de0499938ed4cfe2823adc7",
+        "statementSeq": 3,
+        "status": 2,
+        "storedColumnDeclarations": [
+          "version"
+        ],
+        "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+      },
+      "deliveries": [
+        {
+          "complete": true,
+          "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+          "cursor": "cursor-7ed7b7b9b17641a8b71347c1150cbc0e",
+          "format": "moontxnwitness-actual-delivery/v1",
+          "method": "fetchone",
+          "nativeNoteSeq": 6,
+          "resultId": "result-b1d3b7038db945848e3581d0469c0e68",
+          "rows": [
+            [
+              {
+                "type": "int64",
+                "value": "17"
+              },
+              {
+                "type": "int64",
+                "value": "100"
+              },
+              {
+                "type": "bool",
+                "value": true
+              },
+              {
+                "type": "text",
+                "value": "version-α"
+              }
+            ]
+          ],
+          "sourceFactsProduced": false,
+          "start": 0,
+          "statementSeq": 3,
+          "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+        },
+        {
+          "complete": true,
+          "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+          "cursor": "cursor-7ed7b7b9b17641a8b71347c1150cbc0e",
+          "format": "moontxnwitness-actual-delivery/v1",
+          "method": "fetchone",
+          "nativeNoteSeq": 6,
+          "resultId": "result-b1d3b7038db945848e3581d0469c0e68",
+          "rows": [],
+          "sourceFactsProduced": false,
+          "start": 1,
+          "statementSeq": 3,
+          "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+        }
+      ]
+    },
+    {
+      "config": {
+        "format": "moontxnwitness-configured-sql/v1",
+        "tables": [
+          {
+            "schema": "ledger",
+            "table": "accounts",
+            "primaryKey": "account_no",
+            "columns": [
+              {
+                "name": "account_no",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "balance",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "active",
+                "type": "bool",
+                "comparison": null
+              },
+              {
+                "name": "version",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              }
+            ],
+            "model": "relation-set-v1"
+          },
+          {
+            "schema": "Feature-X",
+            "table": "Flag.Store",
+            "primaryKey": "Feature Key",
+            "columns": [
+              {
+                "name": "Feature Key",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              },
+              {
+                "name": "enabled",
+                "type": "bool",
+                "comparison": null
+              },
+              {
+                "name": "source id",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              }
+            ],
+            "model": "relation-set-v1"
+          },
+          {
+            "schema": "业务",
+            "table": "Object Space",
+            "primaryKey": "Key",
+            "columns": [
+              {
+                "name": "Key",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "note",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              },
+              {
+                "name": "score",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "flag",
+                "type": "bool",
+                "comparison": null
+              },
+              {
+                "name": "region",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              },
+              {
+                "name": "revision",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              }
+            ],
+            "model": "relation-set-v1"
+          }
+        ],
+        "defaultSchema": "ledger",
+        "limits": {
+          "max_sql_bytes": 65536,
+          "max_tokens": 8192,
+          "max_ast_nodes": 4096,
+          "max_nesting": 64,
+          "max_terms": 128,
+          "max_insert_rows": 128,
+          "max_text_bytes": 65536
+        }
+      },
+      "execution": {
+        "candidate": {
+          "bindings": [
+            {
+              "reference": {
+                "kind": "named",
+                "type": "text",
+                "value": "who"
+              },
+              "value": {
+                "type": "text",
+                "value": "feature🙂"
+              }
+            }
+          ],
+          "configSha256": "920bb811ff454e9c72817ffa8d6f2d3f87164bd448b00644c4c7f73fdebcd7fb",
+          "descriptor": {
+            "assignments": [],
+            "captureFactsProduced": false,
+            "configSha256": "920bb811ff454e9c72817ffa8d6f2d3f87164bd448b00644c4c7f73fdebcd7fb",
+            "databaseSyntaxValidated": false,
+            "format": "moontxnwitness-sql-ast-candidate/v1",
+            "insertColumns": [],
+            "insertRows": [],
+            "moonbitProjectionVerified": false,
+            "operation": "select",
+            "ordering": [],
+            "originalSql": "SELECT \"Feature Key\",\"enabled\",\"source id\" FROM \"Feature-X\".\"Flag.Store\" WHERE \"Feature Key\"=%(who)s",
+            "parameters": [
+              {
+                "kind": "named",
+                "type": "text",
+                "value": "who"
+              }
+            ],
+            "parserContract": "sqlglot-30.26-postgres-single-table/v1",
+            "predicates": [
+              {
+                "collation": null,
+                "column": "Feature Key",
+                "operator": "eq",
+                "value": {
+                  "kind": "named",
+                  "type": "text",
+                  "value": "who"
+                }
+              }
+            ],
+            "projections": [
+              {
+                "column": "Feature Key",
+                "outputName": "Feature Key"
+              },
+              {
+                "column": "enabled",
+                "outputName": "enabled"
+              },
+              {
+                "column": "source id",
+                "outputName": "source id"
+              }
+            ],
+            "requiredProofs": [
+              "catalog-types-primary-key-and-text-collation",
+              "session-schema-resolution",
+              "server-encoding-and-string-literal-rules",
+              "actual-execution-and-delivered-result-shape",
+              "complete-fetch-for-predicate-read",
+              "installed-unique-version-sources-and-effective-write-ledger",
+              "same-statement-or-native-observed-read-version-identity",
+              "complete-source-window-and-writer-scope",
+              "independent-MoonBit-original-SQL-parameters-source-projection"
+            ],
+            "requiresNoParameterArgument": false,
+            "returning": [],
+            "returningIsPredicateRead": false,
+            "schemaResolution": "explicit-schema",
+            "sourceAuthenticated": false,
+            "sqlSha256": "84fd30aceff5406c74dec0ed3841de72911ed020781043973b18fad59737a8a5",
+            "sqlglotVersion": "30.26.0",
+            "table": {
+              "columns": [
+                {
+                  "comparison": "postgres-c-utf8-v1",
+                  "name": "Feature Key",
+                  "type": "text"
+                },
+                {
+                  "comparison": null,
+                  "name": "enabled",
+                  "type": "bool"
+                },
+                {
+                  "comparison": "postgres-c-utf8-v1",
+                  "name": "source id",
+                  "type": "text"
+                }
+              ],
+              "model": "relation-set-v1",
+              "primaryKey": "Feature Key",
+              "schema": "Feature-X",
+              "table": "Flag.Store"
+            }
+          },
+          "format": "moontxnwitness-sql-binding-candidate/v1",
+          "parametersSha256": "9f80481bbc32cd0dc371854d27b8b931bb82f78680313d8fbd090a5652d5618a",
+          "sqlSha256": "84fd30aceff5406c74dec0ed3841de72911ed020781043973b18fad59737a8a5"
+        },
+        "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+        "cursor": "cursor-8fec3f79ad4444fc89d578cc70f19a7a",
+        "format": "moontxnwitness-configured-execution/v1",
+        "parameters": {
+          "who": "feature🙂"
+        },
+        "sourceFactsProduced": false,
+        "sql": "SELECT \"Feature Key\",\"enabled\",\"source id\" FROM \"Feature-X\".\"Flag.Store\" WHERE \"Feature Key\"=%(who)s",
+        "statementSeq": 7,
+        "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+      },
+      "native": {
+        "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+        "cursor": "cursor-8fec3f79ad4444fc89d578cc70f19a7a",
+        "executionNoteSeq": 16,
+        "fields": [
+          {
+            "format": 0,
+            "name": "Feature Key",
+            "oid": 25,
+            "tableColumn": 1,
+            "tableOid": 16394,
+            "typmod": -1
+          },
+          {
+            "format": 0,
+            "name": "enabled",
+            "oid": 16,
+            "tableColumn": 2,
+            "tableOid": 16394,
+            "typmod": -1
+          },
+          {
+            "format": 0,
+            "name": "source id",
+            "oid": 25,
+            "tableColumn": 3,
+            "tableOid": 16394,
+            "typmod": -1
+          }
+        ],
+        "format": "moontxnwitness-native-result/v1",
+        "parametersSha256": "9f80481bbc32cd0dc371854d27b8b931bb82f78680313d8fbd090a5652d5618a",
+        "resultId": "result-22a8bbd57ed14a6ab7006c6333dc1a87",
+        "rows": [
+          [
+            "ZmVhdHVyZfCfmYI=",
+            "dA==",
+            "dmVyc2lvbi3Osg=="
+          ]
+        ],
+        "sourceFactsProduced": false,
+        "sqlSha256": "84fd30aceff5406c74dec0ed3841de72911ed020781043973b18fad59737a8a5",
+        "statementSeq": 7,
+        "status": 2,
+        "storedColumnDeclarations": [
+          "source id"
+        ],
+        "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+      },
+      "deliveries": [
+        {
+          "complete": true,
+          "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+          "cursor": "cursor-8fec3f79ad4444fc89d578cc70f19a7a",
+          "format": "moontxnwitness-actual-delivery/v1",
+          "method": "fetchmany",
+          "nativeNoteSeq": 17,
+          "resultId": "result-22a8bbd57ed14a6ab7006c6333dc1a87",
+          "rows": [
+            [
+              {
+                "type": "text",
+                "value": "feature🙂"
+              },
+              {
+                "type": "bool",
+                "value": true
+              },
+              {
+                "type": "text",
+                "value": "version-β"
+              }
+            ]
+          ],
+          "sourceFactsProduced": false,
+          "start": 0,
+          "statementSeq": 7,
+          "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+        },
+        {
+          "complete": true,
+          "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+          "cursor": "cursor-8fec3f79ad4444fc89d578cc70f19a7a",
+          "format": "moontxnwitness-actual-delivery/v1",
+          "method": "fetchall",
+          "nativeNoteSeq": 17,
+          "resultId": "result-22a8bbd57ed14a6ab7006c6333dc1a87",
+          "rows": [],
+          "sourceFactsProduced": false,
+          "start": 1,
+          "statementSeq": 7,
+          "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+        }
+      ]
+    },
+    {
+      "config": {
+        "format": "moontxnwitness-configured-sql/v1",
+        "tables": [
+          {
+            "schema": "ledger",
+            "table": "accounts",
+            "primaryKey": "account_no",
+            "columns": [
+              {
+                "name": "account_no",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "balance",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "active",
+                "type": "bool",
+                "comparison": null
+              },
+              {
+                "name": "version",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              }
+            ],
+            "model": "relation-set-v1"
+          },
+          {
+            "schema": "Feature-X",
+            "table": "Flag.Store",
+            "primaryKey": "Feature Key",
+            "columns": [
+              {
+                "name": "Feature Key",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              },
+              {
+                "name": "enabled",
+                "type": "bool",
+                "comparison": null
+              },
+              {
+                "name": "source id",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              }
+            ],
+            "model": "relation-set-v1"
+          },
+          {
+            "schema": "业务",
+            "table": "Object Space",
+            "primaryKey": "Key",
+            "columns": [
+              {
+                "name": "Key",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "note",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              },
+              {
+                "name": "score",
+                "type": "int64",
+                "comparison": null
+              },
+              {
+                "name": "flag",
+                "type": "bool",
+                "comparison": null
+              },
+              {
+                "name": "region",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              },
+              {
+                "name": "revision",
+                "type": "text",
+                "comparison": "postgres-c-utf8-v1"
+              }
+            ],
+            "model": "relation-set-v1"
+          }
+        ],
+        "defaultSchema": "ledger",
+        "limits": {
+          "max_sql_bytes": 65536,
+          "max_tokens": 8192,
+          "max_ast_nodes": 4096,
+          "max_nesting": 64,
+          "max_terms": 128,
+          "max_insert_rows": 128,
+          "max_text_bytes": 65536
+        }
+      },
+      "execution": {
+        "candidate": {
+          "bindings": [
+            {
+              "reference": {
+                "kind": "named",
+                "type": "int64",
+                "value": "who"
+              },
+              "value": {
+                "type": "int64",
+                "value": "19"
+              }
+            }
+          ],
+          "configSha256": "920bb811ff454e9c72817ffa8d6f2d3f87164bd448b00644c4c7f73fdebcd7fb",
+          "descriptor": {
+            "assignments": [],
+            "captureFactsProduced": false,
+            "configSha256": "920bb811ff454e9c72817ffa8d6f2d3f87164bd448b00644c4c7f73fdebcd7fb",
+            "databaseSyntaxValidated": false,
+            "format": "moontxnwitness-sql-ast-candidate/v1",
+            "insertColumns": [],
+            "insertRows": [],
+            "moonbitProjectionVerified": false,
+            "operation": "select",
+            "ordering": [],
+            "originalSql": "SELECT \"Key\",\"note\",\"score\",\"flag\",\"region\",\"revision\" FROM \"业务\".\"Object Space\" WHERE \"Key\"=%(who)s",
+            "parameters": [
+              {
+                "kind": "named",
+                "type": "int64",
+                "value": "who"
+              }
+            ],
+            "parserContract": "sqlglot-30.26-postgres-single-table/v1",
+            "predicates": [
+              {
+                "collation": null,
+                "column": "Key",
+                "operator": "eq",
+                "value": {
+                  "kind": "named",
+                  "type": "int64",
+                  "value": "who"
+                }
+              }
+            ],
+            "projections": [
+              {
+                "column": "Key",
+                "outputName": "Key"
+              },
+              {
+                "column": "note",
+                "outputName": "note"
+              },
+              {
+                "column": "score",
+                "outputName": "score"
+              },
+              {
+                "column": "flag",
+                "outputName": "flag"
+              },
+              {
+                "column": "region",
+                "outputName": "region"
+              },
+              {
+                "column": "revision",
+                "outputName": "revision"
+              }
+            ],
+            "requiredProofs": [
+              "catalog-types-primary-key-and-text-collation",
+              "session-schema-resolution",
+              "server-encoding-and-string-literal-rules",
+              "actual-execution-and-delivered-result-shape",
+              "complete-fetch-for-predicate-read",
+              "installed-unique-version-sources-and-effective-write-ledger",
+              "same-statement-or-native-observed-read-version-identity",
+              "complete-source-window-and-writer-scope",
+              "independent-MoonBit-original-SQL-parameters-source-projection"
+            ],
+            "requiresNoParameterArgument": false,
+            "returning": [],
+            "returningIsPredicateRead": false,
+            "schemaResolution": "explicit-schema",
+            "sourceAuthenticated": false,
+            "sqlSha256": "e8fee24099d225b8603ba3863456dfb5a9c99b6a7507fbb09d0509eaaeb3d506",
+            "sqlglotVersion": "30.26.0",
+            "table": {
+              "columns": [
+                {
+                  "comparison": null,
+                  "name": "Key",
+                  "type": "int64"
+                },
+                {
+                  "comparison": "postgres-c-utf8-v1",
+                  "name": "note",
+                  "type": "text"
+                },
+                {
+                  "comparison": null,
+                  "name": "score",
+                  "type": "int64"
+                },
+                {
+                  "comparison": null,
+                  "name": "flag",
+                  "type": "bool"
+                },
+                {
+                  "comparison": "postgres-c-utf8-v1",
+                  "name": "region",
+                  "type": "text"
+                },
+                {
+                  "comparison": "postgres-c-utf8-v1",
+                  "name": "revision",
+                  "type": "text"
+                }
+              ],
+              "model": "relation-set-v1",
+              "primaryKey": "Key",
+              "schema": "业务",
+              "table": "Object Space"
+            }
+          },
+          "format": "moontxnwitness-sql-binding-candidate/v1",
+          "parametersSha256": "faf55e292180f50313dc1bcb7ff91026c5e8c820edbe86908d71f2c628b099ad",
+          "sqlSha256": "e8fee24099d225b8603ba3863456dfb5a9c99b6a7507fbb09d0509eaaeb3d506"
+        },
+        "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+        "cursor": "cursor-d2fb89de863640b0bbbf28c5d111cd97",
+        "format": "moontxnwitness-configured-execution/v1",
+        "parameters": {
+          "who": 19
+        },
+        "sourceFactsProduced": false,
+        "sql": "SELECT \"Key\",\"note\",\"score\",\"flag\",\"region\",\"revision\" FROM \"业务\".\"Object Space\" WHERE \"Key\"=%(who)s",
+        "statementSeq": 11,
+        "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+      },
+      "native": {
+        "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+        "cursor": "cursor-d2fb89de863640b0bbbf28c5d111cd97",
+        "executionNoteSeq": 27,
+        "fields": [
+          {
+            "format": 0,
+            "name": "Key",
+            "oid": 20,
+            "tableColumn": 1,
+            "tableOid": 16403,
+            "typmod": -1
+          },
+          {
+            "format": 0,
+            "name": "note",
+            "oid": 25,
+            "tableColumn": 2,
+            "tableOid": 16403,
+            "typmod": -1
+          },
+          {
+            "format": 0,
+            "name": "score",
+            "oid": 20,
+            "tableColumn": 3,
+            "tableOid": 16403,
+            "typmod": -1
+          },
+          {
+            "format": 0,
+            "name": "flag",
+            "oid": 16,
+            "tableColumn": 4,
+            "tableOid": 16403,
+            "typmod": -1
+          },
+          {
+            "format": 0,
+            "name": "region",
+            "oid": 25,
+            "tableColumn": 5,
+            "tableOid": 16403,
+            "typmod": -1
+          },
+          {
+            "format": 0,
+            "name": "revision",
+            "oid": 25,
+            "tableColumn": 6,
+            "tableOid": 16403,
+            "typmod": -1
+          }
+        ],
+        "format": "moontxnwitness-native-result/v1",
+        "parametersSha256": "faf55e292180f50313dc1bcb7ff91026c5e8c820edbe86908d71f2c628b099ad",
+        "resultId": "result-b6036e0233634b8cb37b6f30b62464a9",
+        "rows": [
+          [
+            "MTk=",
+            "8JCAgOS4ju6AgA==",
+            "MjM=",
+            "Zg==",
+            "5Lic",
+            "dmVyc2lvbi3Osw=="
+          ]
+        ],
+        "sourceFactsProduced": false,
+        "sqlSha256": "e8fee24099d225b8603ba3863456dfb5a9c99b6a7507fbb09d0509eaaeb3d506",
+        "statementSeq": 11,
+        "status": 2,
+        "storedColumnDeclarations": [
+          "revision"
+        ],
+        "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+      },
+      "deliveries": [
+        {
+          "complete": true,
+          "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+          "cursor": "cursor-d2fb89de863640b0bbbf28c5d111cd97",
+          "format": "moontxnwitness-actual-delivery/v1",
+          "method": "fetchone",
+          "nativeNoteSeq": 28,
+          "resultId": "result-b6036e0233634b8cb37b6f30b62464a9",
+          "rows": [
+            [
+              {
+                "type": "int64",
+                "value": "19"
+              },
+              {
+                "type": "text",
+                "value": "𐀀与"
+              },
+              {
+                "type": "int64",
+                "value": "23"
+              },
+              {
+                "type": "bool",
+                "value": false
+              },
+              {
+                "type": "text",
+                "value": "东"
+              },
+              {
+                "type": "text",
+                "value": "version-γ"
+              }
+            ]
+          ],
+          "sourceFactsProduced": false,
+          "start": 0,
+          "statementSeq": 11,
+          "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+        },
+        {
+          "complete": true,
+          "connection": "connection-8a0c940416e847bd8ae6aef5407a1303",
+          "cursor": "cursor-d2fb89de863640b0bbbf28c5d111cd97",
+          "format": "moontxnwitness-actual-delivery/v1",
+          "method": "fetchone",
+          "nativeNoteSeq": 28,
+          "resultId": "result-b6036e0233634b8cb37b6f30b62464a9",
+          "rows": [],
+          "sourceFactsProduced": false,
+          "start": 1,
+          "statementSeq": 11,
+          "tx": "transaction-e0fc75f580414aeab4fa1ded4786eb17"
+        }
+      ]
+    }
+  ]
+}
