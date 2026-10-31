@@ -67,6 +67,20 @@ def refs(data,name):
         found.append(target)
     return found
 
+def validate_baseline_index_row(row, expected, pin, header, name):
+    # Input deduplication can reuse the original source archive for an identical
+    # licence/module. Actual reads still come from the fixed portable ZIP and
+    # must match the published member digest and length.
+    provider = row.get('provider')
+    if (row.get('sha256') != expected['sha256'] or row.get('bytes') != expected['bytes']
+            or provider not in ('source031', 'portable031')
+            or header.get('sourceCommits', {}).get(provider) != pin['sourceCommit']):
+        raise ValueError('Public031/index binding differs: '+name)
+    member = row.get('member', '')
+    if (not member.startswith('MoonTxnWitness-v0.3.1/') or '\\' in member
+            or ':' in member or any(p in ('', '.', '..') for p in member.split('/'))):
+        raise ValueError('Unsafe public031 member: '+name)
+
 def prepare_baseline(root,out,cache):
     binding=root/'cmd/legacy-v031-binding.mjs'
     match=re.search(r'export const PUBLIC031=Object.freeze\((\{.*\})\);',binding.read_text(encoding='utf-8'))
@@ -93,13 +107,12 @@ def prepare_baseline(root,out,cache):
             name=todo.pop()
             if name in done:continue
             expected=pin['files'][name];row=index['artifacts/compat-v031/runtime/'+name]
-            if row['sha256']!=expected['sha256'] or row['bytes']!=expected['bytes'] or row['provider']!='portable031' or row['member']!='MoonTxnWitness-v0.3.1/dist/'+name:
-                raise ValueError('Public031/index binding differs: '+name)
+            validate_baseline_index_row(row, expected, pin, header, name)
             data=archive.read(row['member'])  # Also checks selected member CRC.
             if len(data)!=expected['bytes'] or hashlib.sha256(data).hexdigest()!=expected['sha256']:
                 raise ValueError('Actual public031 member differs: '+name)
             target=stage/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
-            done[name]={'sha256':sha(target),'bytes':len(data),'publicFileKey':name,'indexKey':'artifacts/compat-v031/runtime/'+name,'archiveMember':row['member']}
+            done[name]={'sha256':sha(target),'bytes':len(data),'publicFileKey':name,'indexKey':'artifacts/compat-v031/runtime/'+name,'indexProvider':row['provider'],'actualArchiveProvider':'portable031','archiveMember':row['member']}
             if name.endswith('.mjs'):todo.extend(refs(data,name))
     manifest_path=stage/'build-manifest.json';manifest=json.loads(manifest_path.read_bytes())
     if manifest['version']!='0.3.1' or manifest['coreSha256']!=BASE_CORE or manifest['toolchain']['compiler']!=VERSION:

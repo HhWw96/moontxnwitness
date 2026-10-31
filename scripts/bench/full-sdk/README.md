@@ -60,3 +60,6 @@ MoonBit build, full-SDK preflight or measurement was performed while preparing
 this patch. Actual workflow execution and resulting artifacts remain pending.
 
 The cache action is fixed to its [upstream commit](https://github.com/actions/cache/commit/5a3ec84eff668545956fd18022155c47e93e2684).
+# Setup history
+
+The first Linux setup run, [41193937285](https://github.com/HhWw96/moontxnwitness/actions/runs/41193937285), stopped before measurement because the input index reused an identical original-source licence member. The loader now accepts that checksum-bound reuse while still reading the fixed public portable ZIP and checking each member's full digest and length. The baseline ZIP, core, SDK, inputs, timing limits and output comparison remain unchanged. Eight setup boundary checks run before each subsequent CI preparation.
