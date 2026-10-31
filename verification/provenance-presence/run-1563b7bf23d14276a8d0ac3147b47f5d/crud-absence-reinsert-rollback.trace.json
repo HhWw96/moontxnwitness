@@ -1,0 +1,1280 @@
+{
+  "traceSchema": 2,
+  "clockDomain": "python-monotonic-e5237454cfd34a9cb156147930a96504",
+  "scope": {
+    "exclusiveWriters": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "kind": "snapshot",
+      "time": 171000,
+      "initial": {
+        "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]": "b569fa16-a49a-427e-a654-1d5c082f85ea",
+        "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]": "f569ac44-b7ed-4d17-addf-28c4da225d31",
+        "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"never\"]": "4e2df194-12b4-4d67-ac16-94b9a638fc91"
+      },
+      "consistent": true
+    },
+    {
+      "seq": 2,
+      "kind": "begin",
+      "time": 312000,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 3,
+      "kind": "sql",
+      "time": 312000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 4,
+      "kind": "sql",
+      "time": 312000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_f231738ce91688c4_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 5,
+      "kind": "sql",
+      "time": 312000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          true,
+          "same",
+          "b569fa16-a49a-427e-a654-1d5c082f85ea",
+          true,
+          "b569fa16-a49a-427e-a654-1d5c082f85ea"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 6,
+      "kind": "op",
+      "time": 312000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "b569fa16-a49a-427e-a654-1d5c082f85ea"
+      }
+    },
+    {
+      "seq": 7,
+      "kind": "sql",
+      "time": 312000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "b"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 8,
+      "kind": "sql",
+      "time": 312000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_f231738ce91688c4_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 9,
+      "kind": "sql",
+      "time": 312000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          false,
+          null,
+          "f569ac44-b7ed-4d17-addf-28c4da225d31",
+          false,
+          null
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 10,
+      "kind": "op",
+      "time": 312000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "f569ac44-b7ed-4d17-addf-28c4da225d31"
+      }
+    },
+    {
+      "seq": 11,
+      "kind": "sql",
+      "time": 312000,
+      "phase": "execute-request",
+      "sql": "UPDATE \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" SET \"value\"=%s WHERE \"id\"=%s",
+      "parameters": [
+        "same",
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 12,
+      "kind": "sql",
+      "time": 328000,
+      "phase": "execute-ack",
+      "sql": "UPDATE \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" SET \"value\"=%s WHERE \"id\"=%s RETURNING OLD.\"mtwp_f231738ce91688c4_version\"::text,NEW.\"mtwp_f231738ce91688c4_version\"::text",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 13,
+      "kind": "sql",
+      "time": 328000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          "b569fa16-a49a-427e-a654-1d5c082f85ea",
+          "0a4f76f0-98fb-45c1-8976-7bb2208b37db"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 14,
+      "kind": "op",
+      "time": 328000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "0a4f76f0-98fb-45c1-8976-7bb2208b37db"
+      }
+    },
+    {
+      "seq": 15,
+      "kind": "sql",
+      "time": 328000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 16,
+      "kind": "sql",
+      "time": 328000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_f231738ce91688c4_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 17,
+      "kind": "sql",
+      "time": 328000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          true,
+          "same",
+          "0a4f76f0-98fb-45c1-8976-7bb2208b37db",
+          true,
+          "0a4f76f0-98fb-45c1-8976-7bb2208b37db"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 18,
+      "kind": "op",
+      "time": 328000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "0a4f76f0-98fb-45c1-8976-7bb2208b37db"
+      }
+    },
+    {
+      "seq": 19,
+      "kind": "sql",
+      "time": 328000,
+      "phase": "execute-request",
+      "sql": "UPDATE \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" SET \"value\"=%s WHERE \"id\"=%s",
+      "parameters": [
+        "same",
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 20,
+      "kind": "sql",
+      "time": 328000,
+      "phase": "execute-ack",
+      "sql": "UPDATE \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" SET \"value\"=%s WHERE \"id\"=%s RETURNING OLD.\"mtwp_f231738ce91688c4_version\"::text,NEW.\"mtwp_f231738ce91688c4_version\"::text",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 21,
+      "kind": "sql",
+      "time": 328000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          "0a4f76f0-98fb-45c1-8976-7bb2208b37db",
+          "fe56482a-bba1-4bfe-928d-9d6a6fa9845f"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 22,
+      "kind": "op",
+      "time": 328000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "fe56482a-bba1-4bfe-928d-9d6a6fa9845f"
+      }
+    },
+    {
+      "seq": 23,
+      "kind": "sql",
+      "time": 328000,
+      "phase": "execute-request",
+      "sql": "DELETE FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 24,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-ack",
+      "sql": "DELETE FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s RETURNING OLD.\"mtwp_f231738ce91688c4_version\"::text,\"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_delete_token\"(OLD.\"id\",OLD.\"mtwp_f231738ce91688c4_version\")::text",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 25,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          "fe56482a-bba1-4bfe-928d-9d6a6fa9845f",
+          "e68b0b63-31c9-432c-b804-99c59a75c19d"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 26,
+      "kind": "op",
+      "time": 343000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "e68b0b63-31c9-432c-b804-99c59a75c19d"
+      }
+    },
+    {
+      "seq": 27,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 28,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_f231738ce91688c4_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 29,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          false,
+          null,
+          "e68b0b63-31c9-432c-b804-99c59a75c19d",
+          false,
+          null
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 30,
+      "kind": "op",
+      "time": 343000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "e68b0b63-31c9-432c-b804-99c59a75c19d"
+      }
+    },
+    {
+      "seq": 31,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-request",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" (\"id\",\"value\") VALUES (%s,%s)",
+      "parameters": [
+        "a",
+        "same"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 32,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-ack",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" (\"id\",\"value\") VALUES (%s,%s) RETURNING \"mtwp_f231738ce91688c4_version\"::text,\"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_predecessor\"(\"mtwp_f231738ce91688c4_version\")::text",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 33,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56",
+          "e68b0b63-31c9-432c-b804-99c59a75c19d"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 34,
+      "kind": "op",
+      "time": 343000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56"
+      }
+    },
+    {
+      "seq": 35,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 36,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_f231738ce91688c4_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 37,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          true,
+          "same",
+          "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56",
+          true,
+          "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 38,
+      "kind": "op",
+      "time": 343000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56"
+      }
+    },
+    {
+      "seq": 39,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-request",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" (\"id\",\"value\") VALUES (%s,%s)",
+      "parameters": [
+        "b",
+        "born"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 40,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-ack",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" (\"id\",\"value\") VALUES (%s,%s) RETURNING \"mtwp_f231738ce91688c4_version\"::text,\"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_predecessor\"(\"mtwp_f231738ce91688c4_version\")::text",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 41,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          "36674e2d-5f02-45c4-a7f1-7b741a70d788",
+          "f569ac44-b7ed-4d17-addf-28c4da225d31"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 42,
+      "kind": "op",
+      "time": 343000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "36674e2d-5f02-45c4-a7f1-7b741a70d788"
+      }
+    },
+    {
+      "seq": 43,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "b"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 44,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_f231738ce91688c4_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 45,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          true,
+          "born",
+          "36674e2d-5f02-45c4-a7f1-7b741a70d788",
+          true,
+          "36674e2d-5f02-45c4-a7f1-7b741a70d788"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 46,
+      "kind": "op",
+      "time": 343000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "36674e2d-5f02-45c4-a7f1-7b741a70d788"
+      }
+    },
+    {
+      "seq": 47,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-request",
+      "sql": "DELETE FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "b"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 48,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-ack",
+      "sql": "DELETE FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s RETURNING OLD.\"mtwp_f231738ce91688c4_version\"::text,\"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_delete_token\"(OLD.\"id\",OLD.\"mtwp_f231738ce91688c4_version\")::text",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 49,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          "36674e2d-5f02-45c4-a7f1-7b741a70d788",
+          "d16ae150-4d54-4d76-8912-7e7f84ac27e7"
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 50,
+      "kind": "op",
+      "time": 343000,
+      "tx": "tx-1",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "d16ae150-4d54-4d76-8912-7e7f84ac27e7"
+      }
+    },
+    {
+      "seq": 51,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "b"
+      ],
+      "mapped": true,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 52,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_f231738ce91688c4_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-1"
+    },
+    {
+      "seq": 53,
+      "kind": "sql",
+      "time": 343000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          false,
+          null,
+          "d16ae150-4d54-4d76-8912-7e7f84ac27e7",
+          false,
+          null
+        ]
+      ],
+      "tx": "tx-1"
+    },
+    {
+      "seq": 54,
+      "kind": "op",
+      "time": 343000,
+      "tx": "tx-1",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "d16ae150-4d54-4d76-8912-7e7f84ac27e7"
+      }
+    },
+    {
+      "seq": 55,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "commit-ack",
+      "tx": "tx-1"
+    },
+    {
+      "seq": 56,
+      "kind": "end",
+      "time": 359000,
+      "tx": "tx-1",
+      "status": "committed"
+    },
+    {
+      "seq": 57,
+      "kind": "begin",
+      "time": 359000,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 58,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "execute-request",
+      "sql": "DELETE FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 59,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "execute-ack",
+      "sql": "DELETE FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s RETURNING OLD.\"mtwp_f231738ce91688c4_version\"::text,\"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_delete_token\"(OLD.\"id\",OLD.\"mtwp_f231738ce91688c4_version\")::text",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 60,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56",
+          "8ab50f05-c552-4cfe-b721-2af0ea373867"
+        ]
+      ],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 61,
+      "kind": "op",
+      "time": 359000,
+      "tx": "tx-2",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "8ab50f05-c552-4cfe-b721-2af0ea373867"
+      }
+    },
+    {
+      "seq": 62,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 63,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_f231738ce91688c4_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 64,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          false,
+          null,
+          "8ab50f05-c552-4cfe-b721-2af0ea373867",
+          false,
+          null
+        ]
+      ],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 65,
+      "kind": "op",
+      "time": 359000,
+      "tx": "tx-2",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "8ab50f05-c552-4cfe-b721-2af0ea373867"
+      }
+    },
+    {
+      "seq": 66,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "execute-request",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" (\"id\",\"value\") VALUES (%s,%s)",
+      "parameters": [
+        "a",
+        "rollback"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 67,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "execute-ack",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" (\"id\",\"value\") VALUES (%s,%s) RETURNING \"mtwp_f231738ce91688c4_version\"::text,\"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_predecessor\"(\"mtwp_f231738ce91688c4_version\")::text",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 68,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          "bfffc152-8573-41f8-8837-9e0988667d9b",
+          "8ab50f05-c552-4cfe-b721-2af0ea373867"
+        ]
+      ],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 69,
+      "kind": "op",
+      "time": 359000,
+      "tx": "tx-2",
+      "op": {
+        "type": "write",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "bfffc152-8573-41f8-8837-9e0988667d9b"
+      }
+    },
+    {
+      "seq": 70,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 71,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_f231738ce91688c4_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-2"
+    },
+    {
+      "seq": 72,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          true,
+          "rollback",
+          "bfffc152-8573-41f8-8837-9e0988667d9b",
+          true,
+          "bfffc152-8573-41f8-8837-9e0988667d9b"
+        ]
+      ],
+      "tx": "tx-2"
+    },
+    {
+      "seq": 73,
+      "kind": "op",
+      "time": 359000,
+      "tx": "tx-2",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "bfffc152-8573-41f8-8837-9e0988667d9b"
+      }
+    },
+    {
+      "seq": 74,
+      "kind": "sql",
+      "time": 359000,
+      "phase": "rollback-ack",
+      "tx": "tx-2"
+    },
+    {
+      "seq": 75,
+      "kind": "end",
+      "time": 359000,
+      "tx": "tx-2",
+      "status": "aborted"
+    },
+    {
+      "seq": 76,
+      "kind": "begin",
+      "time": 375000,
+      "tx": "tx-3"
+    },
+    {
+      "seq": 77,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-3"
+    },
+    {
+      "seq": 78,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_f231738ce91688c4_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-3"
+    },
+    {
+      "seq": 79,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          true,
+          "same",
+          "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56",
+          true,
+          "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56"
+        ]
+      ],
+      "tx": "tx-3"
+    },
+    {
+      "seq": 80,
+      "kind": "op",
+      "time": 375000,
+      "tx": "tx-3",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56"
+      }
+    },
+    {
+      "seq": 81,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "execute-request",
+      "sql": "SELECT \"value\" FROM \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" WHERE \"id\"=%s",
+      "parameters": [
+        "b"
+      ],
+      "mapped": true,
+      "tx": "tx-3"
+    },
+    {
+      "seq": 82,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "execute-ack",
+      "sql": "SELECT b.\"id\" IS NOT NULL,b.\"value\",s.token::text,s.present,b.\"mtwp_f231738ce91688c4_version\"::text FROM (SELECT %s::text AS wanted_key) wanted LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" b ON b.\"id\"=wanted.wanted_key LEFT JOIN \"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_state\" s ON s.key=wanted.wanted_key",
+      "affectedRows": 1,
+      "tx": "tx-3"
+    },
+    {
+      "seq": 83,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "fetch",
+      "returnedRows": 1,
+      "exhausted": true,
+      "rows": [
+        [
+          false,
+          null,
+          "d16ae150-4d54-4d76-8912-7e7f84ac27e7",
+          false,
+          null
+        ]
+      ],
+      "tx": "tx-3"
+    },
+    {
+      "seq": 84,
+      "kind": "op",
+      "time": 375000,
+      "tx": "tx-3",
+      "op": {
+        "type": "read",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "d16ae150-4d54-4d76-8912-7e7f84ac27e7"
+      }
+    },
+    {
+      "seq": 85,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "commit-ack",
+      "tx": "tx-3"
+    },
+    {
+      "seq": 86,
+      "kind": "end",
+      "time": 375000,
+      "tx": "tx-3",
+      "status": "committed"
+    },
+    {
+      "seq": 87,
+      "kind": "begin",
+      "time": 375000,
+      "tx": "tx-4"
+    },
+    {
+      "seq": 88,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "execute-request",
+      "sql": "UPDATE \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" SET \"value\"=%s WHERE \"id\"=%s",
+      "parameters": [
+        null,
+        "a"
+      ],
+      "mapped": true,
+      "tx": "tx-4"
+    },
+    {
+      "seq": 89,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "execute-error",
+      "sql": "UPDATE \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" SET \"value\"=%s WHERE \"id\"=%s RETURNING OLD.\"mtwp_f231738ce91688c4_version\"::text,NEW.\"mtwp_f231738ce91688c4_version\"::text",
+      "errorClass": "NotNullViolation",
+      "sqlstate": "23502",
+      "tx": "tx-4"
+    },
+    {
+      "seq": 90,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "rollback-ack",
+      "tx": "tx-4"
+    },
+    {
+      "seq": 91,
+      "kind": "end",
+      "time": 375000,
+      "tx": "tx-4",
+      "status": "aborted"
+    },
+    {
+      "seq": 92,
+      "kind": "begin",
+      "time": 375000,
+      "tx": "tx-5"
+    },
+    {
+      "seq": 93,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "execute-request",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" (\"id\",\"value\") VALUES (%s,%s)",
+      "parameters": [
+        "a",
+        "duplicate"
+      ],
+      "mapped": true,
+      "tx": "tx-5"
+    },
+    {
+      "seq": 94,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "execute-error",
+      "sql": "INSERT INTO \"mtw_provenance_v033_1563b7bf\".\"presence_serial\" (\"id\",\"value\") VALUES (%s,%s) RETURNING \"mtwp_f231738ce91688c4_version\"::text,\"mtw_provenance_v033_1563b7bf\".\"mtwp_f231738ce91688c4_predecessor\"(\"mtwp_f231738ce91688c4_version\")::text",
+      "errorClass": "UniqueViolation",
+      "sqlstate": "23505",
+      "tx": "tx-5"
+    },
+    {
+      "seq": 95,
+      "kind": "sql",
+      "time": 375000,
+      "phase": "rollback-ack",
+      "tx": "tx-5"
+    },
+    {
+      "seq": 96,
+      "kind": "end",
+      "time": 375000,
+      "tx": "tx-5",
+      "status": "aborted"
+    }
+  ],
+  "gaps": [],
+  "presenceFacts": {
+    "schema": 1,
+    "projection": "column-presence-register-v0.1.2-experimental",
+    "initial": [
+      {
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "b569fa16-a49a-427e-a654-1d5c082f85ea",
+        "present": true
+      },
+      {
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "f569ac44-b7ed-4d17-addf-28c4da225d31",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"never\"]",
+        "version": "4e2df194-12b4-4d67-ac16-94b9a638fc91",
+        "present": false
+      }
+    ],
+    "reads": [
+      {
+        "seq": 6,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "b569fa16-a49a-427e-a654-1d5c082f85ea",
+        "present": true
+      },
+      {
+        "seq": 10,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "f569ac44-b7ed-4d17-addf-28c4da225d31",
+        "present": false
+      },
+      {
+        "seq": 18,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "0a4f76f0-98fb-45c1-8976-7bb2208b37db",
+        "present": true
+      },
+      {
+        "seq": 30,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "e68b0b63-31c9-432c-b804-99c59a75c19d",
+        "present": false
+      },
+      {
+        "seq": 38,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56",
+        "present": true
+      },
+      {
+        "seq": 46,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "36674e2d-5f02-45c4-a7f1-7b741a70d788",
+        "present": true
+      },
+      {
+        "seq": 54,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "d16ae150-4d54-4d76-8912-7e7f84ac27e7",
+        "present": false
+      },
+      {
+        "seq": 65,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "8ab50f05-c552-4cfe-b721-2af0ea373867",
+        "present": false
+      },
+      {
+        "seq": 73,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "bfffc152-8573-41f8-8837-9e0988667d9b",
+        "present": true
+      },
+      {
+        "seq": 80,
+        "tx": "tx-3",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56",
+        "present": true
+      },
+      {
+        "seq": 84,
+        "tx": "tx-3",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "d16ae150-4d54-4d76-8912-7e7f84ac27e7",
+        "present": false
+      }
+    ],
+    "writes": [
+      {
+        "seq": 14,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "0a4f76f0-98fb-45c1-8976-7bb2208b37db",
+        "predecessor": "b569fa16-a49a-427e-a654-1d5c082f85ea",
+        "oldPresent": true,
+        "newPresent": true,
+        "action": "update"
+      },
+      {
+        "seq": 22,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "fe56482a-bba1-4bfe-928d-9d6a6fa9845f",
+        "predecessor": "0a4f76f0-98fb-45c1-8976-7bb2208b37db",
+        "oldPresent": true,
+        "newPresent": true,
+        "action": "update"
+      },
+      {
+        "seq": 26,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "e68b0b63-31c9-432c-b804-99c59a75c19d",
+        "predecessor": "fe56482a-bba1-4bfe-928d-9d6a6fa9845f",
+        "oldPresent": true,
+        "newPresent": false,
+        "action": "delete"
+      },
+      {
+        "seq": 34,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56",
+        "predecessor": "e68b0b63-31c9-432c-b804-99c59a75c19d",
+        "oldPresent": false,
+        "newPresent": true,
+        "action": "insert"
+      },
+      {
+        "seq": 42,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "36674e2d-5f02-45c4-a7f1-7b741a70d788",
+        "predecessor": "f569ac44-b7ed-4d17-addf-28c4da225d31",
+        "oldPresent": false,
+        "newPresent": true,
+        "action": "insert"
+      },
+      {
+        "seq": 50,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"b\"]",
+        "version": "d16ae150-4d54-4d76-8912-7e7f84ac27e7",
+        "predecessor": "36674e2d-5f02-45c4-a7f1-7b741a70d788",
+        "oldPresent": true,
+        "newPresent": false,
+        "action": "delete"
+      },
+      {
+        "seq": 61,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "8ab50f05-c552-4cfe-b721-2af0ea373867",
+        "predecessor": "7579d5d6-703d-4fbd-a8a1-fe8f32a00d56",
+        "oldPresent": true,
+        "newPresent": false,
+        "action": "delete"
+      },
+      {
+        "seq": 69,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_v033_1563b7bf.presence_serial\",\"text\",\"a\"]",
+        "version": "bfffc152-8573-41f8-8837-9e0988667d9b",
+        "predecessor": "8ab50f05-c552-4cfe-b721-2af0ea373867",
+        "oldPresent": false,
+        "newPresent": true,
+        "action": "insert"
+      }
+    ]
+  }
+}

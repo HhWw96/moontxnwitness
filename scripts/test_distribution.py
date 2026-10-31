@@ -692,5 +692,164 @@ class Relation034InventoryTests(unittest.TestCase):
         self.assertNotIn('scripts/private-relations.mjs', selected['portable'])
 
 
+class Predicate035InventoryTests(unittest.TestCase):
+    run_git = classmethod(DistributionTests.run_git.__func__)
+
+    @classmethod
+    def setUpClass(cls):
+        Relation034InventoryTests.setUpClass.__func__(cls)
+        names = set(inventory.PREDICATE035_SOURCE_INPUTS + inventory.PREDICATE035_PORTABLE_INPUTS +
+                    inventory.PREDICATE035_RUNTIME_INPUTS)
+        for name in names:
+            path = cls.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if not path.exists():
+                path.write_text('{}' if name.endswith('.json') else '// tiny predicate fixture\n', encoding='utf8')
+        sdk = cls.root / 'cmd/sdk.mjs'
+        sdk.write_text(sdk.read_text('utf8') + 'export const classifyRelationPredicateV4 = true;\n', encoding='utf8')
+        cls.public |= {name for name in names if not name.startswith('dist/')}
+
+    def select035(self, omitted=()):
+        return inventory.select_distribution_files(self.root, self.public - set(omitted), self.tested, '0.1.2')
+
+    def test_predicate_closure_activates_from_actual_namespace_and_version(self):
+        self.assertTrue(inventory.predicate035_available(self.root, '0.3.4'))
+        self.assertTrue(inventory.predicate035_available(self.root, '0.3.5'))
+        inventory.assert_complete(self.select035())
+
+    def test_source_audit_has_full_source_and_preserved_semantic_body(self):
+        selection = self.select035()
+        self.assertTrue(set(inventory.PREDICATE035_SOURCE_INPUTS).issubset(selection['source']))
+        self.assertIn('src/public.mbt', selection['source'])
+        self.assertIn('scripts/v035-predicate-regression-provenance.json', selection['requiredInputs'])
+        self.assertNotIn('dist/core.mjs', selection['source'])
+
+    def test_portable_uses_runtime_probe_instead_of_complete_source_audit(self):
+        selection = self.select035()
+        self.assertTrue(set(inventory.PREDICATE035_PORTABLE_INPUTS).issubset(selection['portable']))
+        self.assertTrue(set(inventory.PREDICATE035_RUNTIME_INPUTS).issubset(selection['portable']))
+        for name in inventory.PREDICATE035_SOURCE_INPUTS:
+            self.assertNotIn(name, selection['portable'])
+        self.assertNotIn('scripts/v035-predicate-maintenance-test.mjs', selection['portable'])
+
+    def test_source_regression_and_provenance_cannot_silently_disappear(self):
+        for name in ('scripts/relation-predicate-sdk-test.mjs',
+                     'scripts/v035-predicate-maintenance-test.mjs',
+                     'scripts/v035-predicate-regression-body.mjs',
+                     'scripts/v035-predicate-regression-provenance.json'):
+            with self.subTest(name=name):
+                result = self.select035((name,))
+                self.assertTrue(any(row['file'] == name for row in result['missingInputs']))
+                with self.assertRaises(AssertionError): inventory.assert_complete(result)
+
+    def test_missing_probe_example_and_description_are_blocking(self):
+        for name in inventory.PREDICATE035_PORTABLE_INPUTS:
+            with self.subTest(name=name):
+                result = self.select035((name,))
+                self.assertTrue(any(row['file'] == name for row in result['missingInputs']))
+                with self.assertRaises(AssertionError): inventory.assert_complete(result)
+
+    def test_missing_actual_predicate_runtime_is_blocking(self):
+        path = self.root / 'dist/relation-v4.mjs'
+        saved = path.with_suffix('.fixture-saved')
+        path.rename(saved)
+        try:
+            with self.assertRaises(AssertionError): inventory.assert_complete(self.select035())
+        finally:
+            saved.rename(path)
+
+    def test_original_semantic_body_matches_published_provenance_marker(self):
+        from hashlib import sha256
+        text = (ROOT / 'scripts/v035-predicate-regression-body.mjs').read_text('utf8')
+        start, end = '// BEGIN frozen semantic body\n', '// END frozen semantic body\n'
+        self.assertIn(start, text)
+        self.assertIn(end, text)
+        body = text.split(start, 1)[1].rsplit(end, 1)[0]
+        provenance = json.loads((ROOT / 'scripts/v035-predicate-regression-provenance.json').read_text('utf8'))
+        self.assertEqual(sha256(body.encode()).hexdigest(), provenance['semanticBodySha256'])
+        self.assertEqual(provenance['semanticAssertions'], 506)
+        self.assertEqual(provenance['currentBuildGuards'], 7)
+        self.assertFalse(provenance['newIndependentReviewPerformed'])
+
+    def test_new_runner_relative_imports_have_explicit_distribution_closure(self):
+        import re
+        names = ('scripts/v035-predicate-maintenance-test.mjs', 'scripts/v035-predicate-regression-body.mjs',
+                 'scripts/v035-portable-predicate-test.mjs')
+        selection = self.select035()
+        for name in names:
+            for relative in re.findall(r"from\s*['\"](\.[^'\"]+)['\"]", (ROOT / name).read_text('utf8')):
+                resolved = (self.root / name).parent.joinpath(relative).resolve().relative_to(self.root).as_posix()
+                self.assertIn(resolved, selection['requiredInputs'], (name, relative))
+
+
+class Predicate035ReleaseReceiptTests(unittest.TestCase):
+    def setUp(self):
+        import copy
+        self.copy = copy.deepcopy
+        self.version = '0.3.5'
+        manifest = {'version': self.version, 'coreSha256': 'core'}
+        self.host = {'passed': True, 'checks': 40, 'failed': 0}
+        self.maintained = {'passed': True, 'checks': 513, 'failed': 0, 'semanticAssertions': 506,
+                          'currentBuildGuards': 7, 'sourceUnchanged': True, 'newIndependentReviewPerformed': False,
+                          'buildManifest': manifest, 'version': self.version}
+        self.probe = {'passed': True, 'checks': 12, 'failed': 0, 'requiresSourceTree': False,
+                      'requiresCommandSource': False, 'sourceAuditPerformed': False, 'version': self.version,
+                      'runtimeBefore': {'core.mjs': 'core'}, 'runtimeAfter': {'core.mjs': 'core'}}
+        self.example = {'passed': True, 'predicate': 'refuted', 'item': 'checked-compatible',
+                        'replayValid': True, 'acceptsIsolationModels': False}
+        self.summary = {'buildManifest': manifest, 'foundation035': {
+            'predicateCategoryHostTests': self.host, 'predicateMaintenanceRegression': self.maintained,
+            'predicateRuntimeTests': self.probe, 'predicateCategoryExample': self.example}}
+        consumers = {}
+        for kind in ('source', 'portable'):
+            consumers[kind] = {'sourceAuditPerformed': kind == 'source', 'runtimeOnlyPortableChecks': kind == 'portable',
+                'newIndependentReviewPerformed': False, 'formalPerformanceMeasurement': False, 'actualDatabaseExecution': False,
+                'results': {'completeSourceSdk': self.host, 'maintainedPredicateRegression': self.maintained}
+                if kind == 'source' else {'runtimeProbe': self.probe}}
+        self.package = {'predicate035Consumers': consumers, 'checks': [
+            'source predicate all 40 complete-source SDK CLI and caller-budget replay checks',
+            'source predicate 506 preserved semantic assertions and seven current-build integrity guards',
+            'portable predicate runtime-only SDK CLI and exact scoped capsule replay',
+            *[kind + ' runnable predicate versus item example and independent-option capsule replay' for kind in ('source', 'portable')]]}
+
+    def validate(self, summary=None, package=None):
+        from release import validate_predicate035_receipts
+        return validate_predicate035_receipts(summary or self.summary, package or self.package, self.version)
+
+    def test_complete_separate_source_and_portable_execution_is_required(self):
+        self.validate()
+        package = self.copy(self.package)
+        del package['predicate035Consumers']['source']['results']['maintainedPredicateRegression']
+        with self.assertRaises(KeyError): self.validate(package=package)
+
+    def test_runtime_only_probe_cannot_be_used_as_source_audit(self):
+        package = self.copy(self.package)
+        package['predicate035Consumers']['portable']['sourceAuditPerformed'] = True
+        with self.assertRaises(AssertionError): self.validate(package=package)
+
+    def test_source_and_portable_runtime_digests_must_match_current_build(self):
+        package = self.copy(self.package)
+        package['predicate035Consumers']['portable']['results']['runtimeProbe']['runtimeBefore']['core.mjs'] = 'different'
+        with self.assertRaises(AssertionError): self.validate(package=package)
+        summary = self.copy(self.summary)
+        summary['foundation035']['predicateMaintenanceRegression']['buildManifest'] = {'version': self.version, 'coreSha256': 'different'}
+        with self.assertRaises(AssertionError): self.validate(summary=summary)
+
+    def test_maintained_regression_cannot_be_presented_as_new_independent_review(self):
+        summary = self.copy(self.summary)
+        summary['foundation035']['predicateMaintenanceRegression']['newIndependentReviewPerformed'] = True
+        with self.assertRaises(AssertionError): self.validate(summary=summary)
+
+    def test_unknown_or_failed_execution_and_missing_check_labels_are_rejected(self):
+        for key in ('predicateCategoryHostTests', 'predicateMaintenanceRegression', 'predicateRuntimeTests'):
+            with self.subTest(key=key):
+                summary = self.copy(self.summary)
+                summary['foundation035'][key]['passed'] = False
+                with self.assertRaises(AssertionError): self.validate(summary=summary)
+        package = self.copy(self.package)
+        package['checks'].pop()
+        with self.assertRaises(AssertionError): self.validate(package=package)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

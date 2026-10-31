@@ -12,6 +12,8 @@
 - Add category-preserving relation reduction, explicit verification budgets and replayable capsules, retaining original observation sequence mappings.
 - Check savepoint effects and incomplete observation windows before using final writes or declaring a single-transaction minimum.
 - Add maintained SDK/CLI checks, offline round-trip examples and separate source/portable consumer verification.
+- Replay public v0.3.3 evidence with its exact released runtime through a checksum-pinned shared component, retaining earlier replay routes.
+- Reject missing relation timestamps as malformed observations before source-rule analysis.
 
 # 0.3.3 — 2026-10-31
 

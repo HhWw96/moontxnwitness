@@ -746,7 +746,7 @@
     "publicationVerified": false,
     "wholeVersionAccepted": false
   },
-  "concurrentLinkCorrection": {
+  "earlierConcurrentLinkCorrection": {
     "status": "scoped-correction-probes-passed",
     "checks": 7,
     "passed": true,
@@ -777,7 +777,7 @@
         "name": "cache-hit link churn forces a new full content hash instead of reusing stale stamp",
         "passed": true,
         "detail": {
-          "fullHashBytesAfterCacheHitLink": 30
+          "fullHashBytesAfterCacheHitLink": 60
         }
       },
       {
@@ -796,10 +796,123 @@
         }
       }
     ],
-    "loaderSha256": "5ce18aae49a7c1b2b952fe45fe9b1adcc17212247b32e3442555e6a5d7909899",
+    "loaderSha256": "6ec8aa31b64f075cb4e6c28244cd81192830663d900c767b814e5c797c1c89dd",
     "beforeFixProbe": "link-stamp-probe.json",
     "scope": "Deterministic independent integration probes over synthetic local files; no public runtime assembly/full regression or independent approval of the original loader implementation.",
     "productionSourceChangedByReviewer": false
+  },
+  "currentFullContentValidation": {
+    "format": "independent-fullhash-path-validation/v1",
+    "before": {
+      "implementation": "6ec8aa31b64f075cb4e6c28244cd81192830663d900c767b814e5c797c1c89dd",
+      "framework": "dad5f5ed50bf1b0272466eda24638a170d422013fda4b7e187317ee1259b4b47"
+    },
+    "after": {
+      "implementation": "6ec8aa31b64f075cb4e6c28244cd81192830663d900c767b814e5c797c1c89dd",
+      "framework": "dad5f5ed50bf1b0272466eda24638a170d422013fda4b7e187317ee1259b4b47"
+    },
+    "sourceUnchanged": true,
+    "node": "v24.13.0",
+    "platform": "win32",
+    "checks": 7,
+    "passed": true,
+    "failures": 0,
+    "scope": "ordinary file bytes and independently fixed SHA only; mutated data never imported or executed; isolated small files only",
+    "oldMetadataReviewReadOnly": {
+      "path": "artifacts/v033-independent-integration/metadata-cache/review.json",
+      "sha256": "d98c665f466ed08523a5783051f450f961c7366931288b2797cc6c001bc80c7f"
+    },
+    "results": [
+      {
+        "name": "every selected source and each hardlink destination pathname is actually read on every get",
+        "passed": true,
+        "readBytes": {
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-FzjkyY\\installation\\legacy\\fixed\\payload.dat": 64,
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-FzjkyY\\temporary\\moontxnwitness-compact-73948-zCGq7R\\a.dat": 32,
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-FzjkyY\\temporary\\moontxnwitness-compact-73948-zCGq7R\\nested\\b.dat": 32
+        },
+        "expectedSourcePasses": 2,
+        "expectedDestinationPasses": 1,
+        "sameInodeAliases": true
+      },
+      {
+        "name": "stale identical metadata after first source hash cannot authorize changed source bytes",
+        "passed": true,
+        "simulatedMetadataEquality": true,
+        "injectedAfterOneFullSuccessfulHash": true,
+        "readBytes": {
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-DsNugc\\installation\\legacy\\fixed\\payload.dat": 64
+        },
+        "expectedDigest": "3315c5a67a9c6a4c10b804effe43294a055a84cf3aabf3adf10df55045c5e481",
+        "changedDigest": "c01dd475fc3cde182f6eae978e199a4f1360466c34967219bd07abe7fcdfd249",
+        "actual": {
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-DsNugc\\installation\\legacy\\fixed\\payload.dat": "c01dd475fc3cde182f6eae978e199a4f1360466c34967219bd07abe7fcdfd249",
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-DsNugc\\temporary\\moontxnwitness-compact-73948-JkgK9S\\a.dat": "c01dd475fc3cde182f6eae978e199a4f1360466c34967219bd07abe7fcdfd249",
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-DsNugc\\temporary\\moontxnwitness-compact-73948-JkgK9S\\nested\\b.dat": "c01dd475fc3cde182f6eae978e199a4f1360466c34967219bd07abe7fcdfd249"
+        },
+        "poisonedAfterRestore": true
+      },
+      {
+        "name": "second hardlink alias is hashed even when its inode already passed source and first target hashes",
+        "passed": true,
+        "simulatedMetadataEquality": true,
+        "readBytes": {
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-5JDA8k\\installation\\legacy\\fixed\\payload.dat": 64,
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-5JDA8k\\temporary\\moontxnwitness-compact-73948-Et9cvR\\a.dat": 32,
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-5JDA8k\\temporary\\moontxnwitness-compact-73948-Et9cvR\\nested\\b.dat": 32
+        },
+        "actual": {
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-5JDA8k\\installation\\legacy\\fixed\\payload.dat": "c01dd475fc3cde182f6eae978e199a4f1360466c34967219bd07abe7fcdfd249",
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-5JDA8k\\temporary\\moontxnwitness-compact-73948-Et9cvR\\a.dat": "c01dd475fc3cde182f6eae978e199a4f1360466c34967219bd07abe7fcdfd249",
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-5JDA8k\\temporary\\moontxnwitness-compact-73948-Et9cvR\\nested\\b.dat": "c01dd475fc3cde182f6eae978e199a4f1360466c34967219bd07abe7fcdfd249"
+        },
+        "poisonedAfterRestore": true
+      },
+      {
+        "name": "copy fallback reads independent destination bytes and rejects a changed destination under frozen metadata",
+        "passed": true,
+        "forcedCopyFallback": true,
+        "sourceAndDestinationHaveDifferentInodes": true,
+        "simulatedMetadataEquality": true,
+        "readBytes": {
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-PtZjAo\\installation\\legacy\\fixed\\payload.dat": 64,
+          "D:\\CodexScratch\\MoonTxnWitness-v033-core-20261031\\artifacts\\v033-independent-fullhash\\case-PtZjAo\\temporary\\moontxnwitness-compact-73948-cnhTM7\\a.dat": 32
+        },
+        "poisonedAfterRestore": true
+      },
+      {
+        "name": "one genuine concurrent hardlink metadata change is accepted only after reading and retrying",
+        "passed": true,
+        "genuineLinkChanges": 1,
+        "sourceFullReadsDuringFirstValidation": 3,
+        "contentHashUnchanged": true,
+        "accepted": true
+      },
+      {
+        "name": "two link-only changes may stabilize on the third bounded attempt",
+        "passed": true,
+        "genuineLinkChanges": 2,
+        "firstSourceAttempts": 3,
+        "secondSourceAttempts": 1,
+        "accepted": true
+      },
+      {
+        "name": "three unstable link-only attempts stop without a fourth attempt and poison the loader",
+        "passed": true,
+        "genuineLinkChanges": 3,
+        "sourceAttempts": 3,
+        "fourthAttempt": false,
+        "poisonedAfterLinksRestored": true
+      }
+    ],
+    "fullSuiteExecuted": false,
+    "ciExecuted": false,
+    "publicPackageVerified": false,
+    "productionEdited": false,
+    "firstPass": {
+      "path": "first-pass.json",
+      "driverError": "Independent post-call fileSha assertions were counted as loader reads; final driver pauses instrumentation around its own digest checks. Product and functional expectations unchanged."
+    }
   },
   "derivedGapAndPrimaryBasis": {
     "status": "scoped-derived-gap-probes-passed",
@@ -2556,9 +2669,10 @@
   },
   "originalReceiptSha256": {
     "review.json": "d0cd795e1bd4b2315dfeae2405db446b6b70cab6b30491e93e295ab086714369",
-    "link-fix-review.json": "94344072a53274e1ac4053298261df90fa96ccf414ad77608eab3b3d73fdb46b",
+    "link-fix-review.json": "393f174a5754003097c16d58c0d9e83102a3a3d02c94c3eb2cd0c242f803382d",
     "derived-gap-and-future-review.json": "0af0e68ca11668e883a8243c14274f5ef2ad6240624c4c026f1f0b83c9ea9619"
   },
+  "currentFullContentReceiptSha256": "1501dee745ed277256f0b4b2eba388d5d5f94c13dd37ab70f9df520f18f10980",
   "pathRepresentation": "Checkout paths are relative; original receipts retained with the recorded SHA256.",
   "publicationVerified": false
 }

@@ -12,7 +12,13 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-## 关系分析接口（开发分支）
+## v0.3.5 候选：关系谓词异常检查
+
+独立谓词入口区分项目与谓词依赖，按调用者明确选择的形式规则检查 G0、G1c、G2-item、G2、G-single-item、G-single 和 G-nonadjacent。原始完整查询、行版本来源、候选位置和实际预算与证据一起保存；胶囊重放需要调用者另行提供预期选项。可运行 `node examples/relation-predicate-categories.mjs`，或阅读[谓词接口](docs/relation-predicate-categories-v4.md)。
+
+本候选仍按类别给出反证或有界检查结果，不自动宣告数据库隔离级别相容。合并后最终运行时的正式性能测量尚未执行。
+
+## v0.3.4：关系分类与类别保持缩减
 
 关系行版本新增 G0、G1a、G1b、G1c、G2-item 和内部一致性分类，提供独立 SDK、命令行与证据回放入口。缩减可以指定保留的异常类别，并保留原始事件来源映射；完成全部剩余事务的单删检查后，才标记事务单最小。见[关系库使用示例](docs/relation-library-workflow.md)。
 
@@ -107,7 +113,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.3.3
+moon add HhWw96/moontxnwitness@0.3.5
 ```
 
 ```javascript

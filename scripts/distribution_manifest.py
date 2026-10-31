@@ -58,7 +58,6 @@ FIXED_VERIFICATION_FILES = {
 # Source audits intentionally stay out of the portable runtime-only package.
 RELATION034_SOURCE_INPUTS = (
     'scripts/v034-source-rules-sdk-test.mjs',
-    'scripts/relation-predicate-sdk-test.mjs',
     'scripts/relation-category-reduction-sdk-test.mjs',
     'scripts/v034-public-boundary-independent-test.mjs',
     'scripts/v034-maintenance-bindings.mjs',
@@ -69,8 +68,6 @@ RELATION034_SOURCE_INPUTS = (
 )
 RELATION034_PORTABLE_INPUTS = (
     'scripts/v034-portable-runtime-test.mjs',
-    'examples/relation-predicate-categories.mjs',
-    'examples/relation-predicate-categories.json',
     'examples/source-rules-v4-roundtrip.mjs',
     'examples/relation-category-reduction.mjs',
     'examples/relation-category-reduction.json',
@@ -91,6 +88,34 @@ def relation034_available(root, version):
         return False
     text = sdk.read_text(encoding='utf8')
     return all(name in text for name in ('classifyRelationV4', 'reduceRelationCategoryV4'))
+
+
+# Predicate checks require their own source audit and a source-free runtime probe.
+PREDICATE035_SOURCE_INPUTS = (
+    'scripts/relation-predicate-sdk-test.mjs', 'scripts/build-fingerprint.mjs',
+    'scripts/v035-predicate-maintenance-test.mjs', 'scripts/v035-predicate-regression-body.mjs',
+    'scripts/v035-predicate-regression-provenance.json',
+    'cmd/relation-v4.mjs', 'cmd/sdk.mjs', 'cmd/moontxnwitness.mjs',
+    'moon.mod', 'package.json',
+)
+PREDICATE035_PORTABLE_INPUTS = (
+    'scripts/v035-portable-predicate-test.mjs',
+    'examples/relation-predicate-categories.mjs',
+    'examples/relation-predicate-categories.json',
+    'docs/relation-predicate-categories-v4.md',
+)
+PREDICATE035_RUNTIME_INPUTS = (
+    'dist/core.mjs', 'dist/sdk.mjs', 'dist/relation-v4.mjs',
+    'dist/moontxnwitness.mjs', 'dist/build-manifest.json',
+)
+
+
+def predicate035_available(root, version):
+    """Activate the predicate namespace independently of point classification."""
+    if tuple(map(int, version.split('.'))) >= (0, 3, 5):
+        return True
+    sdk = Path(root) / 'cmd/sdk.mjs'
+    return sdk.is_file() and 'classifyRelationPredicateV4' in sdk.read_text(encoding='utf8')
 
 
 def safe_name(name: str) -> str:
@@ -335,6 +360,16 @@ def select_distribution_files(root, public_names, tested_files, version):
         for name in RELATION034_RUNTIME_INPUTS:
             require(name, 'actual compiled relation/source interfaces and shipped build identities')
 
+    predicate035 = predicate035_available(root, version)
+    if predicate035:
+        for name in PREDICATE035_SOURCE_INPUTS:
+            require(name, 'predicate source audit requires complete source and current command inputs')
+        require_tree('src', 'predicate source audit must check the full source fingerprint')
+        for name in PREDICATE035_PORTABLE_INPUTS:
+            require(name, 'predicate runtime-only SDK CLI and source-bound capsule consumer closure')
+        for name in PREDICATE035_RUNTIME_INPUTS:
+            require(name, 'actual compiled predicate interfaces and current runtime identities')
+
     source = set()
     for name in public_names:
         path = PurePosixPath(name)
@@ -417,8 +452,17 @@ def select_distribution_files(root, public_names, tested_files, version):
         for name in V033_ANOMALY_AUDIT_SOURCES:
             require(name, 'portable anomaly audit: exact current source byte bindings')
             portable.add(name)
+    if tuple(map(int, version.split('.'))) >= (0, 3, 4):
+        for name in ('scripts/public033-compatibility-test.mjs', 'scripts/public033-compatibility-groups.mjs'):
+            require(name, 'fresh-consumer exact public033 runtime compatibility')
+            portable.add(name)
+        for helper in ('legacy-v033.mjs', 'legacy-v033-binding.mjs'):
+            require('cmd/' + helper, 'fixed public033 dispatch and immutable binding')
+            require('dist/' + helper, 'installed public033 dispatch and immutable binding')
     if relation034:
         portable.update(RELATION034_PORTABLE_INPUTS)
+    if predicate035:
+        portable.update(PREDICATE035_PORTABLE_INPUTS)
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))

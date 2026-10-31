@@ -104,7 +104,7 @@ try{
  current=await import(pathToFileURL(within(runtime,'sdk.mjs')).href);
  const newEvidence=await import(pathToFileURL(within(runtime,'evidence.mjs')).href);
  currentVersion=current.version();
- await check('published producer032 and current consumer033 versions',()=>{assert.equal(original.version(),'0.3.2');assert.equal(currentVersion,'0.3.3');});
+ await check('published producer032 and configured consumer versions',()=>{assert.equal(original.version(),'0.3.2');assert.equal(currentVersion,JSON.parse(read('package.json')).version);});
  for(const fixture of ['examples/write-skew.json','examples/consistent.json']){
   if(!selected(fixture+' original report and v1/v2 capsule replay'))continue;
   const source=read(fixture),report=original.analyzeWithOptions(source),capsule=oldEvidence.makeCapsule(source,report);
