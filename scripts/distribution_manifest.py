@@ -65,7 +65,7 @@ RELATION034_SOURCE_INPUTS = (
     'scripts/v034-maintenance-bindings-test.mjs',
     'scripts/build-fingerprint.mjs',
     'cmd/relation-v4.mjs', 'cmd/relation-reduction-v4.mjs',
-    'cmd/sdk.mjs', 'cmd/moontxnwitness.mjs', 'moon.mod', 'package.json',
+    'cmd/sdk.mjs', 'cmd/moontxnwitness.mjs', 'moon.mod',
 )
 RELATION034_PORTABLE_INPUTS = (
     'scripts/v034-portable-runtime-test.mjs',
@@ -352,7 +352,9 @@ def select_distribution_files(root, public_names, tested_files, version):
     source.update(n for n in required if not n.startswith('dist/'))
     source.difference_update(cached)
 
-    portable = {'README.md', 'LICENSE', 'CHANGELOG.md', 'THIRD_PARTY.md', 'run-demo.cmd'}
+    # Original public-runtime compatibility checks read the current package version.
+    require('package.json', 'portable consumer version identity')
+    portable = {'package.json', 'README.md', 'LICENSE', 'CHANGELOG.md', 'THIRD_PARTY.md', 'run-demo.cmd'}
     for folder in ('dist', 'docs', 'examples', 'integrations', 'experiments'):
         for item in (root / folder).rglob('*'):
             name = item.relative_to(root).as_posix()

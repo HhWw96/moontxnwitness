@@ -134,6 +134,16 @@ class DistributionTests(unittest.TestCase):
         self.assertNotIn('dist/core.mjs', self.selection['source'])
         self.assertIn('dist/core.mjs', self.selection['portable'])
 
+    def test_portable_keeps_original_consumer_version_input(self):
+        self.assertIn('package.json', self.selection['portable'])
+        self.assertIn('package.json', self.selection['requiredInputs'])
+        version = json.loads((self.root / 'package.json').read_text('utf8'))
+        self.assertEqual(version['version'], '0.1.2')
+        missing = inventory.select_distribution_files(
+            self.root, self.public - {'package.json'}, self.tested, '0.1.2')
+        with self.assertRaises(AssertionError):
+            inventory.assert_complete(missing)
+
     def test_fixed_public_baseline_dist_remains_and_untracked_copy_is_refused(self):
         name = 'verification/releases/0.2.0/published-package-review/public-reproduction/downloaded-components/0.2.0/portable/dist/fixture.json'
         for kind in ('source', 'portable'):
