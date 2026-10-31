@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 import tempfile
 import unittest
-from prepare import validate_baseline_index_row, stage_candidate_notices
+from prepare import validate_baseline_index_row, stage_candidate_notices, refs
 
 
 class PublicBaselineIndexTests(unittest.TestCase):
@@ -75,6 +75,28 @@ class PublicBaselineIndexTests(unittest.TestCase):
             (root/'subject').mkdir()
             with self.assertRaises(FileNotFoundError):
                 stage_candidate_notices(root, root/'missing-toolchain', root/'subject', '0.3.6')
+
+
+class StaticSDKReferenceTests(unittest.TestCase):
+    def test_multiline_import_uses_the_module_parser(self):
+        self.assertEqual(refs(b"import {\n analyze,\n verify\n} from './model-profile.mjs';", 'sdk.mjs'), ['model-profile.mjs'])
+
+    def test_reexports_and_builtins_have_distinct_roles(self):
+        self.assertEqual(refs(b"import fs from 'node:fs'; export {\n analyze\n} from './core.mjs';", 'nested/sdk.mjs'), ['nested/core.mjs'])
+
+    def test_mock_imports_in_comments_and_strings_are_not_dependencies(self):
+        self.assertEqual(refs(b"// import './fake.mjs';\nconst text=\"export * from './also-fake.mjs'\";", 'sdk.mjs'), [])
+
+    def test_dynamic_imports_do_not_claim_a_static_closure(self):
+        self.assertEqual(refs(b"const lazy=()=>import('./not-linked.mjs');", 'sdk.mjs'), [])
+
+    def test_bare_imports_are_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'Bare or absolute'):
+            refs(b"import value from 'other-package';", 'sdk.mjs')
+
+    def test_root_escape_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'escaped'):
+            refs(b"export * from '../outside.mjs';", 'sdk.mjs')
 
 
 if __name__ == '__main__': unittest.main()

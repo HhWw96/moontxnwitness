@@ -3,18 +3,20 @@ import {readFileSync,writeFileSync,readdirSync} from 'node:fs';
 import {resolve,dirname,relative,isAbsolute} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {sha,fileSHA,environment,checkSubject,checkSources} from './common.mjs';
+import {parseStaticImports,STATIC_IMPORT_CONTRACT} from './parse-static-imports.mjs';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 assert.equal(process.platform,'linux');assert.equal(process.version,'v24.13.0');
 assert.equal(process.env.GITHUB_ACTIONS,'true','Registered Linux job required');
 const metadata=JSON.parse(readFileSync(resolve(ROOT,'subjects.json'))),inputs=JSON.parse(readFileSync(resolve(ROOT,'input-manifest.json')));
-const imports=/(?:\b(?:import|export)\s+(?:[^;\n]*?\s+from\s*)?)["'](\.[^"']+)["']/g;
 function closure(entry,expected=null){
- const base=dirname(entry),todo=[entry],files={},staticImports=[];
+ const base=dirname(entry),todo=[entry],files={},staticImports=[],builtinImports=[];
  while(todo.length){const file=todo.pop(),name=relative(base,file).replaceAll('\\','/');assert(!name.startsWith('../')&&!isAbsolute(name));if(files[name])continue;
   const bytes=readFileSync(file),digest=sha(bytes);if(expected){assert.equal(digest,expected[name]?.sha256,name);assert.equal(bytes.length,expected[name]?.bytes,name);}
   files[name]={path:file,bytes:bytes.length,sha256:digest};
-  for(const match of bytes.toString('utf8').matchAll(imports)){const target=resolve(dirname(file),match[1]),key=relative(base,target).replaceAll('\\','/');assert(!key.startsWith('../')&&!isAbsolute(key));staticImports.push({from:name,to:key});todo.push(target);}
- }return{entry,files,staticImports,dynamicCompatibilityCallsNotExecuted:true};
+  const parsed=parseStaticImports(bytes,name);
+  for(const dependency of parsed.builtinDependencies)builtinImports.push({from:name,to:dependency});
+  for(const dependency of parsed.relativeDependencies){const target=resolve(base,dependency.target),key=relative(base,target).replaceAll('\\','/');assert(!key.startsWith('../')&&!isAbsolute(key));staticImports.push({from:name,to:key});todo.push(target);}
+ }return{entry,files,staticImports,builtinImports,staticImportParser:STATIC_IMPORT_CONTRACT,dynamicCompatibilityCallsNotExecuted:true,dynamicImportBoundary:'Static module requests only; lazy compatibility import() targets are not part of this closure and are not executed.'};
 }
 const baseline={...metadata.baseline,...closure(metadata.baseline.entry,metadata.baseline.publicFiles),label:'actual-public031-original-compiled-SDK'};
 const candidate={...metadata.candidate,...closure(metadata.candidate.entry),label:'Linux-CI-checkout-'+metadata.candidate.sourceCommit};
