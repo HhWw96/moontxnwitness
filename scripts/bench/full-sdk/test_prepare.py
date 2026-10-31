@@ -3,8 +3,9 @@ import gzip
 import json
 from pathlib import Path
 import re
+import tempfile
 import unittest
-from prepare import validate_baseline_index_row
+from prepare import validate_baseline_index_row, stage_candidate_notices
 
 
 class PublicBaselineIndexTests(unittest.TestCase):
@@ -52,6 +53,28 @@ class PublicBaselineIndexTests(unittest.TestCase):
         header = json.loads((root/'scripts/frozen-inputs.json').read_bytes())
         index = json.loads(gzip.decompress((root/'scripts'/header['index']).read_bytes()))
         validate_baseline_index_row(index['artifacts/compat-v031/runtime/LICENSE'], pin['files']['LICENSE'], pin, header, 'LICENSE')
+
+    def test_notices_keep_actual_compiler_bytes(self):
+        with tempfile.TemporaryDirectory(prefix='mtw-runtime-notices-') as directory:
+            root = Path(directory)
+            home, stage = root/'compiler', root/'subject'
+            (home/'lib/core').mkdir(parents=True)
+            stage.mkdir()
+            (root/'LICENSE').write_bytes(b'project licence\n')
+            licence, notice = b'\xef\xbb\xbfruntime licence\r\n', b'runtime notice\r\n'
+            (home/'lib/core/LICENSE').write_bytes(licence)
+            (home/'lib/core/NOTICE').write_bytes(notice)
+            stage_candidate_notices(root, home, stage, '0.3.6')
+            self.assertEqual((stage/'LICENSE').read_bytes(), (root/'LICENSE').read_bytes())
+            self.assertTrue((stage/'THIRD_PARTY_NOTICES.txt').read_bytes().endswith(b'\n'+licence+b'\n'+notice))
+
+    def test_missing_runtime_notice_is_rejected(self):
+        with tempfile.TemporaryDirectory(prefix='mtw-runtime-notices-') as directory:
+            root = Path(directory)
+            (root/'LICENSE').write_bytes(b'project licence\n')
+            (root/'subject').mkdir()
+            with self.assertRaises(FileNotFoundError):
+                stage_candidate_notices(root, root/'missing-toolchain', root/'subject', '0.3.6')
 
 
 if __name__ == '__main__': unittest.main()

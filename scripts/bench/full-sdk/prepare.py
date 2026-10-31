@@ -124,6 +124,19 @@ def prepare_baseline(root,out,cache):
     save(out/'setup/baseline-download.json',{**download,'archiveSha256':sha(cache),'archiveBytes':cache.stat().st_size,'sourceURL':provider['url'],'selectedStagedFiles':len(done),'allSelectedCRCAndDigestsVerified':True,'legacyPayloadsExtracted':False})
     return result
 
+def stage_candidate_notices(root, home, stage, version):
+    shutil.copyfile(root/'LICENSE', stage/'LICENSE')
+    licence_path, notice_path = home/'lib/core/LICENSE', home/'lib/core/NOTICE'
+    licence, notice = licence_path.read_bytes(), notice_path.read_bytes()
+    if not licence.decode('utf8').strip() or not notice.decode('utf8').strip():
+        raise ValueError('Empty actual compiler runtime attribution')
+    text = ('MoonTxnWitness v'+version+'\nLicense: Apache-2.0\n\nCompiled with MoonBit. Portions of the compiled runtime use moonbitlang/core (Apache-2.0).\nSource: https://github.com/moonbitlang/core\n')
+    (stage/'THIRD_PARTY_NOTICES.txt').write_bytes(text.encode()+b'\n'+licence+b'\n'+notice)
+    return {'projectLicenseSha256':sha(stage/'LICENSE'),
+            'runtimeLicenseSha256':sha(licence_path),'runtimeNoticeSha256':sha(notice_path),
+            'generatedNoticesSha256':sha(stage/'THIRD_PARTY_NOTICES.txt'),
+            'source':'actual selected compiler home; same byte composition as scripts/build.mjs'}
+
 def prepare_candidate(root,out):
     home=Path(os.environ['MOON_HOME']);moon=home/'bin/moon';moonc=home/'bin/moonc'
     temp=Path(tempfile.mkdtemp(prefix='full-sdk-compiler-',dir=os.environ['RUNNER_TEMP']))
@@ -139,8 +152,8 @@ def prepare_candidate(root,out):
     command([moon,'build','src/capture_bridge','--target','js','--release','--deny-warn','--jobs','1'],root,out,'capture-bridge-build',env)
     command(['git','diff','--exit-code','--','src','cmd','moon.mod'],root,out,'tracked-source-clean-after-build',env)
     stage=out/'runtime/candidate';stage.mkdir(parents=True)
-    for name in ('LICENSE','THIRD_PARTY_NOTICES.txt'):
-        shutil.copyfile(root/name,stage/name)
+    version=re.search(r'^version\s*=\s*"([^"]+)"',(root/'moon.mod').read_text(encoding='utf-8'),re.M).group(1)
+    attribution=stage_candidate_notices(root, home, stage, version)
     for file in (root/'cmd').glob('*.mjs'):
         if file.name not in ('core.mjs','capture-core.mjs'):shutil.copyfile(file,stage/file.name)
     main=root/'_build/js/release/build/bridge/bridge.js'
@@ -150,7 +163,6 @@ def prepare_candidate(root,out):
     files={n:{'path':str(root/n),'sha256':sha(root/n),'bytes':(root/n).stat().st_size} for n in sorted(n for n in names if n)}
     digest=hashlib.sha256(''.join(n+'\0'+files[n]['sha256']+'\n' for n in files).encode()).hexdigest()
     commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()
-    version=re.search(r'^version\s*=\s*"([^"]+)"',(root/'moon.mod').read_text(encoding='utf-8'),re.M).group(1)
     fingerprint_helper=root/'scripts/build-fingerprint.mjs'
     fingerprint_script='import {pathToFileURL} from "node:url"; const {sourceFingerprint}=await import(pathToFileURL(process.argv[1])); console.log(sourceFingerprint(process.argv[2]));'
     repository_fingerprint=command(['node','--input-type=module','-e',fingerprint_script,fingerprint_helper,root],root,out,'repository-source-fingerprint',env).strip()
@@ -161,6 +173,7 @@ def prepare_candidate(root,out):
             'actualCaptureCoreSha256':sha(capture),
             'toolchain':{'compiler':VERSION,'compilerOutput':compiler.strip(),'compilerBinarySha256':sha(moonc),'moonOutput':moon_version.strip()},
             'sourceState':'actual tracked source unchanged after info/check/build',
+            'runtimeAttribution':attribution,
             'windowsC7HashAssumed':False,'legacyRuntimeRestored':False}
     installer=Path(os.environ['RUNNER_TEMP'])/'moon-install.sh'
     if installer.is_file():result['officialInstallerScriptSha256']=sha(installer)
