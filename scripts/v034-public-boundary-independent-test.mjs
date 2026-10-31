@@ -1,4 +1,4 @@
-// Independent public-boundary audit. Uses frozen installed SDK/CLI; no build or production mutation.
+// Maintained original public-boundary semantic cases, bound to the current build.
 import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync,mkdirSync,mkdtempSync,existsSync} from 'node:fs';
 import {resolve,join} from 'node:path';
@@ -6,11 +6,21 @@ import {createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {sourceFingerprint} from './build-fingerprint.mjs';
-const root=resolve(import.meta.dirname,'..'),hash=x=>createHash('sha256').update(x).digest('hex'),clone=x=>structuredClone(x),freezePath=join(root,'artifacts/v034-public-wire-freeze.json'),freezeBytes=readFileSync(freezePath),freeze=JSON.parse(freezeBytes);
-assert.equal(hash(freezeBytes),'75b0b71f319ab671c5d158d0475136601af0e3c5711e9a7d5eff8b3b49c1bfeb');
-const bound={...freeze.fileSha256,...freeze.protectedOriginalSha256,'dist/core.mjs':freeze.runtimeSha256.core,'dist/capture-core.mjs':freeze.runtimeSha256.capture};for(const[p,sha]of Object.entries(bound))assert.equal(hash(readFileSync(join(root,p))),sha,p);
-const before=sourceFingerprint(root);assert.equal(before,freeze.sourceFingerprint);const sdk=await import(pathToFileURL(join(root,'dist/sdk.mjs')).href);
-const dir=join(root,'artifacts/v034-public-wire-independent');mkdirSync(dir,{recursive:true});const cliRoot=mkdtempSync(join(dir,'cli-'));
+import {bindV034CurrentBuild} from './v034-maintenance-bindings.mjs';
+const root=resolve(import.meta.dirname,'..'),hash=x=>createHash('sha256').update(x).digest('hex'),clone=x=>structuredClone(x);
+let snapshot;
+try{snapshot=bindV034CurrentBuild(root);}catch(error){
+ if(error.code!=='DIST_NOT_BUILT')throw error;
+ console.log(JSON.stringify({passed:false,executed:false,status:'not-executed',checks:0,reason:error.message,actualDatabaseExecution:false,newMoonCompilation:false}));process.exit(3);
+}
+const semanticAssertionsSha256='85ea7fcafd830194be09a0d912423af57bc67d657fcaec07e729782f4445fb91';
+const ownText=readFileSync(import.meta.filename,'utf8').replace(/\r\n/g,'\n');
+const bodyStart=ownText.indexOf('\nconst stamp=events=>')+1,bodyEnd=ownText.indexOf('\nfor(const[p,sha]of Object.entries(bound))',bodyStart);
+assert(bodyStart>0&&bodyEnd>bodyStart,'Missing maintained semantic-case boundary');
+assert.equal(hash(ownText.slice(bodyStart,bodyEnd)),semanticAssertionsSha256,'Original semantic cases changed');
+const bound=snapshot.fileSha256,before=snapshot.sourceFingerprint,sdk=await import(pathToFileURL(join(root,'dist/sdk.mjs')).href);
+const parent=join(root,'artifacts/v034-public-boundary-maintenance');mkdirSync(parent,{recursive:true});
+const dir=mkdtempSync(join(parent,'run-')),cliRoot=mkdtempSync(join(dir,'cli-'));
 const stamp=events=>events.map((e,i)=>({...e,seq:i+1,time:i})),begin=tx=>({kind:'begin',tx,connection:'independent:'+tx}),commit=tx=>[{kind:'commit_request',tx},{kind:'commit_ok',tx}],mark=(tx,instance)=>({kind:'savepoint',tx,name:'same-name',instance}),undo=(tx,instance)=>({kind:'rollback_to',tx,instance}),release=(tx,instance)=>({kind:'release',tx,instance});
 const read=(tx,key,version)=>({kind:'read',tx,key,version}),write=(tx,key,version,predecessor)=>({kind:'write',tx,key,version,predecessor});
 function reg(events,initial={x:'x0',y:'y0'}){return{traceSchema:3,dataModel:'point-register-v1',clockDomain:'independent-public-boundary',scope:{exclusiveWriters:true},gaps:[],events:stamp([{kind:'snapshot',consistent:true,initial},...events])};}
@@ -71,6 +81,7 @@ check('list unknown COMMIT response is not a confirmed aborted source',()=>{cons
 check('list full external prefix survives own-write rollback and identifies later shrink',()=>{const item=id=>({id,value:'same'}),source={traceSchema:3,dataModel:'append-list-v1',clockDomain:'independent-public-boundary',scope:{exclusiveWriters:true},gaps:[],events:stamp([{kind:'snapshot',consistent:true,initial:{x:[item('seed-A'),item('seed-B')]}},begin('R'),{kind:'list_read',tx:'R',key:'x',items:['seed-A','seed-B'].map(item)},mark('R','s'),{kind:'append',tx:'R',key:'x',...item('own-Z')},{kind:'list_read',tx:'R',key:'x',items:['seed-A','seed-B','own-Z'].map(item)},undo('R','s'),{kind:'list_read',tx:'R',key:'x',items:['seed-A'].map(item)},...commit('R')])};const r=inspect(sdk.inspectInternalConsistencyV4,source);assert.equal(status(r),'refuted');assert(cats(r).includes('INT'));});
 for(const op of operations)check(op.name+' counter contract and self-rewritten category/options reject despite fresh digests',()=>{const forged=clone(packets[op.name].packet),report=JSON.parse(forged.reportText);report.execution.counterContract='forged-counter';rehash(forged,'report',JSON.stringify(report));forged.counterContract='forged-counter';reject(op.verify(op.source,report,op.options));reject(sdk.replayRelationCapsuleV4(forged,op.options));if(op.name==='relation-classification'){const forged2=clone(packets[op.name].packet),report2=JSON.parse(forged2.reportText),options2={...op.options,categories:['G0']};report2.execution.categories=['G0'];rehash(forged2,'report',JSON.stringify(report2));rehash(forged2,'options',JSON.stringify(options2));reject(sdk.replayRelationCapsuleV4(forged2,options2));}});
 
-for(const[p,sha]of Object.entries(bound))assert.equal(hash(readFileSync(join(root,p))),sha,'Frozen file changed '+p);assert.equal(sourceFingerprint(root),before);
-const receipt={format:'independent-v034-source-rules-public-boundary-audit/v1',passed:results.every(r=>r.passed),checks:results.length,failed:results.filter(r=>!r.passed).length,results,cliCalls,sourceFingerprintBefore:before,sourceFingerprintAfter:sourceFingerprint(root),frozenReceiptSha256:hash(freezeBytes),reviewedFileSha256:bound,scriptSha256:hash(readFileSync(import.meta.filename)),actualDatabaseExecution:false,formalPerformanceMeasurement:false,newMoonCompilation:false,authorTestsOrExpectationsReused:false,categoryReductionClaimed:false,publicReleaseVerified:false,notes:['Independent new SDK/CLI facts and tamper cases; existing lower-level helpers were authored elsewhere and unchanged.','Replay is semantic reproduction, not observer authentication; producer.version and report formatting controls intentionally remain valid.','Known debug-coordinate change032-to033 is not used to alter any legacy evidence or expectations.','No Native execution, whole package installation, new database run or author94-case rerun is claimed.']};
-writeFileSync(join(dir,'review.json'),JSON.stringify(receipt,null,2)+'\n');writeFileSync(join(dir,'independent-sources.json'),JSON.stringify({safe,skew,relationDirty,dirty,internal},null,2)+'\n');console.log(JSON.stringify({passed:receipt.passed,checks:receipt.checks,failed:receipt.failed,cliCalls,outputRoot:dir,receiptSha256:hash(readFileSync(join(dir,'review.json'))),failures:results.filter(r=>!r.passed).map(r=>({name:r.name,error:r.error}))}));if(!receipt.passed)process.exitCode=1;
+for(const[p,sha]of Object.entries(bound))assert.equal(hash(readFileSync(join(root,p))),sha,'Bound file changed '+p);assert.equal(sourceFingerprint(root),before);
+assert.equal(results.length,84,'The maintained semantic check count changed');
+const receipt={format:'maintained-v034-source-rules-public-boundary/v1',passed:results.every(r=>r.passed),checks:results.length,failed:results.filter(r=>!r.passed).length,results,cliCalls,sourceFingerprintBefore:before,sourceFingerprintAfter:sourceFingerprint(root),buildSnapshot:snapshot,semanticAssertionsSha256,reviewedFileSha256:bound,scriptSha256:hash(readFileSync(import.meta.filename)),actualDatabaseExecution:false,formalPerformanceMeasurement:false,newMoonCompilation:false,newIndependentReviewPerformed:false,originalIndependentSemanticCasesReused:true,categoryReductionClaimed:false,publicReleaseVerified:false,notes:['The original 84 semantic cases are retained unchanged except newline normalization as a maintained regression suite.','This run binds current build-manifest/source/runtime bytes and requires no private historical freeze.','Replay reproduces semantics; it does not authenticate the observer or validate a public release.','Historical independent 85-check receipts remain separate and are not overwritten.']};
+writeFileSync(join(dir,'review.json'),JSON.stringify(receipt,null,2)+'\n');writeFileSync(join(dir,'independent-sources.json'),JSON.stringify({safe,skew,relationDirty,dirty,internal},null,2)+'\n');console.log(JSON.stringify({passed:receipt.passed,executed:true,checks:receipt.checks,failed:receipt.failed,cliCalls,outputRoot:dir,receiptSha256:hash(readFileSync(join(dir,'review.json'))),failures:results.filter(r=>!r.passed).map(r=>({name:r.name,error:r.error}))}));if(!receipt.passed)process.exitCode=1;

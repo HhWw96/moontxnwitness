@@ -15,6 +15,14 @@ EXCLUDED_DIRS = {'.git', '_build', '.mooncakes', 'node_modules', 'artifacts',
                  'dist', '__pycache__', '.venv-pg'}
 EXCLUDED_NAMES = {'.local-toolchain.json', '.DS_Store'}
 
+# Current source excerpts bound by the portable anomaly audit. These are the
+# current implementation, not historical source snapshots or a compiler tree.
+V033_ANOMALY_AUDIT_SOURCES = (
+    'src/anomalies_v4.mbt', 'src/lost_updates_v4.mbt', 'src/g_single_v4.mbt',
+    'src/list_graph_v4.mbt', 'src/classification_v4.mbt', 'src/api_v4.mbt',
+    'cmd/v4.mjs',
+)
+
 # Preserve complete fixed runs, not just the few trace files used by consumers.
 # Their original receipts/SQL/journals/capsules continue to describe these bytes.
 FIXED_VERIFICATION_ROOTS = {
@@ -44,6 +52,42 @@ FIXED_VERIFICATION_FILES = {
     'verification/v3/acceptance-2026-10-21T02-10-46-492Z/receipt.json': 'small original failure referenced by active lifecycle acceptance',
     'verification/v3/acceptance-2026-10-21T02-16-47-059Z/receipt.json': 'small original failure referenced by active lifecycle acceptance',
 }
+
+
+
+# Source audits intentionally stay out of the portable runtime-only package.
+RELATION034_SOURCE_INPUTS = (
+    'scripts/v034-source-rules-sdk-test.mjs',
+    'scripts/relation-category-reduction-sdk-test.mjs',
+    'scripts/v034-public-boundary-independent-test.mjs',
+    'scripts/v034-maintenance-bindings.mjs',
+    'scripts/v034-maintenance-bindings-test.mjs',
+    'scripts/build-fingerprint.mjs',
+    'cmd/relation-v4.mjs', 'cmd/relation-reduction-v4.mjs',
+    'cmd/sdk.mjs', 'cmd/moontxnwitness.mjs', 'moon.mod', 'package.json',
+)
+RELATION034_PORTABLE_INPUTS = (
+    'scripts/v034-portable-runtime-test.mjs',
+    'examples/source-rules-v4-roundtrip.mjs',
+    'examples/relation-category-reduction.mjs',
+    'examples/relation-category-reduction.json',
+)
+RELATION034_RUNTIME_INPUTS = (
+    'dist/core.mjs', 'dist/capture-core.mjs', 'dist/sdk.mjs',
+    'dist/moontxnwitness.mjs', 'dist/relation-v4.mjs',
+    'dist/relation-reduction-v4.mjs', 'dist/build-manifest.json',
+)
+
+
+def relation034_available(root, version):
+    """Activate by stable version or the actual current host API exports."""
+    if tuple(map(int, version.split('.'))) >= (0, 3, 4):
+        return True
+    sdk = Path(root) / 'cmd/sdk.mjs'
+    if not sdk.is_file():
+        return False
+    text = sdk.read_text(encoding='utf8')
+    return all(name in text for name in ('classifyRelationV4', 'reduceRelationCategoryV4'))
 
 
 def safe_name(name: str) -> str:
@@ -278,6 +322,16 @@ def select_distribution_files(root, public_names, tested_files, version):
         if isinstance(capture.get('path'), str):
             receipt_pointer(capture['path'], 'verification', 'complete public actual capture run referenced by capture-postgres.json', tree=True)
 
+    relation034 = relation034_available(root, version)
+    if relation034:
+        for name in RELATION034_SOURCE_INPUTS:
+            require(name, 'current relation/source SDK audits require complete source and command inputs')
+        require_tree('src', 'current-build relation audit must recompute the complete MoonBit source fingerprint')
+        for name in RELATION034_PORTABLE_INPUTS:
+            require(name, 'runtime-only relation/source functionality, actual CLI and capsule consumer closure')
+        for name in RELATION034_RUNTIME_INPUTS:
+            require(name, 'actual compiled relation/source interfaces and shipped build identities')
+
     source = set()
     for name in public_names:
         path = PurePosixPath(name)
@@ -356,6 +410,12 @@ def select_distribution_files(root, public_names, tested_files, version):
                      'scripts/public032-compatibility-test.mjs', 'scripts/public032-compatibility-groups.mjs'):
             require(name, 'fresh-consumer current source profiles and exact public032 compatibility')
             portable.add(name)
+    if tuple(map(int, version.split('.'))) >= (0, 3, 3):
+        for name in V033_ANOMALY_AUDIT_SOURCES:
+            require(name, 'portable anomaly audit: exact current source byte bindings')
+            portable.add(name)
+    if relation034:
+        portable.update(RELATION034_PORTABLE_INPUTS)
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))

@@ -67,6 +67,33 @@ for (const [field,script] of [
   if(child.error||child.status!==0)throw Error(script+' failed: '+child.stdout+child.stderr);
   const result=JSON.parse(child.stdout);assert.equal(result.passed,true);foundation033[field]=result;
 }
+// Current relation/source namespaces, category reduction and offline examples.
+const foundation034 = {};
+for (const [field,script] of [
+  ['sourceRulesHostTests','scripts/v034-source-rules-sdk-test.mjs'],
+  ['categoryReductionHostTests','scripts/relation-category-reduction-sdk-test.mjs'],
+  ['currentBuildBindingTests','scripts/v034-maintenance-bindings-test.mjs'],
+  ['publicBoundaryRegression','scripts/v034-public-boundary-independent-test.mjs'],
+  ['sourceRulesExample','examples/source-rules-v4-roundtrip.mjs'],
+  ['categoryReductionExample','examples/relation-category-reduction.mjs'],
+]) {
+  const child=spawnSync(process.execPath,[script],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
+  if(child.error||child.status!==0)throw Error(script+' failed: '+child.stdout+child.stderr);
+  const output=JSON.parse(child.stdout);
+  if(typeof output.outputRoot==='string')output.outputRoot=relativeEvidencePath(root,output.outputRoot);
+  if(field==='sourceRulesExample'){
+    assert(Array.isArray(output));assert.deepEqual(output.map(row=>row.name),['relation','capture','internal']);
+    assert.deepEqual(output.map(row=>row.status),['checked-compatible','refuted','refuted']);
+    for(const row of output){assert.equal(row.replayValid,true);assert.equal(row.acceptsIsolationModels,false);}
+    foundation034[field]={passed:true,results:output};
+  }else if(field==='categoryReductionExample'){
+    assert.equal(output.category,'G2-item');assert.equal(output.oneMinimal,true);assert.equal(output.replay.valid,true);
+    foundation034[field]={passed:true,result:output};
+  }else{
+    assert.equal(output.passed,true);if(field==='publicBoundaryRegression')assert.equal(output.executed,true);
+    foundation034[field]=output;
+  }
+}
 const staging033=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),
   ['-X','utf8','scripts/test_compat032_staging.py'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
 if(staging033.error||staging033.status!==0)throw Error('Compatibility staging faults failed: '+staging033.stdout+staging033.stderr);
@@ -335,6 +362,7 @@ const receipt = { tool: 'MoonTxnWitness', version: JSON.parse(readFileSync(resol
 mkdirSync(resolve(root, 'verification'), { recursive: true });
 receipt.v4HostTests = JSON.parse(v4Check.stdout);
 receipt.foundation033 = foundation033;
+receipt.foundation034 = foundation034;
 receipt.public032CompatibilityTests = public032Compatibility;
 receipt.v4IndependentAudit = v4IndependentAudit;
 receipt.registerDirectCategoryAudit = directCategoryAudit;

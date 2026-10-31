@@ -433,9 +433,12 @@ test "relation point graph 16 null reinsert cannot erase an earlier own tombston
   // A write predecessor is not a SELECT observation and cannot prove INT.
   assert_true(rpg_direct(result, "INT").is_empty())
   assert_true(rpg_gap(result, "invalid-local-row-write"))
-  assert_true(result.index.diagnostics.any(diagnostic => {
-    capture_field(diagnostic, "code") == Json("unproven-local-row-write-source")
-  }))
+  assert_true(
+    result.index.diagnostics.any(diagnostic => {
+      capture_field(diagnostic, "code") ==
+      Json("unproven-local-row-write-source")
+    }),
+  )
   assert_true(result.index.blocked.contains(0))
 }
 
@@ -890,9 +893,12 @@ test "relation point graph 41 stale own predecessor is a source gap and cannot c
   let result = rpg_graph(body)
   assert_true(rpg_direct(result, "INT").is_empty())
   assert_true(rpg_gap(result, "invalid-local-row-write"))
-  assert_true(result.index.diagnostics.any(diagnostic => {
-    capture_field(diagnostic, "code") == Json("unproven-local-row-write-source")
-  }))
+  assert_true(
+    result.index.diagnostics.any(diagnostic => {
+      capture_field(diagnostic, "code") ==
+      Json("unproven-local-row-write-source")
+    }),
+  )
   assert_false(result.base.complete)
   assert_true(result.base.edges.is_empty())
 }
@@ -1857,7 +1863,8 @@ test "relation point graph 81 initial absence also stops on the reader own insta
 ///|
 fn rpg_write_source_mismatch_body() -> Array[Json] {
   let body = [
-    rpg_begin("A"), rpg_begin("B"),
+    rpg_begin("A"),
+    rpg_begin("B"),
     rpg_write("A", "1", "A1", Some("v0")),
     rpg_write("B", "1", "B1", Some("A1")),
     rpg_write("A", "1", "A2", Some("B1")),
@@ -1896,7 +1903,13 @@ test "relation point graph 83 unknown local write state cannot manufacture a lat
   assert_true(rpg_direct(result, "INT").is_empty())
   assert_true(rpg_gap(result, "relation-unproved-program-prefix"))
   assert_false(result.index.reads[0].usable)
-  assert_false(relation_point_program_known_v4(result.index, "A", result.index.reads[0].seq))
+  assert_false(
+    relation_point_program_known_v4(
+      result.index,
+      "A",
+      result.index.reads[0].seq,
+    ),
+  )
 }
 
 ///|
@@ -1962,12 +1975,19 @@ test "relation point graph 87 known write followed by stale delivered read remai
   assert_eq(proofs.length(), 1)
   assert_eq(capture_field(proofs[0], "queryIndex"), Json(1))
   assert_eq(v4_test_at(proofs[0], ["original", "kind"]), Json("row_read"))
-  assert_eq(v4_test_at(proofs[0], ["original", "seq"]), capture_field(proofs[0], "observationSeq"))
+  assert_eq(
+    v4_test_at(proofs[0], ["original", "seq"]),
+    capture_field(proofs[0], "observationSeq"),
+  )
 }
 
 ///|
 test "relation point graph 88 every retained INT proof points to an actually delivered query" {
-  let own = [rpg_begin("A"), rpg_write("A", "1", "A1", Some("v0")), rpg_read("A", "1", Some("v0"))]
+  let own = [
+    rpg_begin("A"),
+    rpg_write("A", "1", "A1", Some("v0")),
+    rpg_read("A", "1", Some("v0")),
+  ]
   rpg_commit(own, "A")
   let revoked = [
     rpg_begin("A"),
@@ -1982,12 +2002,17 @@ test "relation point graph 88 every retained INT proof points to an actually del
     assert_false(rpg_direct(result, "INT").is_empty())
     for proof in rpg_direct(result, "INT") {
       assert_eq(v4_test_at(proof, ["original", "kind"]), Json("row_read"))
-      assert_eq(v4_test_at(proof, ["original", "seq"]), capture_field(proof, "observationSeq"))
-      assert_true(result.index.reads.any(read => {
-        capture_field(proof, "queryIndex") == Json(read.query_index) &&
-        capture_field(proof, "observationSeq") == Json(read.seq.to_double()) &&
-        capture_field(proof, "transaction") == Json(read.tx)
-      }))
+      assert_eq(
+        v4_test_at(proof, ["original", "seq"]),
+        capture_field(proof, "observationSeq"),
+      )
+      assert_true(
+        result.index.reads.any(read => {
+          capture_field(proof, "queryIndex") == Json(read.query_index) &&
+          capture_field(proof, "observationSeq") == Json(read.seq.to_double()) &&
+          capture_field(proof, "transaction") == Json(read.tx)
+        }),
+      )
     }
   }
 }

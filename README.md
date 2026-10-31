@@ -12,6 +12,10 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
+## 关系分析接口（开发分支）
+
+关系行版本新增 G0、G1a、G1b、G1c、G2-item 和内部一致性分类，提供独立 SDK、命令行与证据回放入口。缩减可以指定保留的异常类别，并保留原始事件来源映射；完成全部剩余事务的单删检查后，才标记事务单最小。见[关系库使用示例](docs/relation-library-workflow.md)。
+
 ## v0.3.3
 
 新增有完整来源引用的 `G-single` 检查、寄存器丢失更新和读取来源诊断；列表图可显式选择 `effective-v1`，处理同一事务同键的多次追加与保存点撤销。报告、验证器、复现包及命令行共用明确的算法和预算。

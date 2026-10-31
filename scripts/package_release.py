@@ -12,12 +12,13 @@ from evidence_json import load_receipt
 from pathlib import Path
 from package_archive import sha256, write_archive
 from publication_privacy import private_home_paths
-from distribution_manifest import select_distribution_files, assert_complete
+from distribution_manifest import select_distribution_files, assert_complete, relation034_available
 
 
 ROOT = Path(__file__).resolve().parent.parent
 VERSION = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
 assert re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", VERSION), "Release version must be stable x.y.z"
+RELATION034 = relation034_available(ROOT, VERSION)
 NAME = "MoonTxnWitness-v" + VERSION
 ARTIFACTS = ROOT / "artifacts"
 NODE = os.environ.get("MTW_NODE", "node")
@@ -38,6 +39,10 @@ for runtime, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'capture
     assert hashlib.sha256((ROOT / 'dist' / runtime).read_bytes()).hexdigest() == MANIFEST[field], 'Compiled runtime changed after build'
 for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'v4.mjs', 'demo.mjs', 'postgres-demo.mjs'):
     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
+
+if RELATION034:
+    for runtime in ('relation-v4.mjs', 'relation-reduction-v4.mjs'):
+        assert (ROOT/'cmd'/runtime).read_bytes() == (ROOT/'dist'/runtime).read_bytes(), 'Relation runtime wrapper changed after build: ' + runtime
 
 
 assert (ROOT/'cmd/legacy-v024.mjs').read_bytes() == (ROOT/'dist/legacy-v024.mjs').read_bytes(), 'Frozen ORM dispatch changed after build'
@@ -101,6 +106,7 @@ if home:
     env["MOON_HOME"] = home
 
 checks = []
+relation034_consumers = {}
 
 
 def run(args, cwd, expected=0, timeout=180):
@@ -168,6 +174,41 @@ for kind in ("portable", "source"):
             result = json.loads(run([NODE, 'scripts/' + script], consumer))
             assert result['passed'] is True and result['checks'] > 0
             checks.append(kind + ' ' + label)
+    if RELATION034:
+        capability = {'sourceAuditPerformed': kind == 'source', 'runtimeOnlyPortableChecks': kind == 'portable',
+                      'newIndependentReviewPerformed': False, 'actualDatabaseExecution': False, 'results': {}}
+        if kind == 'source':
+            for script, label in (
+                    ('v034-source-rules-sdk-test.mjs', 'relation/source rules complete-source SDK and CLI audit'),
+                    ('relation-category-reduction-sdk-test.mjs', 'relation category reduction complete-source SDK and CLI audit'),
+                    ('v034-maintenance-bindings-test.mjs', 'current relation build-source binding guard tests'),
+                    ('v034-public-boundary-independent-test.mjs', '84 maintained relation/source public-boundary semantic checks')):
+                result = json.loads(run([NODE, 'scripts/' + script], consumer, timeout=300))
+                assert result['passed'] is True and result['checks'] > 0
+                if script == 'v034-public-boundary-independent-test.mjs':
+                    assert result['executed'] is True and result['checks'] == 84 and result['failed'] == 0
+                capability['results'][script] = {'passed': True, 'checks': result['checks']}
+                checks.append(kind + ' ' + label)
+        else:
+            result = json.loads(run([NODE, 'scripts/v034-portable-runtime-test.mjs'], consumer, timeout=300))
+            assert result['passed'] is True and result['checks'] >= 16 and result['failed'] == 0
+            assert result['requiresSourceTree'] is False and result['requiresCommandSource'] is False
+            assert result['sourceAuditPerformed'] is False and result['semantic84AuditClaimed'] is False
+            assert result['version'] == VERSION
+            capability['results']['runtimeProbe'] = {'passed': True, 'checks': result['checks'], 'sourceAuditPerformed': False}
+            checks.append(kind + ' runtime-only relation/source SDK CLI and exact capsule replay without source audit')
+        example = json.loads(run([NODE, 'examples/source-rules-v4-roundtrip.mjs'], consumer))
+        assert [row['name'] for row in example] == ['relation', 'capture', 'internal']
+        assert [row['status'] for row in example] == ['checked-compatible', 'refuted', 'refuted']
+        assert all(row['replayValid'] is True and row['acceptsIsolationModels'] is False for row in example)
+        capability['results']['sourceRulesExample'] = {'passed': True, 'cases': len(example)}
+        checks.append(kind + ' runnable relation and captured-source example with exact capsule replay')
+        example = json.loads(run([NODE, 'examples/relation-category-reduction.mjs'], consumer))
+        assert example['category'] == 'G2-item' and example['oneMinimal'] is True and example['replay']['valid'] is True
+        assert example['retainedTransactions'] == ['A', 'B'] and example['removedTransactions'] == ['noise']
+        capability['results']['categoryReductionExample'] = {'passed': True, 'retainedTransactions': example['retainedTransactions']}
+        checks.append(kind + ' runnable category-preserving relation reduction and explicit-option replay')
+        relation034_consumers[kind] = capability
     public024 = json.loads(run([NODE,'scripts/compat-v024-test.mjs',str(consumer/'dist'),str(consumer/'fixtures/compat-v024'),str(work/('public024-'+kind))],consumer))
     assert public024['passed'] and public024['currentRuntimeVersion'] == VERSION and public024['checks'] == 107
     checks.append(kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay')
@@ -682,6 +723,8 @@ console.log(JSON.stringify({passed:true,groups:3}));
             checks.append(kind + ' actual PostgreSQL bundled ' + case + ' capsule replay')
 
 receipt = {"tool": "MoonTxnWitness", "version": VERSION, "passed": True, "archives": archives, "freshConsumerChecks": len(checks), "checks": checks, "sourceRebuilt": True, "portableRequires": "Node.js >=20 (tested with current installed Node)", "node": run([NODE, "--version"], ROOT).strip(), "nativeExecutableIncluded": False, "publiclyPublished": False}
+if RELATION034:
+    receipt['relation034Consumers'] = relation034_consumers
 (ROOT / "verification/package.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / "release-index.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / (NAME + "-release.json")).write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

@@ -43,3 +43,5 @@ This is a technical prototype checkpoint. It does not signify that every planned
 The adjacent raw source and formal-INT namespaces use capture-window revision 2. They distinguish confirmed whole abort from derived savepoint revocation and block final-effect claims across missing or unprojected operations; see [source rule contracts](source-rules-v4.md#capture-window-and-proof-boundaries).
 
 Reduction semantic/algorithm revision 2 additionally requires the original normalized source to be closed before attempting any deletion. An unprojected SQL transaction or another original coverage gap cannot be removed to upgrade the remaining record into a complete original window. The original history and reliable selected refutation remain visible with `undetermined` / `oneMinimal:false`; no candidate is accepted. Candidate counting remains revision 1.
+
+For the current library/test workflow and runnable examples, see [relation-library-workflow.md](relation-library-workflow.md).

@@ -100,6 +100,34 @@ class DistributionTests(unittest.TestCase):
         return subprocess.check_output(['git', '-c', 'core.longpaths=true', *args], cwd=cls.root,
                                        text=True, encoding='utf8', stderr=subprocess.PIPE, timeout=20)
 
+    def test_public033_audit_dependency_list_matches_actual_consumer(self):
+        import ast, re
+        script = (ROOT / 'scripts/v033-independent-anomalies-test.mjs').read_text('utf8')
+        match = re.search(r'const sourceNames=(\[[^\n]*\]);', script)
+        self.assertIsNotNone(match)
+        observed = set(ast.literal_eval(match.group(1)))
+        self.assertEqual(set(inventory.V033_ANOMALY_AUDIT_SOURCES),
+                         {name for name in observed if name.startswith(('src/', 'cmd/'))})
+
+
+    def test_public033_portable_retains_current_audit_sources(self):
+        public = set(self.public)
+        for name in inventory.V033_ANOMALY_AUDIT_SOURCES:
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('current fixture source\n', encoding='utf8')
+            public.add(name)
+        selection = inventory.select_distribution_files(self.root, public, self.tested, '0.3.3')
+        for name in inventory.V033_ANOMALY_AUDIT_SOURCES:
+            self.assertIn(name, selection['portable'])
+            self.assertIn(name, selection['requiredInputs'])
+        excluded = 'src/anomalies_v4.mbt'
+        bad = inventory.select_distribution_files(self.root, public - {excluded}, self.tested, '0.3.3')
+        self.assertTrue(any(row.get('file') == excluded and
+                            'not in public inventory' in row.get('problem', '')
+                            for row in bad['missingInputs']))
+
+
     def test_current_input_closure(self):
         inventory.assert_complete(self.selection)
         self.assertIn('cmd/sdk.mjs', self.selection['source'])
@@ -571,6 +599,97 @@ class DirectCategoryReleaseReceiptTests(unittest.TestCase):
             if change == 'after': receipt['registerDirectCategoryAudit']['testedFileSha256After']['core.mjs'] = 'b' * 64
             else: receipt['buildManifest']['coreSha256'] = 'b' * 64
             with self.assertRaises(AssertionError): validate_register_direct_category_audit(receipt, '0.3.2')
+
+
+
+class Relation034InventoryTests(unittest.TestCase):
+    run_git = classmethod(DistributionTests.run_git.__func__)
+
+    @classmethod
+    def setUpClass(cls):
+        DistributionTests.setUpClass.__func__(cls)
+        names = set(inventory.RELATION034_SOURCE_INPUTS + inventory.RELATION034_PORTABLE_INPUTS + inventory.RELATION034_RUNTIME_INPUTS)
+        names.add('src/public.mbt')
+        for name in names:
+            path = cls.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if not path.exists():
+                path.write_text('{}' if name.endswith('.json') else '// tiny public input fixture\n', encoding='utf8')
+        (cls.root / 'cmd/sdk.mjs').write_text('export const classifyRelationV4 = true; export const reduceRelationCategoryV4 = true;\n', encoding='utf8')
+        cls.public = cls.public | {name for name in names if not name.startswith('dist/')}
+
+    def select034(self, omitted=()):
+        # Exercise feature-based activation without requiring unrelated later-version fixtures.
+        return inventory.select_distribution_files(self.root, self.public - set(omitted), self.tested, '0.1.2')
+
+    def test_current_exports_activate_034_closure_before_version_bump(self):
+        self.assertTrue(inventory.relation034_available(self.root, '0.3.3'))
+        self.assertTrue(inventory.relation034_available(self.root, '0.3.4'))
+        inventory.assert_complete(self.select034())
+
+    def test_source_audits_keep_complete_source_command_and_helper_inputs(self):
+        selected = self.select034()
+        self.assertTrue(set(inventory.RELATION034_SOURCE_INPUTS).issubset(selected['source']))
+        self.assertIn('src/public.mbt', selected['source'])
+        self.assertIn('cmd/relation-v4.mjs', selected['source'])
+        self.assertNotIn('dist/core.mjs', selected['source'])
+
+    def test_portable_has_real_runtime_probe_examples_and_no_source_audits(self):
+        selected = self.select034()
+        self.assertTrue(set(inventory.RELATION034_PORTABLE_INPUTS).issubset(selected['portable']))
+        self.assertTrue(set(inventory.RELATION034_RUNTIME_INPUTS).issubset(selected['portable']))
+        for name in inventory.RELATION034_SOURCE_INPUTS:
+            self.assertNotIn(name, selected['portable'])
+        self.assertFalse(any(name.startswith(('src/', 'cmd/')) for name in selected['portable']))
+
+    def test_missing_source_sdk_audit_is_a_blocking_dependency(self):
+        name = 'scripts/v034-source-rules-sdk-test.mjs'
+        selected = self.select034((name,))
+        self.assertTrue(any(row['file'] == name for row in selected['missingInputs']))
+        with self.assertRaises(AssertionError): inventory.assert_complete(selected)
+
+    def test_missing_shared_maintenance_helper_is_a_blocking_dependency(self):
+        name = 'scripts/v034-maintenance-bindings.mjs'
+        selected = self.select034((name,))
+        self.assertTrue(any(row['file'] == name for row in selected['missingInputs']))
+        with self.assertRaises(AssertionError): inventory.assert_complete(selected)
+
+    def test_missing_source_fingerprint_helper_is_not_skipped(self):
+        name = 'scripts/build-fingerprint.mjs'
+        selected = self.select034((name,))
+        self.assertTrue(any(row['file'] == name for row in selected['missingInputs']))
+        with self.assertRaises(AssertionError): inventory.assert_complete(selected)
+
+    def test_missing_portable_probe_cannot_claim_a_complete_package(self):
+        name = 'scripts/v034-portable-runtime-test.mjs'
+        selected = self.select034((name,))
+        self.assertTrue(any(row['file'] == name for row in selected['missingInputs']))
+        with self.assertRaises(AssertionError): inventory.assert_complete(selected)
+
+    def test_missing_reduction_example_input_is_not_silently_omitted(self):
+        name = 'examples/relation-category-reduction.json'
+        selected = self.select034((name,))
+        self.assertTrue(any(row['file'] == name for row in selected['missingInputs']))
+        with self.assertRaises(AssertionError): inventory.assert_complete(selected)
+
+    def test_missing_compiled_relation_module_is_blocking(self):
+        name = 'dist/relation-reduction-v4.mjs'
+        path = self.root / name
+        saved = path.with_suffix('.fixture-saved')
+        path.rename(saved)
+        try:
+            selected = self.select034()
+            self.assertTrue(any(row['file'] == name for row in selected['missingInputs']))
+            with self.assertRaises(AssertionError): inventory.assert_complete(selected)
+        finally:
+            saved.rename(path)
+
+    def test_unknown_private_script_does_not_enter_either_distribution(self):
+        path = self.root / 'scripts/private-relations.mjs'
+        path.write_text('// ignored/unlisted private input\n', encoding='utf8')
+        selected = self.select034()
+        self.assertNotIn('scripts/private-relations.mjs', selected['source'])
+        self.assertNotIn('scripts/private-relations.mjs', selected['portable'])
 
 
 if __name__ == '__main__':
