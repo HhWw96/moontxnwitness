@@ -617,8 +617,23 @@ for kind in ("portable", "source"):
         for path, observed in installed.items():
             assert observed['sha256'] == sha256(package_only / path)
         checks.append(kind + ' standalone presence package import without optional driver or experiments')
-        declaration = json.loads((consumer / ('verification/releases/' + VERSION + '/acceptance.json')).read_text(encoding='utf8'))
-        database = load_receipt(consumer / ('verification/releases/' + VERSION) / declaration['databaseEvidence'])
+        release_directory = consumer / ('verification/releases/' + VERSION)
+        acceptance_path = release_directory / 'acceptance.json'
+        if acceptance_path.is_file():
+            declaration = json.loads(acceptance_path.read_text(encoding='utf8'))
+        else:
+            # A successful same-source CI run supplies installation reproduction,
+            # never a fabricated final release acceptance declaration.
+            declaration = json.loads((release_directory / 'reproduction.json').read_text(encoding='utf8'))
+            assert declaration['format'] == 'moontxnwitness-ci-reproduction/v1'
+            assert declaration['version'] == VERSION and declaration['releaseReady'] is False
+            assert declaration['databaseEvidence'] == 'database-ci.json'
+            assert sha256(release_directory / declaration['databaseEvidence']) == declaration['databaseEvidenceSha256']
+        database = load_receipt(release_directory / declaration['databaseEvidence'])
+        if not acceptance_path.is_file():
+            assert database['phase'] == 'exact-run-ci-reproduction' and database['version'] == VERSION
+            assert database['passed'] is True and database['actualDatabaseExecution'] is True
+            assert database['releaseReady'] is False
         presence_run = 'verification/' + database['receipts']['presence']['path']
         presence_receipt = json.loads((consumer / presence_run / 'presence-receipt.json').read_text(encoding='utf8'))
         ready = [row for row in presence_receipt['scenarios'] if row['expectedStatus'] == 'ready']

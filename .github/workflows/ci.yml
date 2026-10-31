@@ -39,7 +39,7 @@ jobs:
       - name: Test bounded receipt storage
         run: python -B -m unittest discover -s scripts -p test_evidence_json.py -v
       - name: Test exact-source PostgreSQL CI import boundaries
-        run: python -B -m unittest discover -s scripts -p test_postgres_ci_import.py -v
+        run: python -B -m unittest discover -s scripts -p 'test_postgres_ci_*.py' -v
       - name: Test frozen input cache faults
         run: python -B -m unittest discover -s scripts -p test_input_cache.py -v
       - name: Check package and publication contracts before compilation
