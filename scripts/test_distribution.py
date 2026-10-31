@@ -100,6 +100,32 @@ class DistributionTests(unittest.TestCase):
         return subprocess.check_output(['git', '-c', 'core.longpaths=true', *args], cwd=cls.root,
                                        text=True, encoding='utf8', stderr=subprocess.PIPE, timeout=20)
 
+    def test_public033_audit_dependency_list_matches_actual_consumer(self):
+        import ast, re
+        script = (ROOT / 'scripts/v033-independent-anomalies-test.mjs').read_text('utf8')
+        match = re.search(r'const sourceNames=(\[[^\n]*\]);', script)
+        self.assertIsNotNone(match)
+        observed = set(ast.literal_eval(match.group(1)))
+        self.assertEqual(set(inventory.V033_ANOMALY_AUDIT_SOURCES),
+                         {name for name in observed if name.startswith(('src/', 'cmd/'))})
+
+    def test_public033_portable_retains_current_audit_sources(self):
+        public = set(self.public)
+        for name in inventory.V033_ANOMALY_AUDIT_SOURCES:
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('current fixture source\n', encoding='utf8')
+            public.add(name)
+        selection = inventory.select_distribution_files(self.root, public, self.tested, '0.3.3')
+        for name in inventory.V033_ANOMALY_AUDIT_SOURCES:
+            self.assertIn(name, selection['portable'])
+            self.assertIn(name, selection['requiredInputs'])
+        excluded = 'src/anomalies_v4.mbt'
+        bad = inventory.select_distribution_files(self.root, public - {excluded}, self.tested, '0.3.3')
+        self.assertTrue(any(row.get('file') == excluded and
+                            'not in public inventory' in row.get('problem', '')
+                            for row in bad['missingInputs']))
+
     def test_current_input_closure(self):
         inventory.assert_complete(self.selection)
         self.assertIn('cmd/sdk.mjs', self.selection['source'])

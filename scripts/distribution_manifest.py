@@ -15,6 +15,14 @@ EXCLUDED_DIRS = {'.git', '_build', '.mooncakes', 'node_modules', 'artifacts',
                  'dist', '__pycache__', '.venv-pg'}
 EXCLUDED_NAMES = {'.local-toolchain.json', '.DS_Store'}
 
+# Current source excerpts bound by the portable anomaly audit. These are the
+# current implementation, not historical source snapshots or a compiler tree.
+V033_ANOMALY_AUDIT_SOURCES = (
+    'src/anomalies_v4.mbt', 'src/lost_updates_v4.mbt', 'src/g_single_v4.mbt',
+    'src/list_graph_v4.mbt', 'src/classification_v4.mbt', 'src/api_v4.mbt',
+    'cmd/v4.mjs',
+)
+
 # Preserve complete fixed runs, not just the few trace files used by consumers.
 # Their original receipts/SQL/journals/capsules continue to describe these bytes.
 FIXED_VERIFICATION_ROOTS = {
@@ -355,6 +363,10 @@ def select_distribution_files(root, public_names, tested_files, version):
                      'scripts/list-effective-sdk-test.mjs', 'scripts/v033-independent-anomalies-test.mjs',
                      'scripts/public032-compatibility-test.mjs', 'scripts/public032-compatibility-groups.mjs'):
             require(name, 'fresh-consumer current source profiles and exact public032 compatibility')
+            portable.add(name)
+    if tuple(map(int, version.split('.'))) >= (0, 3, 3):
+        for name in V033_ANOMALY_AUDIT_SOURCES:
+            require(name, 'portable anomaly audit: exact current source byte bindings')
             portable.add(name)
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
