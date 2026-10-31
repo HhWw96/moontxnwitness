@@ -12,6 +12,9 @@ import { classifyV3, reduceClassificationV3, verifyClassificationV3, makeClassif
   makeClassificationReductionCapsuleV3, replayClassificationCapsuleV3 } from './classification.mjs';
 
 import { diagnoseV3, verifyDiagnosisV3 } from './diagnosis.mjs';
+import {classifyRelationV4,verifyRelationClassificationV4,inspectCaptureAnomaliesV4,verifyCaptureAnomaliesV4,
+  inspectInternalConsistencyV4,verifyInternalConsistencyV4,makeRelationClassificationCapsuleV4,makeCaptureAnomaliesCapsuleV4,
+  makeInternalConsistencyCapsuleV4,replayRelationCapsuleV4,parseSourceRulesOptionsV4} from './relation-v4.mjs';
 import {analyzeV4, classifyV4, reduceV4, verifyV4, verifyClassificationV4, verifyReductionV4,
   makeCapsuleV4, makeClassificationCapsuleV4, makeReductionCapsuleV4, replayCapsuleV4,
   inspectAnomaliesV4, verifyAnomaliesV4, makeAnomaliesCapsuleV4, inspectLostUpdatesV4, verifyLostUpdatesV4, makeLostUpdatesCapsuleV4, parseOptionsV4} from './v4.mjs';
@@ -23,6 +26,13 @@ const help = `MoonTxnWitness v${version()}
 用法：
   node dist/moontxnwitness.mjs check HISTORY.json [--format text|json|markdown|dot] [--output FILE] [--witness FILE]
   node dist/moontxnwitness.mjs verify HISTORY.json CERTIFICATE.json
+  node dist/moontxnwitness.mjs classify-relation-v4 SOURCE.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs verify-relation-classification-v4 SOURCE.json REPORT.json [--options EXPECTED.json] [--output VERIFIED.json]
+  node dist/moontxnwitness.mjs inspect-capture-anomalies-v4 SOURCE.json [--options OPTIONS.json] [--max-checks N] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs verify-capture-anomalies-v4 SOURCE.json REPORT.json [--options EXPECTED.json] [--output VERIFIED.json]
+  node dist/moontxnwitness.mjs inspect-internal-consistency-v4 SOURCE.json [--options OPTIONS.json] [--max-checks N] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs verify-internal-consistency-v4 SOURCE.json REPORT.json [--options EXPECTED.json] [--output VERIFIED.json]
+  node dist/moontxnwitness.mjs replay-relation-v4 CAPSULE.json [--options EXPECTED.json] [--output REPLAY.json]
   node dist/moontxnwitness.mjs analyze-v4 SOURCE.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs classify-v4 SOURCE.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs reduce-v4 SOURCE.json --preserve serializable|strict-serializable [--options OPTIONS.json] [--max-checks N] [--output REPORT.json] [--source MINI.json] [--capsule CAPSULE.json]
@@ -163,6 +173,32 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (['classify-relation-v4','verify-relation-classification-v4','inspect-capture-anomalies-v4','verify-capture-anomalies-v4','inspect-internal-consistency-v4','verify-internal-consistency-v4','replay-relation-v4'].includes(args[0])) {
+    const command=args[0],isReplay=command==='replay-relation-v4',isVerify=command.startsWith('verify-');
+    const relation=command.includes('relation-classification')||command==='classify-relation-v4';
+    const internal=command.includes('internal-consistency');
+    const {paths,options}=localArgs(args.slice(1),['--options','--output',...(!isReplay&&!isVerify?['--capsule']:[]),...(!isReplay&&!isVerify&&!relation?['--max-checks']:[])],isVerify?2:1);
+    const inputs=[...paths,...(options['--options']?[options['--options']]:[])];
+    if(inputs.filter(path=>path==='-').length>1)throw new Error('Only one source rules input may use standard input');
+    const source=readBounded(paths[0],isReplay?64*1024*1024:8*1024*1024);
+    let requested=options['--options']===undefined?undefined:parseSourceRulesOptionsV4(readBounded(options['--options'],8192));
+    if(options['--max-checks']!==undefined){
+      requested=requested===undefined?{}:requested;
+      if(Object.hasOwn(requested,'maxChecks')||!/^(0|[1-9][0-9]*)$/.test(options['--max-checks']))throw new Error('maxChecks must be specified once as an integer');
+      requested.maxChecks=Number(options['--max-checks']);
+    }
+    const companions=[];let result;
+    if(isReplay)result=replayRelationCapsuleV4(source,requested);
+    else if(isVerify){
+      const supplied=readBounded(paths[1],32*1024*1024);
+      result=relation?verifyRelationClassificationV4(source,supplied,requested):internal?verifyInternalConsistencyV4(source,supplied,requested):verifyCaptureAnomaliesV4(source,supplied,requested);
+    }else if(options['--capsule']){
+      const capsule=relation?makeRelationClassificationCapsuleV4(source,requested):internal?makeInternalConsistencyCapsuleV4(source,requested):makeCaptureAnomaliesCapsuleV4(source,requested);
+      result=JSON.parse(JSON.parse(capsule).reportText);companions.push([options['--capsule'],capsule+'\n']);
+    }else result=relation?classifyRelationV4(source,requested):internal?inspectInternalConsistencyV4(source,requested):inspectCaptureAnomaliesV4(source,requested);
+    emitJSON(result,options['--output'],inputs,companions);
+    const status=result.judgment?.status??result.status;
+    process.exitCode=isVerify||isReplay?(result.valid===true?0:2):['invalid','invalid-budget'].includes(status)?2:status==='refuted'?1:['checked','checked-compatible'].includes(status)?0:3;
   } else if (['analyze-v4','classify-v4','reduce-v4','verify-v4','verify-classification-v4','verify-reduction-v4','replay-v4','inspect-anomalies-v4','verify-anomalies-v4','inspect-lost-updates-v4','verify-lost-updates-v4'].includes(args[0])) {
     const command=args[0],isVerify=command.startsWith('verify-'),isReplay=command==='replay-v4';
     const isReduction=command==='reduce-v4'||command==='verify-reduction-v4';

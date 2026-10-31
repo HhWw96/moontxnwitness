@@ -266,3 +266,69 @@ pub fn verify_lost_updates_v4_json(
 ) -> String {
   @txn.verify_lost_updates_v4_json(text, report, options)
 }
+
+///|
+#export_name("classify_relation_v4_json")
+pub fn classify_relation_v4_json(text : String, options : String) -> String {
+  @txn.classify_relation_v4_json(text, options)
+}
+
+///|
+#export_name("inspect_capture_anomalies_v4_json")
+pub fn inspect_capture_anomalies_v4_json(
+  text : String,
+  options : String,
+) -> String {
+  @txn.inspect_capture_anomalies_v4_json(text, options)
+}
+
+///|
+#export_name("inspect_internal_consistency_v4_json")
+pub fn inspect_internal_consistency_v4_json(
+  text : String,
+  options : String,
+) -> String {
+  @txn.inspect_internal_consistency_v4_json(text, options)
+}
+
+///|
+#export_name("verify_relation_classification_v4_json")
+pub fn verify_relation_classification_v4_json(
+  text : String,
+  report : String,
+  options : String,
+) -> String {
+  @txn.verify_relation_classification_v4_json(text, report, options)
+}
+
+///|
+#export_name("verify_capture_anomalies_v4_json")
+pub fn verify_capture_anomalies_v4_json(
+  text : String,
+  report : String,
+  options : String,
+) -> String {
+  @txn.verify_capture_anomalies_v4_json(text, report, options)
+}
+
+///|
+#export_name("verify_internal_consistency_v4_json")
+pub fn verify_internal_consistency_v4_json(
+  text : String,
+  report : String,
+  options : String,
+) -> String {
+  @txn.verify_internal_consistency_v4_json(text, report, options)
+}
+
+///|
+#export_name("source_rules_report_v4_content_json")
+pub fn source_rules_report_v4_content_json(text : String) -> String {
+  @txn.source_rules_report_v4_content_json(text)
+}
+
+///|
+#export_name("source_rules_capsule_v4_content_json")
+pub fn source_rules_capsule_v4_content_json(text : String) -> String {
+  @txn.source_rules_capsule_v4_content_json(text)
+}
