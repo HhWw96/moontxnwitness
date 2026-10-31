@@ -12,6 +12,12 @@ MAX_PACKET = 32 * 1024 * 1024
 SHA = re.compile(r'[0-9a-f]{64}\Z')
 COMMIT = re.compile(r'[0-9a-f]{40}\Z')
 MANDATORY = {'receipt.json', 'capture.json', 'rr.capsule.json', 'serial.capsule.json', 'mini.capsule.json'}
+REPRO_FORMAT = 'moontxnwitness-ci-reproduction/v1'
+FULL_FORMAT = 'moontxnwitness-postgres-ci-import/v2'
+ATTEMPT = re.compile(r'attempt-(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)\.json\Z')
+IMPLEMENTATION = {'moontxnwitness_capture/'+name for name in ('__init__.py','capture.py','_provenance.py','_column_profile.py','_initialization_guard.py','_source_inventory.py','presence.py')}
+PRESENCE_BINDINGS = {'trace','coverage','audit','history','report','capsule','tamperChecks','reduction','protocol'}
+PRESENCE_EXTRAS = {'crud-absence-reinsert-rollback':{'tamperChecks'},'negative-point-write-skew':{'reduction'},'read-committed-delete-source':{'protocol'}}
 
 class ImportFailure(RuntimeError): pass
 
@@ -125,6 +131,23 @@ def validate_payload(payload, run, artifact, expected, *, require_runtime_bytes=
         safe_name(name); require('/' not in name and name != 'receipt.json' and isinstance(value,str) and SHA.fullmatch(value), 'Unsafe packet reference')
         require(prefix+name in payload and digest(payload[prefix+name]) == value, 'PostgreSQL referenced file differs: '+name); names.add(name)
     require(MANDATORY <= names, 'Mandatory PostgreSQL evidence is absent')
+    attempts = []
+    for member in sorted(n[len(prefix):] for n in payload if n.startswith(prefix) and n[len(prefix):] not in names):
+        match = ATTEMPT.fullmatch(member)
+        require(match is not None, 'Unreferenced or nested PostgreSQL packet member')
+        try: datetime.datetime.strptime(match[1], '%Y-%m-%dT%H-%M-%S-%fZ')
+        except ValueError as exc: raise ImportFailure('Invalid PostgreSQL attempt timestamp') from exc
+        value = json_bytes(payload[prefix+member]); require(isinstance(value,dict), 'PostgreSQL attempt must be an object')
+        require(value.get('tool') == 'MoonTxnWitness' and value.get('version') == version, 'Wrong PostgreSQL attempt tool/version')
+        require(type(value.get('passed')) is bool and type(value.get('actualDatabaseExecution')) is bool, 'Invalid PostgreSQL attempt flags')
+        status = value.get('status')
+        require(status in ('passed', 'failed', 'not-executed'), 'Invalid PostgreSQL attempt status')
+        require((status == 'passed') == value['passed'] and (not value['passed'] or value['actualDatabaseExecution']), 'Inconsistent PostgreSQL attempt success')
+        same = payload[prefix+member] == payload[prefix+'receipt.json']
+        attempts.append({'path':prefix+member, 'bytes':len(payload[prefix+member]), 'sha256':digest(payload[prefix+member]), 'status':status, 'passed':value['passed'], 'matchesCurrentReceipt':same, 'role':'current-success' if same else 'historical-attempt', 'historicalReferencedPayloadVerified':False})
+        names.add(member)
+    if attempts:
+        require(any(x['matchesCurrentReceipt'] for x in attempts), 'No PostgreSQL attempt matches the current receipt bytes')
     require({n[len(prefix):] for n in payload if n.startswith(prefix)} == names, 'Unreferenced or nested PostgreSQL packet member')
     capture = json_bytes(payload[prefix+'capture.json'])
     require(capture.get('passed') is True and capture.get('actualDatabaseExecution') is True, 'Actual PostgreSQL capture did not pass')
@@ -140,6 +163,7 @@ def validate_payload(payload, run, artifact, expected, *, require_runtime_bytes=
                   'coreBytesEqual':pg.get('coreSha256') == current.get('coreSha256'),
                   'captureBytesEqual':pg.get('captureCoreSha256') == current.get('captureCoreSha256'),
                   'toolchainsEqual':pg.get('toolchain') == current.get('toolchain')}
+    if attempts: comparison['attempts'] = attempts
     return selected, comparison
 
 def validate_artifact_metadata(run, artifact):
@@ -155,7 +179,7 @@ def validate_artifact_metadata(run, artifact):
     require(type(artifact.get('size_in_bytes')) is int and 0 < artifact['size_in_bytes'] <= MAX_ZIP, 'Artifact size budget exceeded')
     require(isinstance(artifact.get('digest'),str) and re.fullmatch(r'sha256:[0-9a-f]{64}',artifact['digest']), 'Missing artifact API digest')
 
-def validate_archive(path, run, artifact, expected, repository, pr_head=None):
+def validate_archive(path, run, artifact, expected, repository, pr_head=None, *, reproduction=False):
     validate_run(run,repository,expected['commit'],pr_head)
     validate_artifact_metadata(run,artifact)
     require(Path(path).stat().st_size == artifact['size_in_bytes'], 'Artifact API length differs')
@@ -175,6 +199,8 @@ def validate_archive(path, run, artifact, expected, repository, pr_head=None):
             require(0 <= member.file_size <= MAX_MEMBER, 'Artifact member size exceeded');total+=member.file_size;require(total<=MAX_TOTAL,'Artifact expansion budget exceeded')
             if member.is_dir():continue
             keep=name.startswith(prefix) or name in ['verification/postgres-ci-source.json',binding+'postgres-ci-runtime-before.json',binding+'postgres-ci-runtime-after.json','dist/core.mjs','dist/capture-core.mjs']
+            if reproduction:
+                keep = keep or name.startswith(f"verification/provenance-presence/ci-{run['id']}-{run['run_attempt']}/") or name.startswith(f"verification/releases/{expected['version']}/capture/") or name in ('verification/postgres.json','verification/capture-postgres.json')
             raw=bytearray() if keep else None;read=0
             with z.open(member) as stream:
                 while True:
@@ -186,8 +212,122 @@ def validate_archive(path, run, artifact, expected, repository, pr_head=None):
             if keep:
                 require(sum(map(len,selected.values()))+len(raw)<=MAX_PACKET+64*1024*1024, 'Selected artifact byte budget exceeded')
                 selected[name]=bytes(raw)
-    files,comparison=validate_payload(selected,run,artifact,expected)
+    files,comparison=(validate_reproduction_payload if reproduction else validate_payload)(selected,run,artifact,expected)
     return files,comparison
+
+def _object(payload, name):
+    require(name in payload, 'Missing reproduction evidence: '+name)
+    value = json_bytes(payload[name]); require(isinstance(value,dict), 'Evidence must be an object: '+name)
+    return value
+
+def _bound_file(payload, prefix, row):
+    require(isinstance(row,dict), 'Invalid artifact binding')
+    name = prefix + safe_name(row.get('path'))
+    require(name in payload and type(row.get('bytes')) is int and row['bytes'] >= 0 and isinstance(row.get('sha256'),str) and SHA.fullmatch(row['sha256']), 'Missing/invalid bound evidence: '+name)
+    require(len(payload[name]) == row['bytes'] and digest(payload[name]) == row['sha256'], 'Bound evidence changed: '+name)
+    return name
+
+def _source_map(rows, tested):
+    require(isinstance(rows,dict) and 0 < len(rows) <= 128, 'Missing source bindings')
+    for name, value in rows.items():
+        safe_name(name)
+        require(isinstance(value,str) and SHA.fullmatch(value) and tested.get(name) == value, 'Reproduction source differs: '+name)
+
+def _implementation(receipt, tested):
+    rows = receipt.get('implementationSources')
+    require(isinstance(rows,dict) and rows.get('unchanged') is True and rows.get('before') == rows.get('after'), 'Implementation changed during database execution')
+    before = rows.get('before'); require(isinstance(before,dict) and 0 < len(before) <= 128, 'Missing implementation inventory')
+    require(set(before) == IMPLEMENTATION, 'Incomplete actual presence implementation inventory')
+    for name, row in before.items():
+        require(safe_name(name).startswith('moontxnwitness_capture/') and isinstance(row,dict) and type(row.get('bytes')) is int and row['bytes'] >= 0, 'Invalid implementation source row')
+        _source_map({'integrations/python/'+name:row.get('sha256')}, tested)
+
+def validate_reproduction_payload(payload, run, artifact, expected, *, require_runtime_bytes=True):
+    """Validate exact-run reproduction inputs, without granting release acceptance."""
+    selected, comparison = validate_payload(payload,run,artifact,expected,require_runtime_bytes=require_runtime_bytes)
+    version = expected['version']; release = f'verification/releases/{version}/'
+    attempts = comparison.get('attempts',[])
+    require(attempts and any(x['matchesCurrentReceipt'] for x in attempts), 'Reproduction requires the matching original PostgreSQL attempt')
+    require(_object(payload,release+'postgres/receipt.json').get('tool') == 'MoonTxnWitness', 'Wrong current PostgreSQL tool')
+    runtime = f"verification/postgres-ci-runtime/{run['id']}-{run['run_attempt']}/"
+    before = _object(payload,runtime+'postgres-ci-runtime-before.json'); after = _object(payload,runtime+'postgres-ci-runtime-after.json')
+    tested = before['testedFileSha256']; pg = before['buildManifest']
+    presence = f"verification/provenance-presence/ci-{run['id']}-{run['run_attempt']}/"
+    presence_receipt = _object(payload,presence+'presence-receipt.json')
+    require(presence_receipt.get('status') == 'passed' and presence_receipt.get('passed') is True and presence_receipt.get('actualDatabaseExecution') is True and presence_receipt.get('coreVersion') == version, 'Actual presence receipt did not pass')
+    source = presence_receipt.get('captureSource'); require(isinstance(source,dict), 'Missing presence capture source')
+    _source_map(source.get('files'),tested); _source_map(source.get('implementationFiles'),tested)
+    require(source.get('buildManifestSourceSha256') == pg['sourceSha256'], 'Presence build/source differs')
+    _implementation(presence_receipt,tested)
+    require(source['implementationFiles'] == {'integrations/python/'+name:row['sha256'] for name,row in presence_receipt['implementationSources']['before'].items()}, 'Presence implementation inventories differ')
+    scenarios = presence_receipt.get('scenarios'); require(isinstance(scenarios,list) and 3 <= len(scenarios) <= 128, 'Invalid presence scenario inventory')
+    ready = []; seen = set()
+    for scenario in scenarios:
+        require(isinstance(scenario,dict) and isinstance(scenario.get('name'),str) and scenario['name'] not in seen, 'Duplicate/invalid presence scenario')
+        seen.add(scenario['name']); trace = safe_name(scenario.get('trace')); require(presence+trace in payload,'Missing actual presence trace')
+        status = scenario.get('expectedStatus'); require(status in ('ready','inconclusive','invalid'), 'Unknown presence scenario status')
+        bindings = scenario.get('artifactBindings')
+        require(isinstance(bindings,dict) and {'trace','coverage','audit'} <= set(bindings) <= PRESENCE_BINDINGS, 'Incomplete/unknown presence artifact bindings')
+        for row in bindings.values(): _bound_file(payload,presence,row)
+        require(bindings['trace']['path'] == trace, 'Presence trace binding differs')
+        if status != 'ready': continue
+        ready.append(scenario)
+        require(all(scenario.get(k) is True for k in ('committedAuditExactlyMatchesCapturedWrites','initialPresenceMatchedLockedAudit','uninstallPreservedBusinessRows')), 'Presence source/audit assertion did not pass')
+        required = {'trace','coverage','audit','history','report','capsule'} | PRESENCE_EXTRAS.get(scenario['name'],set())
+        require(required <= set(bindings), 'Incomplete scenario-specific presence artifact bindings')
+        history = _object(payload,presence+bindings['history']['path'])
+        capsule = _object(payload,presence+bindings['capsule']['path'])
+        require(isinstance(capsule.get('historyText'),str) and json_bytes(capsule['historyText'].encode()) == history, 'Presence capsule/history differ')
+        require(bindings['capsule']['path'] == scenario['name']+'.capsule.json', 'Presence consumer capsule differs')
+    require(len(ready) == 3 and type(presence_receipt.get('replayedCapsules')) is int and presence_receipt['replayedCapsules'] == 3, 'Exactly three ready presence capsules are required')
+    init_name = presence+'initialization/initialization-receipt.json'; init = _object(payload,init_name)
+    require(type(init.get('schema')) is int and init['schema'] == 1 and init.get('passed') is True and init.get('actualDatabaseExecution') is True and init.get('packageVersion') == version, 'Actual initialization receipt did not pass')
+    for key in ('analyzerExecuted','releaseAcceptance','coreProofImplemented','sourceClosureVerified','formalPerformanceMeasured'):
+        require(init.get(key) is False, 'Initialization receipt overstates its scope: '+key)
+    _implementation(init,tested)
+    fixture = init.get('fixtureSources'); require(isinstance(fixture,dict) and fixture.get('unchanged') is True and fixture.get('before') == fixture.get('after'), 'Initialization fixture changed')
+    _source_map({'experiments/provenance/initialization_postgres.py':fixture.get('after')},tested)
+    cases = init.get('cases'); require(isinstance(cases,list) and len(cases) >= 4 and all(isinstance(x,dict) and x.get('passed') is True for x in cases), 'Initialization controls did not pass')
+    confirmed = [x for x in cases if x.get('name') == 'actual-confirmed-commit-and-crud']; require(len(confirmed) == 1 and confirmed[0].get('initializationAck',{}).get('actualCommitConfirmed') is True and confirmed[0]['initializationAck'].get('commandTag') == 'COMMIT', 'Missing actual initialization COMMIT confirmation')
+    for row in cases:
+        if 'trace' in row: require(presence+'initialization/'+safe_name(row['trace']) in payload,'Missing initialization trace')
+    top_pg = _object(payload,'verification/postgres.json')
+    require(top_pg == _object(payload,release+'postgres/receipt.json'), 'Top-level PostgreSQL receipt differs')
+    top_capture = _object(payload,'verification/capture-postgres.json'); capture_path = safe_name(top_capture.get('path'))
+    capture_prefix = 'verification/'+capture_path+'/'
+    require(capture_path.startswith(f'releases/{version}/capture/') and len(capture_path.split('/')) == 4, 'Capture reference is not current-version single-run evidence')
+    capture = _object(payload,capture_prefix+'receipt.json')
+    require({k:v for k,v in top_capture.items() if k != 'path'} == capture, 'Capture pointer/receipt differ')
+    require(capture.get('passed') is True and capture.get('actualDatabaseExecution') is True and capture.get('version') == version, 'Actual capture receipt did not pass')
+    capture_source = capture.get('captureSource'); require(isinstance(capture_source,dict),'Missing actual capture source')
+    for field, name in [('adapterSha256','integrations/python/moontxnwitness_capture/capture.py'),('fixtureSha256','scripts/capture-postgres-test.py'),('e2eSha256','scripts/capture-postgres-e2e.mjs')]:
+        _source_map({name:capture_source.get(field)},tested)
+    require(capture_source.get('captureCoreSha256') == pg['captureCoreSha256'] and capture_source.get('analysisCoreSha256') == pg['coreSha256'], 'Capture runtime differs from executed PostgreSQL runtime')
+    capture_scenarios = capture.get('scenarios'); require(isinstance(capture_scenarios,list) and capture_scenarios, 'Missing capture scenarios')
+    capsule_count = 0
+    for row in capture_scenarios:
+        require(isinstance(row,dict) and isinstance(row.get('name'),str) and row.get('expectedStatus') in ('ready','inconclusive','invalid'), 'Invalid capture scenario')
+        require(capture_prefix+safe_name(row.get('trace')) in payload,'Missing actual capture trace')
+        if row['expectedStatus'] == 'ready':
+            capsule_count += 1
+            for suffix in ('coverage.json','report.json','capsule.json'):
+                require(capture_prefix+safe_name(row['name']+'.'+suffix) in payload,'Missing ready capture output')
+    require(type(capture.get('replayedCapsules')) is int and capture['replayedCapsules'] == capsule_count and capsule_count > 0, 'Capture replay count differs')
+    prefixes = (presence,capture_prefix)
+    raw_names = [n for n in payload if n.startswith(prefixes) or n in ('verification/postgres.json','verification/capture-postgres.json')]
+    require(len(raw_names) <= 2048, 'Reproduction tree member budget exceeded')
+    for name in raw_names: safe_name(name); selected[name] = payload[name]
+    require(sum(map(len,selected.values())) <= MAX_PACKET, 'Reproduction byte budget exceeded')
+    receipts = {}
+    for kind, prefix, leaf in [('presence',presence,'presence-receipt.json'),('initialization',presence+'initialization/','initialization-receipt.json'),('legacy',release+'postgres/','receipt.json'),('capture',capture_prefix,'receipt.json')]:
+        receipts[kind] = {'path':prefix[len('verification/'):].rstrip('/'),'receiptFile':leaf,'sha256':digest(payload[prefix+leaf])}
+    database = {'schema':1,'phase':'exact-run-ci-reproduction','version':version,'passed':True,'actualDatabaseExecution':True,'releaseReady':False,'sourceCommit':expected['commit'],'runId':run['id'],'runAttempt':run['run_attempt'],'artifactId':artifact['id'],'buildManifestBefore':pg,'buildManifestAfter':after['buildManifest'],'testedFileSha256Before':tested,'testedFileSha256After':after['testedFileSha256'],'receipts':receipts,'exitCode':0,'scope':'Original exact-source PostgreSQL CI reproduction; not final release acceptance; platform runtime bytes are recorded separately.'}
+    encode = lambda value:(json.dumps(value,sort_keys=True,indent=2)+'\n').encode()
+    db_name = release+'database-ci.json'; selected[db_name] = encode(database)
+    reproduction = {'format':REPRO_FORMAT,'version':version,'sourceCommit':expected['commit'],'releaseReady':False,'databaseEvidence':'database-ci.json','databaseEvidenceSha256':digest(selected[db_name]),'runId':run['id'],'runAttempt':run['run_attempt'],'artifactId':artifact['id'],'artifactDigest':artifact['digest'],'rawEvidence':{n:{'bytes':len(v),'sha256':digest(v)} for n,v in sorted(selected.items())},'scope':'Installation reproduction only; final acceptance is not synthesized.'}
+    selected[release+'reproduction.json'] = encode(reproduction)
+    comparison['reproduction'] = {'format':REPRO_FORMAT,'presenceReadyCapsules':3,'initializationReceiptSha256':digest(payload[init_name]),'presencePrefix':presence,'capturePrefix':capture_prefix,'releaseReady':False}
+    return selected, comparison
 
 def install(root, files, record):
     root=Path(root).resolve();version=record['version'];index=f'verification/releases/{version}/postgres-ci-import/receipt.json'
@@ -229,6 +369,99 @@ def validated_postgres_import_files(root, version):
     # Recompute the same source/receipt checks from retained original bindings.
     _, comparison = validate_payload(translated,run,artifact,expected,require_runtime_bytes=False)
     require(record.get('comparison') == comparison, 'Imported platform/build comparison changed')
+    return {**rows,name:{'bytes':path.stat().st_size,'sha256':digest(path.read_bytes())}}
+
+def _reproduction_scope(name, version, run, comparison):
+    safe_name(name); release = f'verification/releases/{version}/'
+    detail = comparison.get('reproduction',{})
+    presence = f"verification/provenance-presence/ci-{run['id']}-{run['run_attempt']}/"
+    capture = detail.get('capturePrefix')
+    require(detail.get('format') == REPRO_FORMAT and detail.get('presencePrefix') == presence and isinstance(capture,str) and capture.startswith(release+'capture/'), 'Invalid reproduction destination scope')
+    return (name.startswith((release+'postgres/',release+'postgres-ci-import/',presence,capture)) or
+            name in (release+'database-ci.json',release+'reproduction.json','verification/postgres.json','verification/capture-postgres.json'))
+
+def _original_pointer(root, name):
+    require(name in ('verification/postgres.json','verification/capture-postgres.json'), 'Not an approved rolling pointer')
+    result = subprocess.run(['git','show','HEAD:'+name],cwd=root,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    require(result.returncode == 0 and len(result.stdout) <= 8*1024*1024, 'Existing pointer is not an original tracked HEAD file')
+    return result.stdout
+
+def install_reproduction(root, files, record):
+    root = Path(root).resolve(); version = record['version']
+    require(isinstance(files,dict) and 20 <= len(files) <= 2200, 'Invalid reproduction install inventory')
+    index = f'verification/releases/{version}/postgres-ci-import/receipt.json'
+    require(index not in files, 'Import receipt cannot be supplied as raw evidence')
+    files = dict(files); previous = []
+    for name in files: require(_reproduction_scope(name,version,record['run'],record['comparison']), 'Reproduction destination outside verified scope')
+    # Only producer-owned rolling pointers may differ from checkout bytes. Retain
+    # their exact tracked originals before atomically installing current-run data.
+    for name in ('verification/postgres.json','verification/capture-postgres.json'):
+        path = no_links(root,name)
+        backup = f'verification/releases/{version}/postgres-ci-import/previous-pointers/'+name.split('/')[-1]
+        if path.exists() and path.read_bytes() != files[name]:
+            original = _original_pointer(root,name); require(path.read_bytes() == original, 'Rolling pointer changed outside this importer')
+            files[backup] = original; previous.append(backup)
+        elif no_links(root,backup).exists():
+            original = no_links(root,backup).read_bytes(); require(original == _original_pointer(root,name), 'Retained rolling pointer is not the original tracked file')
+            files[backup] = original; previous.append(backup)
+    origins = {name:{'sourcePath':'verification/'+name.split('/')[-1],'sourceCommit':record['sourceCommit'],'bytes':len(files[name]),'sha256':digest(files[name])} for name in previous}
+    record = {**record,'format':FULL_FORMAT,'previousPointerFiles':previous,'previousPointerOrigins':origins,'files':{n:{'bytes':len(v),'sha256':digest(v)} for n,v in sorted(files.items())}}
+    encoded = (json.dumps(record,sort_keys=True,indent=2)+'\n').encode(); all_files = {**files,index:encoded}
+    for name, raw in all_files.items():
+        path = no_links(root,name)
+        if path.exists():
+            original_pointer = name in ('verification/postgres.json','verification/capture-postgres.json') and (f'verification/releases/{version}/postgres-ci-import/previous-pointers/'+name.split('/')[-1]) in previous
+            require(path.is_file() and (path.read_bytes() == raw or original_pointer and path.read_bytes() == _original_pointer(root,name)), 'Refusing to replace existing reproduction evidence')
+    for name, raw in sorted(all_files.items(),key=lambda row:(row[0] in ('verification/postgres.json','verification/capture-postgres.json'),row[0])):
+        path = no_links(root,name); path.parent.mkdir(parents=True,exist_ok=True)
+        try:
+            with path.open('xb') as stream: stream.write(raw); stream.flush(); os.fsync(stream.fileno())
+        except FileExistsError:
+            if path.read_bytes() == raw: continue
+            backup = f'verification/releases/{version}/postgres-ci-import/previous-pointers/'+name.split('/')[-1]
+            require(name in ('verification/postgres.json','verification/capture-postgres.json') and backup in previous and path.read_bytes() == files[backup], 'Conflicting reproduction import')
+            require(no_links(root,backup).read_bytes() == files[backup], 'Original rolling pointer is not safely retained')
+            temporary = path.with_name(path.name+'.ci-import-new')
+            try:
+                with temporary.open('xb') as stream: stream.write(raw); stream.flush(); os.fsync(stream.fileno())
+                require(path.read_bytes() == files[backup], 'Rolling pointer changed during import')
+                os.replace(temporary,path)
+            finally:
+                if temporary.exists(): temporary.unlink()
+    return record
+
+def validated_ci_reproduction_files(root, version):
+    """Production allowlist: only a fully revalidated exact-run reproduction packet."""
+    root = Path(root).resolve(); name = f'verification/releases/{version}/postgres-ci-import/receipt.json'; path = no_links(root,name)
+    if not path.exists(): return {}
+    record = json_bytes(path.read_bytes()); require(record.get('format') == FULL_FORMAT and record.get('version') == version, 'A narrow/legacy import cannot authorize reproduction files')
+    expected = checkout_identity(root); require(record.get('sourceCommit') == expected['commit'], 'Stale reproduction source')
+    rows = record.get('files'); require(isinstance(rows,dict) and 20 <= len(rows) <= 2200, 'Invalid reproduction closure')
+    run = record['run']; artifact = record['artifact']; repository = os.environ.get('GITHUB_REPOSITORY',record['repository'])
+    require(record['repository'].lower() == repository.lower(), 'Imported repository differs from this job')
+    trusted_pr = event_pr_head(repository,expected['commit']); require(record.get('prHead') == trusted_pr, 'Imported PR head differs from this event')
+    validate_run(run,repository,expected['commit'],trusted_pr); validate_artifact_metadata(run,artifact)
+    payload = {}; total = 0
+    for member, spec in rows.items():
+        require(member != name and _reproduction_scope(member,version,run,record['comparison']), 'Unapproved reproduction member')
+        target = no_links(root,member); size = target.stat().st_size; total += size
+        require(size <= MAX_PACKET and total <= MAX_PACKET, 'Reproduction size budget exceeded')
+        raw = target.read_bytes(); require(isinstance(spec,dict) and type(spec.get('bytes')) is int and len(raw) == spec['bytes'] and digest(raw) == spec.get('sha256'), 'Imported reproduction file changed')
+        payload[member] = raw
+    base = f'verification/releases/{version}/postgres-ci-import/'; binding = f"verification/postgres-ci-runtime/{run['id']}-{run['run_attempt']}/"
+    translated = {n:v for n,v in payload.items() if not n.startswith(base)}
+    translated['verification/postgres-ci-source.json'] = payload[base+'source.json']
+    translated[binding+'postgres-ci-runtime-before.json'] = payload[base+'runtime-before.json']
+    translated[binding+'postgres-ci-runtime-after.json'] = payload[base+'runtime-after.json']
+    rebuilt, comparison = validate_reproduction_payload(translated,run,artifact,expected,require_runtime_bytes=False)
+    previous = record.get('previousPointerFiles',[]); require(isinstance(previous,list) and len(previous) <= 2 and len(set(previous)) == len(previous), 'Invalid previous-pointer inventory')
+    for member in previous:
+        allowed = {base+'previous-pointers/'+leaf:'verification/'+leaf for leaf in ('postgres.json','capture-postgres.json')}
+        require(member in allowed and member in payload and payload[member] == _original_pointer(root,allowed[member]), 'Previous rolling pointer differs from tracked HEAD')
+        rebuilt[member] = payload[member]
+    origins = {member:{'sourcePath':'verification/'+member.split('/')[-1],'sourceCommit':expected['commit'],'bytes':len(payload[member]),'sha256':digest(payload[member])} for member in previous}
+    require(record.get('previousPointerOrigins') == origins, 'Previous pointer source/hash metadata differs')
+    require(rebuilt == payload and comparison == record.get('comparison'), 'Reproduction manifest/closure differs from original evidence')
     return {**rows,name:{'bytes':path.stat().st_size,'sha256':digest(path.read_bytes())}}
 
 class SafeRedirect(urllib.request.HTTPRedirectHandler):
@@ -295,10 +528,10 @@ def main():
     run,artifact=chosen;parent=root/'artifacts/postgres-ci-import';parent.mkdir(parents=True,exist_ok=True);work=Path(tempfile.mkdtemp(prefix='incoming-',dir=parent));archive=work/'artifact.zip'
     try:
         download(f"/repos/{args.repository}/actions/artifacts/{artifact['id']}/zip",archive,token,artifact)
-        files,comparison=validate_archive(archive,run,artifact,expected,args.repository,pr)
-        record=install(root,files,{'repository':args.repository,'version':expected['version'],'sourceCommit':expected['commit'],'run':{k:run[k] for k in ['id','run_attempt','head_sha','path','repository','status','conclusion','event','run_started_at']},'artifact':{k:artifact[k] for k in ['id','name','digest','size_in_bytes','expired','workflow_run','created_at']},'prHead':pr,'comparison':comparison,'sqlExecutedByImporter':False})
-        validated_postgres_import_files(root,expected['version']);archive.unlink();work.rmdir()
-        print(json.dumps({'passed':True,'sourceCommit':expected['commit'],'version':expected['version'],'runId':run['id'],'artifactId':artifact['id'],'packetFiles':len(files)-3,'bindingFiles':3,'runtimeBinaryIdentityClaimed':comparison['runtimeBinaryIdentityClaimed']}))
+        files,comparison=validate_archive(archive,run,artifact,expected,args.repository,pr,reproduction=True)
+        record=install_reproduction(root,files,{'repository':args.repository,'version':expected['version'],'sourceCommit':expected['commit'],'run':{k:run[k] for k in ['id','run_attempt','head_sha','path','repository','status','conclusion','event','run_started_at']},'artifact':{k:artifact[k] for k in ['id','name','digest','size_in_bytes','expired','workflow_run','created_at']},'prHead':pr,'comparison':comparison,'sqlExecutedByImporter':False})
+        validated_ci_reproduction_files(root,expected['version']);archive.unlink();work.rmdir()
+        print(json.dumps({'passed':True,'sourceCommit':expected['commit'],'version':expected['version'],'runId':run['id'],'artifactId':artifact['id'],'packetFiles':sum(n.startswith(f"verification/releases/{expected['version']}/postgres/") for n in files),'evidenceFiles':len(files),'bindingFiles':3,'releaseReady':False,'runtimeBinaryIdentityClaimed':comparison['runtimeBinaryIdentityClaimed']}))
     except BaseException as exc:
         (work/'failure.json').write_text(json.dumps({'passed':False,'sourceCommit':expected['commit'],'runId':run['id'],'artifactId':artifact['id'],'errorType':type(exc).__name__,'error':str(exc)},indent=2)+'\n',encoding='utf8')
         # Retain the exact failed download privately for CI diagnosis.

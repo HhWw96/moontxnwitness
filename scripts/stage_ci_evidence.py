@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
-from import_postgres_ci_bundle import validated_postgres_import_files
+from import_postgres_ci_bundle import validated_ci_reproduction_files
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -32,7 +32,7 @@ def stage(root=ROOT):
     changed.update(filter(None, git('ls-files', '--others', '--exclude-standard', '-z', '--', 'verification/', cwd=root).split('\0')))
     selected = {n for n in changed & public if (root / n).is_file()}
     # Only the independently rechecked current-version import, never all ignored verification files.
-    selected.update(validated_postgres_import_files(root, version))
+    selected.update(validated_ci_reproduction_files(root, version))
     # Small current summary receipts may be byte-identical to the committed copy.
     selected.update(p.relative_to(root).as_posix() for p in (root / 'verification').glob('*')
                     if p.is_file() and p.relative_to(root).as_posix() in public)
