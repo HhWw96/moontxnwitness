@@ -191,7 +191,8 @@ fn model_other_source_v4(
         profile: "effective-list-appends/v1",
         point_program: None,
       }
-      if options.list_profile == ModelListPrefixStates {
+      if options.list_profile == ModelListPrefixStates ||
+        options.list_profile == ModelListOriginalSerial {
         model_list_projected_source_v4(history, base, result, maximum)
       } else {
         base

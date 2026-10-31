@@ -463,6 +463,21 @@ pub fn classify_models_v4(
   let completions = model_completion_rules_v4(
     facts, source, orders, options, graph_rules,
   )
+  let original_list_policy = model_list_original_serial_policy_v4(
+    facts.history,
+    options,
+  )
+  let original_list_serial = if original_list_policy &&
+    options.models.contains(ElleSerializable) {
+    Some(model_list_original_serial_rule_v4(facts.history, options))
+  } else {
+    None
+  }
+  let output_profile = if original_list_policy {
+    "captured-list-original-serial/v1"
+  } else {
+    source.profile
+  }
   let reports : Array[Json] = []
   for model in options.models {
     let projection = model_projection_v4(model)
@@ -525,33 +540,68 @@ pub fn classify_models_v4(
         )
       }
     }
-    let combined = model_combine_rules_v4(
+    let graph_combined = model_combine_rules_v4(
       model_name_v4(model),
       necessary,
       "reliable forbidden evidence wins; every necessary rule must finish for compatibility",
     )
+    // A whole-model decision is an alternative proof route, not a repaired graph.
+    // A finite SER exhaustion is never placed in source rules or shared literals.
+    let selected_serial = match original_list_serial {
+      Some(rule) if model == ElleSerializable &&
+        graph_combined.status != "refuted" &&
+        (rule.status == "checked-compatible" || rule.status == "refuted") =>
+        Some(rule)
+      _ => None
+    }
+    let effective_rules = match selected_serial {
+      Some(rule) => [rule]
+      None => necessary
+    }
+    let combined = selected_serial.unwrap_or(graph_combined)
     let status = if combined.status == "pending" {
       "unknown"
     } else {
       combined.status
     }
-    reports.push({
+    let model_report : Json = {
       "model": Json(model_name_v4(model)),
       "canonicalModel": Json(model_canonical_v4(model)),
       "status": Json(status),
       "requiredGraph": Json(projection),
       "orderContext": Json(scoped_context_name_v4(context)),
-      "rules": Json(necessary.map(model_rule_json_v4)),
+      "rules": Json(effective_rules.map(model_rule_json_v4)),
       "pendingRules": Json(
-        necessary.filter(r => r.status == "pending").map(r => r.id),
+        effective_rules.filter(r => r.status == "pending").map(r => r.id),
       ),
       "unknownRules": Json(
-        necessary
+        effective_rules
         .filter(r => r.status == "unknown" || r.status == "unsupported")
         .map(r => r.id),
       ),
       "proofPolicy": "most specific source or scoped-graph evidence retained; pending checks cannot erase refutation",
-    })
+    }
+    if model == ElleSerializable && original_list_policy {
+      let fields = object_fields_unchecked_v3(model_report)
+      fields["wholeProgramAlternative"] = match original_list_serial {
+        Some(rule) => model_rule_json_v4(rule)
+        None => Json::null()
+      }
+      fields["graphRoute"] = {
+        "status": Json(graph_combined.status),
+        "underlyingSourceProfile": Json(source.profile),
+        "requiredGraph": Json(projection),
+        "rules": Json(necessary.map(model_rule_json_v4)),
+        "sourceCoverageRewritten": false,
+      }
+      fields["wholeProgramAlternativeSelected"] = Json(
+        selected_serial is Some(_),
+      )
+      fields["proofPolicy"] = Json(
+        "explicit raw-list whole-SER alternative; existing reliable graph refutation wins, graph source gaps stay diagnostic and no result propagates to another model",
+      )
+    }
+    reports.push(model_report)
   }
   let status = if reports.any(r => {
       object_fields_unchecked_v3(r).at("status") == Json("refuted")
@@ -568,7 +618,9 @@ pub fn classify_models_v4(
     record: {
       "format": "moontxnwitness-model-composition/v4",
       "schemaVersion": 4,
-      "semanticContract": if source.profile == "captured-relation-row-slots/v1" {
+      "semanticContract": if original_list_policy {
+        Json("elle-4e359e5-original-list-serial-decision-models-1")
+      } else if source.profile == "captured-relation-row-slots/v1" {
         Json("elle-4e359e5-captured-relation-row-slot-completion-models-1")
       } else if source.profile == "captured-list-prefix-state/v2" {
         Json("elle-4e359e5-captured-list-prefix-state-completion-models-2")
@@ -577,7 +629,9 @@ pub fn classify_models_v4(
       } else {
         Json("elle-4e359e5-transaction-observation-completion-models-1")
       },
-      "algorithm": if source.profile == "captured-relation-row-slots/v1" {
+      "algorithm": if original_list_policy {
+        Json("captured-list-original-serial-alternative-models-1")
+      } else if source.profile == "captured-relation-row-slots/v1" {
         Json("captured-row-slot-obligations-and-original-program-completion-1")
       } else if source.profile == "captured-list-prefix-state/v2" {
         Json("captured-list-prefix-obligations-and-completion-2")
@@ -590,7 +644,7 @@ pub fn classify_models_v4(
       "status": Json(status),
       "sourceSha256": Json(facts.source_sha256),
       "sourceDigestContract": "sorted-json-object-keys-v1",
-      "sourceProfile": Json(source.profile),
+      "sourceProfile": Json(output_profile),
       "completionScope": "fixed Elle transaction-observation models; generalized existential SI completion; no given logical SSG or database snapshot assertion is checked",
       "sourceAssurance": "conditional on original declared/captured facts; no database authenticity or product isolation level assertion",
       "observations": facts.source_record,
@@ -606,7 +660,11 @@ pub fn classify_models_v4(
         "orderGaps": Json(orders.gaps),
       },
       "execution": {
-        "counterContract": if source.profile == "captured-relation-row-slots/v1" {
+        "counterContract": if original_list_policy {
+          Json(
+            "original-list-serial-independent-source-search-replay-counters-1",
+          )
+        } else if source.profile == "captured-relation-row-slots/v1" {
           Json(
             "captured-row-slot-independent-source-and-per-rule-graph-counters-1",
           )

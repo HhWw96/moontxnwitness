@@ -56,7 +56,11 @@ fn wire_model_options_v4(text : String) -> WireModelOptionsV4 raise {
   let list_profile = match fields.get("listProfile") {
     None | Some(String("native")) => ModelListNative
     Some(String("captured-list-prefix-state/v2")) => ModelListPrefixStates
-    _ => fail("listProfile must be native or captured-list-prefix-state/v2")
+    Some(String("captured-list-original-serial/v1")) => ModelListOriginalSerial
+    _ =>
+      fail(
+        "listProfile must be native, captured-list-prefix-state/v2 or captured-list-original-serial/v1",
+      )
   }
   let relation_profile = match fields.get("relationProfile") {
     None | Some(String("relation-point-final-installed/v1")) =>
@@ -121,10 +125,10 @@ fn wire_model_options_record_v4(wire : WireModelOptionsV4) -> Json {
     "maxSourceChecks": Json(o.max_source_checks),
     "maxStates": Json(o.max_states),
     "maxEdgeChecks": Json(o.max_edge_checks),
-    "listProfile": if o.list_profile == ModelListNative {
-      Json("native")
-    } else {
-      Json("captured-list-prefix-state/v2")
+    "listProfile": match o.list_profile {
+      ModelListNative => Json("native")
+      ModelListPrefixStates => Json("captured-list-prefix-state/v2")
+      ModelListOriginalSerial => Json("captured-list-original-serial/v1")
     },
     "relationProfile": match o.relation_profile {
       ModelRelationPoint => Json("relation-point-final-installed/v1")

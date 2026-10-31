@@ -1,0 +1,25 @@
+# Explicit original-list serial alternative (source proposal, not yet built)
+
+`ModelListOriginalSerial` / `listProfile: "captured-list-original-serial/v1"` opts into a bounded whole-model alternative for the single canonical `serializable` definition. It retains the ordinary prefix graph attempt. It does not rewrite its missing-order/prefix guards, infer collected WW order, or promote source completeness.
+
+When the ordinary model route has no reliable refutation, the new route may select either a complete original-program serial witness or a complete finite exhaustion. Only the SER model report selects this alternative. Its original graph rules, source profile, source coverage and gaps remain visible under `graphRoute`. The other13 model records are computed exactly as for the existing explicit prefix profile; neither serial compatibility nor serial unsatisfiability is shared with them. A reliable existing refutation keeps priority.
+
+The source gate requires a complete contiguous original raw window, consistent snapshot, known producer identities/values, no source gaps or parser findings, and confirmed closed outcomes for every original transaction. Only snapshot/begin/append/list_read/savepoint/rollback_to/release/commit_request/commit_ok/rollback_ok are accepted. Unknown SQL/statement events cannot be dropped. Existing parsing validates unique item identities, original keys, values and exact savepoint instances. Aborted observations remain retained; the definition is committed-program serializability, without opacity.
+
+The exact route reuses `list_v3_analyze_parsed`, its unchanged `list_v3_search` and `list_v3_execute`, within6 committed transactions and128 total interpreted program actions (including savepoints) and the original128 data-operation bound. No version order or graph is provided to that search. A found order becomes a derived certificate with full visibility prefixes and is freshly replayed using `model_list_certificate_replay_v4`. It is never inserted into original observations or the shared source graph. No completed search and no completed fresh replay means unknown. Full exhaustion means only SER is refuted.
+
+States use the independently selected `maxStates` (maximum100000). The new semantic budget is the minimum of caller `maxSourceChecks` and `maxEdgeChecks` (maximum1000000); source-window checks, serial interpretation/cell comparisons, certificate construction and fresh replay share that budget. No report or embedded capsule expands it. This counter counts documented semantic work, not every CPU instruction; bounded interpreter savepoint bookkeeping retains the existing counter semantics.
+
+New identities:
+
+- source policy: `captured-list-original-serial/v1`
+- semantic: `elle-4e359e5-original-list-serial-decision-models-1`
+- model algorithm: `captured-list-original-serial-alternative-models-1`
+- model counter: `original-list-serial-independent-source-search-replay-counters-1`
+- exact decision algorithm: `original-list-serial-enumeration-and-replay-1`
+- exact semantic counter: `original-list-source-search-replay-semantic-checks-1`
+- whole-model rule: `whole-model/original-list-serializable`
+
+`verifyModelsV4`/capsules continue complete reanalysis with independent options. The host identity table accepts the new policy only with its matching semantic/algorithm/counter tuple. The new enum will require fresh generated interface output (`moon info`) during the owner's later authorized build; this proposal deliberately does not hand-edit generated interfaces or replace any frozen runtime.
+
+The original current036 comparison remains1985 matched/12 unknown/3 upstream unknown, with0 boolean differences. Twelve original histories have been diagnosed using the unchanged existing v3 runtime helper:6 serial witnesses and6 complete exhaustions, matching the independently executed raw-program finite enumeration. That is feasibility evidence for reuse, not execution or acceptance of this new code. New code has not been compiled or tested. Its author was the prior independent reviewer; core/root must independently check the proposal before adoption.

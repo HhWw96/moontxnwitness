@@ -33,6 +33,7 @@ pub extend ModelRelationProfileV4 with Eq::{equal, not_equal}
 pub(all) enum ModelListProfileV4 {
   ModelListNative
   ModelListPrefixStates
+  ModelListOriginalSerial
 } derive(Eq)
 
 ///|
@@ -330,6 +331,10 @@ fn model_options_record_v4(options : ModelOptionsV4) -> Json {
   if options.list_profile == ModelListPrefixStates {
     object_fields_unchecked_v3(record)["listProfile"] = Json(
       "captured-list-prefix-state/v2",
+    )
+  } else if options.list_profile == ModelListOriginalSerial {
+    object_fields_unchecked_v3(record)["listProfile"] = Json(
+      "captured-list-original-serial/v1",
     )
   }
   record
