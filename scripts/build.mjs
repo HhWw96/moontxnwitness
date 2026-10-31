@@ -33,7 +33,7 @@ const configuredCores={
  'sql-projection-core.mjs':'sql_projection_bridge',
  'sql-fetch-core.mjs':'sql_fetch_bridge',
 };
-for(const [name,folder]of Object.entries(configuredCores))copyFileSync(resolve(root,'_build/js/release/build',folder,'bridge.js'),resolve(output,name));
+for(const [name,folder]of Object.entries(configuredCores))copyFileSync(resolve(root,'_build/js/release/build',folder,folder+'.js'),resolve(output,name));
 for(const name of ['configured-v4.mjs','configured-session-v4.mjs','source-components-v4.mjs','sql-candidate-v1.mjs','sql-fetch-v1.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
 for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'v4.mjs', 'relation-v4.mjs', 'relation-reduction-v4.mjs', 'models-v4.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
 copyFileSync(resolve(root,'cmd/legacy-v024.mjs'),resolve(output,'legacy-v024.mjs'));
