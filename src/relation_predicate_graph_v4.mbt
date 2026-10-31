@@ -614,14 +614,21 @@ fn relation_predicate_key_edges_v4(
   if !candidate_closed {
     return
   }
-  if candidates.length() > 1 {
-    relation_predicate_gap_v4(
-      gaps, "predicate-negative-source-ambiguous", index, query, key,
-    )
-  }
   let toggles = match relation_predicate_toggles_v4(index, query, key, budget) {
     Some(value) => value
     None => return
+  }
+  // Different unobserved negative versions need not imply different predicate
+  // dependencies. A membership toggle between two candidates is the boundary
+  // that changes a WR/RW relation. Preserve every candidate; never pick a read.
+  let predicate_equivalent = !toggles.any(source => {
+    let rank = index.ranks[source]
+    rank > minimum && rank <= maximum
+  })
+  if !predicate_equivalent {
+    relation_predicate_gap_v4(
+      gaps, "predicate-negative-source-ambiguous", index, query, key,
+    )
   }
   let candidate_facts = candidates.map(source => {
     relation_predicate_source_v4(index, source)
@@ -632,6 +639,7 @@ fn relation_predicate_key_edges_v4(
     "identity": relation_point_key_json_v4(index, key),
     "actualReturnedRow": Json(positive),
     "candidateDomainClosed": true,
+    "candidatePositionsArePredicateEquivalent": Json(predicate_equivalent),
     "candidateSources": Json(candidate_facts),
     "minimumInstalledRank": Json(minimum),
     "maximumInstalledRank": Json(maximum),
@@ -1029,7 +1037,7 @@ pub fn relation_predicate_graph_v4_json(
     "format": "moontxnwitness-relation-predicate-graph/v4",
     "schemaVersion": 4,
     "semanticContract": "adya-2000-predicate-on-keyslots-v1",
-    "algorithm": "relation-predicate-must-edges-2",
+    "algorithm": "relation-predicate-must-edges-3",
     "indexAlgorithm": "relation-point-local-effect-journal-4",
     "acceptsIsolationModels": false,
     "dataModel": "relation-set-v1",

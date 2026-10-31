@@ -59,3 +59,5 @@ Save the following as `options.json` for the commands above:
 ```
 
 Both `category` and `ruleSet` are mandatory. Optional limits are `maxGraphChecks`, `maxPredicateChecks`, `maxCandidateVisits`, `maxStates` and `maxEdgeChecks`. Verification and capsule replay require independently supplied expected options. The CLI returns 1 for a refutation, 0 for a completed compatible check, 3 for an unfinished check and 2 for invalid input or failed verification.
+
+Multiple unobserved versions that exclude a row are retained as candidate constraints. When every candidate induces the same predicate dependencies, the graph check can complete without selecting a fictitious negative read version. Candidates separated by a membership change remain ambiguous. The predicate graph algorithm identifies this behavior as `relation-predicate-must-edges-3`.

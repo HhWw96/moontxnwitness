@@ -108,7 +108,7 @@ pub fn classify_relation_predicate_v4(
         "counts": "predicateGraph.execution and search.execution retain their independent counter contracts",
       },
       "semanticContract": "relation-predicate-category-on-keyslots-v1",
-      "algorithm": "relation-predicate-scoped-category-1",
+      "algorithm": "relation-predicate-scoped-category-2",
       "sourceSha256": Json(v3_dislock_sha256(history.source_text)),
       "sourceEncoding": "exact validated history source UTF-8 bytes",
       "category": Json(scoped_category_name_v4(category)),
