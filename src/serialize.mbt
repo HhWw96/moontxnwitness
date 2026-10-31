@@ -113,14 +113,7 @@ fn write_report(
       }
       b.write_char('}')
     } else if name == "edges" {
-      b.write_char('[')
-      for i, e in r.edges {
-        if i > 0 {
-          b.write_char(',')
-        }
-        write_edge(b, e, strings)
-      }
-      b.write_char(']')
+      write_report_edges(b, r.edges, strings)
     } else {
       b.write_string(scalar_string(value, strings))
     }
@@ -191,23 +184,36 @@ fn optional_integer(value : Int32?) -> String {
 }
 
 ///|
+fn has_standard_rt_shell(e : Edge) -> Bool {
+  e.kind == RT &&
+  e.key is None &&
+  e.from_op is None &&
+  e.to_op is None &&
+  e.from_version is None &&
+  e.to_version is None &&
+  e.reason ==
+  "The source completed before the target began on the asserted common observer clock."
+}
+
+///|
+fn write_standard_rt_shell(b : JsonText, from : String, to : String) -> Unit {
+  b.write_string("{\"from\":")
+  b.write_string(from)
+  b.write_string(",\"to\":")
+  b.write_string(to)
+  b.write_string(
+    ",\"kind\":\"rt\",\"key\":null,\"fromOp\":null,\"toOp\":null,\"fromVersion\":null,\"toVersion\":null,\"reason\":\"The source completed before the target began on the asserted common observer clock.\"}",
+  )
+}
+
+///|
 fn write_edge(b : JsonText, e : Edge, strings : Map[String, String]) -> Unit {
-  // Standard RT edges carry this complete field shell. Unusual public Edge
-  // values use the unchanged generic writer below.
-  if e.kind == RT &&
-    e.key is None &&
-    e.from_op is None &&
-    e.to_op is None &&
-    e.from_version is None &&
-    e.to_version is None &&
-    e.reason ==
-    "The source completed before the target began on the asserted common observer clock." {
-    b.write_string("{\"from\":")
-    b.write_string(quoted_cached(strings, e.from))
-    b.write_string(",\"to\":")
-    b.write_string(quoted_cached(strings, e.to))
-    b.write_string(
-      ",\"kind\":\"rt\",\"key\":null,\"fromOp\":null,\"toOp\":null,\"fromVersion\":null,\"toVersion\":null,\"reason\":\"The source completed before the target began on the asserted common observer clock.\"}",
+  // Keep the original per-edge entry and its MoonBit cache on every target.
+  if has_standard_rt_shell(e) {
+    write_standard_rt_shell(
+      b,
+      quoted_cached(strings, e.from),
+      quoted_cached(strings, e.to),
     )
     return
   }
