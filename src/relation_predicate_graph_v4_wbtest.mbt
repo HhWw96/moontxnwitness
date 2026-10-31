@@ -757,7 +757,24 @@ test "relation predicate 33 1024 frozen chain selections equal independent inter
             selected >= 0 && rank == selected + 1,
           )
         }
-        assert_eq(graph.complete, concrete.length() == 1)
+        // Independent concrete-choice oracle: derive the entire predicate
+        // dependency set for each ghost position and compare those sets.
+        let concrete_edge_sets = concrete.map(choice => {
+          let dependencies : Array[String] = []
+          for rank in 1..<(length + 1) {
+            if rpred_mask_membership(mask, rank) !=
+              rpred_mask_membership(mask, rank - 1) {
+              dependencies.push(
+                (if rank <= choice { "WR-" } else { "RW-" }) + rank.to_string(),
+              )
+            }
+          }
+          dependencies
+        })
+        assert_eq(
+          graph.complete,
+          concrete_edge_sets.all(edges => edges == concrete_edge_sets[0]),
+        )
         histories += 1
       }
     }
@@ -778,10 +795,10 @@ test "relation predicate 34 Def3 retains all prior and equal membership toggles 
 }
 
 ///|
-test "relation predicate 35 ambiguous nonmatches retain only their universally later toggle" {
+test "relation predicate 35 equivalent nonmatches retain their universally later toggle and complete" {
   let graph = rpred_graph(rpred_oracle_chain(2, 2, -1))
-  assert_false(graph.complete)
-  assert_true(rpred_gap(graph, "predicate-negative-source-ambiguous"))
+  assert_true(graph.complete)
+  assert_false(rpred_gap(graph, "predicate-negative-source-ambiguous"))
   assert_true(rpred_has(graph, "predicate", RW, "Q", "T2"))
   assert_false(rpred_has(graph, "predicate", RW, "Q", "T1"))
   assert_true(rpred_edges(graph, "predicate", WR).is_empty())
@@ -1097,4 +1114,29 @@ test "relation predicate 47 incomplete candidate work cannot mark its query comp
   let output = relation_predicate_graph_v4_json(graph)
   let query = v3_test_items(capture_field(output, "inferences"), "queries")[0]
   assert_eq(capture_field(query, "complete"), Json(false))
+}
+
+///|
+test "relation predicate 36 all installed versions exclude predicate without inventing a source" {
+  let graph = rpred_graph(rpred_oracle_chain(7, 0, -1))
+  assert_true(graph.complete)
+  assert_true(rpred_edges(graph, "predicate", WR).is_empty())
+  assert_true(rpred_edges(graph, "predicate", RW).is_empty())
+  let domain = graph.queries[0].domains[0]
+  assert_eq(v4_test_at(domain, ["actualReturnedRow"]), Json(false))
+  assert_eq(v4_test_at(domain, ["inferredConstraintOnly"]), Json(true))
+}
+
+///|
+test "relation predicate 37 nonmatches on opposite sides of membership change remain unknown" {
+  let graph = rpred_graph(rpred_oracle_chain(3, 2, -1))
+  assert_false(graph.complete)
+  assert_true(rpred_gap(graph, "predicate-negative-source-ambiguous"))
+}
+
+///|
+test "relation predicate 38 proving equivalent exclusions still consumes predicate budget" {
+  let graph = rpred_graph(rpred_oracle_chain(7, 0, -1), max_predicate_checks=0)
+  assert_false(graph.complete)
+  assert_true(graph.predicate_budget.limited)
 }
