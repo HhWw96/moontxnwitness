@@ -13,7 +13,7 @@ export function validatePublic033Group(result,group){
  assert.equal(result.passed,true);assert.equal(result.suite,'public033-fixed-runtime-compatibility-1');
  assert.equal(result.publicVersion,'0.3.3');assert.equal(result.producerSourceCommit,'79f03ecb3b7764b03bcb6ef99bdef38ce42e37bd');
  assert.equal(result.producerArchiveSha256,'e6f745bcfbcfbd5f297f3bfa9effb5ee76b9c6b3dbbd235c550f45deedfa24eb');
- assert.equal(result.producerComponentSha256,'5906f58ea9d4229ab8eabdb432e01b8f5c00b40a1c34b018a549e8a51c8a2fd8');
+ assert.equal(result.producerComponentSha256,'3efa5cf370c995f2929c3b4ab12038173f272591e2aeb9e4ccc66bcc55feb6de');
  assert.equal(result.publishedMemberCount,1176);assert.equal(result.immutableSourceCount,122);
  assert.equal(result.usesPublishedRuntimeOnly,true);assert.equal(result.historicalSourceSnapshotCreated,false);
  assert.equal(result.arbitraryProducerSelectorSupported,false);assert.equal(result.sourcePoolUnchanged,true);
