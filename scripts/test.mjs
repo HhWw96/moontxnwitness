@@ -9,6 +9,7 @@ import {writeVerifiedJson,writeImmutableEvidence} from './performance-evidence.m
 import {tmpdir} from 'node:os';
 import {relativeEvidencePath} from './evidence-reference.mjs';
 import {PUBLIC032_GROUPS,collectPublic032Groups} from './public032-compatibility-groups.mjs';
+import {PUBLIC033_GROUPS,collectPublic033Groups} from './public033-compatibility-groups.mjs';
 prepareInputs(root,'tests');
 await import('./evidence-reference-test.mjs');
 
@@ -27,8 +28,6 @@ runMoon(['fmt', '--check']);
 runMoon(['check', '--target', 'all', '--deny-warn', '--jobs', '1']);
 for (const target of targets) runMoon(['test', '--target', target, '--deny-warn', '--jobs', '1']);
 await import('./build.mjs');
-await import('./models-v4-sdk-test.mjs');
-await import('./models-row-v4-sdk-test.mjs');
 assert.deepEqual(verificationFingerprint(root,{includeDist:false}),testedSources,'Executable sources changed during core verification');
 const testedFiles=verificationFingerprint(root);
 const public030Check=spawnSync(process.execPath,['scripts/public030-compatibility-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:4*1024*1024});
@@ -55,6 +54,15 @@ for(const group of Object.keys(PUBLIC032_GROUPS)){
 }
 const public032Compatibility=collectPublic032Groups(public032Parts);
 for(const result of public032Compatibility.receipts){result.runtime=relativeEvidencePath(root,result.runtime);result.runDirectory=relativeEvidencePath(root,result.runDirectory);}
+const public033Parts=[];
+for(const group of Object.keys(PUBLIC033_GROUPS)){
+ const destination=resolve(root,'artifacts/public033-full-test',group);
+ const child=spawnSync(process.execPath,['scripts/public033-compatibility-test.mjs','--group',group,'--output-root',destination],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:8*1024*1024});
+ if(child.error||child.status!==0)throw Error('Public033 '+group+' compatibility failed: '+child.stdout+child.stderr);
+ const result=JSON.parse(child.stdout);assert.equal(result.passed,true);public033Parts.push(result);
+}
+const public033Compatibility=collectPublic033Groups(public033Parts);
+for(const result of public033Compatibility.receipts){result.runtime=relativeEvidencePath(root,result.runtime);result.runDirectory=relativeEvidencePath(root,result.runDirectory);}
 const foundation033 = {};
 for (const [field,script] of [
   ['sourceAnomalyHostTests','v033-sdk-test.mjs'],
@@ -73,8 +81,6 @@ for (const [field,script] of [
 const foundation034 = {};
 for (const [field,script] of [
   ['sourceRulesHostTests','scripts/v034-source-rules-sdk-test.mjs'],
-  ['predicateCategoryHostTests','scripts/relation-predicate-sdk-test.mjs'],
-  ['predicateCategoryExample','examples/relation-predicate-categories.mjs'],
   ['categoryReductionHostTests','scripts/relation-category-reduction-sdk-test.mjs'],
   ['currentBuildBindingTests','scripts/v034-maintenance-bindings-test.mjs'],
   ['publicBoundaryRegression','scripts/v034-public-boundary-independent-test.mjs'],
@@ -98,10 +104,58 @@ for (const [field,script] of [
     foundation034[field]=output;
   }
 }
+const foundation035 = {};
+for (const [field,script] of [
+  ['predicateCategoryHostTests','scripts/relation-predicate-sdk-test.mjs'],
+  ['predicateMaintenanceRegression','scripts/v035-predicate-maintenance-test.mjs'],
+  ['predicateRuntimeTests','scripts/v035-portable-predicate-test.mjs'],
+  ['predicateCategoryExample','examples/relation-predicate-categories.mjs'],
+]) {
+  const child=spawnSync(process.execPath,[script],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
+  if(child.error||child.status!==0)throw Error(script+' failed: '+child.stdout+child.stderr);
+  const output=JSON.parse(child.stdout);assert.equal(output.passed,true);
+  if(field==='predicateCategoryHostTests'){assert.equal(output.checks,40);assert.equal(output.failed,0);}
+  if(field==='predicateMaintenanceRegression'){assert.equal(output.checks,513);assert.equal(output.failed,0);assert.equal(output.semanticAssertions,506);assert.equal(output.newIndependentReviewPerformed,false);}
+  if(field==='predicateRuntimeTests'){assert.equal(output.requiresSourceTree,false);assert.equal(output.sourceAuditPerformed,false);}
+  if(field==='predicateCategoryExample'){
+    assert.equal(output.predicate,'refuted');assert.equal(output.item,'checked-compatible');
+    assert.equal(output.replayValid,true);assert.equal(output.acceptsIsolationModels,false);
+  }
+  if(typeof output.outputRoot==='string')output.outputRoot=relativeEvidencePath(root,output.outputRoot);
+  foundation035[field]=output;
+}
+const foundation036 = {newIndependentReviewPerformed:false,finalCoreElle2000Executed:false,formalPerformanceMeasurement:false};
+for(const [field,script,count] of [
+  ['modelsHostTests','scripts/models-v4-sdk-test.mjs',90],
+  ['rowModelsHostTests','scripts/models-row-v4-sdk-test.mjs',38],
+]) {
+  const child=spawnSync(process.execPath,[script],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
+  if(child.error||child.status!==0)throw Error(script+' failed: '+child.stdout+child.stderr);
+  const output=JSON.parse(child.stdout);assert.equal(output.passed,true);assert.equal(output.tests,count);assert.deepEqual(output.failed,[]);
+  const evidence=JSON.parse(readFileSync(output.receipt,'utf8'));
+  assert.equal(evidence.passed,true);assert.equal(evidence.tests,count);assert(evidence.results.every(x=>x.passed));
+  const manifest=JSON.parse(readFileSync(resolve(root,'dist/build-manifest.json'),'utf8'));assert.equal(evidence.coreSha256,manifest.coreSha256);
+  foundation036[field]={passed:true,tests:count,failed:0,coreSha256:evidence.coreSha256,receipt:relativeEvidencePath(root,output.receipt)};
+}
+for(const [field,script] of [['modelsExample','examples/models-v4-roundtrip.mjs'],['rowModelsExample','examples/relation-atomic-models-roundtrip.mjs']]) {
+  const child=spawnSync(process.execPath,[script],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
+  if(child.error||child.status!==0)throw Error(script+' failed: '+child.stdout+child.stderr);
+  if(field==='modelsExample'){
+    assert.deepEqual(child.stdout.trim().split(/\r?\n/),['register: 14 model result(s) and source-bound evidence verified','list: 1 model result(s) and source-bound evidence verified']);
+    foundation036[field]={passed:true,registerModels:14,listModels:1};
+  }else{
+    const result=JSON.parse(child.stdout);assert.equal(result.passed,true);assert.equal(result.models,14);assert.equal(result.profile,'captured-relation-row-slots/v1');assert.equal(result.replayValid,true);
+    foundation036[field]=result;
+  }
+}
 const staging033=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),
   ['-X','utf8','scripts/test_compat032_staging.py'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
 if(staging033.error||staging033.status!==0)throw Error('Compatibility staging faults failed: '+staging033.stdout+staging033.stderr);
 foundation033.compatibilityStagingTests=JSON.parse(staging033.stdout);assert.equal(foundation033.compatibilityStagingTests.passed,true);
+const staging034=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),
+  ['-B','-X','utf8','scripts/test_compat033_staging.py'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
+if(staging034.error||staging034.status!==0)throw Error('Public033 component staging faults failed: '+staging034.stdout+staging034.stderr);
+foundation034.compatibilityStagingTests=JSON.parse(staging034.stdout);assert.equal(foundation034.compatibilityStagingTests.passed,true);
 const parser = (await import('./parser-test.mjs')).runParserTests();
 const oracle = (await import('./oracle.mjs')).runOracle();
 const cli = (await import('./cli-test.mjs')).runCliTests();
@@ -367,7 +421,10 @@ mkdirSync(resolve(root, 'verification'), { recursive: true });
 receipt.v4HostTests = JSON.parse(v4Check.stdout);
 receipt.foundation033 = foundation033;
 receipt.foundation034 = foundation034;
+receipt.foundation035 = foundation035;
+receipt.foundation036 = foundation036;
 receipt.public032CompatibilityTests = public032Compatibility;
+receipt.public033CompatibilityTests = public033Compatibility;
 receipt.v4IndependentAudit = v4IndependentAudit;
 receipt.registerDirectCategoryAudit = directCategoryAudit;
 receipt.public031CompatibilityTests = public031Compatibility;

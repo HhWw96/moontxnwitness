@@ -12,13 +12,15 @@ from evidence_json import load_receipt
 from pathlib import Path
 from package_archive import sha256, write_archive
 from publication_privacy import private_home_paths
-from distribution_manifest import select_distribution_files, assert_complete, relation034_available
+from distribution_manifest import select_distribution_files, assert_complete, relation034_available, predicate035_available, models036_available
 
 
 ROOT = Path(__file__).resolve().parent.parent
 VERSION = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
 assert re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", VERSION), "Release version must be stable x.y.z"
 RELATION034 = relation034_available(ROOT, VERSION)
+PREDICATE035 = predicate035_available(ROOT, VERSION)
+MODELS036 = models036_available(ROOT, VERSION)
 NAME = "MoonTxnWitness-v" + VERSION
 ARTIFACTS = ROOT / "artifacts"
 NODE = os.environ.get("MTW_NODE", "node")
@@ -45,7 +47,7 @@ if RELATION034:
         assert (ROOT/'cmd'/runtime).read_bytes() == (ROOT/'dist'/runtime).read_bytes(), 'Relation runtime wrapper changed after build: ' + runtime
 
 
-if 'classifyModelsV4' in (ROOT/'cmd/sdk.mjs').read_text(encoding='utf8'):
+if MODELS036:
     assert (ROOT/'cmd/models-v4.mjs').read_bytes() == (ROOT/'dist/models-v4.mjs').read_bytes(), 'Model wrapper changed after build'
 
 assert (ROOT/'cmd/legacy-v024.mjs').read_bytes() == (ROOT/'dist/legacy-v024.mjs').read_bytes(), 'Frozen ORM dispatch changed after build'
@@ -70,6 +72,11 @@ subprocess.check_call([NODE, '--input-type=module', '-e',
 if tuple(map(int, VERSION.split('.'))) >= (0, 3, 3):
     for helper in ('legacy-v032.mjs', 'legacy-v032-binding.mjs', 'compact-runtime.mjs'):
         assert (ROOT / 'cmd' / helper).read_bytes() == (ROOT / 'dist' / helper).read_bytes(), 'Fixed public32 helper changed after build: ' + helper
+
+if tuple(map(int, VERSION.split('.'))) >= (0, 3, 4):
+    for helper in ('legacy-v033.mjs', 'legacy-v033-binding.mjs'):
+        assert (ROOT / 'cmd' / helper).read_bytes() == (ROOT / 'dist' / helper).read_bytes(), 'Fixed public33 helper changed after build: ' + helper
+
 
 def archive(files, path):
     home_paths = private_home_paths(
@@ -110,6 +117,8 @@ if home:
 
 checks = []
 relation034_consumers = {}
+predicate035_consumers = {}
+models036_consumers = {}
 
 
 def run(args, cwd, expected=0, timeout=180):
@@ -177,6 +186,19 @@ for kind in ("portable", "source"):
             result = json.loads(run([NODE, 'scripts/' + script], consumer))
             assert result['passed'] is True and result['checks'] > 0
             checks.append(kind + ' ' + label)
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 4):
+        parts = []
+        for group in ('core', 'capture', 'models', 'classification', 'profiles', 'v4', 'integrity'):
+            destination = work / ('public033-' + kind) / group
+            result = json.loads(run([NODE, 'scripts/public033-compatibility-test.mjs', '--group', group,
+                                    '--runtime', str(consumer / 'dist'), '--output-root', str(destination)], consumer))
+            assert result['passed'] is True and result['currentVersion'] == VERSION
+            parts.append(str(destination / 'public033-compatibility-validation.json'))
+            checks.append(kind + ' public033 original fixed compatibility group ' + group)
+        public033 = json.loads(run([NODE, 'scripts/public033-compatibility-groups.mjs', *parts], consumer))
+        assert public033['passed'] is True and public033['checks'] == 47 and public033['groups'] == 7
+        assert public033['currentVersion'] == VERSION
+        checks.append(kind + ' public033 all 47 original checks and 15 fixed method families')
     if RELATION034:
         capability = {'sourceAuditPerformed': kind == 'source', 'runtimeOnlyPortableChecks': kind == 'portable',
                       'newIndependentReviewPerformed': False, 'actualDatabaseExecution': False, 'results': {}}
@@ -186,14 +208,14 @@ for kind in ("portable", "source"):
                     ('relation-category-reduction-sdk-test.mjs', 'relation category reduction complete-source SDK and CLI audit'),
                     ('v034-maintenance-bindings-test.mjs', 'current relation build-source binding guard tests'),
                     ('v034-public-boundary-independent-test.mjs', '84 maintained relation/source public-boundary semantic checks')):
-                result = json.loads(run([NODE, 'scripts/' + script], consumer, timeout=300))
+                result = json.loads(run([NODE, 'scripts/' + script], consumer))
                 assert result['passed'] is True and result['checks'] > 0
                 if script == 'v034-public-boundary-independent-test.mjs':
                     assert result['executed'] is True and result['checks'] == 84 and result['failed'] == 0
                 capability['results'][script] = {'passed': True, 'checks': result['checks']}
                 checks.append(kind + ' ' + label)
         else:
-            result = json.loads(run([NODE, 'scripts/v034-portable-runtime-test.mjs'], consumer, timeout=300))
+            result = json.loads(run([NODE, 'scripts/v034-portable-runtime-test.mjs'], consumer))
             assert result['passed'] is True and result['checks'] >= 16 and result['failed'] == 0
             assert result['requiresSourceTree'] is False and result['requiresCommandSource'] is False
             assert result['sourceAuditPerformed'] is False and result['semantic84AuditClaimed'] is False
@@ -212,6 +234,60 @@ for kind in ("portable", "source"):
         capability['results']['categoryReductionExample'] = {'passed': True, 'retainedTransactions': example['retainedTransactions']}
         checks.append(kind + ' runnable category-preserving relation reduction and explicit-option replay')
         relation034_consumers[kind] = capability
+    if PREDICATE035:
+        capability = {'sourceAuditPerformed': kind == 'source', 'runtimeOnlyPortableChecks': kind == 'portable',
+                      'newIndependentReviewPerformed': False, 'actualDatabaseExecution': False,
+                      'formalPerformanceMeasurement': False, 'results': {}}
+        if kind == 'source':
+            result = json.loads(run([NODE, 'scripts/relation-predicate-sdk-test.mjs'], consumer))
+            assert result['passed'] is True and result['checks'] == 40 and result['failed'] == 0
+            capability['results']['completeSourceSdk'] = result
+            checks.append(kind + ' predicate all 40 complete-source SDK CLI and caller-budget replay checks')
+            result = json.loads(run([NODE, 'scripts/v035-predicate-maintenance-test.mjs'], consumer))
+            assert result['passed'] is True and result['checks'] == 513 and result['failed'] == 0
+            assert result['semanticAssertions'] == 506 and result['currentBuildGuards'] == 7
+            assert result['newIndependentReviewPerformed'] is False and result['sourceUnchanged'] is True
+            capability['results']['maintainedPredicateRegression'] = result
+            checks.append(kind + ' predicate 506 preserved semantic assertions and seven current-build integrity guards')
+        else:
+            result = json.loads(run([NODE, 'scripts/v035-portable-predicate-test.mjs'], consumer))
+            assert result['passed'] is True and result['checks'] == 12 and result['failed'] == 0
+            assert result['requiresSourceTree'] is False and result['requiresCommandSource'] is False
+            assert result['sourceAuditPerformed'] is False and result['newIndependentReviewPerformed'] is False
+            assert result['version'] == VERSION
+            capability['results']['runtimeProbe'] = result
+            checks.append(kind + ' predicate runtime-only SDK CLI and exact scoped capsule replay')
+        example = json.loads(run([NODE, 'examples/relation-predicate-categories.mjs'], consumer))
+        assert example == {'passed': True, 'predicate': 'refuted', 'item': 'checked-compatible',
+                           'replayValid': True, 'acceptsIsolationModels': False}
+        capability['results']['predicateExample'] = example
+        checks.append(kind + ' runnable predicate versus item example and independent-option capsule replay')
+        predicate035_consumers[kind] = capability
+    if MODELS036:
+        capability = {'newIndependentReviewPerformed': False, 'actualDatabaseExecution': False,
+                      'formalPerformanceMeasurement': False, 'finalCoreElle2000Executed': False, 'results': {}}
+        for script, key, count, label in (
+                ('models-v4-sdk-test.mjs', 'modelsSdk', 90, 'canonical models original 90 SDK CLI and budget-bound evidence checks'),
+                ('models-row-v4-sdk-test.mjs', 'rowModelsSdk', 38, 'atomic row models original 38 SDK CLI and concrete replay checks')):
+            result = json.loads(run([NODE, 'scripts/' + script], consumer))
+            assert result['passed'] is True and result['tests'] == count and result['failed'] == []
+            evidence = json.loads(Path(result['receipt']).read_text(encoding='utf8'))
+            consumer_manifest = json.loads((consumer/'dist/build-manifest.json').read_text(encoding='utf8'))
+            assert evidence['passed'] is True and evidence['tests'] == count and all(row['passed'] for row in evidence['results'])
+            assert evidence['coreSha256'] == consumer_manifest['coreSha256'] == MANIFEST['coreSha256']
+            capability['results'][key] = {'passed': True, 'tests': count, 'failed': 0, 'coreSha256': evidence['coreSha256']}
+            checks.append(kind + ' ' + label)
+        lines = run([NODE, 'examples/models-v4-roundtrip.mjs'], consumer).strip().splitlines()
+        assert lines == ['register: 14 model result(s) and source-bound evidence verified',
+                         'list: 1 model result(s) and source-bound evidence verified']
+        capability['results']['modelsExample'] = {'passed': True, 'registerModels': 14, 'listModels': 1}
+        checks.append(kind + ' runnable register and append-list canonical model examples with exact evidence replay')
+        example = json.loads(run([NODE, 'examples/relation-atomic-models-roundtrip.mjs'], consumer))
+        assert example == {'passed': True, 'profile': 'captured-relation-row-slots/v1', 'models': 14,
+                           'status': 'checked-compatible', 'verifyValid': True, 'replayValid': True}
+        capability['results']['rowModelsExample'] = example
+        checks.append(kind + ' runnable atomic row fourteen-model example and original-program evidence replay')
+        models036_consumers[kind] = capability
     public024 = json.loads(run([NODE,'scripts/compat-v024-test.mjs',str(consumer/'dist'),str(consumer/'fixtures/compat-v024'),str(work/('public024-'+kind))],consumer))
     assert public024['passed'] and public024['currentRuntimeVersion'] == VERSION and public024['checks'] == 107
     checks.append(kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay')
@@ -728,6 +804,10 @@ console.log(JSON.stringify({passed:true,groups:3}));
 receipt = {"tool": "MoonTxnWitness", "version": VERSION, "passed": True, "archives": archives, "freshConsumerChecks": len(checks), "checks": checks, "sourceRebuilt": True, "portableRequires": "Node.js >=20 (tested with current installed Node)", "node": run([NODE, "--version"], ROOT).strip(), "nativeExecutableIncluded": False, "publiclyPublished": False}
 if RELATION034:
     receipt['relation034Consumers'] = relation034_consumers
+if PREDICATE035:
+    receipt['predicate035Consumers'] = predicate035_consumers
+if MODELS036:
+    receipt['models036Consumers'] = models036_consumers
 (ROOT / "verification/package.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / "release-index.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / (NAME + "-release.json")).write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

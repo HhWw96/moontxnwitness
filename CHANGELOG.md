@@ -1,3 +1,11 @@
+# 0.3.6 — development
+
+- Add a separate canonical-model namespace for fourteen fixed Elle definitions, with source-rule, category and completion obligations recorded independently.
+- Keep register, append-list and explicit atomic-primary-key row projections separate; verify concrete certificates against the original programs and caller budgets.
+- Expose model classification, verification and replay in MoonBit, SDK and CLI without changing the older category defaults.
+- Preserve the original 90 model and 38 row SDK checks; run both in source and portable consumers alongside register/list and row examples.
+- Retain the previous fixed 2,000-input comparison as a digest-bound reference; final-candidate comparison and formal performance remain separate validation steps.
+
 # 0.3.5 — development
 
 - Connect original relation predicate observations to dedicated G0, G1c, G2-item, G2, G-single-item, G-single and G-nonadjacent searches with explicit formal rule selection.
@@ -12,6 +20,8 @@
 - Add category-preserving relation reduction, explicit verification budgets and replayable capsules, retaining original observation sequence mappings.
 - Check savepoint effects and incomplete observation windows before using final writes or declaring a single-transaction minimum.
 - Add maintained SDK/CLI checks, offline round-trip examples and separate source/portable consumer verification.
+- Replay public v0.3.3 evidence with its exact released runtime through a checksum-pinned shared component, retaining earlier replay routes.
+- Reject missing relation timestamps as malformed observations before source-rule analysis.
 
 # 0.3.3 — 2026-10-31
 

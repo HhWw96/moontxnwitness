@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {classifyModelsV4,verifyModelsV4,makeModelsCapsuleV4,replayModelsCapsuleV4} from '../dist/sdk.mjs';
+const source=readFileSync(new URL('./relation-atomic-point.json',import.meta.url),'utf8');
+const options={models:'elle-core',relationProfile:'captured-relation-row-slots/v1',clients:[{id:'declared-logical-A',transactions:['A']}],clientsComplete:true};
+const report=classifyModelsV4(source,options);
+assert.equal(report.status,'checked-compatible');assert.equal(report.models.length,14);
+assert.equal(verifyModelsV4(source,report,options).valid,true);
+const replay=replayModelsCapsuleV4(makeModelsCapsuleV4(source,options),options);assert.equal(replay.valid,true);
+console.log(JSON.stringify({passed:true,profile:report.sourceProfile,models:report.models.length,status:report.status,verifyValid:true,replayValid:replay.valid}));

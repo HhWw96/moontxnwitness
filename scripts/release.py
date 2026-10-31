@@ -42,6 +42,22 @@ def validate_public032_compatibility_receipt(summary, version):
     return value
 
 
+
+def validate_public033_compatibility_receipt(summary, version):
+    value = summary['public033CompatibilityTests']
+    assert value['passed'] is True and value['checks'] == 47 and value['groups'] == 7
+    assert value['currentVersion'] == version and value['usesPublishedRuntimeOnly'] is True
+    assert value['historicalSourceSnapshotCreated'] is False and value['sourcePoolUnchanged'] is True
+    assert value['candidateRuntimeFiles']['core.mjs']['sha256'] == summary['buildManifest']['coreSha256']
+    # Reuse the complete executable receipt contract, including distinct case IDs,
+    # all methods, every group's provenance and the exact candidate file inventory.
+    checked = subprocess.run([os.environ.get('MTW_NODE', 'node'), '--input-type=module', '-e',
+        "import{collectPublic033Groups}from'./scripts/public033-compatibility-groups.mjs';let s='';for await(const b of process.stdin)s+=b;console.log(JSON.stringify(collectPublic033Groups(JSON.parse(s))));"],
+        cwd=ROOT, input=json.dumps(value['receipts']), text=True, capture_output=True, check=True, timeout=180)
+    assert json.loads(checked.stdout) == value
+    return value
+
+
 def validate_register_direct_category_audit(summary, version):
     audit = summary['registerDirectCategoryAudit']
     assert audit['passed'] is True and audit['failed'] == 0 and audit['checks'] >= 6
@@ -50,6 +66,79 @@ def validate_register_direct_category_audit(summary, version):
     assert audit['testedFileSha256Before'] == audit['testedFileSha256After']
     assert audit['testedFileSha256Before']['core.mjs'] == summary['buildManifest']['coreSha256']
     return audit
+
+
+
+def validate_predicate035_receipts(summary, package, version):
+    """Require actual source and runtime-only consumer execution for the new namespace."""
+    foundation = summary['foundation035']
+    host = foundation['predicateCategoryHostTests']
+    assert host['passed'] is True and host['checks'] == 40 and host['failed'] == 0
+    maintained = foundation['predicateMaintenanceRegression']
+    assert maintained['passed'] is True and maintained['checks'] == 513 and maintained['failed'] == 0
+    assert maintained['semanticAssertions'] == 506 and maintained['currentBuildGuards'] == 7
+    assert maintained['sourceUnchanged'] is True and maintained['newIndependentReviewPerformed'] is False
+    assert maintained['buildManifest'] == summary['buildManifest'] and maintained['version'] == version
+    probe = foundation['predicateRuntimeTests']
+    assert probe['passed'] is True and probe['checks'] == 12 and probe['failed'] == 0
+    assert probe['requiresSourceTree'] is False and probe['sourceAuditPerformed'] is False
+    assert probe['version'] == version
+    for value in (foundation['predicateCategoryExample'],):
+        assert value == {'passed': True, 'predicate': 'refuted', 'item': 'checked-compatible',
+                         'replayValid': True, 'acceptsIsolationModels': False}
+    consumers = package['predicate035Consumers']
+    for kind in ('source', 'portable'):
+        item = consumers[kind]
+        assert item['sourceAuditPerformed'] is (kind == 'source')
+        assert item['runtimeOnlyPortableChecks'] is (kind == 'portable')
+        assert item['newIndependentReviewPerformed'] is False and item['formalPerformanceMeasurement'] is False
+        assert item['actualDatabaseExecution'] is False
+        assert kind + ' runnable predicate versus item example and independent-option capsule replay' in package['checks']
+    source = consumers['source']['results']
+    assert source['completeSourceSdk']['passed'] is True and source['completeSourceSdk']['checks'] == 40
+    value = source['maintainedPredicateRegression']
+    assert value['passed'] is True and value['checks'] == 513 and value['semanticAssertions'] == 506
+    assert value['failed'] == 0 and value['newIndependentReviewPerformed'] is False
+    assert value['buildManifest'] == summary['buildManifest'] and value['version'] == version
+    assert 'source predicate all 40 complete-source SDK CLI and caller-budget replay checks' in package['checks']
+    assert 'source predicate 506 preserved semantic assertions and seven current-build integrity guards' in package['checks']
+    portable = consumers['portable']['results']['runtimeProbe']
+    assert portable['passed'] is True and portable['checks'] == 12 and portable['failed'] == 0
+    assert portable['version'] == version and portable['sourceAuditPerformed'] is False
+    assert portable['requiresSourceTree'] is False and portable['requiresCommandSource'] is False
+    assert portable['runtimeBefore'] == portable['runtimeAfter']
+    assert portable['runtimeBefore']['core.mjs'] == summary['buildManifest']['coreSha256']
+    assert 'portable predicate runtime-only SDK CLI and exact scoped capsule replay' in package['checks']
+    return consumers
+
+
+
+def validate_models036_receipts(summary, package, version):
+    """Validate executed model/row probes; historical Elle results are not a current pass."""
+    foundation = summary['foundation036']
+    core = summary['buildManifest']['coreSha256']
+    for field, count in (('modelsHostTests', 90), ('rowModelsHostTests', 38)):
+        value = foundation[field]
+        assert value['passed'] is True and value['tests'] == count and value['failed'] == 0
+        assert value['coreSha256'] == core
+    expected_models = {'passed': True, 'registerModels': 14, 'listModels': 1}
+    expected_rows = {'passed': True, 'profile': 'captured-relation-row-slots/v1', 'models': 14,
+                     'status': 'checked-compatible', 'verifyValid': True, 'replayValid': True}
+    assert foundation['modelsExample'] == expected_models and foundation['rowModelsExample'] == expected_rows
+    for kind in ('source', 'portable'):
+        value = package['models036Consumers'][kind]
+        for key, count in (('modelsSdk', 90), ('rowModelsSdk', 38)):
+            result = value['results'][key]
+            assert result['passed'] is True and result['tests'] == count and result['failed'] == 0
+            assert result['coreSha256'] == core
+        assert value['newIndependentReviewPerformed'] is False and value['actualDatabaseExecution'] is False
+        assert value['results']['modelsExample'] == expected_models and value['results']['rowModelsExample'] == expected_rows
+        for label in ('canonical models original 90 SDK CLI and budget-bound evidence checks',
+                      'atomic row models original 38 SDK CLI and concrete replay checks',
+                      'runnable register and append-list canonical model examples with exact evidence replay',
+                      'runnable atomic row fourteen-model example and original-program evidence replay'):
+            assert kind + ' ' + label in package['checks']
+    return package['models036Consumers']
 
 
 def validate_scoped_acceptance(acceptance, manifest):
@@ -288,6 +377,24 @@ def validate_scoped_acceptance(acceptance, manifest):
             for group in ('core', 'capture', 'models', 'classification', 'profiles', 'v4', 'integrity'):
                 assert kind + ' public032 original fixed compatibility group ' + group in package['checks']
             assert kind + ' public032 all 47 original checks and 15 fixed method families' in package['checks']
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 4):
+        validate_public033_compatibility_receipt(summary, VERSION)
+        foundation = summary['foundation034']
+        for field in ('sourceRulesHostTests', 'categoryReductionHostTests', 'currentBuildBindingTests',
+                      'publicBoundaryRegression', 'sourceRulesExample', 'categoryReductionExample',
+                      'compatibilityStagingTests'):
+            assert foundation[field]['passed'] is True
+        for kind in ('source', 'portable'):
+            for group in ('core', 'capture', 'models', 'classification', 'profiles', 'v4', 'integrity'):
+                assert kind + ' public033 original fixed compatibility group ' + group in package['checks']
+            assert kind + ' public033 all 47 original checks and 15 fixed method families' in package['checks']
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 5):
+        validate_predicate035_receipts(summary, package, VERSION)
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 6):
+        validate_models036_receipts(summary, package, VERSION)
 
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names
@@ -610,6 +717,8 @@ if __name__ == '__main__':
             validate_register_direct_category_audit(summary, VERSION)
         if tuple(map(int, VERSION.split('.'))) >= (0, 3, 3):
             validate_public032_compatibility_receipt(summary, VERSION)
+        if tuple(map(int, VERSION.split('.'))) >= (0, 3, 4):
+            validate_public033_compatibility_receipt(summary, VERSION)
         print('Current integration compatibility receipt contract passed: ' + VERSION)
     else:
         publish()

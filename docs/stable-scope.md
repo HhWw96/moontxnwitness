@@ -1,3 +1,23 @@
+# 当前支持范围
+
+## v0.3.6 候选：独立规范模型与原子关系行
+
+`classifyModelsV4` / `classify_models_v4` 通过独立命名空间组合 14 个固定 Elle 定义的来源、图与补全义务。寄存器、显式捕获列表配置以及 `captured-relation-row-slots/v1` 原子主键行配置各自核验原始操作；只有所选模型全部必要检查完成，才报告与给定事实相容。会话和实时关系需要独立提供，BEGIN 不代表数据库逻辑快照。原六模型入口和旧类别默认含义保持。
+
+关系行配置仅投射完整单主键等值读取和已证明的整行效果，完整初始快照、来源窗口与保存点语义均需满足；歧义空结果、范围/AND 谓词和不充分的中间写基事实保持无法判定。一般关系谓词目前有独立类别分析，不因此获得十四模型完整补全。见[模型规则](model-obligations-v4.md)、[关系行配置](relation-atomic-models-v4.md)及[候选验证状态](v0.3.6-validation.md)。
+
+## v0.3.5 候选：关系谓词类别
+
+`classifyRelationPredicateV4` 显式选择形式规则和 G0、G1c、G2-item、G2、G-single-item、G-single 或 G-nonadjacent，保留项目/谓词范围与完整来源；独立验证和胶囊重放使用调用者预期选项。见[谓词接口](relation-predicate-categories-v4.md)。以下各历史版本范围继续描述其原入口，不表示新入口会改变旧证据语义。
+
+## v0.3.4 关系点分类与来源规则
+
+关系点图入口 `classifyRelationV4` 提供 G0、G1c、G2-item 的独立搜索和原操作见证。原始捕获的 G1a、G1b 由 `inspectCaptureAnomaliesV4` 核对；事务内部读取由 `inspectInternalConsistencyV4` 核对。它们分别提供验证和完整来源胶囊，并保持各自的判断范围。
+
+`reduceRelationCategoryV4` 指定要保留的关系异常类别，每次候选删除后重验来源、图和见证。保存点撤销只作用于写效果，读取观察仍保留；最小性与完成的候选检查绑定。直接运行 `node examples/relation-category-reduction.mjs` 可查看缩减和重放，完整用法见[关系库工作流](relation-library-workflow.md)。
+
+旧 `classifyV4` 的关系结果保留原语义；调用者显式使用新的关系入口。新版图分类与六模型检查分开，谓词及更广模型由后续独立接口提供。
+
 # v0.3.0 支持矩阵补充
 
 ## v0.3.3 来源诊断与列表图

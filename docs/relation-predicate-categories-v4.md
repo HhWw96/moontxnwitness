@@ -61,3 +61,12 @@ Save the following as `options.json` for the commands above:
 Both `category` and `ruleSet` are mandatory. Optional limits are `maxGraphChecks`, `maxPredicateChecks`, `maxCandidateVisits`, `maxStates` and `maxEdgeChecks`. Verification and capsule replay require independently supplied expected options. The CLI returns 1 for a refutation, 0 for a completed compatible check, 3 for an unfinished check and 2 for invalid input or failed verification.
 
 Multiple unobserved versions that exclude a row are retained as candidate constraints. When every candidate induces the same predicate dependencies, the graph check can complete without selecting a fictitious negative read version. Candidates separated by a membership change remain ambiguous. The predicate graph algorithm identifies this behavior as `relation-predicate-must-edges-3`.
+
+
+## Maintaining the predicate regression
+
+`node scripts/relation-predicate-sdk-test.mjs` runs the 40 SDK/CLI checks against the complete current source fingerprint. `node scripts/v035-predicate-maintenance-test.mjs` reuses the original independent candidate-enumeration and boundary assertions: 506 unchanged semantic assertions, plus seven integrity guards for the current source, runtime and semantic body. The original script and body digests are retained in `scripts/v035-predicate-regression-provenance.json`. This is a developer regression run; it does not replace a new independent review of the final compiled runtime.
+
+The portable package runs `scripts/v035-portable-predicate-test.mjs` instead. Its 12 actual SDK/CLI checks require only the shipped runtime, example input and caller options. They verify scoped classification, budget exhaustion, capsule tampering and exact replay without claiming a complete-source audit.
+
+The prior development runtime and performance records remain bound to their original bytes. Formal performance measurements of the final merged v0.3.5 runtime have not yet been executed.

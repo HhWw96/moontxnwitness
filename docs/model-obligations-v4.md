@@ -48,3 +48,5 @@ node dist/moontxnwitness.mjs replay-models-v4 CAPSULE.json --models elle-core
 Pass the same independently selected `--options EXPECTED.json` for logical clients, explicit list mapping and nondefault budgets. `--list-profile captured-list-prefix-state/v2` is also available. Options cannot be specified twice. Output files must not exist. Exit codes are 0 for all requested models checked-compatible, 1 for a refutation, 2 for invalid input/evidence and 3 for unknown/pending; successful verification/replay means semantic reproduction.
 
 The raw-register and list MoonBit consumers are in `examples/captured-models-v4` and `examples/list-model-completion-v4`. The offline JavaScript roundtrip is `node examples/models-v4-roundtrip.mjs` after a current build. Local development checks are not public-package installation, database or performance evidence.
+
+The opt-in [atomic row profile](relation-atomic-models-v4.md) has a separate [JavaScript roundtrip](../examples/relation-atomic-models-roundtrip.mjs). [Candidate verification](v0.3.6-validation.md) distinguishes maintained SDK tests, previous fixed Elle results and pending checks of the final compiled runtime.

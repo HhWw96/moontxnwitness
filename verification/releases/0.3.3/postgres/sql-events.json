@@ -1,33 +1,24 @@
 [
   {
+    "transaction": "rr:0:1",
+    "action": "begin",
+    "observedAtUs": 390000,
+    "isolation": "REPEATABLE READ",
+    "backendPid": 120440,
+    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
     "transaction": "rr:0:0",
     "action": "begin",
-    "observedAtUs": 203000,
+    "observedAtUs": 390000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 106708,
+    "backendPid": 113708,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
-  },
-  {
-    "transaction": "rr:0:1",
-    "action": "begin",
-    "observedAtUs": 219000,
-    "isolation": "REPEATABLE READ",
-    "backendPid": 109268,
-    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
-  },
-  {
-    "transaction": "rr:0:1",
-    "action": "point-read",
-    "observedAtUs": 219000,
-    "key": "rr/0/x",
-    "value": 1,
-    "version": "rr/0/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "rr:0:0",
     "action": "point-read",
-    "observedAtUs": 219000,
+    "observedAtUs": 406000,
     "key": "rr/0/x",
     "value": 1,
     "version": "rr/0/x:initial",
@@ -36,16 +27,25 @@
   {
     "transaction": "rr:0:1",
     "action": "point-read",
-    "observedAtUs": 219000,
+    "observedAtUs": 406000,
+    "key": "rr/0/x",
+    "value": 1,
+    "version": "rr/0/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "rr:0:0",
+    "action": "point-read",
+    "observedAtUs": 406000,
     "key": "rr/0/y",
     "value": 1,
     "version": "rr/0/y:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "rr:0:0",
+    "transaction": "rr:0:1",
     "action": "point-read",
-    "observedAtUs": 219000,
+    "observedAtUs": 406000,
     "key": "rr/0/y",
     "value": 1,
     "version": "rr/0/y:initial",
@@ -54,7 +54,7 @@
   {
     "transaction": "rr:0:0",
     "action": "point-write",
-    "observedAtUs": 219000,
+    "observedAtUs": 422000,
     "key": "rr/0/x",
     "value": 0,
     "version": "rr:0:0:write",
@@ -64,7 +64,7 @@
   {
     "transaction": "rr:0:1",
     "action": "point-write",
-    "observedAtUs": 219000,
+    "observedAtUs": 422000,
     "key": "rr/0/y",
     "value": 0,
     "version": "rr:0:1:write",
@@ -74,35 +74,35 @@
   {
     "transaction": "rr:0:0",
     "action": "commit-ack",
-    "observedAtUs": 219000,
+    "observedAtUs": 422000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:0:1",
     "action": "commit-ack",
-    "observedAtUs": 219000,
+    "observedAtUs": 422000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:1:0",
     "action": "begin",
-    "observedAtUs": 297000,
+    "observedAtUs": 500000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 103760,
+    "backendPid": 110888,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:1:1",
     "action": "begin",
-    "observedAtUs": 297000,
+    "observedAtUs": 500000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 105476,
+    "backendPid": 114412,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:1:0",
     "action": "point-read",
-    "observedAtUs": 297000,
+    "observedAtUs": 500000,
     "key": "rr/1/x",
     "value": 1,
     "version": "rr/1/x:initial",
@@ -111,7 +111,7 @@
   {
     "transaction": "rr:1:0",
     "action": "point-read",
-    "observedAtUs": 297000,
+    "observedAtUs": 500000,
     "key": "rr/1/y",
     "value": 1,
     "version": "rr/1/y:initial",
@@ -120,7 +120,7 @@
   {
     "transaction": "rr:1:1",
     "action": "point-read",
-    "observedAtUs": 297000,
+    "observedAtUs": 500000,
     "key": "rr/1/x",
     "value": 1,
     "version": "rr/1/x:initial",
@@ -129,7 +129,7 @@
   {
     "transaction": "rr:1:1",
     "action": "point-read",
-    "observedAtUs": 297000,
+    "observedAtUs": 500000,
     "key": "rr/1/y",
     "value": 1,
     "version": "rr/1/y:initial",
@@ -138,7 +138,7 @@
   {
     "transaction": "rr:1:1",
     "action": "point-write",
-    "observedAtUs": 297000,
+    "observedAtUs": 500000,
     "key": "rr/1/y",
     "value": 0,
     "version": "rr:1:1:write",
@@ -148,7 +148,7 @@
   {
     "transaction": "rr:1:0",
     "action": "point-write",
-    "observedAtUs": 297000,
+    "observedAtUs": 500000,
     "key": "rr/1/x",
     "value": 0,
     "version": "rr:1:0:write",
@@ -158,35 +158,35 @@
   {
     "transaction": "rr:1:1",
     "action": "commit-ack",
-    "observedAtUs": 297000,
+    "observedAtUs": 515000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:1:0",
     "action": "commit-ack",
-    "observedAtUs": 297000,
+    "observedAtUs": 515000,
     "sql": "COMMIT"
   },
   {
+    "transaction": "rr:2:1",
+    "action": "begin",
+    "observedAtUs": 593000,
+    "isolation": "REPEATABLE READ",
+    "backendPid": 121608,
+    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
     "transaction": "rr:2:0",
     "action": "begin",
-    "observedAtUs": 375000,
+    "observedAtUs": 593000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 98396,
+    "backendPid": 120276,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:2:1",
-    "action": "begin",
-    "observedAtUs": 375000,
-    "isolation": "REPEATABLE READ",
-    "backendPid": 109356,
-    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
-  },
-  {
-    "transaction": "rr:2:0",
     "action": "point-read",
-    "observedAtUs": 375000,
+    "observedAtUs": 593000,
     "key": "rr/2/x",
     "value": 1,
     "version": "rr/2/x:initial",
@@ -195,25 +195,25 @@
   {
     "transaction": "rr:2:1",
     "action": "point-read",
-    "observedAtUs": 375000,
-    "key": "rr/2/x",
-    "value": 1,
-    "version": "rr/2/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:2:0",
-    "action": "point-read",
-    "observedAtUs": 375000,
+    "observedAtUs": 593000,
     "key": "rr/2/y",
     "value": 1,
     "version": "rr/2/y:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "rr:2:1",
+    "transaction": "rr:2:0",
     "action": "point-read",
-    "observedAtUs": 375000,
+    "observedAtUs": 609000,
+    "key": "rr/2/x",
+    "value": 1,
+    "version": "rr/2/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "rr:2:0",
+    "action": "point-read",
+    "observedAtUs": 609000,
     "key": "rr/2/y",
     "value": 1,
     "version": "rr/2/y:initial",
@@ -222,7 +222,7 @@
   {
     "transaction": "rr:2:0",
     "action": "point-write",
-    "observedAtUs": 375000,
+    "observedAtUs": 609000,
     "key": "rr/2/x",
     "value": 0,
     "version": "rr:2:0:write",
@@ -232,7 +232,7 @@
   {
     "transaction": "rr:2:1",
     "action": "point-write",
-    "observedAtUs": 375000,
+    "observedAtUs": 609000,
     "key": "rr/2/y",
     "value": 0,
     "version": "rr:2:1:write",
@@ -242,53 +242,44 @@
   {
     "transaction": "rr:2:0",
     "action": "commit-ack",
-    "observedAtUs": 375000,
+    "observedAtUs": 609000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:2:1",
     "action": "commit-ack",
-    "observedAtUs": 375000,
+    "observedAtUs": 609000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:3:0",
     "action": "begin",
-    "observedAtUs": 453000,
+    "observedAtUs": 672000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 110336,
+    "backendPid": 120376,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
+    "transaction": "rr:3:0",
+    "action": "point-read",
+    "observedAtUs": 687000,
+    "key": "rr/3/x",
+    "value": 1,
+    "version": "rr/3/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "rr:3:1",
     "action": "begin",
-    "observedAtUs": 453000,
+    "observedAtUs": 687000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 106600,
+    "backendPid": 95220,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:3:0",
     "action": "point-read",
-    "observedAtUs": 453000,
-    "key": "rr/3/x",
-    "value": 1,
-    "version": "rr/3/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:3:1",
-    "action": "point-read",
-    "observedAtUs": 453000,
-    "key": "rr/3/x",
-    "value": 1,
-    "version": "rr/3/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:3:0",
-    "action": "point-read",
-    "observedAtUs": 453000,
+    "observedAtUs": 687000,
     "key": "rr/3/y",
     "value": 1,
     "version": "rr/3/y:initial",
@@ -297,7 +288,16 @@
   {
     "transaction": "rr:3:1",
     "action": "point-read",
-    "observedAtUs": 453000,
+    "observedAtUs": 687000,
+    "key": "rr/3/x",
+    "value": 1,
+    "version": "rr/3/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "rr:3:1",
+    "action": "point-read",
+    "observedAtUs": 687000,
     "key": "rr/3/y",
     "value": 1,
     "version": "rr/3/y:initial",
@@ -306,7 +306,7 @@
   {
     "transaction": "rr:3:1",
     "action": "point-write",
-    "observedAtUs": 453000,
+    "observedAtUs": 687000,
     "key": "rr/3/y",
     "value": 0,
     "version": "rr:3:1:write",
@@ -316,7 +316,7 @@
   {
     "transaction": "rr:3:0",
     "action": "point-write",
-    "observedAtUs": 453000,
+    "observedAtUs": 687000,
     "key": "rr/3/x",
     "value": 0,
     "version": "rr:3:0:write",
@@ -326,44 +326,44 @@
   {
     "transaction": "rr:3:1",
     "action": "commit-ack",
-    "observedAtUs": 453000,
+    "observedAtUs": 687000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:3:0",
     "action": "commit-ack",
-    "observedAtUs": 453000,
+    "observedAtUs": 687000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:4:0",
     "action": "begin",
-    "observedAtUs": 515000,
+    "observedAtUs": 765000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 107596,
+    "backendPid": 110188,
+    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
+    "transaction": "rr:4:1",
+    "action": "begin",
+    "observedAtUs": 765000,
+    "isolation": "REPEATABLE READ",
+    "backendPid": 118412,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:4:0",
     "action": "point-read",
-    "observedAtUs": 531000,
+    "observedAtUs": 765000,
     "key": "rr/4/x",
     "value": 1,
     "version": "rr/4/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "rr:4:1",
-    "action": "begin",
-    "observedAtUs": 531000,
-    "isolation": "REPEATABLE READ",
-    "backendPid": 105416,
-    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
-  },
-  {
     "transaction": "rr:4:0",
     "action": "point-read",
-    "observedAtUs": 531000,
+    "observedAtUs": 765000,
     "key": "rr/4/y",
     "value": 1,
     "version": "rr/4/y:initial",
@@ -372,7 +372,7 @@
   {
     "transaction": "rr:4:1",
     "action": "point-read",
-    "observedAtUs": 531000,
+    "observedAtUs": 765000,
     "key": "rr/4/x",
     "value": 1,
     "version": "rr/4/x:initial",
@@ -381,7 +381,7 @@
   {
     "transaction": "rr:4:1",
     "action": "point-read",
-    "observedAtUs": 531000,
+    "observedAtUs": 765000,
     "key": "rr/4/y",
     "value": 1,
     "version": "rr/4/y:initial",
@@ -390,7 +390,7 @@
   {
     "transaction": "rr:4:1",
     "action": "point-write",
-    "observedAtUs": 531000,
+    "observedAtUs": 765000,
     "key": "rr/4/y",
     "value": 0,
     "version": "rr:4:1:write",
@@ -400,7 +400,7 @@
   {
     "transaction": "rr:4:0",
     "action": "point-write",
-    "observedAtUs": 531000,
+    "observedAtUs": 765000,
     "key": "rr/4/x",
     "value": 0,
     "version": "rr:4:0:write",
@@ -410,27 +410,27 @@
   {
     "transaction": "rr:4:1",
     "action": "commit-ack",
-    "observedAtUs": 531000,
+    "observedAtUs": 765000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:4:0",
     "action": "commit-ack",
-    "observedAtUs": 531000,
+    "observedAtUs": 765000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:5:0",
     "action": "begin",
-    "observedAtUs": 594000,
+    "observedAtUs": 843000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 110124,
+    "backendPid": 119800,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:5:0",
     "action": "point-read",
-    "observedAtUs": 609000,
+    "observedAtUs": 843000,
     "key": "rr/5/x",
     "value": 1,
     "version": "rr/5/x:initial",
@@ -439,15 +439,15 @@
   {
     "transaction": "rr:5:1",
     "action": "begin",
-    "observedAtUs": 609000,
+    "observedAtUs": 843000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 104852,
+    "backendPid": 44548,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:5:0",
     "action": "point-read",
-    "observedAtUs": 609000,
+    "observedAtUs": 843000,
     "key": "rr/5/y",
     "value": 1,
     "version": "rr/5/y:initial",
@@ -456,7 +456,7 @@
   {
     "transaction": "rr:5:1",
     "action": "point-read",
-    "observedAtUs": 609000,
+    "observedAtUs": 843000,
     "key": "rr/5/x",
     "value": 1,
     "version": "rr/5/x:initial",
@@ -465,7 +465,7 @@
   {
     "transaction": "rr:5:1",
     "action": "point-read",
-    "observedAtUs": 609000,
+    "observedAtUs": 843000,
     "key": "rr/5/y",
     "value": 1,
     "version": "rr/5/y:initial",
@@ -474,7 +474,7 @@
   {
     "transaction": "rr:5:1",
     "action": "point-write",
-    "observedAtUs": 609000,
+    "observedAtUs": 843000,
     "key": "rr/5/y",
     "value": 0,
     "version": "rr:5:1:write",
@@ -484,7 +484,7 @@
   {
     "transaction": "rr:5:0",
     "action": "point-write",
-    "observedAtUs": 609000,
+    "observedAtUs": 843000,
     "key": "rr/5/x",
     "value": 0,
     "version": "rr:5:0:write",
@@ -494,35 +494,35 @@
   {
     "transaction": "rr:5:1",
     "action": "commit-ack",
-    "observedAtUs": 609000,
+    "observedAtUs": 843000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:5:0",
     "action": "commit-ack",
-    "observedAtUs": 609000,
+    "observedAtUs": 843000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:6:0",
     "action": "begin",
-    "observedAtUs": 672000,
+    "observedAtUs": 922000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 108692,
+    "backendPid": 109960,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:6:1",
     "action": "begin",
-    "observedAtUs": 672000,
+    "observedAtUs": 922000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 109740,
+    "backendPid": 114544,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:6:0",
     "action": "point-read",
-    "observedAtUs": 672000,
+    "observedAtUs": 922000,
     "key": "rr/6/x",
     "value": 1,
     "version": "rr/6/x:initial",
@@ -531,7 +531,7 @@
   {
     "transaction": "rr:6:0",
     "action": "point-read",
-    "observedAtUs": 687000,
+    "observedAtUs": 922000,
     "key": "rr/6/y",
     "value": 1,
     "version": "rr/6/y:initial",
@@ -540,7 +540,7 @@
   {
     "transaction": "rr:6:1",
     "action": "point-read",
-    "observedAtUs": 687000,
+    "observedAtUs": 922000,
     "key": "rr/6/x",
     "value": 1,
     "version": "rr/6/x:initial",
@@ -549,7 +549,7 @@
   {
     "transaction": "rr:6:1",
     "action": "point-read",
-    "observedAtUs": 687000,
+    "observedAtUs": 922000,
     "key": "rr/6/y",
     "value": 1,
     "version": "rr/6/y:initial",
@@ -558,7 +558,7 @@
   {
     "transaction": "rr:6:1",
     "action": "point-write",
-    "observedAtUs": 687000,
+    "observedAtUs": 922000,
     "key": "rr/6/y",
     "value": 0,
     "version": "rr:6:1:write",
@@ -568,7 +568,7 @@
   {
     "transaction": "rr:6:0",
     "action": "point-write",
-    "observedAtUs": 687000,
+    "observedAtUs": 922000,
     "key": "rr/6/x",
     "value": 0,
     "version": "rr:6:0:write",
@@ -578,35 +578,35 @@
   {
     "transaction": "rr:6:1",
     "action": "commit-ack",
-    "observedAtUs": 687000,
+    "observedAtUs": 922000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:6:0",
     "action": "commit-ack",
-    "observedAtUs": 687000,
+    "observedAtUs": 922000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:7:0",
     "action": "begin",
-    "observedAtUs": 750000,
+    "observedAtUs": 1000000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 109036,
+    "backendPid": 120860,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:7:1",
     "action": "begin",
-    "observedAtUs": 750000,
+    "observedAtUs": 1000000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 106228,
+    "backendPid": 118748,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:7:0",
     "action": "point-read",
-    "observedAtUs": 750000,
+    "observedAtUs": 1000000,
     "key": "rr/7/x",
     "value": 1,
     "version": "rr/7/x:initial",
@@ -615,7 +615,7 @@
   {
     "transaction": "rr:7:1",
     "action": "point-read",
-    "observedAtUs": 765000,
+    "observedAtUs": 1000000,
     "key": "rr/7/x",
     "value": 1,
     "version": "rr/7/x:initial",
@@ -624,7 +624,7 @@
   {
     "transaction": "rr:7:0",
     "action": "point-read",
-    "observedAtUs": 765000,
+    "observedAtUs": 1000000,
     "key": "rr/7/y",
     "value": 1,
     "version": "rr/7/y:initial",
@@ -633,7 +633,7 @@
   {
     "transaction": "rr:7:1",
     "action": "point-read",
-    "observedAtUs": 765000,
+    "observedAtUs": 1000000,
     "key": "rr/7/y",
     "value": 1,
     "version": "rr/7/y:initial",
@@ -642,7 +642,7 @@
   {
     "transaction": "rr:7:1",
     "action": "point-write",
-    "observedAtUs": 765000,
+    "observedAtUs": 1000000,
     "key": "rr/7/y",
     "value": 0,
     "version": "rr:7:1:write",
@@ -652,7 +652,7 @@
   {
     "transaction": "rr:7:0",
     "action": "point-write",
-    "observedAtUs": 765000,
+    "observedAtUs": 1000000,
     "key": "rr/7/x",
     "value": 0,
     "version": "rr:7:0:write",
@@ -662,44 +662,36 @@
   {
     "transaction": "rr:7:1",
     "action": "commit-ack",
-    "observedAtUs": 765000,
+    "observedAtUs": 1000000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:7:0",
     "action": "commit-ack",
-    "observedAtUs": 765000,
+    "observedAtUs": 1000000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:8:0",
     "action": "begin",
-    "observedAtUs": 828000,
+    "observedAtUs": 1078000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 110348,
+    "backendPid": 116304,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:8:0",
     "action": "point-read",
-    "observedAtUs": 828000,
+    "observedAtUs": 1078000,
     "key": "rr/8/x",
     "value": 1,
     "version": "rr/8/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "rr:8:1",
-    "action": "begin",
-    "observedAtUs": 828000,
-    "isolation": "REPEATABLE READ",
-    "backendPid": 107644,
-    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
-  },
-  {
     "transaction": "rr:8:0",
     "action": "point-read",
-    "observedAtUs": 828000,
+    "observedAtUs": 1078000,
     "key": "rr/8/y",
     "value": 1,
     "version": "rr/8/y:initial",
@@ -707,8 +699,16 @@
   },
   {
     "transaction": "rr:8:1",
+    "action": "begin",
+    "observedAtUs": 1078000,
+    "isolation": "REPEATABLE READ",
+    "backendPid": 78184,
+    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
+    "transaction": "rr:8:1",
     "action": "point-read",
-    "observedAtUs": 828000,
+    "observedAtUs": 1078000,
     "key": "rr/8/x",
     "value": 1,
     "version": "rr/8/x:initial",
@@ -717,7 +717,7 @@
   {
     "transaction": "rr:8:1",
     "action": "point-read",
-    "observedAtUs": 828000,
+    "observedAtUs": 1078000,
     "key": "rr/8/y",
     "value": 1,
     "version": "rr/8/y:initial",
@@ -726,7 +726,7 @@
   {
     "transaction": "rr:8:1",
     "action": "point-write",
-    "observedAtUs": 844000,
+    "observedAtUs": 1078000,
     "key": "rr/8/y",
     "value": 0,
     "version": "rr:8:1:write",
@@ -736,7 +736,7 @@
   {
     "transaction": "rr:8:0",
     "action": "point-write",
-    "observedAtUs": 844000,
+    "observedAtUs": 1078000,
     "key": "rr/8/x",
     "value": 0,
     "version": "rr:8:0:write",
@@ -746,53 +746,53 @@
   {
     "transaction": "rr:8:1",
     "action": "commit-ack",
-    "observedAtUs": 844000,
+    "observedAtUs": 1078000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:8:0",
     "action": "commit-ack",
-    "observedAtUs": 844000,
+    "observedAtUs": 1093000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:9:0",
     "action": "begin",
-    "observedAtUs": 906000,
+    "observedAtUs": 1156000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 102648,
+    "backendPid": 113708,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
-  },
-  {
-    "transaction": "rr:9:0",
-    "action": "point-read",
-    "observedAtUs": 906000,
-    "key": "rr/9/x",
-    "value": 1,
-    "version": "rr/9/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:9:0",
-    "action": "point-read",
-    "observedAtUs": 906000,
-    "key": "rr/9/y",
-    "value": 1,
-    "version": "rr/9/y:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "rr:9:1",
     "action": "begin",
-    "observedAtUs": 906000,
+    "observedAtUs": 1156000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 109904,
+    "backendPid": 115848,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
+    "transaction": "rr:9:0",
+    "action": "point-read",
+    "observedAtUs": 1156000,
+    "key": "rr/9/x",
+    "value": 1,
+    "version": "rr/9/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "rr:9:0",
+    "action": "point-read",
+    "observedAtUs": 1172000,
+    "key": "rr/9/y",
+    "value": 1,
+    "version": "rr/9/y:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "rr:9:1",
     "action": "point-read",
-    "observedAtUs": 906000,
+    "observedAtUs": 1172000,
     "key": "rr/9/x",
     "value": 1,
     "version": "rr/9/x:initial",
@@ -801,26 +801,16 @@
   {
     "transaction": "rr:9:1",
     "action": "point-read",
-    "observedAtUs": 906000,
+    "observedAtUs": 1172000,
     "key": "rr/9/y",
     "value": 1,
     "version": "rr/9/y:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "rr:9:1",
-    "action": "point-write",
-    "observedAtUs": 922000,
-    "key": "rr/9/y",
-    "value": 0,
-    "version": "rr:9:1:write",
-    "affectedRows": 1,
-    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
-  },
-  {
     "transaction": "rr:9:0",
     "action": "point-write",
-    "observedAtUs": 922000,
+    "observedAtUs": 1172000,
     "key": "rr/9/x",
     "value": 0,
     "version": "rr:9:0:write",
@@ -829,37 +819,55 @@
   },
   {
     "transaction": "rr:9:1",
-    "action": "commit-ack",
-    "observedAtUs": 922000,
-    "sql": "COMMIT"
+    "action": "point-write",
+    "observedAtUs": 1172000,
+    "key": "rr/9/y",
+    "value": 0,
+    "version": "rr:9:1:write",
+    "affectedRows": 1,
+    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
     "transaction": "rr:9:0",
     "action": "commit-ack",
-    "observedAtUs": 922000,
+    "observedAtUs": 1172000,
+    "sql": "COMMIT"
+  },
+  {
+    "transaction": "rr:9:1",
+    "action": "commit-ack",
+    "observedAtUs": 1172000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:10:0",
     "action": "begin",
-    "observedAtUs": 984000,
+    "observedAtUs": 1234000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 108876,
+    "backendPid": 94220,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:10:0",
     "action": "point-read",
-    "observedAtUs": 984000,
+    "observedAtUs": 1234000,
     "key": "rr/10/x",
     "value": 1,
     "version": "rr/10/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
+    "transaction": "rr:10:1",
+    "action": "begin",
+    "observedAtUs": 1234000,
+    "isolation": "REPEATABLE READ",
+    "backendPid": 119168,
+    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
     "transaction": "rr:10:0",
     "action": "point-read",
-    "observedAtUs": 984000,
+    "observedAtUs": 1234000,
     "key": "rr/10/y",
     "value": 1,
     "version": "rr/10/y:initial",
@@ -867,16 +875,8 @@
   },
   {
     "transaction": "rr:10:1",
-    "action": "begin",
-    "observedAtUs": 984000,
-    "isolation": "REPEATABLE READ",
-    "backendPid": 108920,
-    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
-  },
-  {
-    "transaction": "rr:10:1",
     "action": "point-read",
-    "observedAtUs": 984000,
+    "observedAtUs": 1250000,
     "key": "rr/10/x",
     "value": 1,
     "version": "rr/10/x:initial",
@@ -885,7 +885,7 @@
   {
     "transaction": "rr:10:1",
     "action": "point-read",
-    "observedAtUs": 984000,
+    "observedAtUs": 1250000,
     "key": "rr/10/y",
     "value": 1,
     "version": "rr/10/y:initial",
@@ -894,7 +894,7 @@
   {
     "transaction": "rr:10:1",
     "action": "point-write",
-    "observedAtUs": 984000,
+    "observedAtUs": 1250000,
     "key": "rr/10/y",
     "value": 0,
     "version": "rr:10:1:write",
@@ -904,7 +904,7 @@
   {
     "transaction": "rr:10:0",
     "action": "point-write",
-    "observedAtUs": 984000,
+    "observedAtUs": 1250000,
     "key": "rr/10/x",
     "value": 0,
     "version": "rr:10:0:write",
@@ -914,44 +914,35 @@
   {
     "transaction": "rr:10:1",
     "action": "commit-ack",
-    "observedAtUs": 984000,
+    "observedAtUs": 1250000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:10:0",
     "action": "commit-ack",
-    "observedAtUs": 984000,
+    "observedAtUs": 1250000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:11:0",
     "action": "begin",
-    "observedAtUs": 1062000,
+    "observedAtUs": 1328000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 107944,
+    "backendPid": 116804,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:11:1",
     "action": "begin",
-    "observedAtUs": 1062000,
+    "observedAtUs": 1328000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 108892,
+    "backendPid": 117700,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:11:0",
     "action": "point-read",
-    "observedAtUs": 1062000,
-    "key": "rr/11/x",
-    "value": 1,
-    "version": "rr/11/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:11:1",
-    "action": "point-read",
-    "observedAtUs": 1062000,
+    "observedAtUs": 1328000,
     "key": "rr/11/x",
     "value": 1,
     "version": "rr/11/x:initial",
@@ -960,7 +951,7 @@
   {
     "transaction": "rr:11:0",
     "action": "point-read",
-    "observedAtUs": 1062000,
+    "observedAtUs": 1328000,
     "key": "rr/11/y",
     "value": 1,
     "version": "rr/11/y:initial",
@@ -969,7 +960,16 @@
   {
     "transaction": "rr:11:1",
     "action": "point-read",
-    "observedAtUs": 1062000,
+    "observedAtUs": 1328000,
+    "key": "rr/11/x",
+    "value": 1,
+    "version": "rr/11/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "rr:11:1",
+    "action": "point-read",
+    "observedAtUs": 1328000,
     "key": "rr/11/y",
     "value": 1,
     "version": "rr/11/y:initial",
@@ -978,7 +978,7 @@
   {
     "transaction": "rr:11:1",
     "action": "point-write",
-    "observedAtUs": 1062000,
+    "observedAtUs": 1328000,
     "key": "rr/11/y",
     "value": 0,
     "version": "rr:11:1:write",
@@ -988,7 +988,7 @@
   {
     "transaction": "rr:11:0",
     "action": "point-write",
-    "observedAtUs": 1062000,
+    "observedAtUs": 1328000,
     "key": "rr/11/x",
     "value": 0,
     "version": "rr:11:0:write",
@@ -998,35 +998,44 @@
   {
     "transaction": "rr:11:1",
     "action": "commit-ack",
-    "observedAtUs": 1062000,
+    "observedAtUs": 1328000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:11:0",
     "action": "commit-ack",
-    "observedAtUs": 1062000,
+    "observedAtUs": 1343000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:12:0",
     "action": "begin",
-    "observedAtUs": 1140000,
+    "observedAtUs": 1406000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 31192,
+    "backendPid": 121376,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:12:1",
     "action": "begin",
-    "observedAtUs": 1140000,
+    "observedAtUs": 1406000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 109812,
+    "backendPid": 117112,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:12:0",
     "action": "point-read",
-    "observedAtUs": 1156000,
+    "observedAtUs": 1406000,
+    "key": "rr/12/x",
+    "value": 1,
+    "version": "rr/12/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "rr:12:1",
+    "action": "point-read",
+    "observedAtUs": 1406000,
     "key": "rr/12/x",
     "value": 1,
     "version": "rr/12/x:initial",
@@ -1035,7 +1044,7 @@
   {
     "transaction": "rr:12:0",
     "action": "point-read",
-    "observedAtUs": 1156000,
+    "observedAtUs": 1406000,
     "key": "rr/12/y",
     "value": 1,
     "version": "rr/12/y:initial",
@@ -1044,16 +1053,7 @@
   {
     "transaction": "rr:12:1",
     "action": "point-read",
-    "observedAtUs": 1156000,
-    "key": "rr/12/x",
-    "value": 1,
-    "version": "rr/12/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:12:1",
-    "action": "point-read",
-    "observedAtUs": 1156000,
+    "observedAtUs": 1422000,
     "key": "rr/12/y",
     "value": 1,
     "version": "rr/12/y:initial",
@@ -1062,7 +1062,7 @@
   {
     "transaction": "rr:12:1",
     "action": "point-write",
-    "observedAtUs": 1156000,
+    "observedAtUs": 1422000,
     "key": "rr/12/y",
     "value": 0,
     "version": "rr:12:1:write",
@@ -1072,7 +1072,7 @@
   {
     "transaction": "rr:12:0",
     "action": "point-write",
-    "observedAtUs": 1156000,
+    "observedAtUs": 1422000,
     "key": "rr/12/x",
     "value": 0,
     "version": "rr:12:0:write",
@@ -1082,44 +1082,44 @@
   {
     "transaction": "rr:12:1",
     "action": "commit-ack",
-    "observedAtUs": 1156000,
+    "observedAtUs": 1422000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:12:0",
     "action": "commit-ack",
-    "observedAtUs": 1156000,
+    "observedAtUs": 1422000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:13:0",
     "action": "begin",
-    "observedAtUs": 1234000,
+    "observedAtUs": 1484000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 108040,
+    "backendPid": 67964,
+    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
+    "transaction": "rr:13:1",
+    "action": "begin",
+    "observedAtUs": 1484000,
+    "isolation": "REPEATABLE READ",
+    "backendPid": 120284,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:13:0",
     "action": "point-read",
-    "observedAtUs": 1234000,
+    "observedAtUs": 1484000,
     "key": "rr/13/x",
     "value": 1,
     "version": "rr/13/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "rr:13:1",
-    "action": "begin",
-    "observedAtUs": 1234000,
-    "isolation": "REPEATABLE READ",
-    "backendPid": 106984,
-    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
-  },
-  {
     "transaction": "rr:13:0",
     "action": "point-read",
-    "observedAtUs": 1234000,
+    "observedAtUs": 1500000,
     "key": "rr/13/y",
     "value": 1,
     "version": "rr/13/y:initial",
@@ -1128,7 +1128,7 @@
   {
     "transaction": "rr:13:1",
     "action": "point-read",
-    "observedAtUs": 1234000,
+    "observedAtUs": 1500000,
     "key": "rr/13/x",
     "value": 1,
     "version": "rr/13/x:initial",
@@ -1137,7 +1137,7 @@
   {
     "transaction": "rr:13:1",
     "action": "point-read",
-    "observedAtUs": 1234000,
+    "observedAtUs": 1500000,
     "key": "rr/13/y",
     "value": 1,
     "version": "rr/13/y:initial",
@@ -1146,7 +1146,7 @@
   {
     "transaction": "rr:13:1",
     "action": "point-write",
-    "observedAtUs": 1234000,
+    "observedAtUs": 1500000,
     "key": "rr/13/y",
     "value": 0,
     "version": "rr:13:1:write",
@@ -1156,7 +1156,7 @@
   {
     "transaction": "rr:13:0",
     "action": "point-write",
-    "observedAtUs": 1234000,
+    "observedAtUs": 1500000,
     "key": "rr/13/x",
     "value": 0,
     "version": "rr:13:0:write",
@@ -1166,35 +1166,53 @@
   {
     "transaction": "rr:13:1",
     "action": "commit-ack",
-    "observedAtUs": 1234000,
+    "observedAtUs": 1500000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:13:0",
     "action": "commit-ack",
-    "observedAtUs": 1250000,
+    "observedAtUs": 1500000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:14:0",
     "action": "begin",
-    "observedAtUs": 1312000,
+    "observedAtUs": 1562000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 106500,
+    "backendPid": 20380,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
+    "transaction": "rr:14:0",
+    "action": "point-read",
+    "observedAtUs": 1562000,
+    "key": "rr/14/x",
+    "value": 1,
+    "version": "rr/14/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "rr:14:0",
+    "action": "point-read",
+    "observedAtUs": 1562000,
+    "key": "rr/14/y",
+    "value": 1,
+    "version": "rr/14/y:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "rr:14:1",
     "action": "begin",
-    "observedAtUs": 1312000,
+    "observedAtUs": 1578000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 109788,
+    "backendPid": 120400,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
-    "transaction": "rr:14:0",
+    "transaction": "rr:14:1",
     "action": "point-read",
-    "observedAtUs": 1312000,
+    "observedAtUs": 1578000,
     "key": "rr/14/x",
     "value": 1,
     "version": "rr/14/x:initial",
@@ -1203,44 +1221,16 @@
   {
     "transaction": "rr:14:1",
     "action": "point-read",
-    "observedAtUs": 1312000,
-    "key": "rr/14/x",
-    "value": 1,
-    "version": "rr/14/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:14:0",
-    "action": "point-read",
-    "observedAtUs": 1312000,
+    "observedAtUs": 1578000,
     "key": "rr/14/y",
     "value": 1,
     "version": "rr/14/y:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "rr:14:1",
-    "action": "point-read",
-    "observedAtUs": 1312000,
-    "key": "rr/14/y",
-    "value": 1,
-    "version": "rr/14/y:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:14:1",
-    "action": "point-write",
-    "observedAtUs": 1312000,
-    "key": "rr/14/y",
-    "value": 0,
-    "version": "rr:14:1:write",
-    "affectedRows": 1,
-    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
-  },
-  {
     "transaction": "rr:14:0",
     "action": "point-write",
-    "observedAtUs": 1328000,
+    "observedAtUs": 1578000,
     "key": "rr/14/x",
     "value": 0,
     "version": "rr:14:0:write",
@@ -1249,45 +1239,47 @@
   },
   {
     "transaction": "rr:14:1",
-    "action": "commit-ack",
-    "observedAtUs": 1328000,
-    "sql": "COMMIT"
+    "action": "point-write",
+    "observedAtUs": 1578000,
+    "key": "rr/14/y",
+    "value": 0,
+    "version": "rr:14:1:write",
+    "affectedRows": 1,
+    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
     "transaction": "rr:14:0",
     "action": "commit-ack",
-    "observedAtUs": 1328000,
+    "observedAtUs": 1578000,
+    "sql": "COMMIT"
+  },
+  {
+    "transaction": "rr:14:1",
+    "action": "commit-ack",
+    "observedAtUs": 1578000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:15:0",
     "action": "begin",
-    "observedAtUs": 1390000,
+    "observedAtUs": 1640000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 106952,
+    "backendPid": 121648,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:15:0",
     "action": "point-read",
-    "observedAtUs": 1390000,
+    "observedAtUs": 1656000,
     "key": "rr/15/x",
     "value": 1,
     "version": "rr/15/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "rr:15:1",
-    "action": "begin",
-    "observedAtUs": 1390000,
-    "isolation": "REPEATABLE READ",
-    "backendPid": 105124,
-    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
-  },
-  {
     "transaction": "rr:15:0",
     "action": "point-read",
-    "observedAtUs": 1390000,
+    "observedAtUs": 1656000,
     "key": "rr/15/y",
     "value": 1,
     "version": "rr/15/y:initial",
@@ -1295,8 +1287,16 @@
   },
   {
     "transaction": "rr:15:1",
+    "action": "begin",
+    "observedAtUs": 1656000,
+    "isolation": "REPEATABLE READ",
+    "backendPid": 116648,
+    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
+    "transaction": "rr:15:1",
     "action": "point-read",
-    "observedAtUs": 1390000,
+    "observedAtUs": 1656000,
     "key": "rr/15/x",
     "value": 1,
     "version": "rr/15/x:initial",
@@ -1305,7 +1305,7 @@
   {
     "transaction": "rr:15:1",
     "action": "point-read",
-    "observedAtUs": 1390000,
+    "observedAtUs": 1656000,
     "key": "rr/15/y",
     "value": 1,
     "version": "rr/15/y:initial",
@@ -1314,7 +1314,7 @@
   {
     "transaction": "rr:15:1",
     "action": "point-write",
-    "observedAtUs": 1390000,
+    "observedAtUs": 1656000,
     "key": "rr/15/y",
     "value": 0,
     "version": "rr:15:1:write",
@@ -1324,7 +1324,7 @@
   {
     "transaction": "rr:15:0",
     "action": "point-write",
-    "observedAtUs": 1390000,
+    "observedAtUs": 1656000,
     "key": "rr/15/x",
     "value": 0,
     "version": "rr:15:0:write",
@@ -1334,44 +1334,35 @@
   {
     "transaction": "rr:15:1",
     "action": "commit-ack",
-    "observedAtUs": 1406000,
+    "observedAtUs": 1656000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:15:0",
     "action": "commit-ack",
-    "observedAtUs": 1406000,
+    "observedAtUs": 1656000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:16:0",
     "action": "begin",
-    "observedAtUs": 1469000,
+    "observedAtUs": 1734000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 102200,
+    "backendPid": 121748,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:16:1",
     "action": "begin",
-    "observedAtUs": 1469000,
+    "observedAtUs": 1734000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 110060,
+    "backendPid": 117124,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:16:0",
     "action": "point-read",
-    "observedAtUs": 1469000,
-    "key": "rr/16/x",
-    "value": 1,
-    "version": "rr/16/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:16:1",
-    "action": "point-read",
-    "observedAtUs": 1469000,
+    "observedAtUs": 1734000,
     "key": "rr/16/x",
     "value": 1,
     "version": "rr/16/x:initial",
@@ -1380,7 +1371,7 @@
   {
     "transaction": "rr:16:0",
     "action": "point-read",
-    "observedAtUs": 1469000,
+    "observedAtUs": 1734000,
     "key": "rr/16/y",
     "value": 1,
     "version": "rr/16/y:initial",
@@ -1389,7 +1380,16 @@
   {
     "transaction": "rr:16:1",
     "action": "point-read",
-    "observedAtUs": 1469000,
+    "observedAtUs": 1734000,
+    "key": "rr/16/x",
+    "value": 1,
+    "version": "rr/16/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "rr:16:1",
+    "action": "point-read",
+    "observedAtUs": 1734000,
     "key": "rr/16/y",
     "value": 1,
     "version": "rr/16/y:initial",
@@ -1398,7 +1398,7 @@
   {
     "transaction": "rr:16:1",
     "action": "point-write",
-    "observedAtUs": 1469000,
+    "observedAtUs": 1734000,
     "key": "rr/16/y",
     "value": 0,
     "version": "rr:16:1:write",
@@ -1408,7 +1408,7 @@
   {
     "transaction": "rr:16:0",
     "action": "point-write",
-    "observedAtUs": 1469000,
+    "observedAtUs": 1734000,
     "key": "rr/16/x",
     "value": 0,
     "version": "rr:16:0:write",
@@ -1418,53 +1418,53 @@
   {
     "transaction": "rr:16:1",
     "action": "commit-ack",
-    "observedAtUs": 1484000,
+    "observedAtUs": 1750000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:16:0",
     "action": "commit-ack",
-    "observedAtUs": 1484000,
+    "observedAtUs": 1750000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:17:0",
     "action": "begin",
-    "observedAtUs": 1547000,
+    "observedAtUs": 1812000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 108720,
+    "backendPid": 120144,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
-  },
-  {
-    "transaction": "rr:17:0",
-    "action": "point-read",
-    "observedAtUs": 1547000,
-    "key": "rr/17/x",
-    "value": 1,
-    "version": "rr/17/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:17:0",
-    "action": "point-read",
-    "observedAtUs": 1547000,
-    "key": "rr/17/y",
-    "value": 1,
-    "version": "rr/17/y:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "rr:17:1",
     "action": "begin",
-    "observedAtUs": 1547000,
+    "observedAtUs": 1812000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 106900,
+    "backendPid": 117424,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
+    "transaction": "rr:17:0",
+    "action": "point-read",
+    "observedAtUs": 1812000,
+    "key": "rr/17/x",
+    "value": 1,
+    "version": "rr/17/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "rr:17:0",
+    "action": "point-read",
+    "observedAtUs": 1812000,
+    "key": "rr/17/y",
+    "value": 1,
+    "version": "rr/17/y:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "rr:17:1",
     "action": "point-read",
-    "observedAtUs": 1547000,
+    "observedAtUs": 1812000,
     "key": "rr/17/x",
     "value": 1,
     "version": "rr/17/x:initial",
@@ -1473,26 +1473,16 @@
   {
     "transaction": "rr:17:1",
     "action": "point-read",
-    "observedAtUs": 1547000,
+    "observedAtUs": 1828000,
     "key": "rr/17/y",
     "value": 1,
     "version": "rr/17/y:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "rr:17:1",
-    "action": "point-write",
-    "observedAtUs": 1547000,
-    "key": "rr/17/y",
-    "value": 0,
-    "version": "rr:17:1:write",
-    "affectedRows": 1,
-    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
-  },
-  {
     "transaction": "rr:17:0",
     "action": "point-write",
-    "observedAtUs": 1547000,
+    "observedAtUs": 1828000,
     "key": "rr/17/x",
     "value": 0,
     "version": "rr:17:0:write",
@@ -1501,28 +1491,46 @@
   },
   {
     "transaction": "rr:17:1",
-    "action": "commit-ack",
-    "observedAtUs": 1547000,
-    "sql": "COMMIT"
+    "action": "point-write",
+    "observedAtUs": 1828000,
+    "key": "rr/17/y",
+    "value": 0,
+    "version": "rr:17:1:write",
+    "affectedRows": 1,
+    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
     "transaction": "rr:17:0",
     "action": "commit-ack",
-    "observedAtUs": 1562000,
+    "observedAtUs": 1828000,
+    "sql": "COMMIT"
+  },
+  {
+    "transaction": "rr:17:1",
+    "action": "commit-ack",
+    "observedAtUs": 1828000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:18:0",
     "action": "begin",
-    "observedAtUs": 1625000,
+    "observedAtUs": 1890000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 108920,
+    "backendPid": 46316,
+    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
+    "transaction": "rr:18:1",
+    "action": "begin",
+    "observedAtUs": 1890000,
+    "isolation": "REPEATABLE READ",
+    "backendPid": 113340,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:18:0",
     "action": "point-read",
-    "observedAtUs": 1625000,
+    "observedAtUs": 1906000,
     "key": "rr/18/x",
     "value": 1,
     "version": "rr/18/x:initial",
@@ -1530,16 +1538,17 @@
   },
   {
     "transaction": "rr:18:1",
-    "action": "begin",
-    "observedAtUs": 1625000,
-    "isolation": "REPEATABLE READ",
-    "backendPid": 109348,
-    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+    "action": "point-read",
+    "observedAtUs": 1906000,
+    "key": "rr/18/x",
+    "value": 1,
+    "version": "rr/18/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "rr:18:0",
     "action": "point-read",
-    "observedAtUs": 1625000,
+    "observedAtUs": 1906000,
     "key": "rr/18/y",
     "value": 1,
     "version": "rr/18/y:initial",
@@ -1548,16 +1557,7 @@
   {
     "transaction": "rr:18:1",
     "action": "point-read",
-    "observedAtUs": 1625000,
-    "key": "rr/18/x",
-    "value": 1,
-    "version": "rr/18/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:18:1",
-    "action": "point-read",
-    "observedAtUs": 1625000,
+    "observedAtUs": 1906000,
     "key": "rr/18/y",
     "value": 1,
     "version": "rr/18/y:initial",
@@ -1566,7 +1566,7 @@
   {
     "transaction": "rr:18:1",
     "action": "point-write",
-    "observedAtUs": 1625000,
+    "observedAtUs": 1906000,
     "key": "rr/18/y",
     "value": 0,
     "version": "rr:18:1:write",
@@ -1576,7 +1576,7 @@
   {
     "transaction": "rr:18:0",
     "action": "point-write",
-    "observedAtUs": 1625000,
+    "observedAtUs": 1906000,
     "key": "rr/18/x",
     "value": 0,
     "version": "rr:18:0:write",
@@ -1586,27 +1586,35 @@
   {
     "transaction": "rr:18:1",
     "action": "commit-ack",
-    "observedAtUs": 1625000,
+    "observedAtUs": 1906000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:18:0",
     "action": "commit-ack",
-    "observedAtUs": 1625000,
+    "observedAtUs": 1906000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:19:0",
     "action": "begin",
-    "observedAtUs": 1703000,
+    "observedAtUs": 1968000,
     "isolation": "REPEATABLE READ",
-    "backendPid": 108892,
+    "backendPid": 114680,
+    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+  },
+  {
+    "transaction": "rr:19:1",
+    "action": "begin",
+    "observedAtUs": 1968000,
+    "isolation": "REPEATABLE READ",
+    "backendPid": 120744,
     "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
   },
   {
     "transaction": "rr:19:0",
     "action": "point-read",
-    "observedAtUs": 1703000,
+    "observedAtUs": 1984000,
     "key": "rr/19/x",
     "value": 1,
     "version": "rr/19/x:initial",
@@ -1614,16 +1622,17 @@
   },
   {
     "transaction": "rr:19:1",
-    "action": "begin",
-    "observedAtUs": 1703000,
-    "isolation": "REPEATABLE READ",
-    "backendPid": 108780,
-    "sql": "BEGIN ISOLATION LEVEL REPEATABLE READ"
+    "action": "point-read",
+    "observedAtUs": 1984000,
+    "key": "rr/19/x",
+    "value": 1,
+    "version": "rr/19/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "rr:19:0",
     "action": "point-read",
-    "observedAtUs": 1703000,
+    "observedAtUs": 1984000,
     "key": "rr/19/y",
     "value": 1,
     "version": "rr/19/y:initial",
@@ -1632,16 +1641,7 @@
   {
     "transaction": "rr:19:1",
     "action": "point-read",
-    "observedAtUs": 1703000,
-    "key": "rr/19/x",
-    "value": 1,
-    "version": "rr/19/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "rr:19:1",
-    "action": "point-read",
-    "observedAtUs": 1703000,
+    "observedAtUs": 1984000,
     "key": "rr/19/y",
     "value": 1,
     "version": "rr/19/y:initial",
@@ -1650,7 +1650,7 @@
   {
     "transaction": "rr:19:1",
     "action": "point-write",
-    "observedAtUs": 1703000,
+    "observedAtUs": 1984000,
     "key": "rr/19/y",
     "value": 0,
     "version": "rr:19:1:write",
@@ -1660,7 +1660,7 @@
   {
     "transaction": "rr:19:0",
     "action": "point-write",
-    "observedAtUs": 1703000,
+    "observedAtUs": 1984000,
     "key": "rr/19/x",
     "value": 0,
     "version": "rr:19:0:write",
@@ -1670,35 +1670,35 @@
   {
     "transaction": "rr:19:1",
     "action": "commit-ack",
-    "observedAtUs": 1703000,
+    "observedAtUs": 1984000,
     "sql": "COMMIT"
   },
   {
     "transaction": "rr:19:0",
     "action": "commit-ack",
-    "observedAtUs": 1703000,
+    "observedAtUs": 1984000,
     "sql": "COMMIT"
   },
   {
+    "transaction": "serial:0:0",
+    "action": "begin",
+    "observedAtUs": 2062000,
+    "isolation": "SERIALIZABLE",
+    "backendPid": 77580,
+    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
     "transaction": "serial:0:1",
     "action": "begin",
-    "observedAtUs": 1781000,
+    "observedAtUs": 2062000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109296,
+    "backendPid": 116316,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:0:0",
-    "action": "begin",
-    "observedAtUs": 1781000,
-    "isolation": "SERIALIZABLE",
-    "backendPid": 105800,
-    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
-  },
-  {
-    "transaction": "serial:0:1",
     "action": "point-read",
-    "observedAtUs": 1781000,
+    "observedAtUs": 2062000,
     "key": "serial/0/x",
     "value": 1,
     "version": "serial/0/x:initial",
@@ -1707,16 +1707,7 @@
   {
     "transaction": "serial:0:1",
     "action": "point-read",
-    "observedAtUs": 1781000,
-    "key": "serial/0/y",
-    "value": 1,
-    "version": "serial/0/y:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:0:0",
-    "action": "point-read",
-    "observedAtUs": 1781000,
+    "observedAtUs": 2062000,
     "key": "serial/0/x",
     "value": 1,
     "version": "serial/0/x:initial",
@@ -1725,26 +1716,25 @@
   {
     "transaction": "serial:0:0",
     "action": "point-read",
-    "observedAtUs": 1781000,
+    "observedAtUs": 2062000,
     "key": "serial/0/y",
     "value": 1,
     "version": "serial/0/y:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:0:0",
-    "action": "point-write",
-    "observedAtUs": 1781000,
-    "key": "serial/0/x",
-    "value": 0,
-    "version": "serial:0:0:write",
-    "affectedRows": 1,
-    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
+    "transaction": "serial:0:1",
+    "action": "point-read",
+    "observedAtUs": 2062000,
+    "key": "serial/0/y",
+    "value": 1,
+    "version": "serial/0/y:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "serial:0:1",
     "action": "point-write",
-    "observedAtUs": 1781000,
+    "observedAtUs": 2062000,
     "key": "serial/0/y",
     "value": 0,
     "version": "serial:0:1:write",
@@ -1752,63 +1742,73 @@
     "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
+    "transaction": "serial:0:0",
+    "action": "point-write",
+    "observedAtUs": 2062000,
+    "key": "serial/0/x",
+    "value": 0,
+    "version": "serial:0:0:write",
+    "affectedRows": 1,
+    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
+  },
+  {
     "transaction": "serial:0:1",
+    "action": "commit-ack",
+    "observedAtUs": 2062000,
+    "sql": "COMMIT"
+  },
+  {
+    "transaction": "serial:0:0",
     "action": "server-abort",
-    "observedAtUs": 1781000,
+    "observedAtUs": 2062000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
   },
   {
-    "transaction": "serial:0:0",
-    "action": "commit-ack",
-    "observedAtUs": 1781000,
-    "sql": "COMMIT"
-  },
-  {
-    "transaction": "serial:0:1:retry1",
+    "transaction": "serial:0:0:retry1",
     "action": "begin",
-    "observedAtUs": 1844000,
+    "observedAtUs": 2125000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 107204,
+    "backendPid": 116804,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:0:1:retry1",
+    "transaction": "serial:0:0:retry1",
     "action": "point-read",
-    "observedAtUs": 1844000,
+    "observedAtUs": 2125000,
     "key": "serial/0/x",
-    "value": 0,
-    "version": "serial:0:0:write",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:0:1:retry1",
-    "action": "point-read",
-    "observedAtUs": 1844000,
-    "key": "serial/0/y",
     "value": 1,
-    "version": "serial/0/y:initial",
+    "version": "serial/0/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:0:1:retry1",
+    "transaction": "serial:0:0:retry1",
+    "action": "point-read",
+    "observedAtUs": 2125000,
+    "key": "serial/0/y",
+    "value": 0,
+    "version": "serial:0:1:write",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:0:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 1844000,
+    "observedAtUs": 2125000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:1:0",
     "action": "begin",
-    "observedAtUs": 1906000,
+    "observedAtUs": 2203000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 105184,
+    "backendPid": 21112,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:1:0",
     "action": "point-read",
-    "observedAtUs": 1922000,
+    "observedAtUs": 2203000,
     "key": "serial/1/x",
     "value": 1,
     "version": "serial/1/x:initial",
@@ -1817,7 +1817,7 @@
   {
     "transaction": "serial:1:0",
     "action": "point-read",
-    "observedAtUs": 1922000,
+    "observedAtUs": 2203000,
     "key": "serial/1/y",
     "value": 1,
     "version": "serial/1/y:initial",
@@ -1826,15 +1826,15 @@
   {
     "transaction": "serial:1:1",
     "action": "begin",
-    "observedAtUs": 1922000,
+    "observedAtUs": 2203000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 106196,
+    "backendPid": 95220,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:1:1",
     "action": "point-read",
-    "observedAtUs": 1922000,
+    "observedAtUs": 2203000,
     "key": "serial/1/x",
     "value": 1,
     "version": "serial/1/x:initial",
@@ -1843,7 +1843,7 @@
   {
     "transaction": "serial:1:1",
     "action": "point-read",
-    "observedAtUs": 1922000,
+    "observedAtUs": 2203000,
     "key": "serial/1/y",
     "value": 1,
     "version": "serial/1/y:initial",
@@ -1852,7 +1852,7 @@
   {
     "transaction": "serial:1:1",
     "action": "point-write",
-    "observedAtUs": 1922000,
+    "observedAtUs": 2203000,
     "key": "serial/1/y",
     "value": 0,
     "version": "serial:1:1:write",
@@ -1862,7 +1862,7 @@
   {
     "transaction": "serial:1:0",
     "action": "point-write",
-    "observedAtUs": 1922000,
+    "observedAtUs": 2203000,
     "key": "serial/1/x",
     "value": 0,
     "version": "serial:1:0:write",
@@ -1872,7 +1872,7 @@
   {
     "transaction": "serial:1:0",
     "action": "server-abort",
-    "observedAtUs": 1922000,
+    "observedAtUs": 2203000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
@@ -1880,21 +1880,21 @@
   {
     "transaction": "serial:1:1",
     "action": "commit-ack",
-    "observedAtUs": 1922000,
+    "observedAtUs": 2203000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:1:0:retry1",
     "action": "begin",
-    "observedAtUs": 1984000,
+    "observedAtUs": 2265000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109668,
+    "backendPid": 67572,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:1:0:retry1",
     "action": "point-read",
-    "observedAtUs": 1984000,
+    "observedAtUs": 2281000,
     "key": "serial/1/x",
     "value": 1,
     "version": "serial/1/x:initial",
@@ -1903,7 +1903,7 @@
   {
     "transaction": "serial:1:0:retry1",
     "action": "point-read",
-    "observedAtUs": 1984000,
+    "observedAtUs": 2281000,
     "key": "serial/1/y",
     "value": 0,
     "version": "serial:1:1:write",
@@ -1912,21 +1912,29 @@
   {
     "transaction": "serial:1:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 1984000,
+    "observedAtUs": 2281000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:2:0",
     "action": "begin",
-    "observedAtUs": 2047000,
+    "observedAtUs": 2343000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109904,
+    "backendPid": 67964,
+    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:2:1",
+    "action": "begin",
+    "observedAtUs": 2343000,
+    "isolation": "SERIALIZABLE",
+    "backendPid": 112168,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:2:0",
     "action": "point-read",
-    "observedAtUs": 2062000,
+    "observedAtUs": 2343000,
     "key": "serial/2/x",
     "value": 1,
     "version": "serial/2/x:initial",
@@ -1934,16 +1942,17 @@
   },
   {
     "transaction": "serial:2:1",
-    "action": "begin",
-    "observedAtUs": 2062000,
-    "isolation": "SERIALIZABLE",
-    "backendPid": 108100,
-    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+    "action": "point-read",
+    "observedAtUs": 2359000,
+    "key": "serial/2/x",
+    "value": 1,
+    "version": "serial/2/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "serial:2:0",
     "action": "point-read",
-    "observedAtUs": 2062000,
+    "observedAtUs": 2359000,
     "key": "serial/2/y",
     "value": 1,
     "version": "serial/2/y:initial",
@@ -1952,16 +1961,7 @@
   {
     "transaction": "serial:2:1",
     "action": "point-read",
-    "observedAtUs": 2062000,
-    "key": "serial/2/x",
-    "value": 1,
-    "version": "serial/2/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:2:1",
-    "action": "point-read",
-    "observedAtUs": 2062000,
+    "observedAtUs": 2359000,
     "key": "serial/2/y",
     "value": 1,
     "version": "serial/2/y:initial",
@@ -1970,7 +1970,7 @@
   {
     "transaction": "serial:2:1",
     "action": "point-write",
-    "observedAtUs": 2062000,
+    "observedAtUs": 2359000,
     "key": "serial/2/y",
     "value": 0,
     "version": "serial:2:1:write",
@@ -1980,7 +1980,7 @@
   {
     "transaction": "serial:2:0",
     "action": "point-write",
-    "observedAtUs": 2062000,
+    "observedAtUs": 2359000,
     "key": "serial/2/x",
     "value": 0,
     "version": "serial:2:0:write",
@@ -1990,7 +1990,7 @@
   {
     "transaction": "serial:2:0",
     "action": "server-abort",
-    "observedAtUs": 2062000,
+    "observedAtUs": 2359000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
@@ -1998,21 +1998,21 @@
   {
     "transaction": "serial:2:1",
     "action": "commit-ack",
-    "observedAtUs": 2062000,
+    "observedAtUs": 2359000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:2:0:retry1",
     "action": "begin",
-    "observedAtUs": 2140000,
+    "observedAtUs": 2422000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 110336,
+    "backendPid": 115008,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:2:0:retry1",
     "action": "point-read",
-    "observedAtUs": 2140000,
+    "observedAtUs": 2422000,
     "key": "serial/2/x",
     "value": 1,
     "version": "serial/2/x:initial",
@@ -2021,7 +2021,7 @@
   {
     "transaction": "serial:2:0:retry1",
     "action": "point-read",
-    "observedAtUs": 2140000,
+    "observedAtUs": 2422000,
     "key": "serial/2/y",
     "value": 0,
     "version": "serial:2:1:write",
@@ -2030,38 +2030,38 @@
   {
     "transaction": "serial:2:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 2140000,
+    "observedAtUs": 2422000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:3:0",
     "action": "begin",
-    "observedAtUs": 2203000,
+    "observedAtUs": 2500000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 107596,
-    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
-  },
-  {
-    "transaction": "serial:3:1",
-    "action": "begin",
-    "observedAtUs": 2203000,
-    "isolation": "SERIALIZABLE",
-    "backendPid": 110044,
+    "backendPid": 42472,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:3:0",
     "action": "point-read",
-    "observedAtUs": 2203000,
+    "observedAtUs": 2500000,
     "key": "serial/3/x",
     "value": 1,
     "version": "serial/3/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
+    "transaction": "serial:3:1",
+    "action": "begin",
+    "observedAtUs": 2500000,
+    "isolation": "SERIALIZABLE",
+    "backendPid": 118764,
+    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
     "transaction": "serial:3:0",
     "action": "point-read",
-    "observedAtUs": 2203000,
+    "observedAtUs": 2500000,
     "key": "serial/3/y",
     "value": 1,
     "version": "serial/3/y:initial",
@@ -2070,7 +2070,7 @@
   {
     "transaction": "serial:3:1",
     "action": "point-read",
-    "observedAtUs": 2203000,
+    "observedAtUs": 2515000,
     "key": "serial/3/x",
     "value": 1,
     "version": "serial/3/x:initial",
@@ -2079,7 +2079,7 @@
   {
     "transaction": "serial:3:1",
     "action": "point-read",
-    "observedAtUs": 2203000,
+    "observedAtUs": 2515000,
     "key": "serial/3/y",
     "value": 1,
     "version": "serial/3/y:initial",
@@ -2088,7 +2088,7 @@
   {
     "transaction": "serial:3:1",
     "action": "point-write",
-    "observedAtUs": 2219000,
+    "observedAtUs": 2515000,
     "key": "serial/3/y",
     "value": 0,
     "version": "serial:3:1:write",
@@ -2098,7 +2098,7 @@
   {
     "transaction": "serial:3:0",
     "action": "point-write",
-    "observedAtUs": 2219000,
+    "observedAtUs": 2515000,
     "key": "serial/3/x",
     "value": 0,
     "version": "serial:3:0:write",
@@ -2106,31 +2106,31 @@
     "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
-    "transaction": "serial:3:1",
-    "action": "commit-ack",
-    "observedAtUs": 2219000,
-    "sql": "COMMIT"
-  },
-  {
     "transaction": "serial:3:0",
     "action": "server-abort",
-    "observedAtUs": 2219000,
+    "observedAtUs": 2515000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
   },
   {
+    "transaction": "serial:3:1",
+    "action": "commit-ack",
+    "observedAtUs": 2515000,
+    "sql": "COMMIT"
+  },
+  {
     "transaction": "serial:3:0:retry1",
     "action": "begin",
-    "observedAtUs": 2265000,
+    "observedAtUs": 2578000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 105000,
+    "backendPid": 103532,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:3:0:retry1",
     "action": "point-read",
-    "observedAtUs": 2265000,
+    "observedAtUs": 2593000,
     "key": "serial/3/x",
     "value": 1,
     "version": "serial/3/x:initial",
@@ -2139,7 +2139,7 @@
   {
     "transaction": "serial:3:0:retry1",
     "action": "point-read",
-    "observedAtUs": 2265000,
+    "observedAtUs": 2593000,
     "key": "serial/3/y",
     "value": 0,
     "version": "serial:3:1:write",
@@ -2148,30 +2148,38 @@
   {
     "transaction": "serial:3:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 2265000,
+    "observedAtUs": 2593000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:4:0",
     "action": "begin",
-    "observedAtUs": 2328000,
+    "observedAtUs": 2656000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 110244,
+    "backendPid": 112488,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:4:0",
     "action": "point-read",
-    "observedAtUs": 2328000,
+    "observedAtUs": 2656000,
     "key": "serial/4/x",
     "value": 1,
     "version": "serial/4/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
+    "transaction": "serial:4:1",
+    "action": "begin",
+    "observedAtUs": 2656000,
+    "isolation": "SERIALIZABLE",
+    "backendPid": 117124,
+    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
     "transaction": "serial:4:0",
     "action": "point-read",
-    "observedAtUs": 2328000,
+    "observedAtUs": 2656000,
     "key": "serial/4/y",
     "value": 1,
     "version": "serial/4/y:initial",
@@ -2179,16 +2187,8 @@
   },
   {
     "transaction": "serial:4:1",
-    "action": "begin",
-    "observedAtUs": 2344000,
-    "isolation": "SERIALIZABLE",
-    "backendPid": 108920,
-    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
-  },
-  {
-    "transaction": "serial:4:1",
     "action": "point-read",
-    "observedAtUs": 2344000,
+    "observedAtUs": 2656000,
     "key": "serial/4/x",
     "value": 1,
     "version": "serial/4/x:initial",
@@ -2197,7 +2197,7 @@
   {
     "transaction": "serial:4:1",
     "action": "point-read",
-    "observedAtUs": 2344000,
+    "observedAtUs": 2656000,
     "key": "serial/4/y",
     "value": 1,
     "version": "serial/4/y:initial",
@@ -2206,7 +2206,7 @@
   {
     "transaction": "serial:4:1",
     "action": "point-write",
-    "observedAtUs": 2344000,
+    "observedAtUs": 2672000,
     "key": "serial/4/y",
     "value": 0,
     "version": "serial:4:1:write",
@@ -2216,7 +2216,7 @@
   {
     "transaction": "serial:4:0",
     "action": "point-write",
-    "observedAtUs": 2344000,
+    "observedAtUs": 2672000,
     "key": "serial/4/x",
     "value": 0,
     "version": "serial:4:0:write",
@@ -2226,7 +2226,7 @@
   {
     "transaction": "serial:4:0",
     "action": "server-abort",
-    "observedAtUs": 2344000,
+    "observedAtUs": 2672000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
@@ -2234,21 +2234,21 @@
   {
     "transaction": "serial:4:1",
     "action": "commit-ack",
-    "observedAtUs": 2344000,
+    "observedAtUs": 2672000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:4:0:retry1",
     "action": "begin",
-    "observedAtUs": 2422000,
+    "observedAtUs": 2734000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 110488,
+    "backendPid": 117012,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:4:0:retry1",
     "action": "point-read",
-    "observedAtUs": 2422000,
+    "observedAtUs": 2734000,
     "key": "serial/4/x",
     "value": 1,
     "version": "serial/4/x:initial",
@@ -2257,7 +2257,7 @@
   {
     "transaction": "serial:4:0:retry1",
     "action": "point-read",
-    "observedAtUs": 2422000,
+    "observedAtUs": 2734000,
     "key": "serial/4/y",
     "value": 0,
     "version": "serial:4:1:write",
@@ -2266,47 +2266,38 @@
   {
     "transaction": "serial:4:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 2422000,
+    "observedAtUs": 2734000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:5:0",
     "action": "begin",
-    "observedAtUs": 2500000,
+    "observedAtUs": 2812000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109188,
+    "backendPid": 120440,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:5:0",
+    "action": "point-read",
+    "observedAtUs": 2812000,
+    "key": "serial/5/x",
+    "value": 1,
+    "version": "serial/5/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "serial:5:1",
     "action": "begin",
-    "observedAtUs": 2500000,
+    "observedAtUs": 2812000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 107732,
+    "backendPid": 116304,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:5:0",
     "action": "point-read",
-    "observedAtUs": 2500000,
-    "key": "serial/5/x",
-    "value": 1,
-    "version": "serial/5/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:5:1",
-    "action": "point-read",
-    "observedAtUs": 2500000,
-    "key": "serial/5/x",
-    "value": 1,
-    "version": "serial/5/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:5:0",
-    "action": "point-read",
-    "observedAtUs": 2500000,
+    "observedAtUs": 2812000,
     "key": "serial/5/y",
     "value": 1,
     "version": "serial/5/y:initial",
@@ -2315,26 +2306,25 @@
   {
     "transaction": "serial:5:1",
     "action": "point-read",
-    "observedAtUs": 2500000,
+    "observedAtUs": 2812000,
+    "key": "serial/5/x",
+    "value": 1,
+    "version": "serial/5/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:5:1",
+    "action": "point-read",
+    "observedAtUs": 2812000,
     "key": "serial/5/y",
     "value": 1,
     "version": "serial/5/y:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:5:1",
-    "action": "point-write",
-    "observedAtUs": 2500000,
-    "key": "serial/5/y",
-    "value": 0,
-    "version": "serial:5:1:write",
-    "affectedRows": 1,
-    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
-  },
-  {
     "transaction": "serial:5:0",
     "action": "point-write",
-    "observedAtUs": 2500000,
+    "observedAtUs": 2812000,
     "key": "serial/5/x",
     "value": 0,
     "version": "serial:5:0:write",
@@ -2342,71 +2332,73 @@
     "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
-    "transaction": "serial:5:0",
+    "transaction": "serial:5:1",
+    "action": "point-write",
+    "observedAtUs": 2812000,
+    "key": "serial/5/y",
+    "value": 0,
+    "version": "serial:5:1:write",
+    "affectedRows": 1,
+    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
+  },
+  {
+    "transaction": "serial:5:1",
     "action": "server-abort",
-    "observedAtUs": 2500000,
+    "observedAtUs": 2828000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
   },
   {
-    "transaction": "serial:5:1",
+    "transaction": "serial:5:0",
     "action": "commit-ack",
-    "observedAtUs": 2500000,
+    "observedAtUs": 2828000,
     "sql": "COMMIT"
   },
   {
-    "transaction": "serial:5:0:retry1",
+    "transaction": "serial:5:1:retry1",
     "action": "begin",
-    "observedAtUs": 2562000,
+    "observedAtUs": 2890000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 101816,
+    "backendPid": 110888,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:5:0:retry1",
+    "transaction": "serial:5:1:retry1",
     "action": "point-read",
-    "observedAtUs": 2562000,
+    "observedAtUs": 2890000,
     "key": "serial/5/x",
-    "value": 1,
-    "version": "serial/5/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:5:0:retry1",
-    "action": "point-read",
-    "observedAtUs": 2562000,
-    "key": "serial/5/y",
     "value": 0,
-    "version": "serial:5:1:write",
+    "version": "serial:5:0:write",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:5:0:retry1",
+    "transaction": "serial:5:1:retry1",
+    "action": "point-read",
+    "observedAtUs": 2890000,
+    "key": "serial/5/y",
+    "value": 1,
+    "version": "serial/5/y:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:5:1:retry1",
     "action": "commit-ack",
-    "observedAtUs": 2562000,
+    "observedAtUs": 2890000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:6:0",
     "action": "begin",
-    "observedAtUs": 2640000,
+    "observedAtUs": 2953000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 107524,
-    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
-  },
-  {
-    "transaction": "serial:6:1",
-    "action": "begin",
-    "observedAtUs": 2640000,
-    "isolation": "SERIALIZABLE",
-    "backendPid": 109416,
+    "backendPid": 118648,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:6:0",
     "action": "point-read",
-    "observedAtUs": 2640000,
+    "observedAtUs": 2953000,
     "key": "serial/6/x",
     "value": 1,
     "version": "serial/6/x:initial",
@@ -2415,7 +2407,7 @@
   {
     "transaction": "serial:6:0",
     "action": "point-read",
-    "observedAtUs": 2640000,
+    "observedAtUs": 2953000,
     "key": "serial/6/y",
     "value": 1,
     "version": "serial/6/y:initial",
@@ -2423,8 +2415,16 @@
   },
   {
     "transaction": "serial:6:1",
+    "action": "begin",
+    "observedAtUs": 2968000,
+    "isolation": "SERIALIZABLE",
+    "backendPid": 114680,
+    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:6:1",
     "action": "point-read",
-    "observedAtUs": 2640000,
+    "observedAtUs": 2968000,
     "key": "serial/6/x",
     "value": 1,
     "version": "serial/6/x:initial",
@@ -2433,7 +2433,7 @@
   {
     "transaction": "serial:6:1",
     "action": "point-read",
-    "observedAtUs": 2640000,
+    "observedAtUs": 2968000,
     "key": "serial/6/y",
     "value": 1,
     "version": "serial/6/y:initial",
@@ -2442,7 +2442,7 @@
   {
     "transaction": "serial:6:1",
     "action": "point-write",
-    "observedAtUs": 2640000,
+    "observedAtUs": 2968000,
     "key": "serial/6/y",
     "value": 0,
     "version": "serial:6:1:write",
@@ -2452,7 +2452,7 @@
   {
     "transaction": "serial:6:0",
     "action": "point-write",
-    "observedAtUs": 2640000,
+    "observedAtUs": 2968000,
     "key": "serial/6/x",
     "value": 0,
     "version": "serial:6:0:write",
@@ -2462,7 +2462,7 @@
   {
     "transaction": "serial:6:0",
     "action": "server-abort",
-    "observedAtUs": 2640000,
+    "observedAtUs": 2968000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
@@ -2470,21 +2470,21 @@
   {
     "transaction": "serial:6:1",
     "action": "commit-ack",
-    "observedAtUs": 2640000,
+    "observedAtUs": 2968000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:6:0:retry1",
     "action": "begin",
-    "observedAtUs": 2719000,
+    "observedAtUs": 3031000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 105700,
+    "backendPid": 120276,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:6:0:retry1",
     "action": "point-read",
-    "observedAtUs": 2719000,
+    "observedAtUs": 3047000,
     "key": "serial/6/x",
     "value": 1,
     "version": "serial/6/x:initial",
@@ -2493,7 +2493,7 @@
   {
     "transaction": "serial:6:0:retry1",
     "action": "point-read",
-    "observedAtUs": 2719000,
+    "observedAtUs": 3047000,
     "key": "serial/6/y",
     "value": 0,
     "version": "serial:6:1:write",
@@ -2502,29 +2502,21 @@
   {
     "transaction": "serial:6:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 2719000,
+    "observedAtUs": 3047000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:7:0",
     "action": "begin",
-    "observedAtUs": 2812000,
+    "observedAtUs": 3109000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 108700,
-    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
-  },
-  {
-    "transaction": "serial:7:1",
-    "action": "begin",
-    "observedAtUs": 2812000,
-    "isolation": "SERIALIZABLE",
-    "backendPid": 102648,
+    "backendPid": 119768,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:7:0",
     "action": "point-read",
-    "observedAtUs": 2812000,
+    "observedAtUs": 3109000,
     "key": "serial/7/x",
     "value": 1,
     "version": "serial/7/x:initial",
@@ -2533,7 +2525,7 @@
   {
     "transaction": "serial:7:0",
     "action": "point-read",
-    "observedAtUs": 2812000,
+    "observedAtUs": 3109000,
     "key": "serial/7/y",
     "value": 1,
     "version": "serial/7/y:initial",
@@ -2541,8 +2533,16 @@
   },
   {
     "transaction": "serial:7:1",
+    "action": "begin",
+    "observedAtUs": 3109000,
+    "isolation": "SERIALIZABLE",
+    "backendPid": 117700,
+    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:7:1",
     "action": "point-read",
-    "observedAtUs": 2812000,
+    "observedAtUs": 3125000,
     "key": "serial/7/x",
     "value": 1,
     "version": "serial/7/x:initial",
@@ -2551,7 +2551,7 @@
   {
     "transaction": "serial:7:1",
     "action": "point-read",
-    "observedAtUs": 2812000,
+    "observedAtUs": 3125000,
     "key": "serial/7/y",
     "value": 1,
     "version": "serial/7/y:initial",
@@ -2560,7 +2560,7 @@
   {
     "transaction": "serial:7:1",
     "action": "point-write",
-    "observedAtUs": 2828000,
+    "observedAtUs": 3125000,
     "key": "serial/7/y",
     "value": 0,
     "version": "serial:7:1:write",
@@ -2570,7 +2570,7 @@
   {
     "transaction": "serial:7:0",
     "action": "point-write",
-    "observedAtUs": 2828000,
+    "observedAtUs": 3125000,
     "key": "serial/7/x",
     "value": 0,
     "version": "serial:7:0:write",
@@ -2578,31 +2578,31 @@
     "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
-    "transaction": "serial:7:1",
-    "action": "commit-ack",
-    "observedAtUs": 2828000,
-    "sql": "COMMIT"
-  },
-  {
     "transaction": "serial:7:0",
     "action": "server-abort",
-    "observedAtUs": 2828000,
+    "observedAtUs": 3125000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
   },
   {
+    "transaction": "serial:7:1",
+    "action": "commit-ack",
+    "observedAtUs": 3125000,
+    "sql": "COMMIT"
+  },
+  {
     "transaction": "serial:7:0:retry1",
     "action": "begin",
-    "observedAtUs": 2890000,
+    "observedAtUs": 3187000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 110096,
+    "backendPid": 117824,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:7:0:retry1",
     "action": "point-read",
-    "observedAtUs": 2890000,
+    "observedAtUs": 3187000,
     "key": "serial/7/x",
     "value": 1,
     "version": "serial/7/x:initial",
@@ -2611,7 +2611,7 @@
   {
     "transaction": "serial:7:0:retry1",
     "action": "point-read",
-    "observedAtUs": 2906000,
+    "observedAtUs": 3187000,
     "key": "serial/7/y",
     "value": 0,
     "version": "serial:7:1:write",
@@ -2620,29 +2620,29 @@
   {
     "transaction": "serial:7:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 2906000,
+    "observedAtUs": 3187000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:8:0",
     "action": "begin",
-    "observedAtUs": 2984000,
+    "observedAtUs": 3265000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 108892,
+    "backendPid": 9640,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:8:1",
     "action": "begin",
-    "observedAtUs": 2984000,
+    "observedAtUs": 3265000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 110456,
+    "backendPid": 116964,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:8:0",
     "action": "point-read",
-    "observedAtUs": 2984000,
+    "observedAtUs": 3265000,
     "key": "serial/8/x",
     "value": 1,
     "version": "serial/8/x:initial",
@@ -2651,7 +2651,7 @@
   {
     "transaction": "serial:8:0",
     "action": "point-read",
-    "observedAtUs": 2984000,
+    "observedAtUs": 3265000,
     "key": "serial/8/y",
     "value": 1,
     "version": "serial/8/y:initial",
@@ -2660,7 +2660,7 @@
   {
     "transaction": "serial:8:1",
     "action": "point-read",
-    "observedAtUs": 2984000,
+    "observedAtUs": 3265000,
     "key": "serial/8/x",
     "value": 1,
     "version": "serial/8/x:initial",
@@ -2669,7 +2669,7 @@
   {
     "transaction": "serial:8:1",
     "action": "point-read",
-    "observedAtUs": 2984000,
+    "observedAtUs": 3265000,
     "key": "serial/8/y",
     "value": 1,
     "version": "serial/8/y:initial",
@@ -2678,7 +2678,7 @@
   {
     "transaction": "serial:8:1",
     "action": "point-write",
-    "observedAtUs": 2984000,
+    "observedAtUs": 3265000,
     "key": "serial/8/y",
     "value": 0,
     "version": "serial:8:1:write",
@@ -2688,7 +2688,7 @@
   {
     "transaction": "serial:8:0",
     "action": "point-write",
-    "observedAtUs": 2984000,
+    "observedAtUs": 3265000,
     "key": "serial/8/x",
     "value": 0,
     "version": "serial:8:0:write",
@@ -2698,7 +2698,7 @@
   {
     "transaction": "serial:8:0",
     "action": "server-abort",
-    "observedAtUs": 2984000,
+    "observedAtUs": 3265000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
@@ -2706,21 +2706,21 @@
   {
     "transaction": "serial:8:1",
     "action": "commit-ack",
-    "observedAtUs": 2984000,
+    "observedAtUs": 3265000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:8:0:retry1",
     "action": "begin",
-    "observedAtUs": 3062000,
+    "observedAtUs": 3328000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 106228,
+    "backendPid": 98428,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:8:0:retry1",
     "action": "point-read",
-    "observedAtUs": 3062000,
+    "observedAtUs": 3343000,
     "key": "serial/8/x",
     "value": 1,
     "version": "serial/8/x:initial",
@@ -2729,7 +2729,7 @@
   {
     "transaction": "serial:8:0:retry1",
     "action": "point-read",
-    "observedAtUs": 3062000,
+    "observedAtUs": 3343000,
     "key": "serial/8/y",
     "value": 0,
     "version": "serial:8:1:write",
@@ -2738,29 +2738,47 @@
   {
     "transaction": "serial:8:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 3062000,
+    "observedAtUs": 3343000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:9:0",
     "action": "begin",
-    "observedAtUs": 3140000,
+    "observedAtUs": 3406000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109036,
+    "backendPid": 3592,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:9:0",
+    "action": "point-read",
+    "observedAtUs": 3406000,
+    "key": "serial/9/x",
+    "value": 1,
+    "version": "serial/9/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:9:0",
+    "action": "point-read",
+    "observedAtUs": 3406000,
+    "key": "serial/9/y",
+    "value": 1,
+    "version": "serial/9/y:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "serial:9:1",
     "action": "begin",
-    "observedAtUs": 3140000,
+    "observedAtUs": 3406000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 107644,
+    "backendPid": 114984,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:9:0",
+    "transaction": "serial:9:1",
     "action": "point-read",
-    "observedAtUs": 3156000,
+    "observedAtUs": 3422000,
     "key": "serial/9/x",
     "value": 1,
     "version": "serial/9/x:initial",
@@ -2769,16 +2787,7 @@
   {
     "transaction": "serial:9:1",
     "action": "point-read",
-    "observedAtUs": 3156000,
-    "key": "serial/9/x",
-    "value": 1,
-    "version": "serial/9/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:9:0",
-    "action": "point-read",
-    "observedAtUs": 3156000,
+    "observedAtUs": 3422000,
     "key": "serial/9/y",
     "value": 1,
     "version": "serial/9/y:initial",
@@ -2786,27 +2795,8 @@
   },
   {
     "transaction": "serial:9:1",
-    "action": "point-read",
-    "observedAtUs": 3156000,
-    "key": "serial/9/y",
-    "value": 1,
-    "version": "serial/9/y:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:9:0",
     "action": "point-write",
-    "observedAtUs": 3156000,
-    "key": "serial/9/x",
-    "value": 0,
-    "version": "serial:9:0:write",
-    "affectedRows": 1,
-    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
-  },
-  {
-    "transaction": "serial:9:1",
-    "action": "point-write",
-    "observedAtUs": 3156000,
+    "observedAtUs": 3422000,
     "key": "serial/9/y",
     "value": 0,
     "version": "serial:9:1:write",
@@ -2814,71 +2804,81 @@
     "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
-    "transaction": "serial:9:1",
+    "transaction": "serial:9:0",
+    "action": "point-write",
+    "observedAtUs": 3422000,
+    "key": "serial/9/x",
+    "value": 0,
+    "version": "serial:9:0:write",
+    "affectedRows": 1,
+    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
+  },
+  {
+    "transaction": "serial:9:0",
     "action": "server-abort",
-    "observedAtUs": 3156000,
+    "observedAtUs": 3422000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
   },
   {
-    "transaction": "serial:9:0",
+    "transaction": "serial:9:1",
     "action": "commit-ack",
-    "observedAtUs": 3156000,
+    "observedAtUs": 3422000,
     "sql": "COMMIT"
   },
   {
-    "transaction": "serial:9:1:retry1",
+    "transaction": "serial:9:0:retry1",
     "action": "begin",
-    "observedAtUs": 3219000,
+    "observedAtUs": 3484000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109520,
+    "backendPid": 104240,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:9:1:retry1",
+    "transaction": "serial:9:0:retry1",
     "action": "point-read",
-    "observedAtUs": 3219000,
+    "observedAtUs": 3484000,
     "key": "serial/9/x",
-    "value": 0,
-    "version": "serial:9:0:write",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:9:1:retry1",
-    "action": "point-read",
-    "observedAtUs": 3234000,
-    "key": "serial/9/y",
     "value": 1,
-    "version": "serial/9/y:initial",
+    "version": "serial/9/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:9:1:retry1",
+    "transaction": "serial:9:0:retry1",
+    "action": "point-read",
+    "observedAtUs": 3500000,
+    "key": "serial/9/y",
+    "value": 0,
+    "version": "serial:9:1:write",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:9:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 3234000,
+    "observedAtUs": 3500000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:10:0",
     "action": "begin",
-    "observedAtUs": 3297000,
+    "observedAtUs": 3562000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109420,
+    "backendPid": 118188,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:10:1",
     "action": "begin",
-    "observedAtUs": 3297000,
+    "observedAtUs": 3562000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 108700,
+    "backendPid": 120860,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:10:0",
     "action": "point-read",
-    "observedAtUs": 3297000,
+    "observedAtUs": 3562000,
     "key": "serial/10/x",
     "value": 1,
     "version": "serial/10/x:initial",
@@ -2887,7 +2887,7 @@
   {
     "transaction": "serial:10:0",
     "action": "point-read",
-    "observedAtUs": 3297000,
+    "observedAtUs": 3562000,
     "key": "serial/10/y",
     "value": 1,
     "version": "serial/10/y:initial",
@@ -2896,7 +2896,7 @@
   {
     "transaction": "serial:10:1",
     "action": "point-read",
-    "observedAtUs": 3297000,
+    "observedAtUs": 3562000,
     "key": "serial/10/x",
     "value": 1,
     "version": "serial/10/x:initial",
@@ -2905,26 +2905,16 @@
   {
     "transaction": "serial:10:1",
     "action": "point-read",
-    "observedAtUs": 3312000,
+    "observedAtUs": 3562000,
     "key": "serial/10/y",
     "value": 1,
     "version": "serial/10/y:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:10:0",
-    "action": "point-write",
-    "observedAtUs": 3312000,
-    "key": "serial/10/x",
-    "value": 0,
-    "version": "serial:10:0:write",
-    "affectedRows": 1,
-    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
-  },
-  {
     "transaction": "serial:10:1",
     "action": "point-write",
-    "observedAtUs": 3312000,
+    "observedAtUs": 3562000,
     "key": "serial/10/y",
     "value": 0,
     "version": "serial:10:1:write",
@@ -2932,80 +2922,73 @@
     "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
-    "transaction": "serial:10:1",
+    "transaction": "serial:10:0",
+    "action": "point-write",
+    "observedAtUs": 3562000,
+    "key": "serial/10/x",
+    "value": 0,
+    "version": "serial:10:0:write",
+    "affectedRows": 1,
+    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
+  },
+  {
+    "transaction": "serial:10:0",
     "action": "server-abort",
-    "observedAtUs": 3312000,
+    "observedAtUs": 3578000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
   },
   {
-    "transaction": "serial:10:0",
+    "transaction": "serial:10:1",
     "action": "commit-ack",
-    "observedAtUs": 3312000,
+    "observedAtUs": 3578000,
     "sql": "COMMIT"
   },
   {
-    "transaction": "serial:10:1:retry1",
+    "transaction": "serial:10:0:retry1",
     "action": "begin",
-    "observedAtUs": 3375000,
+    "observedAtUs": 3640000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 104016,
+    "backendPid": 111996,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:10:1:retry1",
+    "transaction": "serial:10:0:retry1",
     "action": "point-read",
-    "observedAtUs": 3375000,
+    "observedAtUs": 3640000,
     "key": "serial/10/x",
-    "value": 0,
-    "version": "serial:10:0:write",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:10:1:retry1",
-    "action": "point-read",
-    "observedAtUs": 3375000,
-    "key": "serial/10/y",
     "value": 1,
-    "version": "serial/10/y:initial",
+    "version": "serial/10/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:10:1:retry1",
+    "transaction": "serial:10:0:retry1",
+    "action": "point-read",
+    "observedAtUs": 3640000,
+    "key": "serial/10/y",
+    "value": 0,
+    "version": "serial:10:1:write",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:10:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 3390000,
+    "observedAtUs": 3640000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:11:0",
     "action": "begin",
-    "observedAtUs": 3453000,
+    "observedAtUs": 3703000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 105980,
-    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
-  },
-  {
-    "transaction": "serial:11:1",
-    "action": "begin",
-    "observedAtUs": 3453000,
-    "isolation": "SERIALIZABLE",
-    "backendPid": 110384,
+    "backendPid": 117424,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:11:0",
     "action": "point-read",
-    "observedAtUs": 3453000,
-    "key": "serial/11/x",
-    "value": 1,
-    "version": "serial/11/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:11:1",
-    "action": "point-read",
-    "observedAtUs": 3453000,
+    "observedAtUs": 3718000,
     "key": "serial/11/x",
     "value": 1,
     "version": "serial/11/x:initial",
@@ -3014,7 +2997,7 @@
   {
     "transaction": "serial:11:0",
     "action": "point-read",
-    "observedAtUs": 3453000,
+    "observedAtUs": 3718000,
     "key": "serial/11/y",
     "value": 1,
     "version": "serial/11/y:initial",
@@ -3022,8 +3005,25 @@
   },
   {
     "transaction": "serial:11:1",
+    "action": "begin",
+    "observedAtUs": 3718000,
+    "isolation": "SERIALIZABLE",
+    "backendPid": 119108,
+    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:11:1",
     "action": "point-read",
-    "observedAtUs": 3453000,
+    "observedAtUs": 3718000,
+    "key": "serial/11/x",
+    "value": 1,
+    "version": "serial/11/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:11:1",
+    "action": "point-read",
+    "observedAtUs": 3718000,
     "key": "serial/11/y",
     "value": 1,
     "version": "serial/11/y:initial",
@@ -3032,7 +3032,7 @@
   {
     "transaction": "serial:11:1",
     "action": "point-write",
-    "observedAtUs": 3453000,
+    "observedAtUs": 3718000,
     "key": "serial/11/y",
     "value": 0,
     "version": "serial:11:1:write",
@@ -3042,7 +3042,7 @@
   {
     "transaction": "serial:11:0",
     "action": "point-write",
-    "observedAtUs": 3453000,
+    "observedAtUs": 3718000,
     "key": "serial/11/x",
     "value": 0,
     "version": "serial:11:0:write",
@@ -3052,7 +3052,7 @@
   {
     "transaction": "serial:11:0",
     "action": "server-abort",
-    "observedAtUs": 3453000,
+    "observedAtUs": 3718000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
@@ -3060,21 +3060,21 @@
   {
     "transaction": "serial:11:1",
     "action": "commit-ack",
-    "observedAtUs": 3453000,
+    "observedAtUs": 3718000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:11:0:retry1",
     "action": "begin",
-    "observedAtUs": 3515000,
+    "observedAtUs": 3781000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109896,
+    "backendPid": 121364,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:11:0:retry1",
     "action": "point-read",
-    "observedAtUs": 3515000,
+    "observedAtUs": 3797000,
     "key": "serial/11/x",
     "value": 1,
     "version": "serial/11/x:initial",
@@ -3083,7 +3083,7 @@
   {
     "transaction": "serial:11:0:retry1",
     "action": "point-read",
-    "observedAtUs": 3515000,
+    "observedAtUs": 3797000,
     "key": "serial/11/y",
     "value": 0,
     "version": "serial:11:1:write",
@@ -3092,29 +3092,47 @@
   {
     "transaction": "serial:11:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 3515000,
+    "observedAtUs": 3797000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:12:0",
     "action": "begin",
-    "observedAtUs": 3594000,
+    "observedAtUs": 3859000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109160,
+    "backendPid": 114412,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:12:0",
+    "action": "point-read",
+    "observedAtUs": 3859000,
+    "key": "serial/12/x",
+    "value": 1,
+    "version": "serial/12/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:12:0",
+    "action": "point-read",
+    "observedAtUs": 3859000,
+    "key": "serial/12/y",
+    "value": 1,
+    "version": "serial/12/y:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "serial:12:1",
     "action": "begin",
-    "observedAtUs": 3609000,
+    "observedAtUs": 3875000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 110248,
+    "backendPid": 119240,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:12:0",
+    "transaction": "serial:12:1",
     "action": "point-read",
-    "observedAtUs": 3609000,
+    "observedAtUs": 3875000,
     "key": "serial/12/x",
     "value": 1,
     "version": "serial/12/x:initial",
@@ -3123,16 +3141,7 @@
   {
     "transaction": "serial:12:1",
     "action": "point-read",
-    "observedAtUs": 3609000,
-    "key": "serial/12/x",
-    "value": 1,
-    "version": "serial/12/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:12:0",
-    "action": "point-read",
-    "observedAtUs": 3609000,
+    "observedAtUs": 3875000,
     "key": "serial/12/y",
     "value": 1,
     "version": "serial/12/y:initial",
@@ -3140,27 +3149,8 @@
   },
   {
     "transaction": "serial:12:1",
-    "action": "point-read",
-    "observedAtUs": 3609000,
-    "key": "serial/12/y",
-    "value": 1,
-    "version": "serial/12/y:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:12:0",
     "action": "point-write",
-    "observedAtUs": 3609000,
-    "key": "serial/12/x",
-    "value": 0,
-    "version": "serial:12:0:write",
-    "affectedRows": 1,
-    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
-  },
-  {
-    "transaction": "serial:12:1",
-    "action": "point-write",
-    "observedAtUs": 3609000,
+    "observedAtUs": 3875000,
     "key": "serial/12/y",
     "value": 0,
     "version": "serial:12:1:write",
@@ -3168,72 +3158,90 @@
     "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
-    "transaction": "serial:12:1",
+    "transaction": "serial:12:0",
+    "action": "point-write",
+    "observedAtUs": 3875000,
+    "key": "serial/12/x",
+    "value": 0,
+    "version": "serial:12:0:write",
+    "affectedRows": 1,
+    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
+  },
+  {
+    "transaction": "serial:12:0",
     "action": "server-abort",
-    "observedAtUs": 3609000,
+    "observedAtUs": 3875000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
   },
   {
-    "transaction": "serial:12:0",
+    "transaction": "serial:12:1",
     "action": "commit-ack",
-    "observedAtUs": 3609000,
+    "observedAtUs": 3875000,
     "sql": "COMMIT"
   },
   {
-    "transaction": "serial:12:1:retry1",
+    "transaction": "serial:12:0:retry1",
     "action": "begin",
-    "observedAtUs": 3687000,
+    "observedAtUs": 3937000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 105624,
+    "backendPid": 119364,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:12:1:retry1",
+    "transaction": "serial:12:0:retry1",
     "action": "point-read",
-    "observedAtUs": 3687000,
+    "observedAtUs": 3937000,
     "key": "serial/12/x",
-    "value": 0,
-    "version": "serial:12:0:write",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:12:1:retry1",
-    "action": "point-read",
-    "observedAtUs": 3687000,
-    "key": "serial/12/y",
     "value": 1,
-    "version": "serial/12/y:initial",
+    "version": "serial/12/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:12:1:retry1",
+    "transaction": "serial:12:0:retry1",
+    "action": "point-read",
+    "observedAtUs": 3937000,
+    "key": "serial/12/y",
+    "value": 0,
+    "version": "serial:12:1:write",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:12:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 3687000,
+    "observedAtUs": 3937000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:13:0",
     "action": "begin",
-    "observedAtUs": 3765000,
+    "observedAtUs": 4015000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 106228,
+    "backendPid": 114680,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:13:0",
     "action": "point-read",
-    "observedAtUs": 3765000,
+    "observedAtUs": 4015000,
     "key": "serial/13/x",
     "value": 1,
     "version": "serial/13/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
+    "transaction": "serial:13:1",
+    "action": "begin",
+    "observedAtUs": 4015000,
+    "isolation": "SERIALIZABLE",
+    "backendPid": 77580,
+    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
     "transaction": "serial:13:0",
     "action": "point-read",
-    "observedAtUs": 3765000,
+    "observedAtUs": 4015000,
     "key": "serial/13/y",
     "value": 1,
     "version": "serial/13/y:initial",
@@ -3241,16 +3249,8 @@
   },
   {
     "transaction": "serial:13:1",
-    "action": "begin",
-    "observedAtUs": 3765000,
-    "isolation": "SERIALIZABLE",
-    "backendPid": 109768,
-    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
-  },
-  {
-    "transaction": "serial:13:1",
     "action": "point-read",
-    "observedAtUs": 3765000,
+    "observedAtUs": 4015000,
     "key": "serial/13/x",
     "value": 1,
     "version": "serial/13/x:initial",
@@ -3259,7 +3259,7 @@
   {
     "transaction": "serial:13:1",
     "action": "point-read",
-    "observedAtUs": 3781000,
+    "observedAtUs": 4015000,
     "key": "serial/13/y",
     "value": 1,
     "version": "serial/13/y:initial",
@@ -3268,7 +3268,7 @@
   {
     "transaction": "serial:13:1",
     "action": "point-write",
-    "observedAtUs": 3781000,
+    "observedAtUs": 4015000,
     "key": "serial/13/y",
     "value": 0,
     "version": "serial:13:1:write",
@@ -3278,7 +3278,7 @@
   {
     "transaction": "serial:13:0",
     "action": "point-write",
-    "observedAtUs": 3781000,
+    "observedAtUs": 4015000,
     "key": "serial/13/x",
     "value": 0,
     "version": "serial:13:0:write",
@@ -3288,7 +3288,7 @@
   {
     "transaction": "serial:13:0",
     "action": "server-abort",
-    "observedAtUs": 3781000,
+    "observedAtUs": 4031000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
@@ -3296,21 +3296,21 @@
   {
     "transaction": "serial:13:1",
     "action": "commit-ack",
-    "observedAtUs": 3781000,
+    "observedAtUs": 4031000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:13:0:retry1",
     "action": "begin",
-    "observedAtUs": 3844000,
+    "observedAtUs": 4093000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 105700,
+    "backendPid": 119832,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:13:0:retry1",
     "action": "point-read",
-    "observedAtUs": 3844000,
+    "observedAtUs": 4093000,
     "key": "serial/13/x",
     "value": 1,
     "version": "serial/13/x:initial",
@@ -3319,7 +3319,7 @@
   {
     "transaction": "serial:13:0:retry1",
     "action": "point-read",
-    "observedAtUs": 3844000,
+    "observedAtUs": 4093000,
     "key": "serial/13/y",
     "value": 0,
     "version": "serial:13:1:write",
@@ -3328,47 +3328,47 @@
   {
     "transaction": "serial:13:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 3844000,
+    "observedAtUs": 4093000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:14:0",
     "action": "begin",
-    "observedAtUs": 3922000,
+    "observedAtUs": 4172000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 49260,
+    "backendPid": 119768,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:14:0",
+    "action": "point-read",
+    "observedAtUs": 4172000,
+    "key": "serial/14/x",
+    "value": 1,
+    "version": "serial/14/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:14:0",
+    "action": "point-read",
+    "observedAtUs": 4172000,
+    "key": "serial/14/y",
+    "value": 1,
+    "version": "serial/14/y:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "serial:14:1",
     "action": "begin",
-    "observedAtUs": 3922000,
+    "observedAtUs": 4187000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 108992,
+    "backendPid": 21112,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:14:0",
-    "action": "point-read",
-    "observedAtUs": 3922000,
-    "key": "serial/14/x",
-    "value": 1,
-    "version": "serial/14/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:14:0",
-    "action": "point-read",
-    "observedAtUs": 3922000,
-    "key": "serial/14/y",
-    "value": 1,
-    "version": "serial/14/y:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
     "transaction": "serial:14:1",
     "action": "point-read",
-    "observedAtUs": 3922000,
+    "observedAtUs": 4187000,
     "key": "serial/14/x",
     "value": 1,
     "version": "serial/14/x:initial",
@@ -3377,26 +3377,16 @@
   {
     "transaction": "serial:14:1",
     "action": "point-read",
-    "observedAtUs": 3922000,
+    "observedAtUs": 4187000,
     "key": "serial/14/y",
     "value": 1,
     "version": "serial/14/y:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:14:1",
-    "action": "point-write",
-    "observedAtUs": 3937000,
-    "key": "serial/14/y",
-    "value": 0,
-    "version": "serial:14:1:write",
-    "affectedRows": 1,
-    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
-  },
-  {
     "transaction": "serial:14:0",
     "action": "point-write",
-    "observedAtUs": 3937000,
+    "observedAtUs": 4187000,
     "key": "serial/14/x",
     "value": 0,
     "version": "serial:14:0:write",
@@ -3404,71 +3394,73 @@
     "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
-    "transaction": "serial:14:0",
+    "transaction": "serial:14:1",
+    "action": "point-write",
+    "observedAtUs": 4187000,
+    "key": "serial/14/y",
+    "value": 0,
+    "version": "serial:14:1:write",
+    "affectedRows": 1,
+    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
+  },
+  {
+    "transaction": "serial:14:1",
     "action": "server-abort",
-    "observedAtUs": 3937000,
+    "observedAtUs": 4203000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
   },
   {
-    "transaction": "serial:14:1",
+    "transaction": "serial:14:0",
     "action": "commit-ack",
-    "observedAtUs": 3937000,
+    "observedAtUs": 4203000,
     "sql": "COMMIT"
   },
   {
-    "transaction": "serial:14:0:retry1",
+    "transaction": "serial:14:1:retry1",
     "action": "begin",
-    "observedAtUs": 4000000,
+    "observedAtUs": 4265000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109216,
+    "backendPid": 74448,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:14:0:retry1",
+    "transaction": "serial:14:1:retry1",
     "action": "point-read",
-    "observedAtUs": 4000000,
+    "observedAtUs": 4281000,
     "key": "serial/14/x",
-    "value": 1,
-    "version": "serial/14/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:14:0:retry1",
-    "action": "point-read",
-    "observedAtUs": 4000000,
-    "key": "serial/14/y",
     "value": 0,
-    "version": "serial:14:1:write",
+    "version": "serial:14:0:write",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:14:0:retry1",
+    "transaction": "serial:14:1:retry1",
+    "action": "point-read",
+    "observedAtUs": 4281000,
+    "key": "serial/14/y",
+    "value": 1,
+    "version": "serial/14/y:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:14:1:retry1",
     "action": "commit-ack",
-    "observedAtUs": 4000000,
+    "observedAtUs": 4281000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:15:0",
     "action": "begin",
-    "observedAtUs": 4078000,
+    "observedAtUs": 4343000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 110300,
-    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
-  },
-  {
-    "transaction": "serial:15:1",
-    "action": "begin",
-    "observedAtUs": 4078000,
-    "isolation": "SERIALIZABLE",
-    "backendPid": 106708,
+    "backendPid": 116964,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:15:0",
     "action": "point-read",
-    "observedAtUs": 4078000,
+    "observedAtUs": 4359000,
     "key": "serial/15/x",
     "value": 1,
     "version": "serial/15/x:initial",
@@ -3477,7 +3469,7 @@
   {
     "transaction": "serial:15:0",
     "action": "point-read",
-    "observedAtUs": 4078000,
+    "observedAtUs": 4359000,
     "key": "serial/15/y",
     "value": 1,
     "version": "serial/15/y:initial",
@@ -3485,8 +3477,16 @@
   },
   {
     "transaction": "serial:15:1",
+    "action": "begin",
+    "observedAtUs": 4359000,
+    "isolation": "SERIALIZABLE",
+    "backendPid": 120400,
+    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:15:1",
     "action": "point-read",
-    "observedAtUs": 4078000,
+    "observedAtUs": 4359000,
     "key": "serial/15/x",
     "value": 1,
     "version": "serial/15/x:initial",
@@ -3495,7 +3495,7 @@
   {
     "transaction": "serial:15:1",
     "action": "point-read",
-    "observedAtUs": 4078000,
+    "observedAtUs": 4359000,
     "key": "serial/15/y",
     "value": 1,
     "version": "serial/15/y:initial",
@@ -3504,7 +3504,7 @@
   {
     "transaction": "serial:15:1",
     "action": "point-write",
-    "observedAtUs": 4094000,
+    "observedAtUs": 4359000,
     "key": "serial/15/y",
     "value": 0,
     "version": "serial:15:1:write",
@@ -3514,7 +3514,7 @@
   {
     "transaction": "serial:15:0",
     "action": "point-write",
-    "observedAtUs": 4094000,
+    "observedAtUs": 4359000,
     "key": "serial/15/x",
     "value": 0,
     "version": "serial:15:0:write",
@@ -3524,7 +3524,7 @@
   {
     "transaction": "serial:15:0",
     "action": "server-abort",
-    "observedAtUs": 4094000,
+    "observedAtUs": 4359000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
@@ -3532,21 +3532,21 @@
   {
     "transaction": "serial:15:1",
     "action": "commit-ack",
-    "observedAtUs": 4094000,
+    "observedAtUs": 4359000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:15:0:retry1",
     "action": "begin",
-    "observedAtUs": 4156000,
+    "observedAtUs": 4422000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109268,
+    "backendPid": 115812,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:15:0:retry1",
     "action": "point-read",
-    "observedAtUs": 4156000,
+    "observedAtUs": 4422000,
     "key": "serial/15/x",
     "value": 1,
     "version": "serial/15/x:initial",
@@ -3555,7 +3555,7 @@
   {
     "transaction": "serial:15:0:retry1",
     "action": "point-read",
-    "observedAtUs": 4156000,
+    "observedAtUs": 4422000,
     "key": "serial/15/y",
     "value": 0,
     "version": "serial:15:1:write",
@@ -3564,21 +3564,29 @@
   {
     "transaction": "serial:15:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 4156000,
+    "observedAtUs": 4422000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:16:0",
     "action": "begin",
-    "observedAtUs": 4219000,
+    "observedAtUs": 4500000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 106228,
+    "backendPid": 3592,
+    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:16:1",
+    "action": "begin",
+    "observedAtUs": 4500000,
+    "isolation": "SERIALIZABLE",
+    "backendPid": 115980,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:16:0",
     "action": "point-read",
-    "observedAtUs": 4234000,
+    "observedAtUs": 4500000,
     "key": "serial/16/x",
     "value": 1,
     "version": "serial/16/x:initial",
@@ -3587,7 +3595,7 @@
   {
     "transaction": "serial:16:0",
     "action": "point-read",
-    "observedAtUs": 4234000,
+    "observedAtUs": 4500000,
     "key": "serial/16/y",
     "value": 1,
     "version": "serial/16/y:initial",
@@ -3595,16 +3603,8 @@
   },
   {
     "transaction": "serial:16:1",
-    "action": "begin",
-    "observedAtUs": 4234000,
-    "isolation": "SERIALIZABLE",
-    "backendPid": 101536,
-    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
-  },
-  {
-    "transaction": "serial:16:1",
     "action": "point-read",
-    "observedAtUs": 4234000,
+    "observedAtUs": 4500000,
     "key": "serial/16/x",
     "value": 1,
     "version": "serial/16/x:initial",
@@ -3613,7 +3613,7 @@
   {
     "transaction": "serial:16:1",
     "action": "point-read",
-    "observedAtUs": 4234000,
+    "observedAtUs": 4500000,
     "key": "serial/16/y",
     "value": 1,
     "version": "serial/16/y:initial",
@@ -3622,7 +3622,7 @@
   {
     "transaction": "serial:16:1",
     "action": "point-write",
-    "observedAtUs": 4234000,
+    "observedAtUs": 4500000,
     "key": "serial/16/y",
     "value": 0,
     "version": "serial:16:1:write",
@@ -3632,7 +3632,7 @@
   {
     "transaction": "serial:16:0",
     "action": "point-write",
-    "observedAtUs": 4234000,
+    "observedAtUs": 4500000,
     "key": "serial/16/x",
     "value": 0,
     "version": "serial:16:0:write",
@@ -3642,7 +3642,7 @@
   {
     "transaction": "serial:16:0",
     "action": "server-abort",
-    "observedAtUs": 4234000,
+    "observedAtUs": 4500000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
@@ -3650,21 +3650,21 @@
   {
     "transaction": "serial:16:1",
     "action": "commit-ack",
-    "observedAtUs": 4234000,
+    "observedAtUs": 4500000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:16:0:retry1",
     "action": "begin",
-    "observedAtUs": 4297000,
+    "observedAtUs": 4562000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 109944,
+    "backendPid": 42688,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:16:0:retry1",
     "action": "point-read",
-    "observedAtUs": 4312000,
+    "observedAtUs": 4578000,
     "key": "serial/16/x",
     "value": 1,
     "version": "serial/16/x:initial",
@@ -3673,7 +3673,7 @@
   {
     "transaction": "serial:16:0:retry1",
     "action": "point-read",
-    "observedAtUs": 4312000,
+    "observedAtUs": 4578000,
     "key": "serial/16/y",
     "value": 0,
     "version": "serial:16:1:write",
@@ -3682,38 +3682,29 @@
   {
     "transaction": "serial:16:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 4312000,
+    "observedAtUs": 4578000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:17:0",
     "action": "begin",
-    "observedAtUs": 4375000,
+    "observedAtUs": 4640000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 103772,
+    "backendPid": 108896,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:17:1",
     "action": "begin",
-    "observedAtUs": 4375000,
+    "observedAtUs": 4640000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 96324,
+    "backendPid": 118188,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:17:0",
     "action": "point-read",
-    "observedAtUs": 4390000,
-    "key": "serial/17/x",
-    "value": 1,
-    "version": "serial/17/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:17:1",
-    "action": "point-read",
-    "observedAtUs": 4390000,
+    "observedAtUs": 4640000,
     "key": "serial/17/x",
     "value": 1,
     "version": "serial/17/x:initial",
@@ -3722,7 +3713,7 @@
   {
     "transaction": "serial:17:0",
     "action": "point-read",
-    "observedAtUs": 4390000,
+    "observedAtUs": 4640000,
     "key": "serial/17/y",
     "value": 1,
     "version": "serial/17/y:initial",
@@ -3731,26 +3722,25 @@
   {
     "transaction": "serial:17:1",
     "action": "point-read",
-    "observedAtUs": 4390000,
+    "observedAtUs": 4640000,
+    "key": "serial/17/x",
+    "value": 1,
+    "version": "serial/17/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:17:1",
+    "action": "point-read",
+    "observedAtUs": 4640000,
     "key": "serial/17/y",
     "value": 1,
     "version": "serial/17/y:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:17:0",
-    "action": "point-write",
-    "observedAtUs": 4390000,
-    "key": "serial/17/x",
-    "value": 0,
-    "version": "serial:17:0:write",
-    "affectedRows": 1,
-    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
-  },
-  {
     "transaction": "serial:17:1",
     "action": "point-write",
-    "observedAtUs": 4390000,
+    "observedAtUs": 4640000,
     "key": "serial/17/y",
     "value": 0,
     "version": "serial:17:1:write",
@@ -3758,63 +3748,81 @@
     "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
-    "transaction": "serial:17:1",
+    "transaction": "serial:17:0",
+    "action": "point-write",
+    "observedAtUs": 4640000,
+    "key": "serial/17/x",
+    "value": 0,
+    "version": "serial:17:0:write",
+    "affectedRows": 1,
+    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
+  },
+  {
+    "transaction": "serial:17:0",
     "action": "server-abort",
-    "observedAtUs": 4390000,
+    "observedAtUs": 4640000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
   },
   {
-    "transaction": "serial:17:0",
+    "transaction": "serial:17:1",
     "action": "commit-ack",
-    "observedAtUs": 4390000,
+    "observedAtUs": 4640000,
     "sql": "COMMIT"
   },
   {
-    "transaction": "serial:17:1:retry1",
+    "transaction": "serial:17:0:retry1",
     "action": "begin",
-    "observedAtUs": 4453000,
+    "observedAtUs": 4703000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 107412,
+    "backendPid": 115848,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:17:1:retry1",
+    "transaction": "serial:17:0:retry1",
     "action": "point-read",
-    "observedAtUs": 4453000,
+    "observedAtUs": 4703000,
     "key": "serial/17/x",
-    "value": 0,
-    "version": "serial:17:0:write",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:17:1:retry1",
-    "action": "point-read",
-    "observedAtUs": 4453000,
-    "key": "serial/17/y",
     "value": 1,
-    "version": "serial/17/y:initial",
+    "version": "serial/17/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:17:1:retry1",
+    "transaction": "serial:17:0:retry1",
+    "action": "point-read",
+    "observedAtUs": 4718000,
+    "key": "serial/17/y",
+    "value": 0,
+    "version": "serial:17:1:write",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:17:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 4453000,
+    "observedAtUs": 4718000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:18:0",
     "action": "begin",
-    "observedAtUs": 4515000,
+    "observedAtUs": 4781000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 90880,
+    "backendPid": 117232,
+    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:18:1",
+    "action": "begin",
+    "observedAtUs": 4781000,
+    "isolation": "SERIALIZABLE",
+    "backendPid": 119108,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:18:0",
     "action": "point-read",
-    "observedAtUs": 4515000,
+    "observedAtUs": 4781000,
     "key": "serial/18/x",
     "value": 1,
     "version": "serial/18/x:initial",
@@ -3823,7 +3831,7 @@
   {
     "transaction": "serial:18:0",
     "action": "point-read",
-    "observedAtUs": 4515000,
+    "observedAtUs": 4781000,
     "key": "serial/18/y",
     "value": 1,
     "version": "serial/18/y:initial",
@@ -3831,16 +3839,8 @@
   },
   {
     "transaction": "serial:18:1",
-    "action": "begin",
-    "observedAtUs": 4531000,
-    "isolation": "SERIALIZABLE",
-    "backendPid": 109596,
-    "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
-  },
-  {
-    "transaction": "serial:18:1",
     "action": "point-read",
-    "observedAtUs": 4531000,
+    "observedAtUs": 4781000,
     "key": "serial/18/x",
     "value": 1,
     "version": "serial/18/x:initial",
@@ -3849,7 +3849,7 @@
   {
     "transaction": "serial:18:1",
     "action": "point-read",
-    "observedAtUs": 4531000,
+    "observedAtUs": 4781000,
     "key": "serial/18/y",
     "value": 1,
     "version": "serial/18/y:initial",
@@ -3858,7 +3858,7 @@
   {
     "transaction": "serial:18:1",
     "action": "point-write",
-    "observedAtUs": 4531000,
+    "observedAtUs": 4781000,
     "key": "serial/18/y",
     "value": 0,
     "version": "serial:18:1:write",
@@ -3868,7 +3868,7 @@
   {
     "transaction": "serial:18:0",
     "action": "point-write",
-    "observedAtUs": 4531000,
+    "observedAtUs": 4781000,
     "key": "serial/18/x",
     "value": 0,
     "version": "serial:18:0:write",
@@ -3878,7 +3878,7 @@
   {
     "transaction": "serial:18:0",
     "action": "server-abort",
-    "observedAtUs": 4531000,
+    "observedAtUs": 4781000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
@@ -3886,21 +3886,21 @@
   {
     "transaction": "serial:18:1",
     "action": "commit-ack",
-    "observedAtUs": 4531000,
+    "observedAtUs": 4781000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:18:0:retry1",
     "action": "begin",
-    "observedAtUs": 4594000,
+    "observedAtUs": 4859000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 108720,
+    "backendPid": 48364,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
     "transaction": "serial:18:0:retry1",
     "action": "point-read",
-    "observedAtUs": 4594000,
+    "observedAtUs": 4859000,
     "key": "serial/18/x",
     "value": 1,
     "version": "serial/18/x:initial",
@@ -3909,7 +3909,7 @@
   {
     "transaction": "serial:18:0:retry1",
     "action": "point-read",
-    "observedAtUs": 4594000,
+    "observedAtUs": 4859000,
     "key": "serial/18/y",
     "value": 0,
     "version": "serial:18:1:write",
@@ -3918,29 +3918,47 @@
   {
     "transaction": "serial:18:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 4594000,
+    "observedAtUs": 4859000,
     "sql": "COMMIT"
   },
   {
     "transaction": "serial:19:0",
     "action": "begin",
-    "observedAtUs": 4656000,
+    "observedAtUs": 4937000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 110248,
+    "backendPid": 116504,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
+  },
+  {
+    "transaction": "serial:19:0",
+    "action": "point-read",
+    "observedAtUs": 4937000,
+    "key": "serial/19/x",
+    "value": 1,
+    "version": "serial/19/x:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:19:0",
+    "action": "point-read",
+    "observedAtUs": 4937000,
+    "key": "serial/19/y",
+    "value": 1,
+    "version": "serial/19/y:initial",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
     "transaction": "serial:19:1",
     "action": "begin",
-    "observedAtUs": 4656000,
+    "observedAtUs": 4937000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 108040,
+    "backendPid": 114412,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:19:0",
+    "transaction": "serial:19:1",
     "action": "point-read",
-    "observedAtUs": 4656000,
+    "observedAtUs": 4953000,
     "key": "serial/19/x",
     "value": 1,
     "version": "serial/19/x:initial",
@@ -3949,16 +3967,7 @@
   {
     "transaction": "serial:19:1",
     "action": "point-read",
-    "observedAtUs": 4656000,
-    "key": "serial/19/x",
-    "value": 1,
-    "version": "serial/19/x:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:19:0",
-    "action": "point-read",
-    "observedAtUs": 4656000,
+    "observedAtUs": 4953000,
     "key": "serial/19/y",
     "value": 1,
     "version": "serial/19/y:initial",
@@ -3966,27 +3975,8 @@
   },
   {
     "transaction": "serial:19:1",
-    "action": "point-read",
-    "observedAtUs": 4656000,
-    "key": "serial/19/y",
-    "value": 1,
-    "version": "serial/19/y:initial",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:19:0",
     "action": "point-write",
-    "observedAtUs": 4656000,
-    "key": "serial/19/x",
-    "value": 0,
-    "version": "serial:19:0:write",
-    "affectedRows": 1,
-    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
-  },
-  {
-    "transaction": "serial:19:1",
-    "action": "point-write",
-    "observedAtUs": 4656000,
+    "observedAtUs": 4953000,
     "key": "serial/19/y",
     "value": 0,
     "version": "serial:19:1:write",
@@ -3994,49 +3984,59 @@
     "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
   },
   {
-    "transaction": "serial:19:1",
+    "transaction": "serial:19:0",
+    "action": "point-write",
+    "observedAtUs": 4953000,
+    "key": "serial/19/x",
+    "value": 0,
+    "version": "serial:19:0:write",
+    "affectedRows": 1,
+    "sql": "UPDATE <fixture>.registers SET value=0,version=%s WHERE key=%s"
+  },
+  {
+    "transaction": "serial:19:0",
     "action": "server-abort",
-    "observedAtUs": 4672000,
+    "observedAtUs": 4953000,
     "sqlstate": "40001",
     "rollbackAcknowledged": true,
     "sql": "ROLLBACK"
   },
   {
-    "transaction": "serial:19:0",
+    "transaction": "serial:19:1",
     "action": "commit-ack",
-    "observedAtUs": 4672000,
+    "observedAtUs": 4953000,
     "sql": "COMMIT"
   },
   {
-    "transaction": "serial:19:1:retry1",
+    "transaction": "serial:19:0:retry1",
     "action": "begin",
-    "observedAtUs": 4734000,
+    "observedAtUs": 5015000,
     "isolation": "SERIALIZABLE",
-    "backendPid": 108892,
+    "backendPid": 119420,
     "sql": "BEGIN ISOLATION LEVEL SERIALIZABLE"
   },
   {
-    "transaction": "serial:19:1:retry1",
+    "transaction": "serial:19:0:retry1",
     "action": "point-read",
-    "observedAtUs": 4734000,
+    "observedAtUs": 5015000,
     "key": "serial/19/x",
-    "value": 0,
-    "version": "serial:19:0:write",
-    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
-  },
-  {
-    "transaction": "serial:19:1:retry1",
-    "action": "point-read",
-    "observedAtUs": 4734000,
-    "key": "serial/19/y",
     "value": 1,
-    "version": "serial/19/y:initial",
+    "version": "serial/19/x:initial",
     "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
   },
   {
-    "transaction": "serial:19:1:retry1",
+    "transaction": "serial:19:0:retry1",
+    "action": "point-read",
+    "observedAtUs": 5031000,
+    "key": "serial/19/y",
+    "value": 0,
+    "version": "serial:19:1:write",
+    "sql": "SELECT value,version FROM <fixture>.registers WHERE key=%s"
+  },
+  {
+    "transaction": "serial:19:0:retry1",
     "action": "commit-ack",
-    "observedAtUs": 4734000,
+    "observedAtUs": 5031000,
     "sql": "COMMIT"
   }
 ]
