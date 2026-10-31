@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
   verify:
     strategy:
@@ -37,6 +38,8 @@ jobs:
         run: python -B -m unittest discover -s scripts -p test_repository_hygiene.py -v
       - name: Test bounded receipt storage
         run: python -B -m unittest discover -s scripts -p test_evidence_json.py -v
+      - name: Test exact-source PostgreSQL CI import boundaries
+        run: python -B -m unittest discover -s scripts -p test_postgres_ci_import.py -v
       - name: Test frozen input cache faults
         run: python -B -m unittest discover -s scripts -p test_input_cache.py -v
       - name: Check package and publication contracts before compilation
@@ -77,6 +80,10 @@ jobs:
       - name: Execute Native core on Linux
         if: runner.os == 'Linux'
         run: node scripts/moon.mjs test --target native --deny-warn
+      - name: Import same-source successful PostgreSQL CI packet
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -B scripts/import_postgres_ci_bundle.py
       - name: Verify fresh source and portable consumers
         run: npm run package
       - name: Validate actual integration compatibility receipt
