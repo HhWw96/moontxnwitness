@@ -68,6 +68,11 @@ if tuple(map(int, VERSION.split('.'))) >= (0, 3, 3):
     for helper in ('legacy-v032.mjs', 'legacy-v032-binding.mjs', 'compact-runtime.mjs'):
         assert (ROOT / 'cmd' / helper).read_bytes() == (ROOT / 'dist' / helper).read_bytes(), 'Fixed public32 helper changed after build: ' + helper
 
+if tuple(map(int, VERSION.split('.'))) >= (0, 3, 4):
+    for helper in ('legacy-v033.mjs', 'legacy-v033-binding.mjs'):
+        assert (ROOT / 'cmd' / helper).read_bytes() == (ROOT / 'dist' / helper).read_bytes(), 'Fixed public33 helper changed after build: ' + helper
+
+
 def archive(files, path):
     home_paths = private_home_paths(
         str(Path.home()), github_actions=os.environ.get('GITHUB_ACTIONS') == 'true',
@@ -174,6 +179,19 @@ for kind in ("portable", "source"):
             result = json.loads(run([NODE, 'scripts/' + script], consumer))
             assert result['passed'] is True and result['checks'] > 0
             checks.append(kind + ' ' + label)
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 4):
+        parts = []
+        for group in ('core', 'capture', 'models', 'classification', 'profiles', 'v4', 'integrity'):
+            destination = work / ('public033-' + kind) / group
+            result = json.loads(run([NODE, 'scripts/public033-compatibility-test.mjs', '--group', group,
+                                    '--runtime', str(consumer / 'dist'), '--output-root', str(destination)], consumer))
+            assert result['passed'] is True and result['currentVersion'] == VERSION
+            parts.append(str(destination / 'public033-compatibility-validation.json'))
+            checks.append(kind + ' public033 original fixed compatibility group ' + group)
+        public033 = json.loads(run([NODE, 'scripts/public033-compatibility-groups.mjs', *parts], consumer))
+        assert public033['passed'] is True and public033['checks'] == 47 and public033['groups'] == 7
+        assert public033['currentVersion'] == VERSION
+        checks.append(kind + ' public033 all 47 original checks and 15 fixed method families')
     if RELATION034:
         capability = {'sourceAuditPerformed': kind == 'source', 'runtimeOnlyPortableChecks': kind == 'portable',
                       'newIndependentReviewPerformed': False, 'actualDatabaseExecution': False, 'results': {}}

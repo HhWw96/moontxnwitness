@@ -42,6 +42,22 @@ def validate_public032_compatibility_receipt(summary, version):
     return value
 
 
+
+def validate_public033_compatibility_receipt(summary, version):
+    value = summary['public033CompatibilityTests']
+    assert value['passed'] is True and value['checks'] == 47 and value['groups'] == 7
+    assert value['currentVersion'] == version and value['usesPublishedRuntimeOnly'] is True
+    assert value['historicalSourceSnapshotCreated'] is False and value['sourcePoolUnchanged'] is True
+    assert value['candidateRuntimeFiles']['core.mjs']['sha256'] == summary['buildManifest']['coreSha256']
+    # Reuse the complete executable receipt contract, including distinct case IDs,
+    # all methods, every group's provenance and the exact candidate file inventory.
+    checked = subprocess.run([os.environ.get('MTW_NODE', 'node'), '--input-type=module', '-e',
+        "import{collectPublic033Groups}from'./scripts/public033-compatibility-groups.mjs';let s='';for await(const b of process.stdin)s+=b;console.log(JSON.stringify(collectPublic033Groups(JSON.parse(s))));"],
+        cwd=ROOT, input=json.dumps(value['receipts']), text=True, capture_output=True, check=True, timeout=180)
+    assert json.loads(checked.stdout) == value
+    return value
+
+
 def validate_register_direct_category_audit(summary, version):
     audit = summary['registerDirectCategoryAudit']
     assert audit['passed'] is True and audit['failed'] == 0 and audit['checks'] >= 6
@@ -288,6 +304,18 @@ def validate_scoped_acceptance(acceptance, manifest):
             for group in ('core', 'capture', 'models', 'classification', 'profiles', 'v4', 'integrity'):
                 assert kind + ' public032 original fixed compatibility group ' + group in package['checks']
             assert kind + ' public032 all 47 original checks and 15 fixed method families' in package['checks']
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 4):
+        validate_public033_compatibility_receipt(summary, VERSION)
+        foundation = summary['foundation034']
+        for field in ('sourceRulesHostTests', 'categoryReductionHostTests', 'currentBuildBindingTests',
+                      'publicBoundaryRegression', 'sourceRulesExample', 'categoryReductionExample',
+                      'compatibilityStagingTests'):
+            assert foundation[field]['passed'] is True
+        for kind in ('source', 'portable'):
+            for group in ('core', 'capture', 'models', 'classification', 'profiles', 'v4', 'integrity'):
+                assert kind + ' public033 original fixed compatibility group ' + group in package['checks']
+            assert kind + ' public033 all 47 original checks and 15 fixed method families' in package['checks']
 
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names
@@ -610,6 +638,8 @@ if __name__ == '__main__':
             validate_register_direct_category_audit(summary, VERSION)
         if tuple(map(int, VERSION.split('.'))) >= (0, 3, 3):
             validate_public032_compatibility_receipt(summary, VERSION)
+        if tuple(map(int, VERSION.split('.'))) >= (0, 3, 4):
+            validate_public033_compatibility_receipt(summary, VERSION)
         print('Current integration compatibility receipt contract passed: ' + VERSION)
     else:
         publish()

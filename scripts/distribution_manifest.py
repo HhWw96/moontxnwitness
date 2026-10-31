@@ -414,6 +414,13 @@ def select_distribution_files(root, public_names, tested_files, version):
         for name in V033_ANOMALY_AUDIT_SOURCES:
             require(name, 'portable anomaly audit: exact current source byte bindings')
             portable.add(name)
+    if tuple(map(int, version.split('.'))) >= (0, 3, 4):
+        for name in ('scripts/public033-compatibility-test.mjs', 'scripts/public033-compatibility-groups.mjs'):
+            require(name, 'fresh-consumer exact public033 runtime compatibility')
+            portable.add(name)
+        for helper in ('legacy-v033.mjs', 'legacy-v033-binding.mjs'):
+            require('cmd/' + helper, 'fixed public033 dispatch and immutable binding')
+            require('dist/' + helper, 'installed public033 dispatch and immutable binding')
     if relation034:
         portable.update(RELATION034_PORTABLE_INPUTS)
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))

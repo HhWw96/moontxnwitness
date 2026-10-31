@@ -9,6 +9,7 @@ import {writeVerifiedJson,writeImmutableEvidence} from './performance-evidence.m
 import {tmpdir} from 'node:os';
 import {relativeEvidencePath} from './evidence-reference.mjs';
 import {PUBLIC032_GROUPS,collectPublic032Groups} from './public032-compatibility-groups.mjs';
+import {PUBLIC033_GROUPS,collectPublic033Groups} from './public033-compatibility-groups.mjs';
 prepareInputs(root,'tests');
 await import('./evidence-reference-test.mjs');
 
@@ -53,6 +54,15 @@ for(const group of Object.keys(PUBLIC032_GROUPS)){
 }
 const public032Compatibility=collectPublic032Groups(public032Parts);
 for(const result of public032Compatibility.receipts){result.runtime=relativeEvidencePath(root,result.runtime);result.runDirectory=relativeEvidencePath(root,result.runDirectory);}
+const public033Parts=[];
+for(const group of Object.keys(PUBLIC033_GROUPS)){
+ const destination=resolve(root,'artifacts/public033-full-test',group);
+ const child=spawnSync(process.execPath,['scripts/public033-compatibility-test.mjs','--group',group,'--output-root',destination],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:8*1024*1024});
+ if(child.error||child.status!==0)throw Error('Public033 '+group+' compatibility failed: '+child.stdout+child.stderr);
+ const result=JSON.parse(child.stdout);assert.equal(result.passed,true);public033Parts.push(result);
+}
+const public033Compatibility=collectPublic033Groups(public033Parts);
+for(const result of public033Compatibility.receipts){result.runtime=relativeEvidencePath(root,result.runtime);result.runDirectory=relativeEvidencePath(root,result.runDirectory);}
 const foundation033 = {};
 for (const [field,script] of [
   ['sourceAnomalyHostTests','v033-sdk-test.mjs'],
@@ -98,6 +108,10 @@ const staging033=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.
   ['-X','utf8','scripts/test_compat032_staging.py'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
 if(staging033.error||staging033.status!==0)throw Error('Compatibility staging faults failed: '+staging033.stdout+staging033.stderr);
 foundation033.compatibilityStagingTests=JSON.parse(staging033.stdout);assert.equal(foundation033.compatibilityStagingTests.passed,true);
+const staging034=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),
+  ['-B','-X','utf8','scripts/test_compat033_staging.py'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
+if(staging034.error||staging034.status!==0)throw Error('Public033 component staging faults failed: '+staging034.stdout+staging034.stderr);
+foundation034.compatibilityStagingTests=JSON.parse(staging034.stdout);assert.equal(foundation034.compatibilityStagingTests.passed,true);
 const parser = (await import('./parser-test.mjs')).runParserTests();
 const oracle = (await import('./oracle.mjs')).runOracle();
 const cli = (await import('./cli-test.mjs')).runCliTests();
@@ -364,6 +378,7 @@ receipt.v4HostTests = JSON.parse(v4Check.stdout);
 receipt.foundation033 = foundation033;
 receipt.foundation034 = foundation034;
 receipt.public032CompatibilityTests = public032Compatibility;
+receipt.public033CompatibilityTests = public033Compatibility;
 receipt.v4IndependentAudit = v4IndependentAudit;
 receipt.registerDirectCategoryAudit = directCategoryAudit;
 receipt.public031CompatibilityTests = public031Compatibility;

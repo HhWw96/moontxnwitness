@@ -1,3 +1,13 @@
+# 当前支持范围
+
+## v0.3.4 关系点分类与来源规则
+
+关系点图入口 `classifyRelationV4` 提供 G0、G1c、G2-item 的独立搜索和原操作见证。原始捕获的 G1a、G1b 由 `inspectCaptureAnomaliesV4` 核对；事务内部读取由 `inspectInternalConsistencyV4` 核对。它们分别提供验证和完整来源胶囊，并保持各自的判断范围。
+
+`reduceRelationCategoryV4` 指定要保留的关系异常类别，每次候选删除后重验来源、图和见证。保存点撤销只作用于写效果，读取观察仍保留；最小性与完成的候选检查绑定。直接运行 `node examples/relation-category-reduction.mjs` 可查看缩减和重放，完整用法见[关系库工作流](relation-library-workflow.md)。
+
+旧 `classifyV4` 的关系结果保留原语义；调用者显式使用新的关系入口。新版图分类与六模型检查分开，谓词及更广模型由后续独立接口提供。
+
 # v0.3.0 支持矩阵补充
 
 ## v0.3.3 来源诊断与列表图
