@@ -1,0 +1,97 @@
+name: Verify shared SDK candidate
+on:
+  push:
+    branches: [development/v039-shared-sdk-core]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  shared-sdk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      MOONBIT_INSTALL_VERSION: 0.10.16+b1a0e846e
+      MTW_INPUT_CACHE: ${{ github.workspace }}/artifacts/input-cache
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      NODE_OPTIONS: --max-old-space-size=768
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24.13.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Install pinned compiler and optional parser
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$MOONBIT_INSTALL_VERSION"
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+          python -m pip install --require-hashes -r integrations/python/requirements-configured-sql.txt
+      - name: Generate actual interfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/shared-sdk-candidate/interfaces/src/bridge
+          node scripts/toolchain-policy.mjs
+          node scripts/moon.mjs info --target js --deny-warn
+          cp src/bridge/pkg.generated.mbti artifacts/shared-sdk-candidate/interfaces/src/bridge/
+          cp src/pkg.generated.mbti artifacts/shared-sdk-candidate/interfaces/src/
+          git diff -- src/bridge/pkg.generated.mbti src/pkg.generated.mbti > artifacts/shared-sdk-candidate/generated-interfaces.diff
+          python -B - <<'PY'
+          import hashlib,json,os,subprocess
+          from pathlib import Path
+          paths=['src/bridge/pkg.generated.mbti','src/pkg.generated.mbti']
+          value={'format':'actual-compiler-interface-generation/v1','sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'runId':os.environ['GITHUB_RUN_ID'],'compilerGenerationExecuted':True,'files':{p:{'bytes':len(Path(p).read_bytes()),'sha256':hashlib.sha256(Path(p).read_bytes()).hexdigest()}for p in paths}}
+          Path('artifacts/shared-sdk-candidate/interfaces.json').write_text(json.dumps(value,indent=2)+'\n')
+          PY
+          git diff --exit-code -- src/pkg.generated.mbti
+      - name: Build six genuine runtime roles
+        run: node scripts/build.mjs
+      - name: Execute shared and standalone conformance
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/shared-core-host-test.mjs > artifacts/shared-sdk-candidate/host.json
+          python -B -m unittest discover -s scripts -p test_shared039_contract.py -v
+          node scripts/shared-core-runtime-test.mjs artifacts/shared-sdk-candidate/shared-runtime.json > artifacts/shared-sdk-candidate/shared-runtime.stdout.json
+          node scripts/configured-session-integration-test.mjs > artifacts/shared-sdk-candidate/configured117.json
+          node scripts/native-report-sdk-test.mjs dist artifacts/shared-sdk-candidate/native39.json > artifacts/shared-sdk-candidate/native39.stdout.json
+          python -B scripts/configured-sql-cross-inputs.py > artifacts/shared-sdk-candidate/sql-input-generation.json
+          node scripts/configured-sql-cross-test.mjs > artifacts/shared-sdk-candidate/sql-cross.stdout.json
+          cp artifacts/sql-projection-cross-validation.json artifacts/shared-sdk-candidate/sql-cross.json
+          cp dist/build-manifest.json artifacts/shared-sdk-candidate/build-manifest.json
+          python -B - <<'PY'
+          import hashlib,json,os,subprocess,sys
+          from pathlib import Path
+          sys.path.insert(0,'scripts')
+          from shared_core_contract import validate_shared039_receipt
+          p=Path('artifacts/shared-sdk-candidate')
+          load=lambda n:json.loads((p/n).read_text())
+          manifest=load('build-manifest.json');shared=load('shared-runtime.json')
+          sdk=hashlib.sha256(Path('dist/sdk.mjs').read_bytes()).hexdigest()
+          validate_shared039_receipt(shared,manifest,sdk)
+          configured=load('configured117.json')
+          assert configured['passed'] is True
+          assert sum(x['checks']for x in configured['results'].values())==117
+          native=load('native39.json');assert native['passed'] is True and native['tests']==39
+          sql=load('sql-cross.json');assert sql['passed'] is True and type(sql['checks'])is int and sql['checks']>0
+          assert sql['sharedCoreSha256']==manifest['coreSha256']
+          assert sql['coreSha256']==manifest['configuredCoreSha256']['sql-projection-core.mjs']
+          assert set(sql['sharedCalls'])=={'normalizeSQLConfigV1','normalizeSQLCandidateV1','verifySQLCandidateV1','compareConfiguredCTextV1'}
+          assert all(type(v)is int and v>0 for v in sql['sharedCalls'].values())
+          result={'format':'shared-sdk-candidate-ci/v1','passed':True,'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'runId':os.environ['GITHUB_RUN_ID'],'sharedChecks':11,'configuredChecks':117,'nativeChecks':39,'independentSqlChecks':sql['checks'],'actualRuntimeCompilation':True,'actualDatabaseExecution':False,'formalPerformanceMeasurement':False,'manifest':manifest,'sdkSha256':sdk}
+          (p/'summary.json').write_text(json.dumps(result,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: shared-sdk-candidate
+          path: |
+            artifacts/shared-sdk-candidate/
+            dist/*.mjs
+            dist/build-manifest.json
+          if-no-files-found: warn
+          compression-level: 6
