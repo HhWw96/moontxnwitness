@@ -36,7 +36,7 @@ jobs:
           set -euo pipefail
           mkdir -p artifacts/shared-sdk-candidate/interfaces/src/bridge
           node scripts/toolchain-policy.mjs
-          node scripts/moon.mjs info --target js --deny-warn
+          node scripts/moon.mjs info --target js
           cp src/bridge/pkg.generated.mbti artifacts/shared-sdk-candidate/interfaces/src/bridge/
           cp src/pkg.generated.mbti artifacts/shared-sdk-candidate/interfaces/src/
           git diff -- src/bridge/pkg.generated.mbti src/pkg.generated.mbti > artifacts/shared-sdk-candidate/generated-interfaces.diff
