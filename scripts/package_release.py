@@ -234,18 +234,18 @@ for kind in ("portable", "source"):
                       'newIndependentReviewPerformed': False, 'actualDatabaseExecution': False,
                       'formalPerformanceMeasurement': False, 'results': {}}
         if kind == 'source':
-            result = json.loads(run([NODE, 'scripts/relation-predicate-sdk-test.mjs'], consumer, timeout=300))
+            result = json.loads(run([NODE, 'scripts/relation-predicate-sdk-test.mjs'], consumer))
             assert result['passed'] is True and result['checks'] == 40 and result['failed'] == 0
             capability['results']['completeSourceSdk'] = result
             checks.append(kind + ' predicate all 40 complete-source SDK CLI and caller-budget replay checks')
-            result = json.loads(run([NODE, 'scripts/v035-predicate-maintenance-test.mjs'], consumer, timeout=300))
+            result = json.loads(run([NODE, 'scripts/v035-predicate-maintenance-test.mjs'], consumer))
             assert result['passed'] is True and result['checks'] == 513 and result['failed'] == 0
             assert result['semanticAssertions'] == 506 and result['currentBuildGuards'] == 7
             assert result['newIndependentReviewPerformed'] is False and result['sourceUnchanged'] is True
             capability['results']['maintainedPredicateRegression'] = result
             checks.append(kind + ' predicate 506 preserved semantic assertions and seven current-build integrity guards')
         else:
-            result = json.loads(run([NODE, 'scripts/v035-portable-predicate-test.mjs'], consumer, timeout=300))
+            result = json.loads(run([NODE, 'scripts/v035-portable-predicate-test.mjs'], consumer))
             assert result['passed'] is True and result['checks'] == 12 and result['failed'] == 0
             assert result['requiresSourceTree'] is False and result['requiresCommandSource'] is False
             assert result['sourceAuditPerformed'] is False and result['newIndependentReviewPerformed'] is False
