@@ -1,6 +1,6 @@
 """Prepare the Linux job's actual SDK subjects, outside every timed worker."""
 from __future__ import annotations
-import argparse,gzip,hashlib,json,os,posixpath,re,shutil,subprocess,sys,tempfile,time,urllib.request,zipfile
+import argparse,gzip,hashlib,json,os,re,shutil,subprocess,sys,tempfile,time,urllib.request,zipfile
 from pathlib import Path
 HERE=Path(__file__).resolve().parent
 VERSION='v0.10.16+b1a0e846e'
@@ -9,7 +9,6 @@ BASE_SDK='534b4c0a2767aee02a7d090c4ce51d49a67f05ccde18424d2a2944df559f407d'
 ARCHIVE='05ce492f51c75f99dc49a1d95658d0d128102913cab6c806956493f1b79b2597'
 BASE_URL='https://github.com/HhWw96/moontxnwitness/releases/download/v0.3.1/MoonTxnWitness-v0.3.1-portable.zip'
 BASE_BYTES=83038095
-IMPORT=re.compile(r"(?:\b(?:import|export)\s+(?:[^;\n]*?\s+from\s*)?)[\"'](\.[^\"']+)[\"']")
 
 def sha(path):
     h=hashlib.sha256()
@@ -59,13 +58,17 @@ def fixed_archive(path,provider):
         if os.path.exists(temp):os.unlink(temp)
 
 def refs(data,name):
-    found=[]
-    for relative in IMPORT.findall(data.decode('utf-8')):
-        target=posixpath.normpath(posixpath.join(posixpath.dirname(name),relative))
-        if target.startswith('../') or target.startswith('/') or '\\' in target:
-            raise ValueError('Static SDK import escaped its staged root')
-        found.append(target)
-    return found
+    request=json.dumps({'moduleName':name,'source':data.decode('utf-8')},ensure_ascii=False).encode('utf-8')
+    parsed=subprocess.run([os.environ.get('MTW_NODE','node'),'--experimental-vm-modules',str(HERE/'parse-static-imports.mjs')],
+        input=request,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30,check=False)
+    if parsed.returncode:
+        diagnostic=parsed.stderr.decode('utf-8',errors='replace').splitlines()
+        raise ValueError('Static SDK module parser rejected '+name+': '+next((s for s in diagnostic if s.startswith(('Error:','SyntaxError:','TypeError:'))),'parser process failed'))
+    value=json.loads(parsed.stdout)
+    if (value.get('format')!='node-vm-static-sdk-dependencies/v1' or value.get('moduleName')!=name
+            or value.get('linked') is not False or value.get('evaluated') is not False or value.get('dynamicImportsIncluded') is not False):
+        raise ValueError('Static SDK parser contract differs')
+    return [item['target'] for item in value['relativeDependencies']]
 
 def validate_baseline_index_row(row, expected, pin, header, name):
     # Input deduplication can reuse the original source archive for an identical

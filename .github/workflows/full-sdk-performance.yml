@@ -70,6 +70,8 @@ jobs:
           python -c "import ast,pathlib; ast.parse(pathlib.Path('harness/scripts/bench/full-sdk/prepare.py').read_text())"
       - name: Check baseline identity and deduplicated licence boundaries
         run: python -B -m unittest discover -s harness/scripts/bench/full-sdk -p test_prepare.py -v
+      - name: Check parse-only static SDK dependency boundaries
+        run: node --experimental-vm-modules harness/scripts/bench/full-sdk/tests/parse-static-imports-test.mjs
       - name: Restore checksum-pinned public031 download cache
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
@@ -93,7 +95,7 @@ jobs:
             --candidate-root "$GITHUB_WORKSPACE/candidate" \
             --output "$MTW_BENCH_OUT" \
             --baseline-cache "$RUNNER_TEMP/moontxnwitness-public031/portable.zip"
-          node "$MTW_BENCH_OUT/runner/prepare-protocol.mjs"
+          node --experimental-vm-modules "$MTW_BENCH_OUT/runner/prepare-protocol.mjs"
       - name: Verify all eight complete SDK results and six negative controls
         shell: bash
         run: |
