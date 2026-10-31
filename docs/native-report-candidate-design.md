@@ -1,0 +1,29 @@
+# Native report object experiment
+
+This isolated candidate starts from unoptimized `fbba24b470ce7b3775de41354302a006eb02eb7c`. It does not incorporate the RT quote-cache experiment. One unoptimized v0.3.7 full-SDK diagnostic found that parsing dense316's complete 10.3 MB output consumed 53.81%–55.11% of SDK wall time. The diagnostic is neither a speedup result nor the formal performance protocol.
+
+The experiment adds JS-only bridge entry points that return an opaque native result. MoonBit still parses and validates the same history/options and runs the same `analyze` or `options_input` exactly once. `AnalysisResult`, graph construction, dependencies, source details, searches, budgets, counters and edge order remain unchanged.
+
+Metadata is produced by the existing standard `report_json` encoder with only the top-level edges temporarily omitted from that new metadata value. It retains full coverage, version orders, witness, findings and search details. The dependency count is restored to the original edge count, and balanced entry points attach the exact existing `analysis_extras`. Standard JSON encoding and one native parse handle metadata; it is not assumed to be small for every input.
+
+Only the largest edge array bypasses text encoding. A private JS constructor receives opaque native report, raw String/Bool/Int32 primitives, and explicit presence flags. It appends fresh plain objects with exactly the existing fields in order: from, to, kind, key, fromOp, toOp, fromVersion, toVersion, reason. Missing values remain null; present empty strings and zero indexes remain distinct. No MoonBit Json, Option, Map or Array representation crosses FFI, and no ASCII encoding shortcut is used.
+
+The existing legacy and balanced SDK entry points have input/parser/search limits but no independent output-byte limit. The experiment must preserve those limits rather than invent a global output cap or omit edges. Any eligibility fallback serializes the already analyzed result and parses it; it must not execute analysis again. Existing v3/v4 output and evidence byte limits, text APIs, original renderers, capsule routing and every non-JS target are untouched. The SDK may feature-detect only the explicit new bridge exports and fall back to the old text path when they are absent.
+
+Initial acceptance requires same-process native-object versus original-text comparisons and public031 complete-report comparisons for all eight fixed SDK workloads, all original six product-metadata negative controls, malformed input/options and exact budget boundaries. Tests cover Unicode, non-BMP/combining/control characters, quotation and backslash, null versus present-empty values, nonstandard RT fields, non-RT edges, report mutation, repeated reports, metadata/witness preservation, complete 49,770-edge output and unchanged old text bytes. Native and text outputs must compare exactly, including field/key order after JSON.stringify, with only the already registered root product version normalization permitted for public031.
+
+This is an isolated performance candidate. It becomes eligible for consideration only after functional review and a new paired Linux full-SDK CI run using the unchanged eight workloads, controls and 5-warmup/30-sample/3-batch protocol. No improvement is claimed by this design.
+
+## Implemented interface and functional results
+
+The JS bridge exports `analyze_native_js_v1(String)` and `analyze_options_native_js_v1(String, String)`, returning opaque `NativeReportObject`. JS SDK `analyze` and `analyzeWithOptions` detect their respective exports independently. An older core without those exports follows the exact previous text-and-parse route. The original `analyze_json` and `analyze_options_json` exports are unchanged. Public MoonBit structured reports, v3/v4 entry points, certificates, capsules, CLI text transports and non-JS code paths are unchanged. The FFI uses only the opaque type plus documented primitive strings, booleans, 32-bit integers and Unit; see the [official FFI description](https://docs.moonbitlang.com/en/latest/language/ffi.html).
+
+Actual Windows JS validation completed:
+
+- Official formatter and actual `moon info`; strict JS check passed without warnings.
+- 12 new transport white-box tests and 8 existing transport tests passed.
+- 39 new SDK checks passed, including real zero/exact/maximum search budgets, invalid options, optional values, Unicode and old-core export absence. Unsupported ASCII-control identifiers retain the old parser rejection; arbitrary typed edge escaping is separately checked by the white-box tests.
+- Existing v4 SDK/capsule tests passed all 73 checks and started no legacy workers.
+- Eight frozen workloads compared actual native SDK reports and unchanged original text APIs against public v0.3.1: 16 SDK calls and 16 text calls passed, as did all six original metadata negative controls. Dense316 retained every one of the 49,770 edges. Only the previously registered root product-version metadata normalization was applied across releases. The complete actual static module closures were checked with the Node parser: public031 25 modules and candidate 36 modules, unchanged before/after.
+
+First-pass compiler/test failures remain in the validation records. They were test syntax and invalid hand-built fixtures (missing coverage sources, using `kind` instead of `type`, incorrectly treating boolean options as an object, and assuming forbidden control identifiers were accepted). The native implementation was not changed to satisfy them; fixtures were corrected from the existing input rules and the rejected-input cases remain covered. No local formal measurement, database, full compatibility download or D-drive write was performed. These results do not establish a performance improvement or complete cross-target validation.

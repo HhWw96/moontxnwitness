@@ -65,6 +65,23 @@ pub fn analyze_json(text : String) -> String {
 }
 
 ///|
+#cfg(target="js")
+#export_name("analyze_native_js_v1")
+pub fn analyze_native_js_v1(text : String) -> @txn.NativeReportObject {
+  @txn.analyze_native_js_v1(text)
+}
+
+///|
+#cfg(target="js")
+#export_name("analyze_options_native_js_v1")
+pub fn analyze_options_native_js_v1(
+  text : String,
+  options : String,
+) -> @txn.NativeReportObject {
+  @txn.analyze_options_native_js_v1(text, options)
+}
+
+///|
 #export_name("analyze_options_json")
 pub fn analyze_options_json(text : String, options : String) -> String {
   @txn.analyze_options_json(text, options)
