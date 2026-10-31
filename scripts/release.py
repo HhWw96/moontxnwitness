@@ -654,7 +654,7 @@ def publish():
             'See the [support matrix](https://github.com/' + MODULE + '/blob/' + tag + '/docs/stable-scope.md), '
             '[diagnosis guide](https://github.com/' + MODULE + '/blob/' + tag + '/docs/diagnosis-sdk.md) and '
             '[measured performance scope](https://github.com/' + MODULE + '/blob/' + tag + '/docs/performance-v0.2.8-relation.md). '
-            'Actual release, database, fresh-consumer and public-download receipts remain separate from human feedback and organizer decisions.\n\n'
+            'Release, database, fresh-consumer and public-download receipts are recorded separately and bound to the tested source and runtime.\n\n'
             'Install with `moon add HhWw96/moontxnwitness@' + VERSION + '` or use the portable ZIP for Node.js.\n', encoding='utf8')
 
     if VERSION == '0.3.0':
@@ -696,7 +696,7 @@ def publish():
         with notes.open('a', encoding='utf-8') as output:
             output.write('\nFull-report local comparison with v0.0.6: graph %.2fx, bounded search %.2fx, reduction %.2fx; graph peak RSS %.2f%% lower (group geometric means).\n' % (groups['graph']['geometricMeanSpeedup'], groups['search']['geometricMeanSpeedup'], groups['reduction']['geometricMeanSpeedup'], (1-groups['graph']['geometricMeanPeakMemoryRatio'])*100))
             output.write('Actual PostgreSQL 18: 20 RR write-skew rounds + 20 Serializable abort/fresh-retry rounds on Windows and independent Linux CI, with 2-transaction reduction and three replay capsules.\n')
-            output.write('See docs/performance.md, docs/project-brief.md and docs/human-acceptance.md. Participant explanation/registration and organizer acceptance remain separate.\n')
+            output.write('See docs/performance.md and docs/project-brief.md for algorithms, reproducible examples, tests and installation.\n')
     assets = [str(ROOT / ('artifacts/MoonTxnWitness-v' + VERSION + suffix)) for suffix in ('-source.zip', '-portable.zip', '-SHA256SUMS.txt')]
     run(['gh', 'release', 'create', tag, '--repo', MODULE, '--target', sha, '--title', 'MoonTxnWitness ' + tag, '--notes-file', str(notes), *assets], timeout=900)
     print('Public GitHub Release created: ' + tag, flush=True)

@@ -10,6 +10,7 @@ import json
 from evidence_json import load_receipt
 from pathlib import Path, PurePosixPath
 from input_cache import public_cached_entries
+from import_postgres_ci_bundle import validated_postgres_import_files
 
 EXCLUDED_DIRS = {'.git', '_build', '.mooncakes', 'node_modules', 'artifacts',
                  'dist', '__pycache__', '.venv-pg'}
@@ -163,8 +164,9 @@ def select_distribution_files(root, public_names, tested_files, version):
     package_release.py, not a second approximation of its input rules.
     """
     root = Path(root).resolve()
+    imported_pg = validated_postgres_import_files(root, version)
     cached = public_cached_entries(root)
-    public_names = {safe_name(n) for n in public_names} | set(cached)
+    public_names = {safe_name(n) for n in public_names} | set(cached) | set(imported_pg)
     tested_files = {safe_name(n): value for n, value in tested_files.items()}
     reasons = defaultdict(set)
     required = set()
@@ -343,6 +345,9 @@ def select_distribution_files(root, public_names, tested_files, version):
         require_tree('fixtures/diagnosis-v3', 'immutable original observed histories for diagnosis consumers')
         for name in ('manifest.json', 'register-0.json', 'register-4.json', 'register-80.json'):
             require('fixtures/diagnosis-v3/' + name, 'fixed original diagnosis source and provenance bytes')
+
+    for name in imported_pg:
+        require(name, 'same-source authenticated CI PostgreSQL packet and original runtime/source binding closure')
 
     pg = 'verification/releases/' + safe_name(version) + '/postgres/'
     for name in sorted(public_names):
