@@ -1,8 +1,8 @@
 # MoonTxnWitness
 
-MoonBit 通用事务异常分析基础库。以 Elle 的异常与模型定义为对照，提供可嵌入的分析、解释、缩减和证据回放。当前覆盖与待补能力见[Elle 对齐表](docs/elle-alignment.md)，后续按[开发顺序](docs/roadmap-v0.4.0.md)推进；定位不表示已完整兼容 Elle。
+MoonBit 通用事务异常分析基础库。以 Elle 的异常与模型定义为对照，提供寄存器、追加列表和关系集合的可嵌入分析、解释、缩减与证据回放。[Elle 对齐表](docs/elle-alignment.md)列出各接口的支持范围，[开发顺序](docs/roadmap-v0.4.0.md)记录后续扩展。
 
-仓库已开始分离当前源码与历史实验归档；原始材料通过提交／标签恢复，规则和精简计数见[仓库布局](docs/repository-layout.md)。
+当前源码与历史运行组件分离，历史材料通过提交、标签和按摘要校验的附件恢复；规则和精简计数见[仓库布局](docs/repository-layout.md)。
 
 自动诊断采集：使用 [`instrument_engine`／局部 psycopg 工厂](docs/diagnostic-instrumentation.md) 在业务启动时接入，保留实际执行和结果；通用入口输出执行诊断；配置化 [base-user 来源采集](docs/configured-user-profile.md) 可将受支持的按 ID 增删改查送入核心分析、缩减与重放。
 
@@ -15,6 +15,8 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 ## v0.3.6 候选：独立模型与原子关系行接口
 
 新模型命名空间按固定 Elle 定义组合 14 个规范模型的必要检查，并分别保留完成、反证和无法判定。寄存器、捕获列表以及显式选择的原子主键行配置使用各自的来源核验和原程序证书；旧分类入口的默认含义保持。运行 `node examples/models-v4-roundtrip.mjs` 和 `node examples/relation-atomic-models-roundtrip.mjs`，详见[模型规则](docs/model-obligations-v4.md)与[关系行配置](docs/relation-atomic-models-v4.md)。最终候选的构建、模型对照和性能验收按实际记录分别完成。
+
+新的[列表原程序串行检查](docs/list-original-serial-v4.md)补齐有界串行见证与完整搜索反证。实际重跑的[2,000 份共同范围对照](docs/elle-common-comparison-v036.md)中，1,997 份可比较结果全部与固定 Elle 结果一致，结论差异和执行失败均为零；3 份上游未知结果单独记录。每份当前结果都重新执行验证器，保留完整输入与结果摘要。
 
 ## v0.3.5 候选：关系谓词异常检查
 

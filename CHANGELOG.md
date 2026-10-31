@@ -3,8 +3,9 @@
 - Add a separate canonical-model namespace for fourteen fixed Elle definitions, with source-rule, category and completion obligations recorded independently.
 - Keep register, append-list and explicit atomic-primary-key row projections separate; verify concrete certificates against the original programs and caller budgets.
 - Expose model classification, verification and replay in MoonBit, SDK and CLI without changing the older category defaults.
+- Add explicit original-list serial completion with bounded original-program interpretation, freshly replayed certificates and complete-search refutations.
 - Preserve the original 90 model and 38 row SDK checks; run both in source and portable consumers alongside register/list and row examples.
-- Retain the previous fixed 2,000-input comparison as a digest-bound reference; final-candidate comparison and formal performance remain separate validation steps.
+- Recompute and verify all 2,000 original common-scope histories: all 1,997 eligible serializable results match the fixed Elle results, with three upstream unknowns recorded separately and no boolean differences or current execution failures. Preserve the previous comparison unchanged.
 
 # 0.3.5 — development
 
