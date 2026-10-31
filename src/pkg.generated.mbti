@@ -150,6 +150,8 @@ pub fn parse_history_v4(String) -> Result[HistoryV4, String]
 
 pub fn project_list_prefix_v4(HistoryV4, max_checks? : Int32) -> Result[ListPrefixProjectionV4, String]
 
+pub fn project_relation_rows_v4(HistoryV4, max_checks? : Int32) -> Result[RelationRowProjectionV4, String]
+
 pub fn reduce_classification_v3_json(String, String) -> String
 
 pub fn reduce_history(History, max_checks? : Int32) -> Reduction
@@ -186,9 +188,13 @@ pub fn relation_predicate_classification_v4_json(RelationPredicateClassification
 
 pub fn relation_predicate_graph_v4_json(RelationPredicateGraphV4) -> Json
 
+pub fn relation_program_replay_v4_json(RelationProgramReplayV4) -> Json
+
 pub fn relation_reduction_capsule_v4_content_json(String) -> String
 
 pub fn relation_reduction_report_v4_content_json(String) -> String
+
+pub fn relation_row_projection_v4_json(RelationRowProjectionV4) -> Json
 
 pub fn render_analysis_v4(AnalysisV4) -> String
 
@@ -199,6 +205,8 @@ pub fn render_reduction_v4(ReductionV4) -> String
 pub fn render_relation_classification_v4(RelationClassificationV4) -> String
 
 pub fn render_report(Report, String) -> String
+
+pub fn replay_relation_program_v4(HistoryV4, Json, mode~ : RelationProgramReplayModeV4, max_checks? : Int32) -> Result[RelationProgramReplayV4, String]
 
 pub fn replay_report_json(String, String) -> String
 
@@ -273,6 +281,10 @@ pub fn verify_relation_predicate_classification_v4(HistoryV4, Json, ScopedCatego
 pub fn verify_relation_predicate_classification_v4_json(String, String, String) -> String
 
 pub fn verify_relation_predicate_graph_v4(HistoryV4, Json, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32) -> Bool
+
+pub fn verify_relation_program_replay_v4(HistoryV4, Json, Json, mode~ : RelationProgramReplayModeV4, max_checks? : Int32) -> Bool
+
+pub fn verify_relation_row_projection_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
 
 pub fn verify_scoped_category_v4(ScopedDependencyGraphV4, Json, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> Bool
 
@@ -485,6 +497,7 @@ pub struct ModelOptionsV4 {
 pub(all) enum ModelRelationProfileV4 {
   ModelRelationPoint
   ModelRelationPredicateKeySlots
+  ModelRelationAtomicRows
 } derive(Eq)
 pub fn ModelRelationProfileV4::equal(Self, Self) -> Bool
 pub fn ModelRelationProfileV4::not_equal(Self, Self) -> Bool
@@ -573,6 +586,23 @@ pub struct RelationPredicateGraphV4 {
   // private fields
 }
 pub fn RelationPredicateGraphV4::edges(Self) -> Array[RelationScopedEdgeV4]
+
+pub(all) enum RelationProgramReplayModeV4 {
+  RelationSnapshotPrefixes
+  RelationSerialOrder
+} derive(Eq)
+pub fn RelationProgramReplayModeV4::equal(Self, Self) -> Bool
+pub fn RelationProgramReplayModeV4::not_equal(Self, Self) -> Bool
+
+pub struct RelationProgramReplayV4 {
+  // private fields
+}
+pub fn RelationProgramReplayV4::status(Self) -> String
+
+pub struct RelationRowProjectionV4 {
+  // private fields
+}
+pub fn RelationRowProjectionV4::is_projected(Self) -> Bool
 
 pub struct RelationScopedEdgeV4 {
   // private fields

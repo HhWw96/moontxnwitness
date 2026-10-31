@@ -366,7 +366,9 @@ fn model_cv_mapped_rank_v4(
       "write-input-applicability",
     ],
     evidence={
-      "definition": if source.profile == "captured-list-prefix-state/v2" {
+      "definition": if source.profile == "captured-relation-row-slots/v1" {
+        Json("relation-row-slot-CV-rank-certificate/v1")
+      } else if source.profile == "captured-list-prefix-state/v2" {
         Json("append-list-prefix-state-CV-rank-certificate/v2")
       } else {
         Json("captured-point-register-CV-rank-certificate/v1")
@@ -377,7 +379,9 @@ fn model_cv_mapped_rank_v4(
       "fullRepeatableReadINTRequired": false,
       "execution": model_mapping_counter_v4(
         budget,
-        if source.profile == "captured-list-prefix-state/v2" {
+        if source.profile == "captured-relation-row-slots/v1" {
+          "mapped-row-slot-rank-reference-checks-1"
+        } else if source.profile == "captured-list-prefix-state/v2" {
           "mapped-list-prefix-rank-reference-checks-2"
         } else {
           "mapped-point-rank-reference-checks-1"

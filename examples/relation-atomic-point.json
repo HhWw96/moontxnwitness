@@ -1,0 +1,121 @@
+{
+  "traceSchema": 3,
+  "dataModel": "relation-set-v1",
+  "relationSchema": {
+    "items": {
+      "primaryKey": "id",
+      "columns": {
+        "id": "int64",
+        "value": "text"
+      }
+    }
+  },
+  "clockDomain": "atomic-row-example",
+  "scope": {
+    "exclusiveWriters": true,
+    "completeSnapshotTables": [
+      "items"
+    ]
+  },
+  "gaps": [],
+  "events": [
+    {
+      "kind": "snapshot",
+      "consistent": true,
+      "initial": {
+        "items": [
+          {
+            "key": "1",
+            "version": "v0",
+            "values": {
+              "value": "before"
+            }
+          }
+        ]
+      },
+      "seq": 1,
+      "time": 0
+    },
+    {
+      "kind": "begin",
+      "tx": "A",
+      "connection": "physical-A",
+      "seq": 2,
+      "time": 1
+    },
+    {
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "items",
+      "predicate": [
+        {
+          "column": "id",
+          "op": "eq",
+          "value": "1"
+        }
+      ],
+      "rows": [
+        {
+          "key": "1",
+          "version": "v0",
+          "values": {
+            "value": "before"
+          }
+        }
+      ],
+      "complete": true,
+      "seq": 3,
+      "time": 2
+    },
+    {
+      "kind": "row_write",
+      "tx": "A",
+      "relation": "items",
+      "key": "1",
+      "action": "update",
+      "version": "v1",
+      "predecessor": "v0",
+      "values": {
+        "value": "after"
+      },
+      "seq": 4,
+      "time": 3
+    },
+    {
+      "kind": "row_read",
+      "tx": "A",
+      "relation": "items",
+      "predicate": [
+        {
+          "column": "id",
+          "op": "eq",
+          "value": "1"
+        }
+      ],
+      "rows": [
+        {
+          "key": "1",
+          "version": "v1",
+          "values": {
+            "value": "after"
+          }
+        }
+      ],
+      "complete": true,
+      "seq": 5,
+      "time": 4
+    },
+    {
+      "kind": "commit_request",
+      "tx": "A",
+      "seq": 6,
+      "time": 5
+    },
+    {
+      "kind": "commit_ok",
+      "tx": "A",
+      "seq": 7,
+      "time": 6
+    }
+  ]
+}

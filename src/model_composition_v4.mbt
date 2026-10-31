@@ -384,6 +384,17 @@ fn model_literal_rule_v4(
     }
   }
   if token == "predicate-read-miss" &&
+    source.profile == "captured-relation-row-slots/v1" {
+    let point = source.rules.at("row-slot-point-query-coverage")
+    return model_rule_v4(
+      "literal/predicate-read-miss",
+      point.status,
+      "complete singleton primary-key queries map to one proved slot state; this is not arbitrary predicate coverage",
+      covered_by=[point.id],
+      evidence=point.evidence,
+    )
+  }
+  if token == "predicate-read-miss" &&
     !source.profile.has_prefix("relation-") &&
     source.profile != "adya-2000-predicate-on-keyslots-v1" {
     return model_rule_v4(
@@ -472,6 +483,17 @@ pub fn classify_models_v4(
       graph_rules.at(model_graph_key_v4("W", ScopedDataOnly)),
       graph_rules.at(model_graph_key_v4(projection, context)),
     ]
+    match source.rules.get("row-slot-projection-applicability") {
+      Some(rule) => necessary.push(rule)
+      None => ()
+    }
+    if source.profile == "captured-relation-row-slots/v1" && projection == "D" {
+      necessary.push(
+        completions.at(
+          "completion/original-row-serial/" + scoped_context_name_v4(context),
+        ),
+      )
+    }
     if projection != "W" {
       necessary.push(graph_rules.at(model_graph_key_v4("I", ScopedDataOnly)))
       for
@@ -546,14 +568,18 @@ pub fn classify_models_v4(
     record: {
       "format": "moontxnwitness-model-composition/v4",
       "schemaVersion": 4,
-      "semanticContract": if source.profile == "captured-list-prefix-state/v2" {
+      "semanticContract": if source.profile == "captured-relation-row-slots/v1" {
+        Json("elle-4e359e5-captured-relation-row-slot-completion-models-1")
+      } else if source.profile == "captured-list-prefix-state/v2" {
         Json("elle-4e359e5-captured-list-prefix-state-completion-models-2")
       } else if source.profile == "captured-register-full-program/v2" {
         Json("elle-4e359e5-captured-register-observation-completion-models-2")
       } else {
         Json("elle-4e359e5-transaction-observation-completion-models-1")
       },
-      "algorithm": if source.profile == "captured-list-prefix-state/v2" {
+      "algorithm": if source.profile == "captured-relation-row-slots/v1" {
+        Json("captured-row-slot-obligations-and-original-program-completion-1")
+      } else if source.profile == "captured-list-prefix-state/v2" {
         Json("captured-list-prefix-obligations-and-completion-2")
       } else if source.profile == "captured-register-full-program/v2" {
         Json("captured-point-source-obligations-and-prefix-completion-2")
@@ -580,7 +606,11 @@ pub fn classify_models_v4(
         "orderGaps": Json(orders.gaps),
       },
       "execution": {
-        "counterContract": if source.profile == "captured-list-prefix-state/v2" {
+        "counterContract": if source.profile == "captured-relation-row-slots/v1" {
+          Json(
+            "captured-row-slot-independent-source-and-per-rule-graph-counters-1",
+          )
+        } else if source.profile == "captured-list-prefix-state/v2" {
           Json(
             "captured-list-prefix-independent-source-and-per-rule-graph-counters-2",
           )
@@ -604,7 +634,11 @@ pub fn classify_models_v4(
           "declaredRegister": "constructive CO/VIS or per-key graph proof when every premise and budget completes",
           "rawRegister": "constructive CO/VIS and per-key rank proofs only after every captured source, predecessor-lineage, effective-overlay and complete-window premise is revalidated",
           "listAndRelation": if source.profile ==
-            "captured-list-prefix-state/v2" {
+            "captured-relation-row-slots/v1" {
+            Json(
+              "atomic singleton-key row programs have explicit source, snapshot and serial certificate premises; relation predicates and physical incarnation equivalence remain pending",
+            )
+          } else if source.profile == "captured-list-prefix-state/v2" {
             Json(
               "explicit list prefix-state mapping and original-program completion replay checked under recorded premises; relation completion remains pending",
             )

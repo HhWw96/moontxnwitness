@@ -23,6 +23,7 @@ pub extend ElleModelV4 with Eq::{equal, not_equal}
 pub(all) enum ModelRelationProfileV4 {
   ModelRelationPoint
   ModelRelationPredicateKeySlots
+  ModelRelationAtomicRows
 } derive(Eq)
 
 ///|
@@ -322,6 +323,7 @@ fn model_options_record_v4(options : ModelOptionsV4) -> Json {
       match options.relation_profile {
         ModelRelationPoint => "relation-point-final-installed/v1"
         ModelRelationPredicateKeySlots => "adya-2000-predicate-on-keyslots-v1"
+        ModelRelationAtomicRows => "captured-relation-row-slots/v1"
       },
     ),
   }

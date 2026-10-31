@@ -63,6 +63,7 @@ fn wire_model_options_v4(text : String) -> WireModelOptionsV4 raise {
       ModelRelationPoint
     Some(String("adya-2000-predicate-on-keyslots-v1")) =>
       ModelRelationPredicateKeySlots
+    Some(String("captured-relation-row-slots/v1")) => ModelRelationAtomicRows
     _ => fail("Unknown relation model source profile")
   }
   let completion_policy = match fields.get("completionPolicy") {
@@ -125,10 +126,11 @@ fn wire_model_options_record_v4(wire : WireModelOptionsV4) -> Json {
     } else {
       Json("captured-list-prefix-state/v2")
     },
-    "relationProfile": if o.relation_profile == ModelRelationPoint {
-      Json("relation-point-final-installed/v1")
-    } else {
-      Json("adya-2000-predicate-on-keyslots-v1")
+    "relationProfile": match o.relation_profile {
+      ModelRelationPoint => Json("relation-point-final-installed/v1")
+      ModelRelationPredicateKeySlots =>
+        Json("adya-2000-predicate-on-keyslots-v1")
+      ModelRelationAtomicRows => Json("captured-relation-row-slots/v1")
     },
     "completionPolicy": if o.completion_policy == ModelObservationOnlyCompletion {
       Json("transaction-observations-existential-completion/v1")

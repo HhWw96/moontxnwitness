@@ -1,0 +1,52 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {resolve,dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import {spawnSync} from 'node:child_process';
+import {classifyModelsV4 as run,verifyModelsV4 as verify,makeModelsCapsuleV4 as make,replayModelsCapsuleV4 as replay,ELLE_CORE_MODELS_V4 as models} from '../dist/models-v4.mjs';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),sha=x=>createHash('sha256').update(x).digest('hex');
+const profile='captured-relation-row-slots/v1',sample=JSON.parse(readFileSync(resolve(root,'examples/relation-atomic-point.json'),'utf8'));
+const beforeSource=JSON.stringify(sample),corePath=resolve(root,'dist/core.mjs'),beforeCore=sha(readFileSync(corePath));
+const options={models:'elle-core',relationProfile:profile,clients:[{id:'declared-logical-A',transactions:['A']}],clientsComplete:true};
+const dir=resolve(root,'artifacts/model-row-sdk-'+Date.now());mkdirSync(dir,{recursive:true});const results=[];
+function test(name,fn){try{fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error.stack});}}
+let all;
+test('explicit row namespace executes every requested canonical model',()=>{all=run(sample,options);assert.equal(all.status,'checked-compatible');assert.equal(all.sourceProfile,profile);assert.equal(all.models.length,14);assert.equal(all.semanticContract,'elle-4e359e5-captured-relation-row-slot-completion-models-1');});
+for(const model of models)test(model+' row obligations really finish',()=>{const m=all.models.find(m=>m.model===model);assert.equal(m.status,'checked-compatible');assert.ok(m.rules.length>0);assert.ok(m.rules.every(r=>r.status==='checked-compatible'));assert.ok(m.rules.some(r=>r.rule==='row-slot-projection-applicability'));});
+test('old relation interpretation remains the default',()=>{const r=run(sample,{models:['snapshot-isolation']});assert.equal(r.sourceProfile,'relation-point-final-installed/v1');assert.equal(r.status,'unknown');});
+test('caller-selected row policy independently verifies the complete report',()=>assert.equal(verify(sample,all,options).valid,true));
+test('omitting row policy never selects it from the report',()=>assert.equal(verify(sample,all,{...options,relationProfile:'relation-point-final-installed/v1'}).valid,false));
+test('original relation program has a separate concrete serial replay',()=>{const r=all.models.find(x=>x.model==='serializable').rules.find(x=>x.rule==='completion/original-row-serial/data-only');assert.equal(r.status,'checked-compatible');assert.equal(r.evidence.originalProgramReplay.status,'checked-compatible');assert.equal(r.evidence.originalProgramReplay.scope.originalJSONOnly,true);});
+test('row capsule replays under matching independent caller options',()=>assert.equal(replay(make(sample,options),options).valid,true));
+test('capsule cannot authorize a row profile omitted by its caller',()=>assert.equal(replay(make(sample,options),{}).valid,false));
+test('tampered model verdict is rejected',()=>{const r=structuredClone(all);r.models[0].status='refuted';assert.equal(verify(sample,r,options).valid,false);});
+test('rehashed capsule report does not grant a verdict',()=>{const c=JSON.parse(make(sample,options)),r=JSON.parse(c.reportText);r.models[0].status='refuted';c.reportText=JSON.stringify(r);c.reportSha256=sha(c.reportText);assert.equal(replay(c,options).valid,false);});
+test('rehashed actual row value cannot reuse the previous proof',()=>{const c=JSON.parse(make(sample,options)),source=JSON.parse(c.sourceText);source.events[2].rows[0].values.value='changed';c.sourceText=JSON.stringify(source);c.sourceSha256=sha(c.sourceText);assert.equal(replay(c,options).valid,false);});
+test('capsule algorithm identity remains bound',()=>{const c=JSON.parse(make(sample,options));c.algorithm='history-source-obligations-scoped-graph-and-prefix-completion-1';assert.equal(replay(c,options).valid,false);});
+test('producer version cannot select a verifier',()=>{const c=JSON.parse(make(sample,options));c.producer.version='other-producer';assert.equal(replay(c,options).valid,true);});
+test('zero budget is independent of the recorded complete proof',()=>{const o={models:['snapshot-isolation'],relationProfile:profile,maxSourceChecks:0},r=run(sample,o);assert.equal(r.status,'unknown');assert.equal(verify(sample,r,o).valid,true);assert.equal(verify(sample,r,{models:['snapshot-isolation'],relationProfile:profile}).valid,false);});
+test('given logical snapshots are still not inferred from BEGIN',()=>assert.equal(run(sample,{...options,completionPolicy:'given-logical-snapshot-assertions/unsupported'}).status,'unknown'));
+test('unsupported profile text is not silently defaulted',()=>assert.throws(()=>run(sample,{...options,relationProfile:'automatic-all-relations'})));
+test('sequence holes cannot be healed by the row projection',()=>{const h=structuredClone(sample);h.events=h.events.filter(e=>e.seq!==3);assert.notEqual(run(h,options).status,'checked-compatible');});
+test('complete empty query does not invent initial absence',()=>{const h=structuredClone(sample);h.events[2].rows=[];assert.notEqual(run(h,options).status,'checked-compatible');});
+test('all actual external reads preserve RC while the snapshot model is refuted',()=>{
+ const h=structuredClone(sample);
+ h.events=[h.events[0],{kind:'begin',tx:'R',connection:'R'},{...h.events[2],tx:'R'},{kind:'begin',tx:'P',connection:'P'},{...h.events[3],tx:'P'},{kind:'commit_request',tx:'P'},{kind:'commit_ok',tx:'P'},{...h.events[4],tx:'R'},{kind:'commit_request',tx:'R'},{kind:'commit_ok',tx:'R'}].map((e,i)=>({...e,seq:i+1,time:i}));
+ const o={models:['read-committed','snapshot-isolation'],relationProfile:profile},r=run(h,o);
+ assert.equal(r.models[0].status,'checked-compatible');assert.equal(r.models[1].status,'refuted');assert.equal(verify(h,r,o).valid,true);
+});
+const oldFailure=resolve(root,'artifacts/row-validation/external-reread-RC-before-fix.json');
+if(process.env.MTW_ROW_PREVIOUS_FAILURE){
+ test('exact original RC counterexample is now compatible while SI is refuted',()=>{const h=JSON.parse(readFileSync(process.env.MTW_ROW_PREVIOUS_FAILURE||oldFailure,'utf8')).input;const o={models:['read-committed','snapshot-isolation'],relationProfile:profile};const r=run(h,o);assert.equal(r.models[0].status,'checked-compatible');assert.equal(r.models[1].status,'refuted');assert.equal(verify(h,r,o).valid,true);writeFileSync(resolve(dir,'external-reread-after-fix.json'),JSON.stringify({input:h,options:o,actualReport:r},null,2)+'\n');});
+}
+test('detached reports cannot mutate later source analysis',()=>{const r=run(sample,options);r.observations.history.events.length=0;assert.equal(JSON.stringify(sample),beforeSource);assert.equal(run(sample,options).status,'checked-compatible');});
+const cliPath=resolve(root,'dist/moontxnwitness.mjs'),sourcePath=resolve(dir,'source.json'),optsPath=resolve(dir,'options.json'),reportPath=resolve(dir,'cli-report.json'),capsulePath=resolve(dir,'cli-capsule.json');
+writeFileSync(sourcePath,JSON.stringify(sample));writeFileSync(optsPath,JSON.stringify(options));
+const cli=args=>spawnSync(process.execPath,[cliPath,...args],{encoding:'utf8',windowsHide:true,maxBuffer:8*1024*1024});
+test('CLI classifies explicit atomic rows and saves a source-bound capsule',()=>{const r=cli(['classify-models-v4',sourcePath,'--options',optsPath,'--output',reportPath,'--capsule',capsulePath]);assert.equal(r.status,0,r.stderr);assert.equal(JSON.parse(readFileSync(reportPath)).sourceProfile,profile);});
+test('CLI verifies atomic rows with independent options',()=>assert.equal(cli(['verify-models-v4',sourcePath,reportPath,'--options',optsPath]).status,0));
+test('CLI replays atomic rows only with independent options',()=>{assert.equal(cli(['replay-models-v4',capsulePath,'--options',optsPath]).status,0);assert.equal(cli(['replay-models-v4',capsulePath]).status,2);});
+test('new runtime and original history remain byte-stable',()=>{assert.equal(sha(readFileSync(corePath)),beforeCore);assert.equal(JSON.stringify(sample),beforeSource);});
+const result={format:'moontxnwitness-model-atomic-row-sdk-check/v1',sourceProfile:profile,coreSha256:beforeCore,passed:results.every(x=>x.passed),tests:results.length,results,actualDatabaseOpened:false,formalPerformanceMeasured:false};
+writeFileSync(resolve(dir,'result.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({passed:result.passed,tests:result.tests,failed:results.filter(x=>!x.passed),receipt:resolve(dir,'result.json')}));if(!result.passed)process.exitCode=1;

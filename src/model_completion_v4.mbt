@@ -7,7 +7,8 @@ fn model_observation_premises_v4(
   (
     source.profile == "declared-register-full-program/v1" ||
     source.profile == "captured-register-full-program/v2" ||
-    source.profile == "captured-list-prefix-state/v2"
+    source.profile == "captured-list-prefix-state/v2" ||
+    source.profile == "captured-relation-row-slots/v1"
   ) &&
   source.boundaries.all(tx => tx.status != Unknown) &&
   source.ww_complete &&
@@ -24,6 +25,11 @@ fn model_observation_premises_v4(
       (
         source.profile != "captured-list-prefix-state/v2" ||
         source.rules.at("prefix-state-internal-applicability").status ==
+        "checked-compatible"
+      ) &&
+      (
+        source.profile != "captured-relation-row-slots/v1" ||
+        source.rules.at("row-slot-single-snapshot-applicability").status ==
         "checked-compatible"
       )
     )
@@ -247,6 +253,15 @@ fn model_si_completion_v4(
         )
       _ => None
     }
+  } else if source.profile == "captured-relation-row-slots/v1" {
+    Some(
+      model_relation_certificate_replay_v4(
+        history,
+        order.map(i => graph.nodes[i]),
+        visibility,
+        options.max_source_checks,
+      ),
+    )
   } else {
     None
   }
@@ -280,7 +295,11 @@ fn model_si_completion_v4(
         "section": "Definition 6 and Theorems 9/10",
         "downloadSha256": "66e9a09029080af4935417a1c8207affa7e73de7b75455a855a4057b991c59cf",
       },
-      "scope": if source.profile == "captured-list-prefix-state/v2" {
+      "scope": if source.profile == "captured-relation-row-slots/v1" {
+        Json(
+          "closed atomic primary-key slots and complete original singleton queries; original row program replay, no physical incarnation equivalence or predicate-range completion",
+        )
+      } else if source.profile == "captured-list-prefix-state/v2" {
         Json(
           "unique-identity append programs embedded in proven prefix states; original reads/appends/rollback preserved; derived scalar states are constraints, not collected observations; no given logical snapshot assertions",
         )
@@ -333,7 +352,8 @@ fn model_cv_rank_certificate_v4(
 ) -> ModelRuleV4 {
   let id = "completion/CV-per-key-ranks"
   if source.profile == "captured-register-full-program/v2" ||
-    source.profile == "captured-list-prefix-state/v2" {
+    source.profile == "captured-list-prefix-state/v2" ||
+    source.profile == "captured-relation-row-slots/v1" {
     return model_cv_mapped_rank_v4(source, options, i_rule, single_rule)
   }
   if !model_observation_premises_v4(source, false) ||
@@ -504,6 +524,17 @@ fn model_completion_rules_v4(
       rules.at(model_graph_key_v4("Ext(I,A)", context)),
     )
     result[certificate.id] = certificate
+    if source.profile == "captured-relation-row-slots/v1" {
+      let serial = model_relation_serial_completion_v4(
+        facts.history,
+        source,
+        orders,
+        context,
+        options,
+        rules.at(model_graph_key_v4("D", context)),
+      )
+      result[serial.id] = serial
+    }
   }
   let rank = model_cv_rank_certificate_v4(
     facts,

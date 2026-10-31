@@ -359,7 +359,7 @@ fn model_other_source_v4(
       rules["write-input-applicability"] = model_rule_v4(
         "write-input-applicability", "checked-compatible", "point row effects and predecessor provenance do not imply a predicate or read-modify-write observation",
       )
-      {
+      let base : ModelSourceV4 = {
         nodes: parsed.programs.filter(p => p.status == Committed).map(p => p.id),
         edges,
         boundaries: model_raw_boundaries_v4(parsed.normalized),
@@ -371,6 +371,11 @@ fn model_other_source_v4(
         execution,
         profile,
         point_program: None,
+      }
+      if options.relation_profile == ModelRelationAtomicRows {
+        model_relation_projected_source_v4(history, base, result, maximum)
+      } else {
+        base
       }
     }
     _ => model_register_source_v4(history, maximum)
