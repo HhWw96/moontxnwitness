@@ -42,6 +42,8 @@ pub fn build_list_graph_effective_v4(HistoryV4, max_checks? : Int32) -> Result[E
 
 pub fn build_relation_point_graph_v4(HistoryV4, max_checks? : Int32) -> Result[RelationPointGraphV4, String]
 
+pub fn build_relation_predicate_graph_v4(HistoryV4, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32) -> Result[RelationPredicateGraphV4, String]
+
 pub fn capsule_content_json(String) -> String
 
 pub fn capsule_v3_content_json(String) -> String
@@ -53,6 +55,8 @@ pub fn capture_anomalies_v4_json(CaptureAnomaliesV4) -> Json
 pub fn classification_v4_json(ClassificationV4) -> Json
 
 pub fn classify_relation_point_v4(HistoryV4, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> RelationClassificationV4
+
+pub fn classify_relation_predicate_v4(HistoryV4, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32, max_states? : Int32, max_edge_checks? : Int32) -> Result[RelationPredicateClassificationV4, String]
 
 pub fn classify_relation_v4_json(String, String) -> String
 
@@ -154,6 +158,10 @@ pub fn relation_classification_v4_json(RelationClassificationV4) -> Json
 
 pub fn relation_point_graph_v4_json(RelationPointGraphV4) -> Json
 
+pub fn relation_predicate_classification_v4_json(RelationPredicateClassificationV4) -> Json
+
+pub fn relation_predicate_graph_v4_json(RelationPredicateGraphV4) -> Json
+
 pub fn relation_reduction_capsule_v4_content_json(String) -> String
 
 pub fn relation_reduction_report_v4_content_json(String) -> String
@@ -175,6 +183,16 @@ pub fn report_json(Report) -> Json
 pub fn run_json(String, String) -> String
 
 pub fn run_options_json(String, String) -> String
+
+pub fn scoped_dependency_graph_v4(Array[String], Array[ScopedDataEdgeInputV4], order_edges? : Array[ScopedOrderEdgeInputV4], data_complete? : Bool, process_complete? : Bool, realtime_complete? : Bool, gaps? : Array[Json]) -> Result[ScopedDependencyGraphV4, String]
+
+pub fn scoped_dependency_graph_v4_json(ScopedDependencyGraphV4) -> Json
+
+pub fn scoped_search_v4_json(ScopedSearchResultV4) -> Json
+
+pub fn search_scoped_category_v4(ScopedDependencyGraphV4, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> ScopedSearchResultV4
+
+pub fn search_si_extension_v4(ScopedDependencyGraphV4, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> ScopedSearchResultV4
 
 pub fn shrink_json(String) -> String
 
@@ -219,6 +237,14 @@ pub fn verify_relation_category_reduction_v4_json(String, String, String) -> Str
 pub fn verify_relation_classification_v4(HistoryV4, Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> Bool
 
 pub fn verify_relation_classification_v4_json(String, String, String) -> String
+
+pub fn verify_relation_predicate_classification_v4(HistoryV4, Json, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32, max_states? : Int32, max_edge_checks? : Int32) -> Bool
+
+pub fn verify_relation_predicate_graph_v4(HistoryV4, Json, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32) -> Bool
+
+pub fn verify_scoped_category_v4(ScopedDependencyGraphV4, Json, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> Bool
+
+pub fn verify_si_extension_v4(ScopedDependencyGraphV4, Json, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> Bool
 
 pub fn verify_v3_json(String, String) -> String
 
@@ -443,6 +469,26 @@ pub struct RelationPointGraphV4 {
   // private fields
 }
 
+pub struct RelationPredicateClassificationV4 {
+  // private fields
+}
+pub fn RelationPredicateClassificationV4::status(Self) -> String
+
+pub struct RelationPredicateGraphV4 {
+  // private fields
+}
+pub fn RelationPredicateGraphV4::edges(Self) -> Array[RelationScopedEdgeV4]
+
+pub struct RelationScopedEdgeV4 {
+  // private fields
+} derive(Eq, Hash)
+pub fn RelationScopedEdgeV4::dependency(Self) -> Edge
+pub fn RelationScopedEdgeV4::equal(Self, Self) -> Bool
+pub fn RelationScopedEdgeV4::hash(Self) -> Int32
+pub fn RelationScopedEdgeV4::hash_combine(Self, Hasher) -> Unit
+pub fn RelationScopedEdgeV4::not_equal(Self, Self) -> Bool
+pub fn RelationScopedEdgeV4::scope(Self) -> String
+
 pub(all) struct Report {
   outcome : Outcome
   model : Model
@@ -461,6 +507,84 @@ pub(all) struct Report {
 } derive(Eq)
 pub fn Report::equal(Self, Self) -> Bool
 pub fn Report::not_equal(Self, Self) -> Bool
+
+pub(all) enum ScopedCategoryV4 {
+  ScopedG0
+  ScopedG1c
+  ScopedG2Item
+  ScopedG2
+  ScopedGSingleItem
+  ScopedGSingle
+  ScopedGNonadjacent
+} derive(Eq)
+pub fn ScopedCategoryV4::equal(Self, Self) -> Bool
+pub fn ScopedCategoryV4::not_equal(Self, Self) -> Bool
+
+pub(all) struct ScopedDataEdgeInputV4 {
+  id : String
+  from : String
+  to : String
+  kind : ScopedDataKindV4
+  sources : Array[Json]
+}
+
+pub(all) enum ScopedDataKindV4 {
+  ScopedWWItem
+  ScopedWWPredicate
+  ScopedWRItem
+  ScopedWRPredicate
+  ScopedRWItem
+  ScopedRWPredicate
+} derive(Eq)
+pub fn ScopedDataKindV4::equal(Self, Self) -> Bool
+pub fn ScopedDataKindV4::not_equal(Self, Self) -> Bool
+
+pub struct ScopedDependencyGraphV4 {
+  // private fields
+}
+pub fn ScopedDependencyGraphV4::input_sha256(Self) -> String
+
+pub(all) enum ScopedOrderContextV4 {
+  ScopedDataOnly
+  ScopedWithProcess
+  ScopedWithRealtime
+} derive(Eq)
+pub fn ScopedOrderContextV4::equal(Self, Self) -> Bool
+pub fn ScopedOrderContextV4::not_equal(Self, Self) -> Bool
+
+pub(all) struct ScopedOrderEdgeInputV4 {
+  id : String
+  from : String
+  to : String
+  kind : ScopedOrderKindV4
+  context_id : String
+  from_source : ScopedOriginalRefV4
+  to_source : ScopedOriginalRefV4
+}
+
+pub(all) enum ScopedOrderKindV4 {
+  ScopedProcess
+  ScopedRealtime
+} derive(Eq)
+pub fn ScopedOrderKindV4::equal(Self, Self) -> Bool
+pub fn ScopedOrderKindV4::not_equal(Self, Self) -> Bool
+
+pub(all) struct ScopedOriginalRefV4 {
+  transaction : String
+  observation : Json
+}
+
+pub(all) enum ScopedRuleSetV4 {
+  Adya2000Mixed
+  ElleFixed4e359e5
+} derive(Eq)
+pub fn ScopedRuleSetV4::equal(Self, Self) -> Bool
+pub fn ScopedRuleSetV4::not_equal(Self, Self) -> Bool
+
+pub struct ScopedSearchResultV4 {
+  // private fields
+}
+pub fn ScopedSearchResultV4::status(Self) -> String
 
 pub(all) struct SearchInfo {
   status : String

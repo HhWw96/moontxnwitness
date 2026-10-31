@@ -265,12 +265,7 @@ pub fn run_json(text : String, format : String) -> String {
       )
     }
   }
-  let transport : Json = {
-    "report": report_json(r),
-    "output": Json(render_report(r, format)),
-    "exitCode": Json(exit_code(r.outcome)),
-  }
-  transport.stringify()
+  report_transport_string(r, format)
 }
 
 ///|

@@ -1,3 +1,9 @@
+# 0.3.5 — development
+
+- Connect original relation predicate observations to dedicated G0, G1c, G2-item, G2, G-single-item, G-single and G-nonadjacent searches with explicit formal rule selection.
+- Retain item/predicate scope, complete-query evidence, effect provenance and independent verification budgets.
+- Add a directly runnable MoonBit predicate-only write-skew example and reject missing capture timestamps without a parser panic.
+- Reuse complete report encoding across transport fields while preserving every output byte and standard JSON escaping.
 # 0.3.4 — development
 
 - Add source-bound relation point classification for G0, G1a, G1b, G1c, G2-item and internal consistency.

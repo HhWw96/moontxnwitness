@@ -1,0 +1,35 @@
+# Relation predicate category analysis
+
+The MoonBit library connects complete relation query observations to separately scoped item and predicate dependencies. It checks G0, G1c, G2-item, G2, G-single-item, G-single and G-nonadjacent using the selected formal rule definition, retaining original query and row-version provenance.
+
+```moonbit
+let history = @txn.parse_history_v4(source_text).unwrap()
+let result = @txn.classify_relation_predicate_v4(
+  history,
+  @txn.ScopedG2,
+  rule_set=@txn.Adya2000Mixed,
+).unwrap()
+let evidence = @txn.relation_predicate_classification_v4_json(result)
+let valid = @txn.verify_relation_predicate_classification_v4(
+  history,
+  evidence,
+  @txn.ScopedG2,
+  rule_set=@txn.Adya2000Mixed,
+)
+```
+
+Run the direct library example without restoring historical runtime payloads:
+
+```text
+node scripts/moon.mjs run --target js src/predicate_demo
+```
+
+Two transactions each observe the complete empty matching set and insert a different matching row. The example verifies a predicate G2 witness while the item G2 check completes without a witness. Empty results remain actual query observations; candidate source constraints do not become invented negative-version reads.
+
+`Adya2000Mixed` and `ElleFixed4e359e5` are explicit choices because their scoped category definitions differ. The result concerns one selected dependency category. It keeps the existing point-classification and global-shortest-cycle meanings intact. Formal isolation-model composition is a separate API.
+
+The adapter uses persistent typed primary-key slots, original write-effect journals and complete predicate membership changes. The initial supported values are int64, Boolean and explicitly ordered text with primary-key, equality/range and AND predicates. Complete-query coverage, source closure and version-order evidence remain part of the result. Physical entity-incarnation equivalence across deletion and reinsertion is not inferred.
+
+Construction, predicate evaluations, candidate visits and category search have separate recorded budgets. An unfinished search returns `unknown`; a valid discovered witness remains a refutation. Verification recomputes from the original source and the caller's selected category, rule definition and budgets. Hashes bind supplied observations, rather than authenticate a database observer.
+
+The report transport also reuses the encoded complete report instead of building a second report object tree. JSON, text, Markdown and DOT presentations retain their original bytes and standard JSON escaping. New timing and memory claims require measurements of the final integrated build.

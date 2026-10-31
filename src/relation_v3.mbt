@@ -722,7 +722,7 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
     } else if kind == "row_write" {
       metadata.push({
         "seq": event.at("seq"),
-        "time": event.at("time"),
+        "time": required(event, "time", "event"),
         "kind": "write",
         "tx": event.at("tx"),
         "key": Json("relation-life-key-" + write_index.to_string()),
@@ -733,7 +733,7 @@ fn relation_v3_parse(text : String, v? : Json) -> RelationV3Parsed raise {
     } else if kind == "row_read" {
       metadata.push({
         "seq": event.at("seq"),
-        "time": event.at("time"),
+        "time": required(event, "time", "event"),
         "kind": "read",
         "tx": event.at("tx"),
         "key": "relation-life-read-key",

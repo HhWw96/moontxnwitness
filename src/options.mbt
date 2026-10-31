@@ -264,16 +264,5 @@ pub fn analyze_options_json(text : String, options_text : String) -> String {
 ///|
 pub fn run_options_json(text : String, format : String) -> String {
   let result = options_input(text, "{}")
-  let json = analysis_result_json(result)
-  let output = if format == "json" {
-    analysis_result_string(result) + "\n"
-  } else {
-    render_report(result.report, format)
-  }
-  let transport : Json = {
-    "report": json,
-    "output": Json(output),
-    "exitCode": Json(exit_code(result.report.outcome)),
-  }
-  transport.stringify()
+  report_transport_string(result.report, format, extras=analysis_extras(result))
 }
