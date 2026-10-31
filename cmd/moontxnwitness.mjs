@@ -29,7 +29,7 @@ import {classifyModelsV4,verifyModelsV4,makeModelsCapsuleV4,replayModelsCapsuleV
 
 const help = `MoonTxnWitness v${version()}
 用法：
-  node dist/moontxnwitness.mjs classify-models-v4 SOURCE.json [--options OPTIONS.json] [--models elle-core|NAME,...] [--list-profile native|captured-list-prefix-state/v2] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs classify-models-v4 SOURCE.json [--options OPTIONS.json] [--models elle-core|NAME,...] [--list-profile native|captured-list-prefix-state/v2|captured-list-original-serial/v1] [--output REPORT.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs verify-models-v4 SOURCE.json REPORT.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs replay-models-v4 CAPSULE.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs check HISTORY.json [--format text|json|markdown|dot] [--output FILE] [--witness FILE]
