@@ -7,7 +7,9 @@ import {resolve} from 'node:path';
 // Documentation edits do not require rerunning code; executable edits do.
 export function verificationFingerprint(root,{includeDist=true}={}) {
   const pinned=frozenInputs(root);
-  const names=['moon.mod','package.json','scripts/frozen-inputs-v031.json.gz',...Object.keys(pinned).filter(n=>!n.startsWith('artifacts/'))];
+  const indexName=JSON.parse(readFileSync(resolve(root,'scripts/frozen-inputs.json'),'utf8')).index;
+  if(typeof indexName!=='string'||!/^[\w.-]+$/.test(indexName))throw Error('Invalid frozen index name');
+  const names=['moon.mod','package.json','scripts/'+indexName,...Object.keys(pinned).filter(n=>!n.startsWith('artifacts/'))];
   function visit(folder,bindAll=false) {
     for(const entry of readdirSync(resolve(root,folder),{withFileTypes:true})) {
       if(entry.name==='__pycache__')continue;
@@ -35,6 +37,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   names.push('examples/relation-source-closure.json', 'examples/relation-roundtrip.mjs');
   names.push('examples/register-cycle.json', 'examples/register-cycle-roundtrip.mjs');
   names.push('examples/mlflow-http-roundtrip.mjs');
+  names.push('examples/v4-anomalies-roundtrip.mjs');
   names.push('examples/execution-roundtrip.mjs');
   names.push('examples/orm-profile-roundtrip.mjs');
   names.push('examples/model-profile-roundtrip.mjs');

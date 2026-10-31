@@ -40,27 +40,50 @@ function directoryChain(path){
   return path;
 }
 function identity(a,b){return a.dev===b.dev&&a.ino===b.ino;}
-function regularFile(path,spec){
-  directoryChain(dirname(path));
-  const before=lstatSync(path);
-  if(!before.isFile()||before.isSymbolicLink()||before.size!==spec.bytes)fail('member shape or size differs');
-  const fd=openSync(path,constants.O_RDONLY|(constants.O_NOFOLLOW||0));
-  try{
-    const opened=fstatSync(fd);
-    if(!opened.isFile()||!identity(opened,before)||opened.size!==spec.bytes)fail('member identity differs');
-    const digest=createHash('sha256');let count=0;
-    for(;;){
-      const n=readSync(fd,scratch,0,Math.min(scratch.length,spec.bytes-count+1),null);
-      if(!n)break;
-      count+=n;if(count>spec.bytes)fail('member read budget exceeded');
-      digest.update(scratch.subarray(0,n));
-    }
-    const after=lstatSync(path);
-    if(count!==spec.bytes||digest.digest('hex')!==spec.sha256||!identity(opened,after)||
-        !after.isFile()||after.isSymbolicLink()||after.size!==spec.bytes)fail('member checksum or identity differs');
-    return opened;
-  }finally{closeSync(fd);}
+function sameFileStamp(a,b){
+  return identity(a,b)&&a.size===b.size&&a.mode===b.mode&&a.nlink===b.nlink&&
+    a.mtimeNs===b.mtimeNs&&a.ctimeNs===b.ctimeNs&&
+    a.mtimeMs===b.mtimeMs&&a.ctimeMs===b.ctimeMs;
 }
+// Link creation/removal changes ctime without changing file content. Never use
+// such observations to reuse a digest. Genuine content/identity changes fail.
+function linkOnlyStampChange(a,b){
+  return identity(a,b)&&a.size===b.size&&a.mode===b.mode&&
+    a.mtimeNs===b.mtimeNs&&a.mtimeMs===b.mtimeMs&&a.nlink!==b.nlink;
+}
+function regularFile(path,spec){
+  // Metadata is useful for detecting changes, never proof of unchanged bytes.
+  // Hash every selected pathname, including aliases of a previously read inode.
+  for(let attempt=0;attempt<3;attempt++){
+    directoryChain(dirname(path));
+    const before=lstatSync(path,{bigint:true});
+    if(!before.isFile()||before.isSymbolicLink()||before.size!==BigInt(spec.bytes))fail('member shape or size differs');
+    const fd=openSync(path,constants.O_RDONLY|(constants.O_NOFOLLOW||0));
+    try{
+      const opened=fstatSync(fd,{bigint:true});
+      if(!opened.isFile()||opened.size!==BigInt(spec.bytes)||
+          !sameFileStamp(opened,before)&&!linkOnlyStampChange(before,opened))fail('member identity or metadata differs');
+      const digest=createHash('sha256');let count=0;
+      for(;;){
+        const n=readSync(fd,scratch,0,Math.min(scratch.length,spec.bytes-count+1),null);
+        if(!n)break;
+        count+=n;if(count>spec.bytes)fail('member read budget exceeded');
+        digest.update(scratch.subarray(0,n));
+      }
+      const checksum=digest.digest('hex');
+      const finalDescriptor=fstatSync(fd,{bigint:true}),after=lstatSync(path,{bigint:true});
+      if(count!==spec.bytes||checksum!==spec.sha256||!after.isFile()||after.isSymbolicLink())fail('member checksum or identity differs');
+      if(!sameFileStamp(opened,finalDescriptor)||!sameFileStamp(finalDescriptor,after)){
+        const linkOrSame=(a,b)=>sameFileStamp(a,b)||linkOnlyStampChange(a,b);
+        if(!linkOrSame(opened,finalDescriptor)||!linkOrSame(finalDescriptor,after))fail('member checksum or identity differs');
+        if(attempt===2)fail('member concurrent link metadata did not stabilize');
+        continue;
+      }
+      return opened;
+    }finally{closeSync(fd);}
+  }
+}
+
 function diskSpace(path,pending=0){
   const info=statfsSync(path,{bigint:true});
   if(info.bavail*info.bsize-BigInt(pending)<BigInt(COMPACT_RUNTIME_LIMITS.minimumFreeBytes))
@@ -184,7 +207,8 @@ function removeOwnedTree(root,id){
  * Internal fixed-PIN loader. installationRoot is the installed dist directory.
  * Each instance owns one process-private temporary tree. Unreferenced files in
  * the shared legacy source pools are inert; the assembled tree inventory is exact.
- * get()/verify() always revalidate used source bytes and the complete destination.
+ * get()/verify() always revalidate every used source path and the complete destination.
+ * Every source and destination pathname is fully hashed on each validation.
  * A damaged tree is poisoned and never repaired. cleanup() is explicit; process
  * exit also attempts cleanup. No files are created in installationRoot.
  */
@@ -221,7 +245,7 @@ export function createCompactRuntimeLoader(pin,{installationRoot=dirname(fileURL
           diskSpace(temporary);
           // A readonly inode may not be unlinkable on Windows. Copy it without
           // changing the source's permissions or readonly file attributes.
-          if((sourceStats.get(spec.source).mode&0o200)===0)copyExclusive(source,target,spec,temporary);
+          if((sourceStats.get(spec.source).mode&0o200n)===0n)copyExclusive(source,target,spec,temporary);
           else try{linkSync(source,target);}catch(error){
             if(error.code==='EEXIST')throw error;
             copyExclusive(source,target,spec,temporary);

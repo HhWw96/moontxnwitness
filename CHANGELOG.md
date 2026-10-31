@@ -1,8 +1,11 @@
-# Unreleased - 0.3.3
+# 0.3.3 — 2026-10-31
 
-- Add an explicit effective-list classification profile for multiple appends, intermediate own reads and reverted effects, with independent construction budgets and preserved legacy defaults.
-- Add separate source-bound register lost-update inspection, verification, capsules and CLI; retain actual read/final-write identities and incomplete provenance.
-- Add explicit G-single category checks and separate source-anomaly inspection without changing the v4 default categories.
+- Add dedicated G-single category search with source-bound cycle witnesses and independently budgeted verification.
+- Add raw-source anomaly and register lost-update inspection, with explicit profiles, CLI commands and capsules.
+- Add the optional effective append-list graph for multiple same-key appends, delivered reads and savepoint rollback, retaining legacy defaults.
+- Preserve the original public v0.3.2 runtime through a checksum-bound reusable component; historical replay remains separate from current analysis.
+- Validate every selected compatibility-runtime path against its full content digest on each replay, including shared-file aliases and concurrent assemblies.
+- Retain complete observations and reject ambiguous source identities, unsupported checks and exhausted budgets without promoting them to model acceptance.
 - Fix v4 CLI option validation for analyze, classify, reduce, verify, inspection and replay: duplicate JSON keys, including Unicode-escaped aliases, are rejected before host parsing can erase them. Valid option files retain their existing semantics.
 - Preserve a proved source finding when earlier unknown gaps fill the bounded report; retain explicit truncation and incomplete coverage.
 

@@ -1,0 +1,1920 @@
+{
+  "suite": "register-direct-v4-independent-sdk-audit-1",
+  "passed": true,
+  "checks": 6,
+  "failed": 0,
+  "version": "0.3.3",
+  "runtime": "dist",
+  "checkedCategories": [
+    "G0",
+    "G1c",
+    "G2-item",
+    "G-single"
+  ],
+  "gSingleSupport": "declared >=0.3.3 and explicitly verified named G-single positive control",
+  "actualDatabaseExecution": false,
+  "formalPerformanceMeasurement": false,
+  "actualClojureExecution": false,
+  "formalReferenceIsCompleteElleChecker": false,
+  "scope": "Formal item direct-dependency categories on the frozen declared-register histories; report replay consistency alone does not prove a sound category.",
+  "originalFailure": {
+    "artifact": "independent-register-rw-validation.json",
+    "sha256": "0bdf0d1f2d8fa54b1d79a5aa45050260a282eb80c83652658fd2da65b0032efd",
+    "suite": "independent-register-external-next-version-audit-1",
+    "originalObservations": 6,
+    "uniqueHistories": 3,
+    "disagreeingOriginalRuntimeCases": 2,
+    "mapping": "The original three histories were checked against two runtimes. This portable gate checks the same three unchanged histories through object and JSON-text SDK transports, with identical expected direct graphs."
+  },
+  "primaryReferences": [
+    {
+      "url": "https://jepsen.io/consistency/dependencies",
+      "rule": "Item WW and RW target the next version; predicate edges follow a distinct rule."
+    },
+    {
+      "url": "https://github.com/jepsen-io/elle/blob/4e359e597c52938b0afebb8bc42273914d68a424/src/elle/rw_register.clj#L704",
+      "sha256": "9ad17da5b86e6e25fe66b77e0deab9000265901a1bedd5045dbba98c7dddd1ce",
+      "rule": "External-read/final-write indexes, explicit version-graph edges, remove self edges. Default nil-version inference is not the complete-order reference used by this audit."
+    },
+    {
+      "url": "https://repo.clojars.org/jepsen/txn/jepsen.txn/0.1.3/jepsen.txn-0.1.3.jar",
+      "sha256": "cef71a591cbb7d7d3df29cc332bb03930cc18802104f7441d551aeb36f510b1b",
+      "member": "jepsen/txn.clj",
+      "memberSha256": "7bff6ba23bd59bca8e8c7fe870ec94c3677b4e6e484a387121e87e46e963cb21",
+      "lineRange": [
+        49,
+        78
+      ]
+    }
+  ],
+  "testedFileSha256Before": {
+    "sdk.mjs": "8e6a0038bdde63392cca2691d4b826dd117fadd31a7e9fa56845c2236f87d950",
+    "v4.mjs": "98e83a7e612ac5b7e4031493b77494b6e8f208158a101199e0fbd1860156be89",
+    "core.mjs": "c3f151762b93b1ddd96309f4105e0b80be2a0598bca027f35a4bf5a190a91d76",
+    "capture-core.mjs": "37135065297b6038b6ed3e0322daddd06b8d1b8ba78cd6ce4b8892c4afcaee37",
+    "build-manifest.json": "d0ccb49590a8e921389d6e87291b0a841e176473ec255a2d3d2386559236256d"
+  },
+  "testedFileSha256After": {
+    "sdk.mjs": "8e6a0038bdde63392cca2691d4b826dd117fadd31a7e9fa56845c2236f87d950",
+    "v4.mjs": "98e83a7e612ac5b7e4031493b77494b6e8f208158a101199e0fbd1860156be89",
+    "core.mjs": "c3f151762b93b1ddd96309f4105e0b80be2a0598bca027f35a4bf5a190a91d76",
+    "capture-core.mjs": "37135065297b6038b6ed3e0322daddd06b8d1b8ba78cd6ce4b8892c4afcaee37",
+    "build-manifest.json": "d0ccb49590a8e921389d6e87291b0a841e176473ec255a2d3d2386559236256d"
+  },
+  "runtimeUnchanged": true,
+  "testFileSha256": "bfb03da9156f2d321f4388a4c5bd4e0cf75827a63703af141f1d114799be0c0c",
+  "results": [
+    {
+      "name": "own-read-after-write / object",
+      "originalCase": "own-read-after-write",
+      "transport": "object",
+      "inputSha256": "4e5df2f49bc6537a7d07fe974195c92da17061acb75dabfba74e07ac0dabad1f",
+      "expectedEdgeSha256": "0dee590ade7396d2eaa5b94c8e9c26513ebe590ec363360bc53ae726fcde8b6b",
+      "reference": {
+        "externalReads": {
+          "A": {
+            "y": "y1"
+          },
+          "B": {}
+        },
+        "finalWrites": {
+          "A": {
+            "x": "x1"
+          },
+          "B": {
+            "x": "x2",
+            "y": "y1"
+          }
+        },
+        "edges": [
+          {
+            "from": "A",
+            "to": "B",
+            "kind": "ww",
+            "key": "x",
+            "fromVersion": "x1",
+            "toVersion": "x2"
+          },
+          {
+            "from": "B",
+            "to": "A",
+            "kind": "wr",
+            "key": "y",
+            "fromVersion": "y1",
+            "toVersion": "y1"
+          }
+        ],
+        "refuted": {
+          "G0": false,
+          "G1c": true,
+          "G2-item": false,
+          "G-single": false
+        }
+      },
+      "actualReport": {
+        "format": "moontxnwitness-classification/v4",
+        "schemaVersion": 4,
+        "semanticContract": "moontxnwitness-category-classification-v4-1",
+        "algorithm": "v4-source-bound-category-g-single-1",
+        "dataModel": "point-register-v1",
+        "observations": {
+          "sourceFormat": "declared-history/v1",
+          "authenticityVerified": false,
+          "document": {
+            "schemaVersion": 1,
+            "model": "serializable",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "versionOrders": {
+              "x": [
+                "x0",
+                "x1",
+                "x2"
+              ],
+              "y": [
+                "y0",
+                "y1"
+              ]
+            },
+            "transactions": [
+              {
+                "id": "A",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x1"
+                  },
+                  {
+                    "type": "read",
+                    "key": "x",
+                    "version": "x1"
+                  },
+                  {
+                    "type": "read",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              },
+              {
+                "id": "B",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x2"
+                  },
+                  {
+                    "type": "write",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "writeEffects": {
+          "basis": "caller-declared-programs",
+          "entries": [
+            {
+              "transaction": "A",
+              "operation": 0,
+              "key": "x",
+              "version": "x1",
+              "outcome": "committed"
+            },
+            {
+              "transaction": "B",
+              "operation": 0,
+              "key": "x",
+              "version": "x2",
+              "outcome": "committed"
+            },
+            {
+              "transaction": "B",
+              "operation": 1,
+              "key": "y",
+              "version": "y1",
+              "outcome": "committed"
+            }
+          ]
+        },
+        "inferences": {
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1",
+              "x2"
+            ],
+            "y": [
+              "y0",
+              "y1"
+            ]
+          },
+          "versionOrderSources": {
+            "x": "asserted",
+            "y": "asserted"
+          }
+        },
+        "judgment": {
+          "status": "refuted",
+          "acceptsIsolationModels": false,
+          "scope": "requested point-register-v1/append-list-v1 item-dependency categories only; G-single has exactly one item RW edge; checked-compatible does not accept a complete isolation model or certify a database",
+          "dependencyGraphComplete": true,
+          "dependencies": [
+            {
+              "from": "A",
+              "to": "B",
+              "kind": "ww",
+              "key": "x",
+              "fromOp": 0,
+              "toOp": 0,
+              "fromVersion": "x1",
+              "toVersion": "x2",
+              "reason": "The asserted per-key version order puts this write before the next write."
+            },
+            {
+              "from": "B",
+              "to": "A",
+              "kind": "wr",
+              "key": "y",
+              "fromOp": 1,
+              "toOp": 2,
+              "fromVersion": "y1",
+              "toVersion": "y1",
+              "reason": "The reader observes the unique final version written by the source transaction."
+            }
+          ],
+          "sourceOrOrderGaps": [],
+          "rules": {
+            "G0": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 1,
+              "edgeChecks": 3,
+              "evidence": null
+            },
+            "G1c": {
+              "status": "refuted",
+              "reason": "source-bound-cycle",
+              "states": 1,
+              "edgeChecks": 2,
+              "evidence": {
+                "kind": "source-bound-register-category-cycle",
+                "specificCategory": "G1c",
+                "edges": [
+                  {
+                    "edge": {
+                      "from": "A",
+                      "to": "B",
+                      "kind": "ww",
+                      "key": "x",
+                      "fromOp": 0,
+                      "toOp": 0,
+                      "fromVersion": "x1",
+                      "toVersion": "x2",
+                      "reason": "The asserted per-key version order puts this write before the next write."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "x0",
+                      "x1",
+                      "x2"
+                    ]
+                  },
+                  {
+                    "edge": {
+                      "from": "B",
+                      "to": "A",
+                      "kind": "wr",
+                      "key": "y",
+                      "fromOp": 1,
+                      "toOp": 2,
+                      "fromVersion": "y1",
+                      "toVersion": "y1",
+                      "reason": "The reader observes the unique final version written by the source transaction."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "y0",
+                      "y1"
+                    ]
+                  }
+                ],
+                "minimality": "simple cycle for the requested category; no shortest-cycle claim",
+                "sourceScope": "original capture observation identities or caller-declared transaction operation indices; input assertions do not authenticate a database"
+              }
+            },
+            "G2-item": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 0,
+              "edgeChecks": 2,
+              "evidence": null
+            },
+            "G-single": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 0,
+              "edgeChecks": 2,
+              "evidence": null
+            }
+          },
+          "impliedAnomalies": [
+            "G1c",
+            "G1"
+          ]
+        },
+        "execution": {
+          "counterContract": "v4-category-g-single-seed-bfs-counters-1",
+          "categories": [
+            "G0",
+            "G1c",
+            "G2-item",
+            "G-single"
+          ],
+          "versionOrderCompletion": false,
+          "limits": {
+            "registerTransactions": 128,
+            "registerOperations": 4096,
+            "listCommittedTransactions": 6,
+            "listOperations": 128,
+            "edges": 50000,
+            "statesPerCategory": 100000,
+            "edgeChecksPerCategory": 1000000
+          }
+        }
+      },
+      "reportSelfVerification": {
+        "valid": true,
+        "schemaVersion": 4,
+        "scope": "semantic reproduction under caller-supplied options; source observations are not authenticated"
+      },
+      "passed": true
+    },
+    {
+      "name": "initial-read-with-own-immediate-successor / object",
+      "originalCase": "initial-read-with-own-immediate-successor",
+      "transport": "object",
+      "inputSha256": "713963723ae35f04ee86bf8a205720fa375b87a2e7882266d11ab2355412a5ef",
+      "expectedEdgeSha256": "0dee590ade7396d2eaa5b94c8e9c26513ebe590ec363360bc53ae726fcde8b6b",
+      "reference": {
+        "externalReads": {
+          "A": {
+            "x": "x0",
+            "y": "y1"
+          },
+          "B": {}
+        },
+        "finalWrites": {
+          "A": {
+            "x": "x1"
+          },
+          "B": {
+            "x": "x2",
+            "y": "y1"
+          }
+        },
+        "edges": [
+          {
+            "from": "A",
+            "to": "B",
+            "kind": "ww",
+            "key": "x",
+            "fromVersion": "x1",
+            "toVersion": "x2"
+          },
+          {
+            "from": "B",
+            "to": "A",
+            "kind": "wr",
+            "key": "y",
+            "fromVersion": "y1",
+            "toVersion": "y1"
+          }
+        ],
+        "refuted": {
+          "G0": false,
+          "G1c": true,
+          "G2-item": false,
+          "G-single": false
+        }
+      },
+      "actualReport": {
+        "format": "moontxnwitness-classification/v4",
+        "schemaVersion": 4,
+        "semanticContract": "moontxnwitness-category-classification-v4-1",
+        "algorithm": "v4-source-bound-category-g-single-1",
+        "dataModel": "point-register-v1",
+        "observations": {
+          "sourceFormat": "declared-history/v1",
+          "authenticityVerified": false,
+          "document": {
+            "schemaVersion": 1,
+            "model": "serializable",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "versionOrders": {
+              "x": [
+                "x0",
+                "x1",
+                "x2"
+              ],
+              "y": [
+                "y0",
+                "y1"
+              ]
+            },
+            "transactions": [
+              {
+                "id": "A",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "read",
+                    "key": "x",
+                    "version": "x0"
+                  },
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x1"
+                  },
+                  {
+                    "type": "read",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              },
+              {
+                "id": "B",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x2"
+                  },
+                  {
+                    "type": "write",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "writeEffects": {
+          "basis": "caller-declared-programs",
+          "entries": [
+            {
+              "transaction": "A",
+              "operation": 1,
+              "key": "x",
+              "version": "x1",
+              "outcome": "committed"
+            },
+            {
+              "transaction": "B",
+              "operation": 0,
+              "key": "x",
+              "version": "x2",
+              "outcome": "committed"
+            },
+            {
+              "transaction": "B",
+              "operation": 1,
+              "key": "y",
+              "version": "y1",
+              "outcome": "committed"
+            }
+          ]
+        },
+        "inferences": {
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1",
+              "x2"
+            ],
+            "y": [
+              "y0",
+              "y1"
+            ]
+          },
+          "versionOrderSources": {
+            "x": "asserted",
+            "y": "asserted"
+          }
+        },
+        "judgment": {
+          "status": "refuted",
+          "acceptsIsolationModels": false,
+          "scope": "requested point-register-v1/append-list-v1 item-dependency categories only; G-single has exactly one item RW edge; checked-compatible does not accept a complete isolation model or certify a database",
+          "dependencyGraphComplete": true,
+          "dependencies": [
+            {
+              "from": "A",
+              "to": "B",
+              "kind": "ww",
+              "key": "x",
+              "fromOp": 1,
+              "toOp": 0,
+              "fromVersion": "x1",
+              "toVersion": "x2",
+              "reason": "The asserted per-key version order puts this write before the next write."
+            },
+            {
+              "from": "B",
+              "to": "A",
+              "kind": "wr",
+              "key": "y",
+              "fromOp": 1,
+              "toOp": 2,
+              "fromVersion": "y1",
+              "toVersion": "y1",
+              "reason": "The reader observes the unique final version written by the source transaction."
+            }
+          ],
+          "sourceOrOrderGaps": [],
+          "rules": {
+            "G0": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 1,
+              "edgeChecks": 3,
+              "evidence": null
+            },
+            "G1c": {
+              "status": "refuted",
+              "reason": "source-bound-cycle",
+              "states": 1,
+              "edgeChecks": 2,
+              "evidence": {
+                "kind": "source-bound-register-category-cycle",
+                "specificCategory": "G1c",
+                "edges": [
+                  {
+                    "edge": {
+                      "from": "A",
+                      "to": "B",
+                      "kind": "ww",
+                      "key": "x",
+                      "fromOp": 1,
+                      "toOp": 0,
+                      "fromVersion": "x1",
+                      "toVersion": "x2",
+                      "reason": "The asserted per-key version order puts this write before the next write."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "x0",
+                      "x1",
+                      "x2"
+                    ]
+                  },
+                  {
+                    "edge": {
+                      "from": "B",
+                      "to": "A",
+                      "kind": "wr",
+                      "key": "y",
+                      "fromOp": 1,
+                      "toOp": 2,
+                      "fromVersion": "y1",
+                      "toVersion": "y1",
+                      "reason": "The reader observes the unique final version written by the source transaction."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "y0",
+                      "y1"
+                    ]
+                  }
+                ],
+                "minimality": "simple cycle for the requested category; no shortest-cycle claim",
+                "sourceScope": "original capture observation identities or caller-declared transaction operation indices; input assertions do not authenticate a database"
+              }
+            },
+            "G2-item": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 0,
+              "edgeChecks": 2,
+              "evidence": null
+            },
+            "G-single": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 0,
+              "edgeChecks": 2,
+              "evidence": null
+            }
+          },
+          "impliedAnomalies": [
+            "G1c",
+            "G1"
+          ]
+        },
+        "execution": {
+          "counterContract": "v4-category-g-single-seed-bfs-counters-1",
+          "categories": [
+            "G0",
+            "G1c",
+            "G2-item",
+            "G-single"
+          ],
+          "versionOrderCompletion": false,
+          "limits": {
+            "registerTransactions": 128,
+            "registerOperations": 4096,
+            "listCommittedTransactions": 6,
+            "listOperations": 128,
+            "edges": 50000,
+            "statesPerCategory": 100000,
+            "edgeChecksPerCategory": 1000000
+          }
+        }
+      },
+      "reportSelfVerification": {
+        "valid": true,
+        "schemaVersion": 4,
+        "scope": "semantic reproduction under caller-supplied options; source observations are not authenticated"
+      },
+      "passed": true
+    },
+    {
+      "name": "genuine-immediate-external-successor-control / object",
+      "originalCase": "genuine-immediate-external-successor-control",
+      "transport": "object",
+      "inputSha256": "29c950d1407946c493a0ec61f5ad96159a2c8784a64dac7a7af369634379c694",
+      "expectedEdgeSha256": "841c58dab15382cab76c80f6a5db628582817e57213f38a086240755794a1afe",
+      "reference": {
+        "externalReads": {
+          "A": {
+            "x": "x0",
+            "y": "y1"
+          },
+          "B": {}
+        },
+        "finalWrites": {
+          "A": {},
+          "B": {
+            "x": "x1",
+            "y": "y1"
+          }
+        },
+        "edges": [
+          {
+            "from": "A",
+            "to": "B",
+            "kind": "rw",
+            "key": "x",
+            "fromVersion": "x0",
+            "toVersion": "x1"
+          },
+          {
+            "from": "B",
+            "to": "A",
+            "kind": "wr",
+            "key": "y",
+            "fromVersion": "y1",
+            "toVersion": "y1"
+          }
+        ],
+        "refuted": {
+          "G0": false,
+          "G1c": false,
+          "G2-item": true,
+          "G-single": true
+        }
+      },
+      "actualReport": {
+        "format": "moontxnwitness-classification/v4",
+        "schemaVersion": 4,
+        "semanticContract": "moontxnwitness-category-classification-v4-1",
+        "algorithm": "v4-source-bound-category-g-single-1",
+        "dataModel": "point-register-v1",
+        "observations": {
+          "sourceFormat": "declared-history/v1",
+          "authenticityVerified": false,
+          "document": {
+            "schemaVersion": 1,
+            "model": "serializable",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "versionOrders": {
+              "x": [
+                "x0",
+                "x1"
+              ],
+              "y": [
+                "y0",
+                "y1"
+              ]
+            },
+            "transactions": [
+              {
+                "id": "A",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "read",
+                    "key": "x",
+                    "version": "x0"
+                  },
+                  {
+                    "type": "read",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              },
+              {
+                "id": "B",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x1"
+                  },
+                  {
+                    "type": "write",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "writeEffects": {
+          "basis": "caller-declared-programs",
+          "entries": [
+            {
+              "transaction": "B",
+              "operation": 0,
+              "key": "x",
+              "version": "x1",
+              "outcome": "committed"
+            },
+            {
+              "transaction": "B",
+              "operation": 1,
+              "key": "y",
+              "version": "y1",
+              "outcome": "committed"
+            }
+          ]
+        },
+        "inferences": {
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1"
+            ],
+            "y": [
+              "y0",
+              "y1"
+            ]
+          },
+          "versionOrderSources": {
+            "x": "asserted",
+            "y": "asserted"
+          }
+        },
+        "judgment": {
+          "status": "refuted",
+          "acceptsIsolationModels": false,
+          "scope": "requested point-register-v1/append-list-v1 item-dependency categories only; G-single has exactly one item RW edge; checked-compatible does not accept a complete isolation model or certify a database",
+          "dependencyGraphComplete": true,
+          "dependencies": [
+            {
+              "from": "A",
+              "to": "B",
+              "kind": "rw",
+              "key": "x",
+              "fromOp": 0,
+              "toOp": 0,
+              "fromVersion": "x0",
+              "toVersion": "x1",
+              "reason": "The reader observes an earlier version and must precede this later committed write."
+            },
+            {
+              "from": "B",
+              "to": "A",
+              "kind": "wr",
+              "key": "y",
+              "fromOp": 1,
+              "toOp": 1,
+              "fromVersion": "y1",
+              "toVersion": "y1",
+              "reason": "The reader observes the unique final version written by the source transaction."
+            }
+          ],
+          "sourceOrOrderGaps": [],
+          "rules": {
+            "G0": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 0,
+              "edgeChecks": 2,
+              "evidence": null
+            },
+            "G1c": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 1,
+              "edgeChecks": 3,
+              "evidence": null
+            },
+            "G2-item": {
+              "status": "refuted",
+              "reason": "source-bound-cycle",
+              "states": 1,
+              "edgeChecks": 2,
+              "evidence": {
+                "kind": "source-bound-register-category-cycle",
+                "specificCategory": "G2-item",
+                "edges": [
+                  {
+                    "edge": {
+                      "from": "A",
+                      "to": "B",
+                      "kind": "rw",
+                      "key": "x",
+                      "fromOp": 0,
+                      "toOp": 0,
+                      "fromVersion": "x0",
+                      "toVersion": "x1",
+                      "reason": "The reader observes an earlier version and must precede this later committed write."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "x0",
+                      "x1"
+                    ]
+                  },
+                  {
+                    "edge": {
+                      "from": "B",
+                      "to": "A",
+                      "kind": "wr",
+                      "key": "y",
+                      "fromOp": 1,
+                      "toOp": 1,
+                      "fromVersion": "y1",
+                      "toVersion": "y1",
+                      "reason": "The reader observes the unique final version written by the source transaction."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "y0",
+                      "y1"
+                    ]
+                  }
+                ],
+                "minimality": "simple cycle for the requested category; no shortest-cycle claim",
+                "sourceScope": "original capture observation identities or caller-declared transaction operation indices; input assertions do not authenticate a database"
+              }
+            },
+            "G-single": {
+              "status": "refuted",
+              "reason": "source-bound-cycle",
+              "states": 1,
+              "edgeChecks": 2,
+              "evidence": {
+                "kind": "source-bound-register-category-cycle",
+                "specificCategory": "G-single-item",
+                "edges": [
+                  {
+                    "edge": {
+                      "from": "A",
+                      "to": "B",
+                      "kind": "rw",
+                      "key": "x",
+                      "fromOp": 0,
+                      "toOp": 0,
+                      "fromVersion": "x0",
+                      "toVersion": "x1",
+                      "reason": "The reader observes an earlier version and must precede this later committed write."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "x0",
+                      "x1"
+                    ]
+                  },
+                  {
+                    "edge": {
+                      "from": "B",
+                      "to": "A",
+                      "kind": "wr",
+                      "key": "y",
+                      "fromOp": 1,
+                      "toOp": 1,
+                      "fromVersion": "y1",
+                      "toVersion": "y1",
+                      "reason": "The reader observes the unique final version written by the source transaction."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "y0",
+                      "y1"
+                    ]
+                  }
+                ],
+                "minimality": "simple cycle for the requested category; no shortest-cycle claim",
+                "sourceScope": "original capture observation identities or caller-declared transaction operation indices; input assertions do not authenticate a database",
+                "requestedCategory": "G-single",
+                "rwScope": "item",
+                "rwEdgeCount": 1,
+                "cycleRule": "exactly-one-item-rw-and-only-ww-wr-remainder/v1"
+              }
+            }
+          },
+          "impliedAnomalies": [
+            "G2-item",
+            "G2",
+            "G-single-item",
+            "G-single",
+            "G-nonadjacent-item",
+            "G-nonadjacent"
+          ]
+        },
+        "execution": {
+          "counterContract": "v4-category-g-single-seed-bfs-counters-1",
+          "categories": [
+            "G0",
+            "G1c",
+            "G2-item",
+            "G-single"
+          ],
+          "versionOrderCompletion": false,
+          "limits": {
+            "registerTransactions": 128,
+            "registerOperations": 4096,
+            "listCommittedTransactions": 6,
+            "listOperations": 128,
+            "edges": 50000,
+            "statesPerCategory": 100000,
+            "edgeChecksPerCategory": 1000000
+          }
+        }
+      },
+      "reportSelfVerification": {
+        "valid": true,
+        "schemaVersion": 4,
+        "scope": "semantic reproduction under caller-supplied options; source observations are not authenticated"
+      },
+      "passed": true
+    },
+    {
+      "name": "own-read-after-write / json-text",
+      "originalCase": "own-read-after-write",
+      "transport": "json-text",
+      "inputSha256": "4e5df2f49bc6537a7d07fe974195c92da17061acb75dabfba74e07ac0dabad1f",
+      "expectedEdgeSha256": "0dee590ade7396d2eaa5b94c8e9c26513ebe590ec363360bc53ae726fcde8b6b",
+      "reference": {
+        "externalReads": {
+          "A": {
+            "y": "y1"
+          },
+          "B": {}
+        },
+        "finalWrites": {
+          "A": {
+            "x": "x1"
+          },
+          "B": {
+            "x": "x2",
+            "y": "y1"
+          }
+        },
+        "edges": [
+          {
+            "from": "A",
+            "to": "B",
+            "kind": "ww",
+            "key": "x",
+            "fromVersion": "x1",
+            "toVersion": "x2"
+          },
+          {
+            "from": "B",
+            "to": "A",
+            "kind": "wr",
+            "key": "y",
+            "fromVersion": "y1",
+            "toVersion": "y1"
+          }
+        ],
+        "refuted": {
+          "G0": false,
+          "G1c": true,
+          "G2-item": false,
+          "G-single": false
+        }
+      },
+      "actualReport": {
+        "format": "moontxnwitness-classification/v4",
+        "schemaVersion": 4,
+        "semanticContract": "moontxnwitness-category-classification-v4-1",
+        "algorithm": "v4-source-bound-category-g-single-1",
+        "dataModel": "point-register-v1",
+        "observations": {
+          "sourceFormat": "declared-history/v1",
+          "authenticityVerified": false,
+          "document": {
+            "schemaVersion": 1,
+            "model": "serializable",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "versionOrders": {
+              "x": [
+                "x0",
+                "x1",
+                "x2"
+              ],
+              "y": [
+                "y0",
+                "y1"
+              ]
+            },
+            "transactions": [
+              {
+                "id": "A",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x1"
+                  },
+                  {
+                    "type": "read",
+                    "key": "x",
+                    "version": "x1"
+                  },
+                  {
+                    "type": "read",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              },
+              {
+                "id": "B",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x2"
+                  },
+                  {
+                    "type": "write",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "writeEffects": {
+          "basis": "caller-declared-programs",
+          "entries": [
+            {
+              "transaction": "A",
+              "operation": 0,
+              "key": "x",
+              "version": "x1",
+              "outcome": "committed"
+            },
+            {
+              "transaction": "B",
+              "operation": 0,
+              "key": "x",
+              "version": "x2",
+              "outcome": "committed"
+            },
+            {
+              "transaction": "B",
+              "operation": 1,
+              "key": "y",
+              "version": "y1",
+              "outcome": "committed"
+            }
+          ]
+        },
+        "inferences": {
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1",
+              "x2"
+            ],
+            "y": [
+              "y0",
+              "y1"
+            ]
+          },
+          "versionOrderSources": {
+            "x": "asserted",
+            "y": "asserted"
+          }
+        },
+        "judgment": {
+          "status": "refuted",
+          "acceptsIsolationModels": false,
+          "scope": "requested point-register-v1/append-list-v1 item-dependency categories only; G-single has exactly one item RW edge; checked-compatible does not accept a complete isolation model or certify a database",
+          "dependencyGraphComplete": true,
+          "dependencies": [
+            {
+              "from": "A",
+              "to": "B",
+              "kind": "ww",
+              "key": "x",
+              "fromOp": 0,
+              "toOp": 0,
+              "fromVersion": "x1",
+              "toVersion": "x2",
+              "reason": "The asserted per-key version order puts this write before the next write."
+            },
+            {
+              "from": "B",
+              "to": "A",
+              "kind": "wr",
+              "key": "y",
+              "fromOp": 1,
+              "toOp": 2,
+              "fromVersion": "y1",
+              "toVersion": "y1",
+              "reason": "The reader observes the unique final version written by the source transaction."
+            }
+          ],
+          "sourceOrOrderGaps": [],
+          "rules": {
+            "G0": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 1,
+              "edgeChecks": 3,
+              "evidence": null
+            },
+            "G1c": {
+              "status": "refuted",
+              "reason": "source-bound-cycle",
+              "states": 1,
+              "edgeChecks": 2,
+              "evidence": {
+                "kind": "source-bound-register-category-cycle",
+                "specificCategory": "G1c",
+                "edges": [
+                  {
+                    "edge": {
+                      "from": "A",
+                      "to": "B",
+                      "kind": "ww",
+                      "key": "x",
+                      "fromOp": 0,
+                      "toOp": 0,
+                      "fromVersion": "x1",
+                      "toVersion": "x2",
+                      "reason": "The asserted per-key version order puts this write before the next write."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "x0",
+                      "x1",
+                      "x2"
+                    ]
+                  },
+                  {
+                    "edge": {
+                      "from": "B",
+                      "to": "A",
+                      "kind": "wr",
+                      "key": "y",
+                      "fromOp": 1,
+                      "toOp": 2,
+                      "fromVersion": "y1",
+                      "toVersion": "y1",
+                      "reason": "The reader observes the unique final version written by the source transaction."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "y0",
+                      "y1"
+                    ]
+                  }
+                ],
+                "minimality": "simple cycle for the requested category; no shortest-cycle claim",
+                "sourceScope": "original capture observation identities or caller-declared transaction operation indices; input assertions do not authenticate a database"
+              }
+            },
+            "G2-item": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 0,
+              "edgeChecks": 2,
+              "evidence": null
+            },
+            "G-single": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 0,
+              "edgeChecks": 2,
+              "evidence": null
+            }
+          },
+          "impliedAnomalies": [
+            "G1c",
+            "G1"
+          ]
+        },
+        "execution": {
+          "counterContract": "v4-category-g-single-seed-bfs-counters-1",
+          "categories": [
+            "G0",
+            "G1c",
+            "G2-item",
+            "G-single"
+          ],
+          "versionOrderCompletion": false,
+          "limits": {
+            "registerTransactions": 128,
+            "registerOperations": 4096,
+            "listCommittedTransactions": 6,
+            "listOperations": 128,
+            "edges": 50000,
+            "statesPerCategory": 100000,
+            "edgeChecksPerCategory": 1000000
+          }
+        }
+      },
+      "reportSelfVerification": {
+        "valid": true,
+        "schemaVersion": 4,
+        "scope": "semantic reproduction under caller-supplied options; source observations are not authenticated"
+      },
+      "passed": true
+    },
+    {
+      "name": "initial-read-with-own-immediate-successor / json-text",
+      "originalCase": "initial-read-with-own-immediate-successor",
+      "transport": "json-text",
+      "inputSha256": "713963723ae35f04ee86bf8a205720fa375b87a2e7882266d11ab2355412a5ef",
+      "expectedEdgeSha256": "0dee590ade7396d2eaa5b94c8e9c26513ebe590ec363360bc53ae726fcde8b6b",
+      "reference": {
+        "externalReads": {
+          "A": {
+            "x": "x0",
+            "y": "y1"
+          },
+          "B": {}
+        },
+        "finalWrites": {
+          "A": {
+            "x": "x1"
+          },
+          "B": {
+            "x": "x2",
+            "y": "y1"
+          }
+        },
+        "edges": [
+          {
+            "from": "A",
+            "to": "B",
+            "kind": "ww",
+            "key": "x",
+            "fromVersion": "x1",
+            "toVersion": "x2"
+          },
+          {
+            "from": "B",
+            "to": "A",
+            "kind": "wr",
+            "key": "y",
+            "fromVersion": "y1",
+            "toVersion": "y1"
+          }
+        ],
+        "refuted": {
+          "G0": false,
+          "G1c": true,
+          "G2-item": false,
+          "G-single": false
+        }
+      },
+      "actualReport": {
+        "format": "moontxnwitness-classification/v4",
+        "schemaVersion": 4,
+        "semanticContract": "moontxnwitness-category-classification-v4-1",
+        "algorithm": "v4-source-bound-category-g-single-1",
+        "dataModel": "point-register-v1",
+        "observations": {
+          "sourceFormat": "declared-history/v1",
+          "authenticityVerified": false,
+          "document": {
+            "schemaVersion": 1,
+            "model": "serializable",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "versionOrders": {
+              "x": [
+                "x0",
+                "x1",
+                "x2"
+              ],
+              "y": [
+                "y0",
+                "y1"
+              ]
+            },
+            "transactions": [
+              {
+                "id": "A",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "read",
+                    "key": "x",
+                    "version": "x0"
+                  },
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x1"
+                  },
+                  {
+                    "type": "read",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              },
+              {
+                "id": "B",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x2"
+                  },
+                  {
+                    "type": "write",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "writeEffects": {
+          "basis": "caller-declared-programs",
+          "entries": [
+            {
+              "transaction": "A",
+              "operation": 1,
+              "key": "x",
+              "version": "x1",
+              "outcome": "committed"
+            },
+            {
+              "transaction": "B",
+              "operation": 0,
+              "key": "x",
+              "version": "x2",
+              "outcome": "committed"
+            },
+            {
+              "transaction": "B",
+              "operation": 1,
+              "key": "y",
+              "version": "y1",
+              "outcome": "committed"
+            }
+          ]
+        },
+        "inferences": {
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1",
+              "x2"
+            ],
+            "y": [
+              "y0",
+              "y1"
+            ]
+          },
+          "versionOrderSources": {
+            "x": "asserted",
+            "y": "asserted"
+          }
+        },
+        "judgment": {
+          "status": "refuted",
+          "acceptsIsolationModels": false,
+          "scope": "requested point-register-v1/append-list-v1 item-dependency categories only; G-single has exactly one item RW edge; checked-compatible does not accept a complete isolation model or certify a database",
+          "dependencyGraphComplete": true,
+          "dependencies": [
+            {
+              "from": "A",
+              "to": "B",
+              "kind": "ww",
+              "key": "x",
+              "fromOp": 1,
+              "toOp": 0,
+              "fromVersion": "x1",
+              "toVersion": "x2",
+              "reason": "The asserted per-key version order puts this write before the next write."
+            },
+            {
+              "from": "B",
+              "to": "A",
+              "kind": "wr",
+              "key": "y",
+              "fromOp": 1,
+              "toOp": 2,
+              "fromVersion": "y1",
+              "toVersion": "y1",
+              "reason": "The reader observes the unique final version written by the source transaction."
+            }
+          ],
+          "sourceOrOrderGaps": [],
+          "rules": {
+            "G0": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 1,
+              "edgeChecks": 3,
+              "evidence": null
+            },
+            "G1c": {
+              "status": "refuted",
+              "reason": "source-bound-cycle",
+              "states": 1,
+              "edgeChecks": 2,
+              "evidence": {
+                "kind": "source-bound-register-category-cycle",
+                "specificCategory": "G1c",
+                "edges": [
+                  {
+                    "edge": {
+                      "from": "A",
+                      "to": "B",
+                      "kind": "ww",
+                      "key": "x",
+                      "fromOp": 1,
+                      "toOp": 0,
+                      "fromVersion": "x1",
+                      "toVersion": "x2",
+                      "reason": "The asserted per-key version order puts this write before the next write."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "x0",
+                      "x1",
+                      "x2"
+                    ]
+                  },
+                  {
+                    "edge": {
+                      "from": "B",
+                      "to": "A",
+                      "kind": "wr",
+                      "key": "y",
+                      "fromOp": 1,
+                      "toOp": 2,
+                      "fromVersion": "y1",
+                      "toVersion": "y1",
+                      "reason": "The reader observes the unique final version written by the source transaction."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "y0",
+                      "y1"
+                    ]
+                  }
+                ],
+                "minimality": "simple cycle for the requested category; no shortest-cycle claim",
+                "sourceScope": "original capture observation identities or caller-declared transaction operation indices; input assertions do not authenticate a database"
+              }
+            },
+            "G2-item": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 0,
+              "edgeChecks": 2,
+              "evidence": null
+            },
+            "G-single": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 0,
+              "edgeChecks": 2,
+              "evidence": null
+            }
+          },
+          "impliedAnomalies": [
+            "G1c",
+            "G1"
+          ]
+        },
+        "execution": {
+          "counterContract": "v4-category-g-single-seed-bfs-counters-1",
+          "categories": [
+            "G0",
+            "G1c",
+            "G2-item",
+            "G-single"
+          ],
+          "versionOrderCompletion": false,
+          "limits": {
+            "registerTransactions": 128,
+            "registerOperations": 4096,
+            "listCommittedTransactions": 6,
+            "listOperations": 128,
+            "edges": 50000,
+            "statesPerCategory": 100000,
+            "edgeChecksPerCategory": 1000000
+          }
+        }
+      },
+      "reportSelfVerification": {
+        "valid": true,
+        "schemaVersion": 4,
+        "scope": "semantic reproduction under caller-supplied options; source observations are not authenticated"
+      },
+      "passed": true
+    },
+    {
+      "name": "genuine-immediate-external-successor-control / json-text",
+      "originalCase": "genuine-immediate-external-successor-control",
+      "transport": "json-text",
+      "inputSha256": "29c950d1407946c493a0ec61f5ad96159a2c8784a64dac7a7af369634379c694",
+      "expectedEdgeSha256": "841c58dab15382cab76c80f6a5db628582817e57213f38a086240755794a1afe",
+      "reference": {
+        "externalReads": {
+          "A": {
+            "x": "x0",
+            "y": "y1"
+          },
+          "B": {}
+        },
+        "finalWrites": {
+          "A": {},
+          "B": {
+            "x": "x1",
+            "y": "y1"
+          }
+        },
+        "edges": [
+          {
+            "from": "A",
+            "to": "B",
+            "kind": "rw",
+            "key": "x",
+            "fromVersion": "x0",
+            "toVersion": "x1"
+          },
+          {
+            "from": "B",
+            "to": "A",
+            "kind": "wr",
+            "key": "y",
+            "fromVersion": "y1",
+            "toVersion": "y1"
+          }
+        ],
+        "refuted": {
+          "G0": false,
+          "G1c": false,
+          "G2-item": true,
+          "G-single": true
+        }
+      },
+      "actualReport": {
+        "format": "moontxnwitness-classification/v4",
+        "schemaVersion": 4,
+        "semanticContract": "moontxnwitness-category-classification-v4-1",
+        "algorithm": "v4-source-bound-category-g-single-1",
+        "dataModel": "point-register-v1",
+        "observations": {
+          "sourceFormat": "declared-history/v1",
+          "authenticityVerified": false,
+          "document": {
+            "schemaVersion": 1,
+            "model": "serializable",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "versionOrders": {
+              "x": [
+                "x0",
+                "x1"
+              ],
+              "y": [
+                "y0",
+                "y1"
+              ]
+            },
+            "transactions": [
+              {
+                "id": "A",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "read",
+                    "key": "x",
+                    "version": "x0"
+                  },
+                  {
+                    "type": "read",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              },
+              {
+                "id": "B",
+                "status": "committed",
+                "ops": [
+                  {
+                    "type": "write",
+                    "key": "x",
+                    "version": "x1"
+                  },
+                  {
+                    "type": "write",
+                    "key": "y",
+                    "version": "y1"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "writeEffects": {
+          "basis": "caller-declared-programs",
+          "entries": [
+            {
+              "transaction": "B",
+              "operation": 0,
+              "key": "x",
+              "version": "x1",
+              "outcome": "committed"
+            },
+            {
+              "transaction": "B",
+              "operation": 1,
+              "key": "y",
+              "version": "y1",
+              "outcome": "committed"
+            }
+          ]
+        },
+        "inferences": {
+          "versionOrders": {
+            "x": [
+              "x0",
+              "x1"
+            ],
+            "y": [
+              "y0",
+              "y1"
+            ]
+          },
+          "versionOrderSources": {
+            "x": "asserted",
+            "y": "asserted"
+          }
+        },
+        "judgment": {
+          "status": "refuted",
+          "acceptsIsolationModels": false,
+          "scope": "requested point-register-v1/append-list-v1 item-dependency categories only; G-single has exactly one item RW edge; checked-compatible does not accept a complete isolation model or certify a database",
+          "dependencyGraphComplete": true,
+          "dependencies": [
+            {
+              "from": "A",
+              "to": "B",
+              "kind": "rw",
+              "key": "x",
+              "fromOp": 0,
+              "toOp": 0,
+              "fromVersion": "x0",
+              "toVersion": "x1",
+              "reason": "The reader observes an earlier version and must precede this later committed write."
+            },
+            {
+              "from": "B",
+              "to": "A",
+              "kind": "wr",
+              "key": "y",
+              "fromOp": 1,
+              "toOp": 1,
+              "fromVersion": "y1",
+              "toVersion": "y1",
+              "reason": "The reader observes the unique final version written by the source transaction."
+            }
+          ],
+          "sourceOrOrderGaps": [],
+          "rules": {
+            "G0": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 0,
+              "edgeChecks": 2,
+              "evidence": null
+            },
+            "G1c": {
+              "status": "checked-compatible",
+              "reason": "complete",
+              "states": 1,
+              "edgeChecks": 3,
+              "evidence": null
+            },
+            "G2-item": {
+              "status": "refuted",
+              "reason": "source-bound-cycle",
+              "states": 1,
+              "edgeChecks": 2,
+              "evidence": {
+                "kind": "source-bound-register-category-cycle",
+                "specificCategory": "G2-item",
+                "edges": [
+                  {
+                    "edge": {
+                      "from": "A",
+                      "to": "B",
+                      "kind": "rw",
+                      "key": "x",
+                      "fromOp": 0,
+                      "toOp": 0,
+                      "fromVersion": "x0",
+                      "toVersion": "x1",
+                      "reason": "The reader observes an earlier version and must precede this later committed write."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "x0",
+                      "x1"
+                    ]
+                  },
+                  {
+                    "edge": {
+                      "from": "B",
+                      "to": "A",
+                      "kind": "wr",
+                      "key": "y",
+                      "fromOp": 1,
+                      "toOp": 1,
+                      "fromVersion": "y1",
+                      "toVersion": "y1",
+                      "reason": "The reader observes the unique final version written by the source transaction."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "y0",
+                      "y1"
+                    ]
+                  }
+                ],
+                "minimality": "simple cycle for the requested category; no shortest-cycle claim",
+                "sourceScope": "original capture observation identities or caller-declared transaction operation indices; input assertions do not authenticate a database"
+              }
+            },
+            "G-single": {
+              "status": "refuted",
+              "reason": "source-bound-cycle",
+              "states": 1,
+              "edgeChecks": 2,
+              "evidence": {
+                "kind": "source-bound-register-category-cycle",
+                "specificCategory": "G-single-item",
+                "edges": [
+                  {
+                    "edge": {
+                      "from": "A",
+                      "to": "B",
+                      "kind": "rw",
+                      "key": "x",
+                      "fromOp": 0,
+                      "toOp": 0,
+                      "fromVersion": "x0",
+                      "toVersion": "x1",
+                      "reason": "The reader observes an earlier version and must precede this later committed write."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "x0",
+                      "x1"
+                    ]
+                  },
+                  {
+                    "edge": {
+                      "from": "B",
+                      "to": "A",
+                      "kind": "wr",
+                      "key": "y",
+                      "fromOp": 1,
+                      "toOp": 1,
+                      "fromVersion": "y1",
+                      "toVersion": "y1",
+                      "reason": "The reader observes the unique final version written by the source transaction."
+                    },
+                    "fromObservationSeq": [],
+                    "toObservationSeq": [],
+                    "inputVersionOrder": [
+                      "y0",
+                      "y1"
+                    ]
+                  }
+                ],
+                "minimality": "simple cycle for the requested category; no shortest-cycle claim",
+                "sourceScope": "original capture observation identities or caller-declared transaction operation indices; input assertions do not authenticate a database",
+                "requestedCategory": "G-single",
+                "rwScope": "item",
+                "rwEdgeCount": 1,
+                "cycleRule": "exactly-one-item-rw-and-only-ww-wr-remainder/v1"
+              }
+            }
+          },
+          "impliedAnomalies": [
+            "G2-item",
+            "G2",
+            "G-single-item",
+            "G-single",
+            "G-nonadjacent-item",
+            "G-nonadjacent"
+          ]
+        },
+        "execution": {
+          "counterContract": "v4-category-g-single-seed-bfs-counters-1",
+          "categories": [
+            "G0",
+            "G1c",
+            "G2-item",
+            "G-single"
+          ],
+          "versionOrderCompletion": false,
+          "limits": {
+            "registerTransactions": 128,
+            "registerOperations": 4096,
+            "listCommittedTransactions": 6,
+            "listOperations": 128,
+            "edges": 50000,
+            "statesPerCategory": 100000,
+            "edgeChecksPerCategory": 1000000
+          }
+        }
+      },
+      "reportSelfVerification": {
+        "valid": true,
+        "schemaVersion": 4,
+        "scope": "semantic reproduction under caller-supplied options; source observations are not authenticated"
+      },
+      "passed": true
+    }
+  ]
+}

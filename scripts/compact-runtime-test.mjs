@@ -11,6 +11,7 @@ import {createCompactRuntimeLoader,COMPACT_RUNTIME_LIMITS as LIMITS} from '../cm
 const project=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const digest=value=>createHash('sha256').update(value).digest('hex');
 const native=createRequire(import.meta.url)('node:fs');
+const validationBytes=pin=>2*[...new Map(Object.values(pin.files).map(row=>[row.source,row.bytes])).values()].reduce((a,b)=>a+b,0)+Object.values(pin.files).reduce((sum,row)=>sum+row.bytes,0);
 if(process.argv[2]==='--child'||process.argv[2]==='--child-hold'){
   const pin=JSON.parse(fs.readFileSync(process.argv[4],'utf8'));
   const loader=createCompactRuntimeLoader(pin,{installationRoot:process.argv[3]});
@@ -219,10 +220,107 @@ if(process.argv[2]==='--child'||process.argv[2]==='--child-hold'){
       await exited(a.p);assert.equal(fs.existsSync(first.root),false);assert.ok(fs.existsSync(second.root));await exited(b.p);assert.equal(fs.existsSync(second.root),false);
     }finally{for(const c of [a,b])if(c.p.exitCode===null)c.p.kill();}
   });
+  await check('link creation between pathname stat and open forces a full fresh hash',f=>{
+    const source=join(f.installation,...f.sources.core.split('/')),originalOpen=fs.openSync;
+    let injected=false;
+    patchFs({openSync(path,...args){const fd=originalOpen(path,...args);if(!injected&&resolve(path)===source){injected=true;fs.linkSync(source,join(f.base,'concurrent-link'));}return fd;}},()=>{
+      const l=f.loader(),root=l.get();assert.equal(digest(fs.readFileSync(join(root,'core.mjs'))),f.pin.files['core.mjs'].sha256);
+    });
+    assert.equal(injected,true);
+  });
+  await check('a link change during a repeated path check requires a complete rehash',f=>{
+    const l=f.loader(),root=l.get(),alias=join(root,'nested','again.mjs'),source=join(f.installation,...f.sources.core.split('/'));
+    const originalOpen=fs.openSync,originalStat=fs.fstatSync,originalRead=fs.readSync,handles=new Map();let injected=false,rehashed=0;
+    patchFs({openSync(path,...args){const fd=originalOpen(path,...args);handles.set(fd,{path:resolve(path),stats:0});return fd;},
+      fstatSync(fd,...args){const row=handles.get(fd);if(row){row.stats++;if(row.path===alias&&row.stats===2&&!injected){injected=true;fs.linkSync(source,join(f.base,'link-during-cache-hit'));}}return originalStat(fd,...args);},
+      readSync(fd,...args){const n=originalRead(fd,...args);if(injected&&handles.get(fd)?.path===alias)rehashed+=n;return n;}},()=>assert.equal(l.get(),root));
+    assert.equal(injected,true);assert.equal(rehashed,f.data.core.length);
+  });
+  await check('continuous concurrent link changes stop at three validations and poison the loader',f=>{
+    const l=f.loader(),source=join(f.installation,...f.sources.core.split('/')),originalOpen=fs.openSync,originalStat=fs.fstatSync,handles=new Map();let changes=0;
+    patchFs({openSync(path,...args){const fd=originalOpen(path,...args);handles.set(fd,{path:resolve(path),stats:0});return fd;},
+      fstatSync(fd,...args){const row=handles.get(fd);if(row&&row.path===source&&++row.stats===2){fs.linkSync(source,join(f.base,'churn-'+(++changes)));}return originalStat(fd,...args);}},()=>assert.throws(()=>l.get(),/did not stabilize/));
+    assert.equal(changes,3);assert.deepEqual(fs.readFileSync(source),f.data.core);
+    for(let n=1;n<=changes;n++)fs.unlinkSync(join(f.base,'churn-'+n));
+    assert.throws(()=>l.get(),/previous validation failed/);
+  });
+  await check('a concurrent link never authorizes modified bytes or heals a poisoned loader',f=>{
+    const l=f.loader(),source=join(f.installation,...f.sources.core.split('/')),originalOpen=fs.openSync;let injected=false;
+    patchFs({openSync(path,...args){const fd=originalOpen(path,...args);if(!injected&&resolve(path)===source){injected=true;fs.linkSync(source,join(f.base,'link-with-content-change'));const changed=Buffer.from(f.data.core);changed[0]^=1;fs.writeFileSync(source,changed);}return fd;}},()=>assert.throws(()=>l.get(),/differs/));
+    fs.writeFileSync(source,f.data.core);assert.throws(()=>l.get(),/previous validation failed/);
+  });
+  await check('every selected source and destination alias is fully hashed',f=>{
+    const alias='legacy/v031/core-alias.mjs',pin=structuredClone(f.pin);
+    fs.linkSync(join(f.installation,...f.sources.core.split('/')),join(f.installation,...alias.split('/')));
+    pin.files['alias.mjs']={...pin.files['core.mjs'],source:alias};
+    const l=f.loader(pin);l.get();const original=fs.readSync;let bytes=0;
+    patchFs({readSync(...args){const count=original(...args);bytes+=count;return count;}},()=>l.get());
+    assert.equal(bytes,validationBytes(pin));
+  });
+  await check('different inodes with identical SHA are each hashed',f=>{
+    const copied='legacy/v031/core-copy.mjs',pin=structuredClone(f.pin),source=join(f.installation,...f.sources.core.split('/'));
+    fs.copyFileSync(source,join(f.installation,...copied.split('/')));
+    pin.files['copied.mjs']={...pin.files['core.mjs'],source:copied};
+    assert.notEqual(fs.statSync(source).ino,fs.statSync(join(f.installation,...copied.split('/'))).ino);
+    const l=f.loader(pin);l.get();const original=fs.readSync;let bytes=0;
+    patchFs({readSync(...args){const count=original(...args);bytes+=count;return count;}},()=>l.get());
+    assert.equal(bytes,validationBytes(pin));
+  });
+  await check('every validation repeats the complete content audit',f=>{
+    const l=f.loader();l.get();const original=fs.readSync,counts=[];
+    for(let index=0;index<2;index++){let bytes=0;patchFs({readSync(...args){const count=original(...args);bytes+=count;return count;}},()=>l.get());counts.push(bytes);}
+    assert.deepEqual(counts,[validationBytes(f.pin),validationBytes(f.pin)]);
+  });
+  await check('same inode cannot satisfy a conflicting expected hash or size',f=>{
+    const alias='legacy/v031/conflicting-alias.mjs';fs.linkSync(join(f.installation,...f.sources.core.split('/')),join(f.installation,...alias.split('/')));
+    for(const conflict of ['sha256','bytes']){
+      const pin=structuredClone(f.pin),spec={...pin.files['core.mjs'],source:alias};
+      if(conflict==='sha256')spec.sha256=digest(Buffer.alloc(f.data.core.length,120));else spec.bytes++;
+      pin.files['conflict.mjs']=spec;
+      assert.throws(()=>f.loader(pin).get(),/checksum|shape|size/);assert.deepEqual(fs.readdirSync(f.temporary),[]);
+    }
+  });
+  await check('source mutation between source paths is detected within the same call',f=>{
+    const l=f.loader();l.get();const source=join(f.installation,...f.sources.core.split('/')),other=join(f.installation,...f.sources.sdk.split('/'));
+    const changed=Buffer.from(f.data.core);changed[0]^=1;let injected=false;const original=fs.lstatSync;
+    patchFs({lstatSync(path,...args){if(!injected&&resolve(path)===other&&args[0]?.bigint){injected=true;fs.writeFileSync(source,changed);}return original(path,...args);}},()=>assert.throws(()=>l.get(),/checksum|metadata/));
+    assert.equal(injected,true);assert.deepEqual(fs.readFileSync(source),changed);
+    fs.writeFileSync(source,f.data.core);assert.throws(()=>l.get(),/previous validation failed/);
+  });
+  await check('repeated source validation rejects mutation at the final descriptor check',f=>{
+    const l=f.loader();l.get();const source=join(f.installation,...f.sources.core.split('/')),ino=fs.statSync(source,{bigint:true}).ino;
+    const changed=Buffer.from(f.data.core);changed[0]^=1;let visits=0,injected=false;const original=fs.fstatSync;
+    patchFs({fstatSync(fd,...args){const st=original(fd,...args);if(args[0]?.bigint&&st.ino===ino&&++visits===4){fs.writeFileSync(source,changed);injected=true;return original(fd,...args);}return st;}},()=>assert.throws(()=>l.get(),/checksum|metadata|identity/));
+    assert.equal(injected,true);assert.deepEqual(fs.readFileSync(source),changed);
+  });
+  await check('unchanged metadata cannot authorize bytes changed between source validations',f=>{
+    const l=f.loader();l.get();
+    const source=join(f.installation,...f.sources.core.split('/')),other=join(f.installation,...f.sources.sdk.split('/'));
+    const saved=fs.lstatSync(source,{bigint:true}),lstat=fs.lstatSync,fstat=fs.fstatSync;
+    const changed=Buffer.from(f.data.core);changed[0]^=1;let injected=false;
+    const sameVisibleStamp=st=>st.isFile()&&st.dev===saved.dev&&st.ino===saved.ino?saved:st;
+    patchFs({lstatSync(path,...args){if(!injected&&resolve(path)===other&&args[0]?.bigint){injected=true;fs.writeFileSync(source,changed);}const st=lstat(path,...args);return args[0]?.bigint?sameVisibleStamp(st):st;},
+      fstatSync(fd,...args){const st=fstat(fd,...args);return args[0]?.bigint?sameVisibleStamp(st):st;}},()=>assert.throws(()=>l.get(),/checksum/));
+    assert.equal(injected,true);assert.deepEqual(fs.readFileSync(source),changed);
+    fs.writeFileSync(source,f.data.core);assert.throws(()=>l.get(),/previous validation failed/);
+  });
+  await check('writing through a destination hardlink poisons rather than repairs its source',f=>{
+    const l=f.loader(),root=l.get(),source=join(f.installation,...f.sources.core.split('/')),target=join(root,'core.mjs');
+    assert.equal(fs.statSync(source).ino,fs.statSync(target).ino);
+    const changed=Buffer.from(f.data.core);changed[0]^=1;fs.writeFileSync(target,changed);
+    assert.deepEqual(fs.readFileSync(source),changed);assert.throws(()=>l.get(),/checksum/);
+    assert.deepEqual(fs.readFileSync(source),changed);assert.deepEqual(fs.readFileSync(target),changed);
+  });
+  await check('content is fully verified even when inode identity caching is unavailable',f=>{
+    const l=f.loader();l.get();const read=fs.readSync,stat=fs.lstatSync,fstat=fs.fstatSync;let bytes=0;
+    const zero=st=>new Proxy(st,{get(target,key){return key==='ino'?0n:Reflect.get(target,key);}});
+    patchFs({lstatSync(path,...args){const st=stat(path,...args);return args[0]?.bigint?zero(st):st;},fstatSync(fd,...args){const st=fstat(fd,...args);return args[0]?.bigint?zero(st):st;},readSync(...args){const count=read(...args);bytes+=count;return count;}},()=>l.get());
+    assert(bytes>f.data.core.length+f.data.sdk.length);
+  });
   const failed=results.filter(result=>result.status==='failed'),skipped=results.filter(result=>result.status==='skipped');
-  const receipt={suite:'compact-runtime-loader-synthetic-faults-v1',kind:'implementation-tests',passed:failed.length===0,
+  const receipt={suite:'compact-runtime-loader-synthetic-faults-v3',kind:'implementation-tests',passed:failed.length===0,
     checks:results.length,passedChecks:results.length-failed.length-skipped.length,skippedChecks:skipped.length,failedChecks:failed.length,
-    public032BindingTested:false,workerRoutingTested:false,results,
+    public032BindingTested:false,workerRoutingTested:false,contentReuseScope:'none; every selected source and destination pathname is fully hashed on every get',results,
     testedFileSha256:Object.fromEntries(['cmd/compact-runtime.mjs','scripts/compact-runtime-test.mjs'].map(name=>[name,digest(fs.readFileSync(join(project,name)))]))};
   fs.writeFileSync(join(project,'artifacts/compact-runtime-validation.json'),JSON.stringify(receipt,null,2)+'\n');
   console.log(JSON.stringify(receipt,null,2));if(failed.length)process.exitCode=1;

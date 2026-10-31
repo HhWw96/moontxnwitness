@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "status": "ready",
+  "coverage": {
+    "complete": true,
+    "gaps": []
+  },
+  "history": {
+    "schemaVersion": 1,
+    "model": "serializable",
+    "initial": {
+      "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"a\"]": "c6f42575-9833-4514-95e2-a015886234fe",
+      "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"b\"]": "66b32460-5d95-4bd2-ae98-77ba7a5d0f4f",
+      "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"never\"]": "cb7ff247-b891-431c-ad47-d2b3e9456fcc"
+    },
+    "versionOrders": {
+      "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"a\"]": [
+        "c6f42575-9833-4514-95e2-a015886234fe",
+        "95d3bf54-94d2-4966-bff4-36523cde952f",
+        "bfcafb2e-40d2-4c25-9660-8a935df28071",
+        "adaf71bd-ab93-40ac-ae39-5fbe77af1da4"
+      ],
+      "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"b\"]": [
+        "66b32460-5d95-4bd2-ae98-77ba7a5d0f4f"
+      ],
+      "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"never\"]": [
+        "cb7ff247-b891-431c-ad47-d2b3e9456fcc"
+      ]
+    },
+    "transactions": [
+      {
+        "id": "tx-1",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"a\"]",
+            "version": "95d3bf54-94d2-4966-bff4-36523cde952f"
+          }
+        ],
+        "start": 156000,
+        "end": 187000
+      },
+      {
+        "id": "tx-2",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"a\"]",
+            "version": "bfcafb2e-40d2-4c25-9660-8a935df28071"
+          }
+        ],
+        "start": 171000,
+        "end": 187000
+      },
+      {
+        "id": "tx-3",
+        "status": "committed",
+        "ops": [
+          {
+            "type": "read",
+            "key": "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"a\"]",
+            "version": "bfcafb2e-40d2-4c25-9660-8a935df28071"
+          },
+          {
+            "type": "write",
+            "key": "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"a\"]",
+            "version": "adaf71bd-ab93-40ac-ae39-5fbe77af1da4"
+          }
+        ],
+        "start": 187000,
+        "end": 203000
+      }
+    ]
+  },
+  "projection": {
+    "version": "column-presence-register-v0.1.2-experimental",
+    "scope": "unique-version point-register projection"
+  },
+  "sourceFacts": {
+    "schema": 1,
+    "projection": "column-presence-register-v0.1.2-experimental",
+    "initial": [
+      {
+        "key": "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"a\"]",
+        "version": "c6f42575-9833-4514-95e2-a015886234fe",
+        "present": true
+      },
+      {
+        "key": "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"b\"]",
+        "version": "66b32460-5d95-4bd2-ae98-77ba7a5d0f4f",
+        "present": false
+      },
+      {
+        "key": "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"never\"]",
+        "version": "cb7ff247-b891-431c-ad47-d2b3e9456fcc",
+        "present": false
+      }
+    ],
+    "reads": [
+      {
+        "seq": 20,
+        "tx": "tx-3",
+        "key": "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"a\"]",
+        "version": "bfcafb2e-40d2-4c25-9660-8a935df28071",
+        "present": false
+      }
+    ],
+    "writes": [
+      {
+        "seq": 6,
+        "tx": "tx-1",
+        "key": "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"a\"]",
+        "version": "95d3bf54-94d2-4966-bff4-36523cde952f",
+        "predecessor": "c6f42575-9833-4514-95e2-a015886234fe",
+        "oldPresent": true,
+        "newPresent": true,
+        "action": "update"
+      },
+      {
+        "seq": 13,
+        "tx": "tx-2",
+        "key": "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"a\"]",
+        "version": "bfcafb2e-40d2-4c25-9660-8a935df28071",
+        "predecessor": "95d3bf54-94d2-4966-bff4-36523cde952f",
+        "oldPresent": true,
+        "newPresent": false,
+        "action": "delete"
+      },
+      {
+        "seq": 24,
+        "tx": "tx-3",
+        "key": "[\"mtw_provenance_v033_79def9ae.presence_rc\",\"text\",\"a\"]",
+        "version": "adaf71bd-ab93-40ac-ae39-5fbe77af1da4",
+        "predecessor": "bfcafb2e-40d2-4c25-9660-8a935df28071",
+        "oldPresent": false,
+        "newPresent": true,
+        "action": "insert"
+      }
+    ]
+  }
+}

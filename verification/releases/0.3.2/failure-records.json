@@ -9,7 +9,8 @@
     "The original publication deadline-policy test refused extra overrides in new consumers. The default deadlines were retained and a checksum-verified shared public-input cache avoids redundant cold downloads; all 39 original tests pass.",
     "Current ignored CI integration and package receipts are now explicitly retained with their actual versions and checksums.",
     "The publisher read an invented publicV031CompatibilityTests alias instead of the actual public031CompatibilityTests field. The field was corrected, three rejection tests were added, and CI now checks the real generated receipt before staging.",
-    "The v4 register category graph previously used all-later serial-order constraints as direct RW edges, including a jump over the reader own immediate successor. Only proved direct successors now enter category search; legacy analysis, full edges and released replay are unchanged. Independent SDK and source/portable consumer gates cover the frozen counterexamples."
+    "The v4 register category graph previously used all-later serial-order constraints as direct RW edges, including a jump over the reader own immediate successor. Only proved direct successors now enter category search; legacy analysis, full edges and released replay are unchanged. Independent SDK and source/portable consumer gates cover the frozen counterexamples.",
+    "The portable inventory omitted the new independent direct-category SDK audit while the consumer runner required it. The file is now an explicit required portable member, with inclusion and missing-input rejection regressions."
   ],
   "incompleteRuns": [
     {
@@ -51,6 +52,16 @@
       "freshConsumerChecks": 134,
       "publiclyPublished": false,
       "reason": "Independent next-version reference detected extra G2-item classification despite self-replay validity. Publication remained held until v4 direct graph correction and new frozen-source verification."
+    },
+    {
+      "kind": "fresh-portable-inventory",
+      "status": "failed",
+      "sourceCommit": "83e461bc9d6617247e02987c2ed540259cab2f36",
+      "ciRun": 41134389570,
+      "coreTestsPassed": true,
+      "nativePassed": true,
+      "publiclyPublished": false,
+      "reason": "The new independent direct-category audit was absent from the portable file inventory. Required membership and missing-input rejection tests were added; complete final-commit validation remains required."
     }
   ],
   "finalRegression": {

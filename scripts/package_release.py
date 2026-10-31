@@ -59,6 +59,10 @@ for helper in ('legacy-v028.mjs', 'legacy-v028-runtime.mjs', 'legacy-v028-worker
 subprocess.check_call([NODE, '--input-type=module', '-e',
     "import{verifyPublicV028Runtime as source}from'./cmd/legacy-v028-runtime.mjs';import{verifyPublicV028Runtime as installed}from'./dist/legacy-v028-runtime.mjs';const a=source(),b=installed();if(a.manifestSha256!==b.manifestSha256)throw Error('Copied public28 runtime differs');"], cwd=ROOT)
 
+if tuple(map(int, VERSION.split('.'))) >= (0, 3, 3):
+    for helper in ('legacy-v032.mjs', 'legacy-v032-binding.mjs', 'compact-runtime.mjs'):
+        assert (ROOT / 'cmd' / helper).read_bytes() == (ROOT / 'dist' / helper).read_bytes(), 'Fixed public32 helper changed after build: ' + helper
+
 def archive(files, path):
     home_paths = private_home_paths(
         str(Path.home()), github_actions=os.environ.get('GITHUB_ACTIONS') == 'true',
@@ -142,6 +146,28 @@ for kind in ("portable", "source"):
             '--runtime', str(consumer / 'dist'), '--output-root', str(work / ('direct-category-' + kind))], consumer))
         assert direct_category['passed'] is True and direct_category['checks'] >= 6 and direct_category['failed'] == 0
         checks.append(kind + ' independent direct-register category SDK reference and witness audit')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 3):
+        parts = []
+        for group in ('core', 'capture', 'models', 'classification', 'profiles', 'v4', 'integrity'):
+            destination = work / ('public032-' + kind) / group
+            result = json.loads(run([NODE, 'scripts/public032-compatibility-test.mjs', '--group', group,
+                                    '--runtime', str(consumer / 'dist'), '--output-root', str(destination)], consumer))
+            assert result['passed'] is True and result['currentVersion'] == VERSION
+            parts.append(str(destination / 'public032-compatibility-validation.json'))
+            checks.append(kind + ' public032 original fixed compatibility group ' + group)
+        public032 = json.loads(run([NODE, 'scripts/public032-compatibility-groups.mjs', *parts], consumer))
+        assert public032['passed'] is True and public032['checks'] == 47 and public032['groups'] == 7
+        assert public032['currentVersion'] == VERSION
+        checks.append(kind + ' public032 all 47 original checks and 15 fixed method families')
+        for script, label in (
+                ('v033-sdk-test.mjs', 'source anomaly and G-single SDK with duplicate-key CLI guards'),
+                ('lost-update-sdk-test.mjs', 'source-bound register lost-update and capsule replay'),
+                ('list-effective-sdk-test.mjs', 'effective multi-append list classification and source replay'),
+                ('v033-independent-anomalies-test.mjs', 'independent source-anomaly and effective-list counterexamples'),
+                ('../examples/v4-anomalies-roundtrip.mjs', 'runnable G-single and lost-update example')):
+            result = json.loads(run([NODE, 'scripts/' + script], consumer))
+            assert result['passed'] is True and result['checks'] > 0
+            checks.append(kind + ' ' + label)
     public024 = json.loads(run([NODE,'scripts/compat-v024-test.mjs',str(consumer/'dist'),str(consumer/'fixtures/compat-v024'),str(work/('public024-'+kind))],consumer))
     assert public024['passed'] and public024['currentRuntimeVersion'] == VERSION and public024['checks'] == 107
     checks.append(kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay')

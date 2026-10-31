@@ -90,7 +90,7 @@ def load_index(root=ROOT):
     hash_sizes = {}
     for name, row in entries.items():
         safe_name(name)
-        if not name.startswith(('cmd/legacy/', 'fixtures/', 'verification/', 'artifacts/compat-v030/runtime/', 'artifacts/compat-v031/runtime/')):
+        if not name.startswith(('cmd/legacy/', 'cmd/legacy-components/', 'fixtures/', 'verification/', 'artifacts/compat-v030/runtime/', 'artifacts/compat-v031/runtime/')):
             raise ValueError('Frozen input cannot replace active sources')
         if name.casefold() in folded:
             raise ValueError('Case-colliding frozen members')

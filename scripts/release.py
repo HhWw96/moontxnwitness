@@ -27,6 +27,21 @@ def validate_public031_compatibility_receipt(summary, version):
     return original31
 
 
+def validate_public032_compatibility_receipt(summary, version):
+    value = summary['public032CompatibilityTests']
+    assert value['passed'] is True and value['checks'] == 47 and value['groups'] == 7
+    assert value['currentVersion'] == version and value['usesPublishedRuntimeOnly'] is True
+    assert value['historicalSourceSnapshotCreated'] is False and value['sourcePoolUnchanged'] is True
+    assert value['candidateRuntimeFiles']['core.mjs']['sha256'] == summary['buildManifest']['coreSha256']
+    # Reuse the complete executable receipt contract, including distinct case IDs,
+    # all methods, every group's provenance and the exact candidate file inventory.
+    checked = subprocess.run([os.environ.get('MTW_NODE', 'node'), '--input-type=module', '-e',
+        "import{collectPublic032Groups}from'./scripts/public032-compatibility-groups.mjs';let s='';for await(const b of process.stdin)s+=b;console.log(JSON.stringify(collectPublic032Groups(JSON.parse(s))));"],
+        cwd=ROOT, input=json.dumps(value['receipts']), text=True, capture_output=True, check=True, timeout=180)
+    assert json.loads(checked.stdout) == value
+    return value
+
+
 def validate_register_direct_category_audit(summary, version):
     audit = summary['registerDirectCategoryAudit']
     assert audit['passed'] is True and audit['failed'] == 0 and audit['checks'] >= 6
@@ -261,6 +276,18 @@ def validate_scoped_acceptance(acceptance, manifest):
             assert kind + ' public031 original SDK/capsules and corrupted runtime refusal' in package['checks']
             assert kind + ' v4 typed analysis, explicit reduction and independently budgeted replay' in package['checks']
             assert kind + ' independent direct-register category SDK reference and witness audit' in package['checks']
+
+    if tuple(map(int, VERSION.split('.'))) >= (0, 3, 3):
+        validate_public032_compatibility_receipt(summary, VERSION)
+        foundation = summary['foundation033']
+        for field in ('sourceAnomalyHostTests', 'lostUpdateHostTests', 'effectiveListHostTests',
+                      'independentAnomalyAudit', 'compactRuntimeFrameworkTests', 'anomalyExample',
+                      'compatibilityStagingTests', 'compatibilityGroupContractTests'):
+            assert foundation[field]['passed'] is True
+        for kind in ('source', 'portable'):
+            for group in ('core', 'capture', 'models', 'classification', 'profiles', 'v4', 'integrity'):
+                assert kind + ' public032 original fixed compatibility group ' + group in package['checks']
+            assert kind + ' public032 all 47 original checks and 15 fixed method families' in package['checks']
 
     expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
     assert {item['file'] for item in package['archives']} == expected_names
@@ -546,6 +573,16 @@ def publish():
             'Register/list category checks are available; relation category classification remains unsupported in this version.\n\n'
             'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or download the portable ZIP (Node.js >=20).\n', encoding='utf8')
 
+    if VERSION == '0.3.3':
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- Add explicit G-single category search, source-anomaly inspection and source-bound register lost-update evidence.\n'
+            '- Add the effective-v1 append-list graph for multiple same-key appends, delivered reads and savepoint rollback, preserving existing defaults.\n'
+            '- Verify reports and capsules with independently supplied options; reject duplicate option keys and ambiguous sources.\n'
+            '- Reuse a checksum-bound public v0.3.2 runtime component for historical replay without checking in historical source trees.\n\n'
+            'Run `node examples/v4-anomalies-roundtrip.mjs`. See [v4 API](https://github.com/' + MODULE + '/blob/' + tag + '/docs/v4-api.md) and '
+            '[support matrix](https://github.com/' + MODULE + '/blob/' + tag + '/docs/stable-scope.md).\n\n'
+            'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or use the portable ZIP with Node.js 20 or later.\n', encoding='utf8')
+
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
     if performance_path.exists() and not scoped:
         groups = json.loads(performance_path.read_text(encoding='utf-8'))['groups']
@@ -571,6 +608,8 @@ if __name__ == '__main__':
         if tuple(map(int, VERSION.split('.'))) >= (0, 3, 2):
             validate_public031_compatibility_receipt(summary, VERSION)
             validate_register_direct_category_audit(summary, VERSION)
+        if tuple(map(int, VERSION.split('.'))) >= (0, 3, 3):
+            validate_public032_compatibility_receipt(summary, VERSION)
         print('Current integration compatibility receipt contract passed: ' + VERSION)
     else:
         publish()
