@@ -129,6 +129,7 @@ predicate035_consumers = {}
 models036_consumers = {}
 configured037_consumers = {}
 native038_consumers = {}
+public034_consumers = {}
 
 
 def run(args, cwd, expected=0, timeout=180):
@@ -209,6 +210,30 @@ for kind in ("portable", "source"):
         assert public033['passed'] is True and public033['checks'] == 47 and public033['groups'] == 7
         assert public033['currentVersion'] == VERSION
         checks.append(kind + ' public033 all 47 original checks and 15 fixed method families')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 4, 0):
+        parts = []
+        for group in ('core', 'capture', 'models', 'classification', 'profiles', 'v4', 'integrity'):
+            destination = work / ('public034-' + kind) / group
+            result = json.loads(run([NODE, 'scripts/public034-compatibility-test.mjs', '--group', group,
+                                    '--runtime', str(consumer / 'dist'), '--output-root', str(destination)], consumer))
+            assert result['passed'] is True and result['currentVersion'] == VERSION
+            parts.append(str(destination / 'public034-compatibility-validation.json'))
+            checks.append(kind + ' public034 original fixed compatibility group ' + group)
+        public034 = json.loads(run([NODE, 'scripts/public034-compatibility-groups.mjs', *parts], consumer))
+        assert public034['passed'] is True and public034['checks'] == 47 and public034['groups'] == 7
+        assert public034['currentVersion'] == VERSION
+        checks.append(kind + ' public034 all 47 original checks and 15 fixed method families')
+        supplement = json.loads(run([NODE, 'scripts/public034-v1-capsule-test.mjs', '--runtime', str(consumer / 'dist')], consumer))
+        assert supplement['passed'] is True and supplement['checks'] == 6 and supplement['failed'] == 0
+        assert supplement['suite'] == 'public034-explicit-schema1-supplement/v1' and supplement['currentVersion'] == VERSION
+        assert supplement['original47SuiteModified'] is False and supplement['original15FamiliesModified'] is False and supplement['producerBytesUnchanged'] is True
+        assert len(supplement['cases']) == 6 and all(row['passed'] is True for row in supplement['cases'])
+        assert supplement['producerVersion'] == public034['publicVersion'] == '0.3.4'
+        for field in ('producerSourceCommit', 'producerArchiveSha256', 'producerComponentSha256'):
+            assert supplement[field] == public034[field]
+        assert public034['candidateRuntimeFiles']['core.mjs']['sha256'] == MANIFEST['coreSha256']
+        public034_consumers[kind] = {'compatibility': public034, 'schema1': supplement}
+        checks.append(kind + ' public034 six explicit schema1 capsule and tamper checks')
     if RELATION034:
         capability = {'sourceAuditPerformed': kind == 'source', 'runtimeOnlyPortableChecks': kind == 'portable',
                       'newIndependentReviewPerformed': False, 'actualDatabaseExecution': False, 'results': {}}
@@ -848,6 +873,8 @@ console.log(JSON.stringify({passed:true,groups:3}));
             checks.append(kind + ' actual PostgreSQL bundled ' + case + ' capsule replay')
 
 receipt = {"tool": "MoonTxnWitness", "version": VERSION, "passed": True, "archives": archives, "freshConsumerChecks": len(checks), "checks": checks, "sourceRebuilt": True, "portableRequires": "Node.js >=20 (tested with current installed Node)", "node": run([NODE, "--version"], ROOT).strip(), "nativeExecutableIncluded": False, "publiclyPublished": False}
+if tuple(map(int, VERSION.split('.'))) >= (0, 4, 0):
+    receipt['public034Consumers'] = public034_consumers
 if RELATION034:
     receipt['relation034Consumers'] = relation034_consumers
 if PREDICATE035:

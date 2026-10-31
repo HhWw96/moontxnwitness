@@ -11,6 +11,7 @@ import {tmpdir} from 'node:os';
 import {relativeEvidencePath} from './evidence-reference.mjs';
 import {PUBLIC032_GROUPS,collectPublic032Groups} from './public032-compatibility-groups.mjs';
 import {PUBLIC033_GROUPS,collectPublic033Groups} from './public033-compatibility-groups.mjs';
+import {PUBLIC034_GROUPS,collectPublic034Groups} from './public034-compatibility-groups.mjs';
 prepareInputs(root,'tests');
 await import('./evidence-reference-test.mjs');
 
@@ -77,6 +78,20 @@ for(const group of Object.keys(PUBLIC033_GROUPS)){
 }
 const public033Compatibility=collectPublic033Groups(public033Parts);
 for(const result of public033Compatibility.receipts){result.runtime=relativeEvidencePath(root,result.runtime);result.runDirectory=relativeEvidencePath(root,result.runDirectory);}
+const public034Parts=[];
+for(const group of Object.keys(PUBLIC034_GROUPS)){
+ const destination=resolve(root,'artifacts/public034-full-test',group);
+ const child=spawnSync(process.execPath,['scripts/public034-compatibility-test.mjs','--group',group,'--output-root',destination],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:8*1024*1024});
+ if(child.error||child.status!==0)throw Error('Public034 '+group+' compatibility failed: '+child.stdout+child.stderr);
+ const result=JSON.parse(child.stdout);assert.equal(result.passed,true);public034Parts.push(result);
+}
+const public034Compatibility=collectPublic034Groups(public034Parts);
+for(const result of public034Compatibility.receipts){result.runtime=relativeEvidencePath(root,result.runtime);result.runDirectory=relativeEvidencePath(root,result.runDirectory);}
+const public034Schema1Child=spawnSync(process.execPath,['scripts/public034-v1-capsule-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:8*1024*1024});
+if(public034Schema1Child.error||public034Schema1Child.status!==0)throw Error('Public034 schema1 supplement failed: '+public034Schema1Child.stdout+public034Schema1Child.stderr);
+const public034Schema1=JSON.parse(public034Schema1Child.stdout);assert.equal(public034Schema1.passed,true);assert.equal(public034Schema1.checks,6);assert.equal(public034Schema1.failed,0);
+assert.equal(public034Schema1.currentVersion,public034Compatibility.currentVersion);assert.equal(public034Schema1.original47SuiteModified,false);assert.equal(public034Schema1.original15FamiliesModified,false);assert.equal(public034Schema1.producerBytesUnchanged,true);
+for(const field of ['producerSourceCommit','producerArchiveSha256','producerComponentSha256'])assert.equal(public034Schema1[field],public034Compatibility[field]);
 const foundation033 = {};
 for (const [field,script] of [
   ['sourceAnomalyHostTests','v033-sdk-test.mjs'],
@@ -464,6 +479,8 @@ receipt.foundation037 = foundation037;
 receipt.foundation038 = foundation038;
 receipt.public032CompatibilityTests = public032Compatibility;
 receipt.public033CompatibilityTests = public033Compatibility;
+receipt.public034CompatibilityTests = public034Compatibility;
+receipt.public034Schema1Tests = public034Schema1;
 receipt.v4IndependentAudit = v4IndependentAudit;
 receipt.registerDirectCategoryAudit = directCategoryAudit;
 receipt.public031CompatibilityTests = public031Compatibility;

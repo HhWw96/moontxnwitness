@@ -112,7 +112,7 @@ function normalizePin(pin){
     if(!Number.isSafeInteger(raw.bytes)||raw.bytes<0||raw.bytes>COMPACT_RUNTIME_LIMITS.memberBytes||
         typeof raw.sha256!=='string'||!/^[a-f0-9]{64}$/.test(raw.sha256))fail('member budget or checksum invalid');
     member(raw.source);
-    if(!raw.source.startsWith('legacy/')&&!raw.source.startsWith('legacy-components/v032/')&&!raw.source.startsWith('legacy-components/v033/'))fail('source is outside immutable installed components');
+    if(!raw.source.startsWith('legacy/')&&!raw.source.startsWith('legacy-components/v032/')&&!raw.source.startsWith('legacy-components/v033/')&&!raw.source.startsWith('legacy-components/v034/'))fail('source is outside immutable installed components');
     pinBytes+=Buffer.byteLength(name)+Buffer.byteLength(raw.source)+96;
     total+=raw.bytes;
     if(total>COMPACT_RUNTIME_LIMITS.totalBytes||pinBytes>COMPACT_RUNTIME_LIMITS.pinBytes)fail('total runtime or PIN budget exceeded');

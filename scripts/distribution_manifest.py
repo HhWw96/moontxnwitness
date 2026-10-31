@@ -550,6 +550,13 @@ def select_distribution_files(root, public_names, tested_files, version):
         for helper in ('legacy-v033.mjs', 'legacy-v033-binding.mjs'):
             require('cmd/' + helper, 'fixed public033 dispatch and immutable binding')
             require('dist/' + helper, 'installed public033 dispatch and immutable binding')
+    if tuple(map(int, version.split('.'))) >= (0, 4, 0):
+        for name in ('scripts/public034-compatibility-test.mjs', 'scripts/public034-compatibility-groups.mjs', 'scripts/public034-v1-capsule-test.mjs'):
+            require(name, 'exact public034 compatibility and six explicit schema1 capsule checks')
+            portable.add(name)
+        for helper in ('legacy-v034.mjs', 'legacy-v034-binding.mjs'):
+            require('cmd/' + helper, 'fixed public034 dispatch and immutable binding')
+            require('dist/' + helper, 'installed public034 dispatch and immutable binding')
     if relation034:
         portable.update(RELATION034_PORTABLE_INPUTS)
     if predicate035:

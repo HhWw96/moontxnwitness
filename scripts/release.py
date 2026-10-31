@@ -58,6 +58,37 @@ def validate_public033_compatibility_receipt(summary, version):
     return value
 
 
+def validate_public034_compatibility_receipt(summary, version):
+    value = summary['public034CompatibilityTests']
+    assert value['passed'] is True and value['checks'] == 47 and value['groups'] == 7
+    assert value['currentVersion'] == version and value['usesPublishedRuntimeOnly'] is True
+    assert value['historicalSourceSnapshotCreated'] is False and value['sourcePoolUnchanged'] is True
+    assert value['candidateRuntimeFiles']['core.mjs']['sha256'] == summary['buildManifest']['coreSha256']
+    # Reuse the complete executable receipt contract, including distinct case IDs,
+    # all methods, every group's provenance and the exact candidate file inventory.
+    checked = subprocess.run([os.environ.get('MTW_NODE', 'node'), '--input-type=module', '-e',
+        "import{collectPublic034Groups}from'./scripts/public034-compatibility-groups.mjs';let s='';for await(const b of process.stdin)s+=b;console.log(JSON.stringify(collectPublic034Groups(JSON.parse(s))));"],
+        cwd=ROOT, input=json.dumps(value['receipts']), text=True, capture_output=True, check=True, timeout=180)
+    assert json.loads(checked.stdout) == value
+    validate_public034_schema1(summary['public034Schema1Tests'], value, version)
+    return value
+
+
+def validate_public034_schema1(value, compatibility, version):
+    assert value['suite'] == 'public034-explicit-schema1-supplement/v1'
+    assert value['passed'] is True and value['checks'] == 6 and value['failed'] == 0
+    assert value['currentVersion'] == version and value['producerVersion'] == '0.3.4'
+    assert value['original47SuiteModified'] is False and value['original15FamiliesModified'] is False
+    assert value['producerBytesUnchanged'] is True
+    for field in ('producerSourceCommit', 'producerArchiveSha256', 'producerComponentSha256'):
+        assert value[field] == compatibility[field]
+    expected = {fixture + suffix for fixture in ('examples/write-skew.json', 'examples/consistent.json') for suffix in
+        (' direct schema1 report and capsule replay', ' rehashed schema1 conclusion is still refused', ' schema1 mixed engine headers are refused')}
+    assert len(value['cases']) == 6 and {row['name'] for row in value['cases']} == expected
+    assert all(row['passed'] is True for row in value['cases'])
+    return value
+
+
 def validate_register_direct_category_audit(summary, version):
     audit = summary['registerDirectCategoryAudit']
     assert audit['passed'] is True and audit['failed'] == 0 and audit['checks'] >= 6
@@ -452,6 +483,26 @@ def validate_scoped_acceptance(acceptance, manifest):
                 assert kind + ' public033 original fixed compatibility group ' + group in package['checks']
             assert kind + ' public033 all 47 original checks and 15 fixed method families' in package['checks']
 
+    if tuple(map(int, VERSION.split('.'))) >= (0, 4, 0):
+        compatibility = validate_public034_compatibility_receipt(summary, VERSION)
+        assert set(package['public034Consumers']) == {'source', 'portable'}
+        for kind in ('source', 'portable'):
+            actual = package['public034Consumers'][kind]
+            validate_public034_schema1(actual['schema1'], actual['compatibility'], VERSION)
+            assert actual['compatibility']['producerSourceCommit'] == compatibility['producerSourceCommit']
+            assert actual['compatibility']['producerArchiveSha256'] == compatibility['producerArchiveSha256']
+            assert actual['compatibility']['producerComponentSha256'] == compatibility['producerComponentSha256']
+            assert actual['compatibility']['candidateRuntimeFiles']['core.mjs']['sha256'] == summary['buildManifest']['coreSha256']
+            validate_public034_compatibility_receipt({
+                'public034CompatibilityTests': actual['compatibility'],
+                'public034Schema1Tests': actual['schema1'],
+                'buildManifest': summary['buildManifest'],
+            }, VERSION)
+            for group in ('core', 'capture', 'models', 'classification', 'profiles', 'v4', 'integrity'):
+                assert kind + ' public034 original fixed compatibility group ' + group in package['checks']
+            assert kind + ' public034 all 47 original checks and 15 fixed method families' in package['checks']
+            assert kind + ' public034 six explicit schema1 capsule and tamper checks' in package['checks']
+
     if tuple(map(int, VERSION.split('.'))) >= (0, 3, 5):
         validate_predicate035_receipts(summary, package, VERSION)
 
@@ -755,6 +806,18 @@ def publish():
             '[support matrix](https://github.com/' + MODULE + '/blob/' + tag + '/docs/stable-scope.md).\n\n'
             'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or use the portable ZIP with Node.js 20 or later.\n', encoding='utf8')
 
+    if tuple(map(int, VERSION.split('.'))) >= (0, 4, 0):
+        notes.write_text('## MoonTxnWitness v' + VERSION + '\n\n'
+            '- MoonBit transaction-analysis library for registers, append lists and supported relation point/predicate histories.\n'
+            '- Source-bound anomaly witnesses, fourteen explicit model profiles, category-preserving reduction and independently budgeted capsule verification.\n'
+            '- Configurable PostgreSQL SQL/parameter/fetch validation, optional SQLGlot recognition and explicit source-installation diagnostics; incomplete writer windows remain visible.\n'
+            '- Lower-allocation complete-report transport with preserved output, provenance and legacy text interfaces.\n'
+            '- Exact public v0.3.4 runtime compatibility, all 47 original checks and six additional schema1 capsule/tamper checks in fresh source and portable consumers.\n\n'
+            'Install: `moon add HhWw96/moontxnwitness@' + VERSION + '`, or use the portable ZIP with Node.js 20 or later. '
+            'See README.md, docs/stable-scope.md and CHANGELOG.md for supported semantics, examples, budgets and actual validation. '
+            'Model verdicts require their documented facts and completed checks; partial capture and exhausted searches remain inconclusive. '
+            'Measured performance is reported with its tested source/runtime separately.\n', encoding='utf8')
+
     performance_path = ROOT / 'verification/releases' / VERSION / 'release-gate-v1.json'
     if performance_path.exists() and not scoped:
         groups = json.loads(performance_path.read_text(encoding='utf-8'))['groups']
@@ -784,6 +847,8 @@ if __name__ == '__main__':
             validate_public032_compatibility_receipt(summary, VERSION)
         if tuple(map(int, VERSION.split('.'))) >= (0, 3, 4):
             validate_public033_compatibility_receipt(summary, VERSION)
+        if tuple(map(int, VERSION.split('.'))) >= (0, 4, 0):
+            validate_public034_compatibility_receipt(summary, VERSION)
         print('Current integration compatibility receipt contract passed: ' + VERSION)
     else:
         publish()

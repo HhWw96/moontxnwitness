@@ -2,7 +2,7 @@
 
 MoonBit 通用事务异常分析基础库。以 Elle 的异常与模型定义为对照，提供可嵌入的分析、解释、缩减和证据回放。当前覆盖与待补能力见[Elle 对齐表](docs/elle-alignment.md)，后续按[开发顺序](docs/roadmap-v0.4.0.md)推进；定位不表示已完整兼容 Elle。
 
-仓库已开始分离当前源码与历史实验归档；原始材料通过提交／标签恢复，规则和精简计数见[仓库布局](docs/repository-layout.md)。
+当前源码与历史运行归档已分离；原始材料通过提交／标签恢复，规则和精简计数见[仓库布局](docs/repository-layout.md)。
 
 自动诊断采集：使用 [`instrument_engine`／局部 psycopg 工厂](docs/diagnostic-instrumentation.md) 在业务启动时接入，保留实际执行和结果；通用入口输出执行诊断；配置化 [base-user 来源采集](docs/configured-user-profile.md) 可将受支持的按 ID 增删改查送入核心分析、缩减与重放。
 
@@ -12,23 +12,17 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-## v0.3.8 候选：完整 JavaScript 报告对象
+## v0.4.0：可嵌入的事务异常分析基础库
 
-`analyze` 与 `analyzeWithOptions` 使用原生对象传输完整报告，保留原分析、预算、字段顺序与旧文本接口；旧运行时继续使用原回退路径。固定公开 v0.3.1 基线的同作业配对实验中，五个目标场景几何均值速度为 **2.2315 倍**、峰值 RSS 比为 **0.77786**，三个控制场景通过，完整保留 49,770 条依赖边。数据绑定实验候选与实际 Linux 运行文件；本集成版本的性能需单独测量。实测覆盖两个 JavaScript 分析入口；v4 分类与其他模型接口的性能未包含在此结果中。见[完整协议、结果与边界](docs/native-report-performance.md)。
+提供 MoonBit 结构化核心、JavaScript SDK 与命令行，将事务观察转换为异常见证、逐模型结果、可缩减反例和可验证的复现包。核心支持唯一版本寄存器、追加列表与关系行集合；业务侧可使用启动插桩或配置化适配器提供原始观察。
 
-## v0.3.6 候选：独立模型与原子关系行接口
+- **关系分析：**行版本来源、提交／回滚与内部一致性检查；关系谓词入口独立搜索 G0、G1c、G2-item、G2、G-single-item、G-single 和 G-nonadjacent，保留项目／谓词依赖及完整查询证据。
+- **模型规则：**独立命名空间组合 14 个固定 Elle 模型定义，逐项呈现必要检查与见证；支持寄存器、列表和显式原子主键行配置。运行 `node examples/models-v4-roundtrip.mjs`。
+- **配置化接入：**同一 PostgreSQL 结构解析器接受表、列、主键和类型配置，配合指定 engine 或 psycopg 工厂保留实际 SQL、参数、fetch、异常及事务生命周期。可选 SQLGlot 仅用于适配，核心另行核验输入；来源安装与会话诊断分别核验；当前配置化会话保持 `sourceFactsProduced=false`、`isolationAnalysisReady=false`，现有受支持 profile 的分析入口独立保留。
+- **完整报告性能：**集成候选 v0.3.8 的同作业配对实测中，两个 SDK 分析入口在五个目标场景的几何均值提速 **2.3742 倍**，峰值 RSS 下降 **19.60%**，三个控制场景通过，完整保留 49,770 条依赖边。此为指定分析入口的实测结果，详细绑定见[性能记录](docs/native-report-performance.md)。
+- **兼容与交付：**旧公开胶囊使用按摘要固定的原运行时回放；历史源码使用 Git 标签保存，源码树通过摘要缓存取得测试材料，便携包包含离线兼容组件。
 
-新模型命名空间按固定 Elle 定义组合 14 个规范模型的必要检查，并分别保留完成、反证和无法判定。寄存器、捕获列表以及显式选择的原子主键行配置使用各自的来源核验和原程序证书；旧分类入口的默认含义保持。运行 `node examples/models-v4-roundtrip.mjs` 和 `node examples/relation-atomic-models-roundtrip.mjs`，详见[模型规则](docs/model-obligations-v4.md)与[关系行配置](docs/relation-atomic-models-v4.md)。最终候选的构建、模型对照和性能验收按实际记录分别完成。
-
-## v0.3.5 候选：关系谓词异常检查
-
-独立谓词入口区分项目与谓词依赖，按调用者明确选择的形式规则检查 G0、G1c、G2-item、G2、G-single-item、G-single 和 G-nonadjacent。原始完整查询、行版本来源、候选位置和实际预算与证据一起保存；胶囊重放需要调用者另行提供预期选项。可运行 `node examples/relation-predicate-categories.mjs`，或阅读[谓词接口](docs/relation-predicate-categories-v4.md)。
-
-本候选仍按类别给出反证或有界检查结果，不自动宣告数据库隔离级别相容。合并后最终运行时的正式性能测量尚未执行。
-
-## v0.3.4：关系分类与类别保持缩减
-
-关系行版本新增 G0、G1a、G1b、G1c、G2-item 和内部一致性分类，提供独立 SDK、命令行与证据回放入口。缩减可以指定保留的异常类别，并保留原始事件来源映射；完成全部剩余事务的单删检查后，才标记事务单最小。见[关系库使用示例](docs/relation-library-workflow.md)。
+运行 `node examples/relation-predicate-categories.mjs`、`node examples/relation-category-reduction.mjs`，或直接调用 MoonBit 库。目标、安装、接口、示例与技术证据见[基础库说明](docs/library-overview-v0.4.0.md)。支持矩阵区分已完成检查、反证与覆盖缺口；预算耗尽及来源不足会明确返回无法判定。
 
 ## v0.3.3
 
@@ -121,7 +115,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.3.8
+moon add HhWw96/moontxnwitness@0.4.0
 ```
 
 ```javascript

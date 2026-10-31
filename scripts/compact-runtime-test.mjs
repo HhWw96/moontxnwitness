@@ -81,6 +81,14 @@ if(process.argv[2]==='--child'||process.argv[2]==='--child-hold'){
     assert.equal(digest(fs.readFileSync(join(root,'sdk.mjs'))),pin.files['sdk.mjs'].sha256);
     assert.equal(fs.existsSync(join(root,'legacy-components')),false);
   });
+  await check('public034 fixed component namespace assembles complete bytes',f=>{
+    const path=join(f.installation,'legacy-components/v034/sdk.mjs');
+    fs.mkdirSync(dirname(path),{recursive:true});fs.writeFileSync(path,f.data.sdk);
+    const pin=structuredClone(f.pin);pin.version='0.3.4';pin.files['sdk.mjs'].source='legacy-components/v034/sdk.mjs';
+    const loader=f.loader(pin),root=loader.get();
+    assert.equal(digest(fs.readFileSync(join(root,'sdk.mjs'))),pin.files['sdk.mjs'].sha256);
+    assert.equal(fs.existsSync(join(root,'legacy-components')),false);
+  });
   await check('temporary runtime cannot be placed inside installation' ,f=>{
     for(const temporaryRoot of [f.installation,join(f.installation,'cache')])
       assert.throws(()=>f.loader(f.pin,{temporaryRoot}),/outside installation/);
@@ -98,7 +106,7 @@ if(process.argv[2]==='--child'||process.argv[2]==='--child-hold'){
     for(const name of ['../escape','/absolute','a//b','a/../b','a\\b','a:stream','a.','AUX.txt','a/COM1/x']){
       const pin={version:'0.3.2',files:{[name]:f.pin.files['core.mjs']}};assert.throws(()=>f.loader(pin),/Compact runtime/);
     }
-    for(const source of ['core.mjs','../legacy/a','legacy/../a','legacy-components/v034/a','legacy/a:stream']){
+    for(const source of ['core.mjs','../legacy/a','legacy/../a','legacy-components/v035/a','legacy/a:stream']){
       const pin=structuredClone(f.pin);pin.files['core.mjs'].source=source;assert.throws(()=>f.loader(pin),/Compact runtime/);
     }
     assert.deepEqual(fs.readdirSync(f.temporary),[]);

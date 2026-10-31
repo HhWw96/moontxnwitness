@@ -1,14 +1,21 @@
+# 0.4.0 — 2026-10-31
+
+- Integrate source-bound relation point and predicate classification, category-preserving reduction and replay with independent caller budgets.
+- Provide fourteen fixed canonical model definitions through a separate model namespace, retaining register, append-list and explicit atomic-primary-key row profiles.
+- Add configurable SQL, parameter, native-result and fetch diagnostics with synchronous/asynchronous factories, SQLAlchemy engine instrumentation and explicit source-installation checks.
+- Use native JavaScript report transport for complete legacy/balanced SDK analysis, preserving every dependency and provenance field, original text APIs and historical evidence semantics.
+- Preserve exact public v0.3.4 runtime replay through a checksum-pinned component; keep historical source snapshots outside the active source tree.
+- Record the independently reviewed integrated v0.3.8 comparison: 2.374193 geometric-mean speedup, 0.804006 peak-RSS ratio and three passing controls. See the precise measured subject and scope in [performance documentation](docs/native-report-performance.md).
+
 # 0.3.8 — development
 
 - Return complete native JavaScript report objects from the legacy and balanced SDK analysis entries; preserve the original text APIs and analysis budgets.
 - Keep edge provenance, null/empty/zero values, field order, escaping and caller-owned mutable results consistent with parsed original JSON.
 - Add JS-only DTO boundary tests and current source/portable consumer checks, retaining configured-source, row, model and legacy compatibility suites.
-- Record the paired public031 native-transport experiment: 2.2315336480 geometric-mean speedup and 0.7778597016 peak-RSS ratio across five target scenarios, with three controls. Results bind experimental candidate988 and its exact Linux runtime; integrated0.3.8 performance requires its own recorded run.
+- Record the paired public031 native-transport experiment: 2.2315336480 geometric-mean speedup and 0.7778597016 peak-RSS ratio across five target scenarios, with three controls. Results bind experimental candidate988 and its exact Linux runtime; the later integrated measurement is recorded separately above.
 - See [the performance scope and evidence](docs/native-report-performance.md).
 
-# 0.3.6 — development
-
-## v0.3.7
+# 0.3.7 — development
 
 - Add a configured session namespace joining original SQL, parameters, native-result bytes, actual fetch delivery and optional source-installation diagnostics.
 - Share one PostgreSQL structural parser across configured table layouts, preserving existing model, list and relation namespaces.
@@ -18,11 +25,13 @@
 - Keep writer-window closure, authenticated source facts and automatic isolation analysis unproven in this namespace; expose concrete gaps.
 
 
+# 0.3.6 — development
+
 - Add a separate canonical-model namespace for fourteen fixed Elle definitions, with source-rule, category and completion obligations recorded independently.
 - Keep register, append-list and explicit atomic-primary-key row projections separate; verify concrete certificates against the original programs and caller budgets.
 - Expose model classification, verification and replay in MoonBit, SDK and CLI without changing the older category defaults.
 - Preserve the original 90 model and 38 row SDK checks; run both in source and portable consumers alongside register/list and row examples.
-- Retain the previous fixed 2,000-input comparison as a digest-bound reference; final-candidate comparison and formal performance remain separate validation steps.
+- Complete the maintained fixed 2,000-input register/list serializable comparison on frozen v0.3.6 core c7c62b: 1,997 agreements, zero differences or current execution failures, and three upstream Elle unknowns kept non-comparable; other model definitions and the v0.4.0 runtime are separately scoped.
 
 # 0.3.5 — development
 
@@ -32,7 +41,7 @@
 - Expose explicit predicate category selection in the SDK and CLI, with source-bound evidence capsules and independently selected replay options.
 - Add a directly runnable MoonBit predicate-only write-skew example and reject missing capture timestamps without a parser panic.
 - Reuse complete report encoding across transport fields while preserving every output byte and standard JSON escaping.
-# 0.3.4 — development
+# 0.3.4 — 2026-10-31
 
 - Add source-bound relation point classification for G0, G1a, G1b, G1c, G2-item and internal consistency.
 - Add category-preserving relation reduction, explicit verification budgets and replayable capsules, retaining original observation sequence mappings.
