@@ -44,8 +44,9 @@ function inventory(base,prefix=''){
  }
  return values.sort();
 }
+function selected(name){return group==='all'||PUBLIC032_COMMON.includes(name)||PUBLIC032_GROUPS[group].includes(name);}
 async function check(name,fn){
- if(group!=='all'&&!PUBLIC032_COMMON.includes(name)&&!PUBLIC032_GROUPS[group].includes(name))return;
+ if(!selected(name))return;
  const destination=group==='all'?cases:PUBLIC032_COMMON.slice(0,3).includes(name)?preconditions:PUBLIC032_COMMON[3]===name?postconditions:cases;
  try{await fn();destination.push({name,passed:true});}catch(error){destination.push({name,passed:false,error:error.message});throw error;}
 }
@@ -105,22 +106,26 @@ try{
  currentVersion=current.version();
  await check('published producer032 and current consumer033 versions',()=>{assert.equal(original.version(),'0.3.2');assert.equal(currentVersion,'0.3.3');});
  for(const fixture of ['examples/write-skew.json','examples/consistent.json']){
+  if(!selected(fixture+' original report and v1/v2 capsule replay'))continue;
   const source=read(fixture),report=original.analyzeWithOptions(source),capsule=oldEvidence.makeCapsule(source,report);
   keep(fixture.includes('write-skew')?'core-skew':'core-consistent',report,capsule);
   await check(fixture+' original report and v1/v2 capsule replay',()=>{valid('verify-v1v2',current.replayReport(source,report));valid('replay-v1v2',newEvidence.replayCapsule(capsule));});
   await check(fixture+' modified conclusion is refused',()=>{const altered=structuredClone(report);altered.status=report.status==='violation'?'consistent':'violation';assert.equal(current.replayReport(source,altered).valid,false);});
  }
  for(const [label,fixture]of [['list','examples/list-cycle.json'],['relation','examples/relation-source-closure.json'],['register','fixtures/classification-v3/source-closed-noisy-g2.json']]){
+  if(!selected(label+' original v3 report and capsule replay'))continue;
   const source=read(fixture),report=original.analyzeV3(source),capsule=original.makeCapsuleV3(source,report);keep('capture-'+label,report,capsule);
   await check(label+' original v3 report and capsule replay',()=>{valid('verify-v3',current.verifyV3(source,report));valid('replay-v3',current.replayCapsuleV3(capsule));});
   await check(label+' modified normalized evidence is refused',()=>{const bad=structuredClone(report);bad.normalized.status='forged';assert.equal(current.verifyV3(source,bad).valid,false);});
  }
  for(const [label,fixture]of [['list','fixtures/classification-models-v3/list-skew.json'],['empty','fixtures/classification-models-v3/empty-register.json']]){
+  if(!selected(label+' original model report and capsule replay'))continue;
   const source=read(fixture),report=original.classifyModelsV3(source),capsule=original.makeModelsClassificationCapsuleV3(source);keep('models-'+label,report,capsule);
   await check(label+' original model report and capsule replay',()=>{valid('verify-models',current.verifyModelsClassificationV3(source,report));valid('replay-models',current.replayModelsClassificationCapsuleV3(capsule));});
   await check(label+' forged model result is refused',()=>assert.equal(current.verifyModelsClassificationV3(source,{...report,status:'forged'}).valid,false));
  }
- const trace=read('fixtures/classification-v3/source-closed-noisy-g2.json'),analysis=original.analyzeV3(trace);
+ const trace=read('fixtures/classification-v3/source-closed-noisy-g2.json');
+ const analysis=(group==='all'||group==='classification'||group==='integrity')?original.analyzeV3(trace):undefined;
  await check('original category report and capsule',()=>{const report=original.classifyV3(trace),capsule=original.makeClassificationCapsuleV3(trace);keep('category',report,capsule);valid('verify-classification',current.verifyClassificationV3(trace,report));valid('replay-classification',current.replayClassificationCapsuleV3(capsule));});
  await check('original category-preserving reduction capsule',()=>{const capsule=original.makeClassificationReductionCapsuleV3(trace,{category:'G2-item',maxChecks:0});keep('category-reduction',undefined,capsule);valid('replay-classification',current.replayClassificationCapsuleV3(capsule));});
  await check('original diagnosis and execution capsule',()=>{const report=original.diagnoseV3(trace),capsule=original.makeExecutionCapsuleV3(trace);keep('diagnosis',report,capsule);valid('verify-diagnosis',current.verifyDiagnosisV3(trace,report));valid('replay-execution',current.replayExecutionCapsuleV3(capsule));});
@@ -131,6 +136,7 @@ try{
  await check('original configured model report and capsule',()=>{const report=original.analyzeModelProfileV3(profile),capsule=original.makeModelProfileCapsuleV3(profile);keep('model-profile',report,capsule);valid('verify-model-profile',current.verifyModelProfileV3(profile,report));valid('replay-model-profile',current.replayModelProfileCapsuleV3(capsule));});
  await check('all fifteen original fixed method classes were exercised',()=>assert.deepEqual([...operations].sort(),policyOperations.slice().sort()));
  for(const [label,fixture]of [['register','examples/write-skew.json'],['list','examples/list-cycle.json'],['relation','examples/relation-source-closure.json']]){
+  if(!selected(label+' original v4 analysis semantic report and capsule'))continue;
   const source=read(fixture),report=original.analyzeV4(source),capsule=original.makeCapsuleV4(source);keep('v4-analysis-'+label,report,capsule);
   await check(label+' original v4 analysis semantic report and capsule',()=>{assert.equal(current.verifyV4(source,report).valid,true);assert.equal(current.replayCapsuleV4(capsule).valid,true);});
   const category=original.classifyV4(source),categoryCapsule=original.makeClassificationCapsuleV4(source);keep('v4-classification-'+label,category,categoryCapsule);

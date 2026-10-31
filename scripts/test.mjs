@@ -48,7 +48,7 @@ const public032Parts=[];
 for(const group of Object.keys(PUBLIC032_GROUPS)){
  const destination=resolve(root,'artifacts/public032-full-test',group);
  const child=spawnSync(process.execPath,['scripts/public032-compatibility-test.mjs','--group',group,'--output-root',destination],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:8*1024*1024});
- if(child.error||child.status!==0)throw Error('Public032 '+group+' compatibility failed: '+child.stdout+child.stderr);
+ if(child.error||child.status!==0)throw Error('Public032 '+group+' compatibility failed: '+JSON.stringify({status:child.status,signal:child.signal,error:child.error?{code:child.error.code,message:child.error.message}:null})+'\n'+child.stdout+child.stderr);
  const result=JSON.parse(child.stdout);assert.equal(result.passed,true);public032Parts.push(result);
 }
 const public032Compatibility=collectPublic032Groups(public032Parts);

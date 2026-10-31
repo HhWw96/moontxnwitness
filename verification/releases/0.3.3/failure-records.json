@@ -26,11 +26,62 @@
     "sha256": "4885dd22c4a2ff62af2371f74506edd0d45412b11b1be0163e3f6659cf319252",
     "finalCandidateFingerprint": false
   },
-  "finalFullRegression": {
+  "finalFullRegression": "pending exact-commit CI after full-content and preparation corrections",
+  "formalPerformanceMeasured": false,
+  "preWithdrawalFullRegression": {
     "passed": true,
     "receipt": "tests.json.gz",
     "coreTestsPerTarget": 977,
     "public032Checks": 47
   },
-  "formalPerformanceMeasured": false
+  "ciFileAuditFinding": {
+    "sourceCommit": "1e05b67292a283bd9cc7f4e73bb6769c331adca6",
+    "run": 41155245488,
+    "windowsJob": 124400491820,
+    "frameworkPassed": 39,
+    "frameworkChecks": 40,
+    "logSha256": "02741294a888310dacf18f9496a42696a85caa6f9a7ed3399aac5d67a3f75b55",
+    "cause": "File timestamps may not expose an in-place write immediately; metadata equality cannot authorize content digest reuse. A separate fixed-metadata test confirms changed bytes could be missed by the withdrawn implementation.",
+    "independentBeforeReceiptSha256": "d98c665f466ed08523a5783051f450f961c7366931288b2797cc6c001bc80c7f"
+  },
+  "fullContentCorrection": {
+    "implementationSha256": "6ec8aa31b64f075cb4e6c28244cd81192830663d900c767b814e5c797c1c89dd",
+    "policy": "Every selected source and destination path is hashed on every get. Shared storage and bounded concurrent-link validation remain. No metadata digest cache.",
+    "frameworkChecks": 41,
+    "frameworkPassed": 39,
+    "platformSkips": 2,
+    "runtime": "Node24.22.1/Windows",
+    "independentChecksPassed": 7,
+    "independentReceiptSha256": "1501dee745ed277256f0b4b2eba388d5d5f94c13dd37ab70f9df520f18f10980",
+    "originalConsumerDeadlinePassed": true,
+    "deadlineSeconds": 180,
+    "captureGroupElapsedSeconds": 143.01499999999942,
+    "formalPerformanceMeasurement": false
+  },
+  "resourceFailures": [
+    {
+      "logSha256": "47f8f767de1ce0dcb0a35c5867d3c3b7fc03e3333db68f85707f77f5a7a0504f",
+      "phase": "Public032 capture group",
+      "result": "failed with no child output; original log retained",
+      "coreTestsPerTarget": 977
+    },
+    {
+      "logSha256": "82d7e055a5254ecbb821350f42e4b130cab2a6da431204d31d09289c73002d07",
+      "phase": "build compatibility inventory",
+      "result": "temporary-runtime 500 MiB free-space guard refused execution",
+      "coreTestsPerTarget": 977,
+      "fullRegressionPassed": false
+    }
+  ],
+  "compatibilityPreparationCorrection": {
+    "receipt": "compatibility-setup-review.json",
+    "originalReceiptSha256": "1a32d522ceedfe18b074b87105bcee17979bceabd1ce88d1fa4474d2115fc0e6",
+    "checks": 38,
+    "contractChecks": 23,
+    "allOriginalCaseIds": 47,
+    "allOriginalMethodClasses": 15,
+    "groups": 7,
+    "perGroupDeadlineMilliseconds": 180000,
+    "behavior": "Prepare only the producer fixtures selected by each fixed test group; retain every original semantic assertion."
+  }
 }

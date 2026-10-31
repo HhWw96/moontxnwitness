@@ -45,22 +45,15 @@ function sameFileStamp(a,b){
     a.mtimeNs===b.mtimeNs&&a.ctimeNs===b.ctimeNs&&
     a.mtimeMs===b.mtimeMs&&a.ctimeMs===b.ctimeMs;
 }
-function contentIdentity(st){
-  // Reuse requires nonzero inode identities and nanosecond metadata fields.
-  if(typeof st.dev!=='bigint'||st.dev<=0n||typeof st.ino!=='bigint'||st.ino<=0n||
-      typeof st.mtimeNs!=='bigint'||typeof st.ctimeNs!=='bigint')return null;
-  return {key:st.dev+':'+st.ino,stamp:st.size+':'+st.mode+':'+st.nlink+':'+st.mtimeNs+':'+st.ctimeNs};
-}
 // Link creation/removal changes ctime without changing file content. Never use
 // such observations to reuse a digest. Genuine content/identity changes fail.
 function linkOnlyStampChange(a,b){
   return identity(a,b)&&a.size===b.size&&a.mode===b.mode&&
     a.mtimeNs===b.mtimeNs&&a.mtimeMs===b.mtimeMs&&a.nlink!==b.nlink;
 }
-function regularFile(path,spec,contents){
-  let forceHash=false;
-  // Only observed link-count churn permits a bounded fresh validation. A
-  // checksum mismatch or any other metadata change is never retried/healed.
+function regularFile(path,spec){
+  // Metadata is useful for detecting changes, never proof of unchanged bytes.
+  // Hash every selected pathname, including aliases of a previously read inode.
   for(let attempt=0;attempt<3;attempt++){
     directoryChain(dirname(path));
     const before=lstatSync(path,{bigint:true});
@@ -68,36 +61,24 @@ function regularFile(path,spec,contents){
     const fd=openSync(path,constants.O_RDONLY|(constants.O_NOFOLLOW||0));
     try{
       const opened=fstatSync(fd,{bigint:true});
-      if(!opened.isFile()||opened.size!==BigInt(spec.bytes))fail('member identity or metadata differs');
-      if(!sameFileStamp(opened,before)){
-        if(!linkOnlyStampChange(before,opened))fail('member identity or metadata differs');
-        forceHash=true;
+      if(!opened.isFile()||opened.size!==BigInt(spec.bytes)||
+          !sameFileStamp(opened,before)&&!linkOnlyStampChange(before,opened))fail('member identity or metadata differs');
+      const digest=createHash('sha256');let count=0;
+      for(;;){
+        const n=readSync(fd,scratch,0,Math.min(scratch.length,spec.bytes-count+1),null);
+        if(!n)break;
+        count+=n;if(count>spec.bytes)fail('member read budget exceeded');
+        digest.update(scratch.subarray(0,n));
       }
-      const content=contentIdentity(opened),cached=!forceHash&&content&&contents?.get(content.key);
-      let checksum;
-      if(cached&&cached.stamp===content.stamp){
-        checksum=cached.sha256;
-      }else{
-        const digest=createHash('sha256');let count=0;
-        for(;;){
-          const n=readSync(fd,scratch,0,Math.min(scratch.length,spec.bytes-count+1),null);
-          if(!n)break;
-          count+=n;if(count>spec.bytes)fail('member read budget exceeded');
-          digest.update(scratch.subarray(0,n));
-        }
-        if(count!==spec.bytes)fail('member checksum or identity differs');
-        checksum=digest.digest('hex');
-      }
+      const checksum=digest.digest('hex');
       const finalDescriptor=fstatSync(fd,{bigint:true}),after=lstatSync(path,{bigint:true});
-      if(checksum!==spec.sha256||!after.isFile()||after.isSymbolicLink())fail('member checksum or identity differs');
+      if(count!==spec.bytes||checksum!==spec.sha256||!after.isFile()||after.isSymbolicLink())fail('member checksum or identity differs');
       if(!sameFileStamp(opened,finalDescriptor)||!sameFileStamp(finalDescriptor,after)){
         const linkOrSame=(a,b)=>sameFileStamp(a,b)||linkOnlyStampChange(a,b);
         if(!linkOrSame(opened,finalDescriptor)||!linkOrSame(finalDescriptor,after))fail('member checksum or identity differs');
         if(attempt===2)fail('member concurrent link metadata did not stabilize');
-        forceHash=true;
         continue;
       }
-      if(content&&contents)contents.set(content.key,{stamp:content.stamp,sha256:checksum});
       return opened;
     }finally{closeSync(fd);}
   }
@@ -150,10 +131,10 @@ function normalizePin(pin){
   }
   return {version:pin.version,files,directories,sources,total};
 }
-function verifySources(installation,pin,contents){
+function verifySources(installation,pin){
   directoryChain(installation);
   const stats=new Map();
-  for(const [source,spec]of pin.sources)stats.set(source,regularFile(join(installation,...member(source)),spec,contents));
+  for(const [source,spec]of pin.sources)stats.set(source,regularFile(join(installation,...member(source)),spec));
   return stats;
 }
 function originalDirectory(root,id){
@@ -161,7 +142,7 @@ function originalDirectory(root,id){
   const st=lstatSync(root);
   if(!st.isDirectory()||st.isSymbolicLink()||!identity(st,id))fail('private runtime directory identity differs');
 }
-function verifyTree(root,id,pin,contents){
+function verifyTree(root,id,pin){
   originalDirectory(root,id);const seen=new Set();
   function inspect(path,prefix=''){
     for(const name of readdirSync(path)){
@@ -171,14 +152,14 @@ function verifyTree(root,id,pin,contents){
         if(!pin.directories.has(rel))fail('unexpected runtime directory');
         directoryChain(target);inspect(target,rel+'/');
       }else if(st.isFile()&&pin.files.has(rel)){
-        regularFile(target,pin.files.get(rel),contents);seen.add(rel);
+        regularFile(target,pin.files.get(rel));seen.add(rel);
       }else fail('unexpected runtime member');
     }
   }
   inspect(root);
   if(seen.size!==pin.files.size)fail('runtime inventory differs');
 }
-function copyExclusive(source,target,spec,temporaryRoot,contents){
+function copyExclusive(source,target,spec,temporaryRoot){
   diskSpace(temporaryRoot,spec.bytes);
   const input=openSync(source,constants.O_RDONLY|(constants.O_NOFOLLOW||0));
   let output;
@@ -203,7 +184,7 @@ function copyExclusive(source,target,spec,temporaryRoot,contents){
   }finally{
     closeSync(input);if(output!==undefined)closeSync(output);
   }
-  regularFile(target,spec,contents);
+  regularFile(target,spec);
 }
 function removeOwnedTree(root,id){
   originalDirectory(root,id);
@@ -227,7 +208,7 @@ function removeOwnedTree(root,id){
  * Each instance owns one process-private temporary tree. Unreferenced files in
  * the shared legacy source pools are inert; the assembled tree inventory is exact.
  * get()/verify() always revalidate every used source path and the complete destination.
- * Content hashes are reused only within one call for the same exact inode stamp.
+ * Every source and destination pathname is fully hashed on each validation.
  * A damaged tree is poisoned and never repaired. cleanup() is explicit; process
  * exit also attempts cleanup. No files are created in installationRoot.
  */
@@ -247,10 +228,8 @@ export function createCompactRuntimeLoader(pin,{installationRoot=dirname(fileURL
     if(state==='failed')fail('previous validation failed; create a new loader after diagnosis: '+failure);
     if(state==='disposed')fail('loader is disposed');
     const existing=state==='ready';
-    // This map is private to one synchronous get(), never retained in the loader.
-    const contents=new Map();
     try{
-      directoryChain(temporary);const sourceStats=verifySources(installation,fixed,contents);
+      directoryChain(temporary);const sourceStats=verifySources(installation,fixed);
       if(!root){
         diskSpace(temporary);
         root=mkdtempSync(join(temporary,'moontxnwitness-compact-'+process.pid+'-'));
@@ -266,14 +245,14 @@ export function createCompactRuntimeLoader(pin,{installationRoot=dirname(fileURL
           diskSpace(temporary);
           // A readonly inode may not be unlinkable on Windows. Copy it without
           // changing the source's permissions or readonly file attributes.
-          if((sourceStats.get(spec.source).mode&0o200n)===0n)copyExclusive(source,target,spec,temporary,contents);
+          if((sourceStats.get(spec.source).mode&0o200n)===0n)copyExclusive(source,target,spec,temporary);
           else try{linkSync(source,target);}catch(error){
             if(error.code==='EEXIST')throw error;
-            copyExclusive(source,target,spec,temporary,contents);
+            copyExclusive(source,target,spec,temporary);
           }
         }
       }
-      verifySources(installation,fixed,contents);verifyTree(root,id,fixed,contents);
+      verifySources(installation,fixed);verifyTree(root,id,fixed);
       state='ready';return root;
     }catch(error){
       failure=error.message;state='failed';
