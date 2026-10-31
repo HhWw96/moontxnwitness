@@ -6,6 +6,12 @@ on:
         description: Exact forty-character source commit containing the frozen protocol
         required: true
         type: string
+      cost_protocol:
+        description: Explicit workload semantics; legacy v1 remains unchanged
+        required: true
+        type: choice
+        default: legacy-v1
+        options: [legacy-v1, crud-conflict-noop-v2]
       profile:
         description: Controlled provenance profile
         required: true
@@ -32,6 +38,7 @@ jobs:
     env:
       MTW_COST_SOURCE: ${{ inputs.source_sha }}
       MTW_COST_PROFILE: ${{ inputs.profile }}
+      MTW_COST_PROTOCOL: ${{ inputs.cost_protocol || 'legacy-v1' }}
       MTW_COST_BUDGET: ${{ inputs.experimental_budget }}
       MTW_COST_SOURCE_BUFFER: ${{ inputs.source_write_buffer_bytes }}
       PYTHONDONTWRITEBYTECODE: '1'
@@ -42,6 +49,17 @@ jobs:
         run: |
           echo "MTW_PG_CONNECTION_FILE=$RUNNER_TEMP/mtw-cost-connection.json" >> "$GITHUB_ENV"
           echo "MTW_JOURNAL_TEST_ROOT=$RUNNER_TEMP/mtw-cost-units" >> "$GITHUB_ENV"
+      - name: Select the explicit cost protocol runner
+        timeout-minutes: 2
+        run: |
+          if [ "$MTW_COST_PROTOCOL" = "crud-conflict-noop-v2" ]; then
+            echo "MTW_COST_RUNNER=experiments/provenance/full_capture_cost_v2.py" >> "$GITHUB_ENV"
+          elif [ "$MTW_COST_PROTOCOL" = "legacy-v1" ]; then
+            echo "MTW_COST_RUNNER=experiments/provenance/full_capture_cost.py" >> "$GITHUB_ENV"
+          else
+            echo "Unregistered cost protocol" >&2
+            exit 1
+          fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 5
         with:
@@ -60,14 +78,23 @@ jobs:
           assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()==source
           PY
           python -m pip install --require-hashes -r examples/postgres-requirements.txt
+          mkdir -p verification/full-capture-cost
+          python -B experiments/provenance/prepare_full_capture_cost_inputs.py > verification/full-capture-cost/input-preparation.json
           export MTW_JOURNAL_SCRATCH="$MTW_JOURNAL_TEST_ROOT"
           mkdir -p "$MTW_JOURNAL_SCRATCH"
           python -B scripts/persistence-unit-test.py
+          if [ "$MTW_COST_PROTOCOL" = "crud-conflict-noop-v2" ]; then
+            python -B experiments/provenance/test_full_capture_cost_v2.py
+          fi
           buffer_args=()
           if [ "$MTW_COST_SOURCE_BUFFER" != "0" ]; then buffer_args=(--source-write-buffer-bytes "$MTW_COST_SOURCE_BUFFER"); fi
           budget_args=()
           if [ "$MTW_COST_BUDGET" != "legacy" ]; then budget_args=(--experimental-budget "$MTW_COST_BUDGET"); fi
-          python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/preregistered --plan-only --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}" "${buffer_args[@]}"
+          if [ "$MTW_COST_PROTOCOL" = "crud-conflict-noop-v2" ]; then
+            python -B experiments/provenance/full_capture_cost_v2.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/preregistered --plan-only --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}" "${buffer_args[@]}"
+          else
+            python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/preregistered --plan-only --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}" "${buffer_args[@]}"
+          fi
       - name: Prepare isolated PostgreSQL before measurement
         timeout-minutes: 5
         run: |
@@ -86,7 +113,7 @@ jobs:
                   if attempt==59:raise
                   time.sleep(1)
           out=pathlib.Path('verification/full-capture-cost')
-          metadata={'sourceCommit':os.environ['MTW_COST_SOURCE'],'profile':os.environ['MTW_COST_PROFILE'],'python':platform.python_version(),'driver':psycopg.__version__,'platform':platform.platform(),'server':server,'cpu':subprocess.check_output(['lscpu'],text=True),'filesystem':subprocess.check_output(['df','-h','.'],text=True),'filesystemBytes':subprocess.check_output(['df','-B1','.',os.environ['RUNNER_TEMP']],text=True),'memory':pathlib.Path('/proc/meminfo').read_text(encoding='ascii'),'experimentalBudget':os.environ['MTW_COST_BUDGET'],'dockerImageId':subprocess.check_output(['docker','inspect','--format','{{.Image}}','mtw-cost'],text=True).strip(),'environment':'Dedicated GitHub-hosted job and owned PostgreSQL container; underlying physical-host tenancy is not measured','exclusiveTaskWindow':'All downloads, installs and tests complete before timing; no build, packaging or other database suite in this job during measurement','formalResultNotPredetermined':True}
+          metadata={'sourceCommit':os.environ['MTW_COST_SOURCE'],'profile':os.environ['MTW_COST_PROFILE'],'python':platform.python_version(),'driver':psycopg.__version__,'platform':platform.platform(),'server':server,'cpu':subprocess.check_output(['lscpu'],text=True),'filesystem':subprocess.check_output(['df','-h','.'],text=True),'filesystemBytes':subprocess.check_output(['df','-B1','.',os.environ['RUNNER_TEMP']],text=True),'memory':pathlib.Path('/proc/meminfo').read_text(encoding='ascii'),'experimentalBudget':os.environ['MTW_COST_BUDGET'],'costProtocol':os.environ['MTW_COST_PROTOCOL'],'costRunner':os.environ['MTW_COST_RUNNER'],'dockerImageId':subprocess.check_output(['docker','inspect','--format','{{.Image}}','mtw-cost'],text=True).strip(),'environment':'Dedicated GitHub-hosted job and owned PostgreSQL container; underlying physical-host tenancy is not measured','exclusiveTaskWindow':'All downloads, installs and tests complete before timing; no build, packaging or other database suite in this job during measurement','formalResultNotPredetermined':True}
           if os.environ['MTW_COST_SOURCE_BUFFER']!='0':metadata['sourceWriteBufferBytes']=int(os.environ['MTW_COST_SOURCE_BUFFER'])
           (out/'environment.json').write_text(json.dumps(metadata,indent=2)+'\n',encoding='utf8')
           PY
@@ -99,7 +126,11 @@ jobs:
           if [ "$MTW_COST_SOURCE_BUFFER" != "0" ]; then buffer_args=(--source-write-buffer-bytes "$MTW_COST_SOURCE_BUFFER"); fi
           budget_args=()
           if [ "$MTW_COST_BUDGET" != "legacy" ]; then budget_args=(--experimental-budget "$MTW_COST_BUDGET"); fi
-          python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/measured --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}" "${buffer_args[@]}"
+          if [ "$MTW_COST_PROTOCOL" = "crud-conflict-noop-v2" ]; then
+            python -B experiments/provenance/full_capture_cost_v2.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/measured --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}" "${buffer_args[@]}"
+          else
+            python -B experiments/provenance/full_capture_cost.py --profile "$MTW_COST_PROFILE" --output verification/full-capture-cost/measured --archive-cells --exclusive-host --exclusive-cluster "${budget_args[@]}" "${buffer_args[@]}"
+          fi
       - name: Retain exact plans and qualification separately from timing completion
         timeout-minutes: 10
         if: always()
@@ -110,12 +141,17 @@ jobs:
           before=root/'preregistered/plan.json';after=root/'measured/plan.json';receipt=root/'measured/receipt.json'
           summary=json.loads(receipt.read_text(encoding='utf8')) if receipt.exists() else {}
           plansEqual=before.is_file() and after.is_file() and before.read_bytes()==after.read_bytes()
-          result={'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'expectedSourceCommit':os.environ['MTW_COST_SOURCE'],'plansByteIdentical':plansEqual,'planSha256':hashlib.sha256(before.read_bytes()).hexdigest() if before.is_file() else None,'actualDatabaseExecution':summary.get('actualDatabaseExecution',False),'formalProtocolCompleted':summary.get('formalProtocolCompleted',False),'performanceTargetsPassed':summary.get('performanceTargetsPassed',False),'completeCells':summary.get('completeCells',0),'plannedCells':summary.get('plannedCells',36),'performanceSuccessDoesNotFollowFromWorkflowSuccess':True,'experimentalBudget':summary.get('experimentalBudget'),'actualStorageLimits':summary.get('actualStorageLimits'),'capacityChecksBeforeCells':summary.get('capacityChecksBeforeCells',[])}
+          result={'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'expectedSourceCommit':os.environ['MTW_COST_SOURCE'],'plansByteIdentical':plansEqual,'planSha256':hashlib.sha256(before.read_bytes()).hexdigest() if before.is_file() else None,'actualDatabaseExecution':summary.get('actualDatabaseExecution',False),'formalProtocolCompleted':summary.get('formalProtocolCompleted',False),'performanceTargetsPassed':summary.get('performanceTargetsPassed',False),'completeCells':summary.get('completeCells',0),'plannedCells':summary.get('plannedCells',36),'performanceSuccessDoesNotFollowFromWorkflowSuccess':True,'costProtocol':os.environ['MTW_COST_PROTOCOL'],'protocolVersion':summary.get('protocolVersion'),'generator':summary.get('generator'),'experimentalBudget':summary.get('experimentalBudget'),'actualStorageLimits':summary.get('actualStorageLimits'),'capacityChecksBeforeCells':summary.get('capacityChecksBeforeCells',[])}
           if os.environ['MTW_COST_SOURCE_BUFFER']!='0':result['sourceWriteBufferBytes']=int(os.environ['MTW_COST_SOURCE_BUFFER'])
           (root/'hosted-receipt.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf8')
           if receipt.exists():
               assert plansEqual,'Preregistered plan changed'
               assert result['sourceCommit']==result['expectedSourceCommit']
+              if os.environ['MTW_COST_PROTOCOL']=='crud-conflict-noop-v2':
+                  frozen=json.loads(before.read_text(encoding='utf8'))
+                  assert frozen['protocolVersion']=='full-capture-cost/crud-conflict-noop-v2'
+                  assert summary.get('protocolVersion')==frozen['protocolVersion']
+                  assert summary.get('generator')==frozen['generator']
           PY
           docker logs mtw-cost > verification/full-capture-cost/postgres-server.log 2>&1 || true
           docker stop --time 30 mtw-cost || true
