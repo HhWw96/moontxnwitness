@@ -32,3 +32,11 @@ export function verifyConfiguredWriterBindingsV4(effects, session, options = {})
   const limits = boundedText(options, 8192, 'Writer binding options');
   return JSON.parse(core.verify_configured_writer_bindings_v4_json(source, trace, limits));
 }
+
+export function verifyConfiguredWriterWindowV4(before, after, session, options = {}) {
+  const start = boundedText(before, 24 * 1024 * 1024, 'Original start snapshot');
+  const end = boundedText(after, 24 * 1024 * 1024, 'Original end snapshot');
+  const trace = boundedText(session, 32 * 1024 * 1024, 'Original configured session');
+  const limits = boundedText(options, 8192, 'Writer window options');
+  return JSON.parse(core.verify_configured_writer_window_v4_json(start, end, trace, limits));
+}

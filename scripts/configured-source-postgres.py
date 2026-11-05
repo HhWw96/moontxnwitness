@@ -108,7 +108,7 @@ def verify_effects_snapshot(work, owner, actor, configuration, policy):
          'producerSha256':sha(ROOT/'integrations/python/moontxnwitness_capture/configured_effects.py'),
          'falseWriterWindowClaimRejected':True,'writerWindowVerified':False}
 
-def verify_writer_bindings(work, owner, actor, configuration, policy):
+def verify_writer_bindings(work, owner, actor, configuration, policy, *, verify_window=False):
  import psycopg
  installation=InstallationInputs.from_attempt(work/'installation',policy)
  capture=ConfiguredDiagnosticSession(work/'writer-binding-session',configuration,installation=installation)
@@ -144,10 +144,13 @@ def verify_writer_bindings(work, owner, actor, configuration, policy):
    cursor.execute(f'SELECT {key} FROM {table} WHERE {key}=%s',(17,))
    assert cursor.fetchall()==[(17,)]
   checkpoint(slow);slow.commit()
+  window_end=snapshot('writer-window-covered') if verify_window else None
   stale=update(slow,105,315);checkpoint(slow)
   stale_second=update(slow,106,316);slow.commit()
   session_path=capture.seal()
  assert int(late)<int(early)
+ if verify_window:
+  with psycopg.connect(**actor) as independent:uncaptured=update(independent,107,317)
  final=snapshot('writer-bindings-final')
  session=json.loads(session_path.read_text(encoding='utf8'))
  cli=[os.environ.get('MTW_NODE','node'),str(ROOT/'dist/moontxnwitness.mjs'),'verify-configured-writer-bindings-v4']
@@ -223,10 +226,91 @@ def verify_writer_bindings(work, owner, actor, configuration, policy):
   'unmatchedEffects':len(unmatched),'sameConnectionNewTransactionVerified':True,'rollbackAndSavepointExcluded':True,
   'staleCheckpointExcluded':True,'unconfirmedCommitUnmatched':True,'rehashedPeerAndCommitTamperingRejected':True,
   'legacySnapshotRejectedForBinding':True,'bindingBudgetExhaustionChecked':True,'activeSnapshotXidRejected':True,
-  'writerWindowVerified':False}
+  'writerWindowVerified':False,
+  **({'window':verify_writer_window(work,session_path,before,window_end,final,early,late,kept,
+                                   {stale,stale_second,uncaptured})} if verify_window else {})}
 
 
-def run_database(private,work,*,verify_effects=False,verify_bindings=False):
+def verify_writer_window(work, session_path, start, covered, final, early, late, kept, unbound_versions):
+ cli=[os.environ.get('MTW_NODE','node'),str(ROOT/'dist/moontxnwitness.mjs'),'verify-configured-writer-window-v4']
+ def compact(value):return json.dumps(value,ensure_ascii=False,separators=(',',':'))+'\n'
+ start_path=work/'writer-window-start.json';write_new(start_path,compact(start))
+ covered_path=work/'writer-window-end.json';write_new(covered_path,compact(covered))
+ final_path=work/'writer-binding-final-effects.json'
+ def verify(before, after, name, expected=0, options=None):
+  flags=[]
+  if options is not None:
+   option_path=work/(name+'-options.json');write_new(option_path,compact(options))
+   flags=['--options',str(option_path)]
+  child=subprocess.run([*cli,str(before),str(after),str(session_path),*flags],capture_output=True,encoding='utf8',timeout=90)
+  if child.returncode!=expected:raise AssertionError(child.stdout+child.stderr)
+  report=json.loads(child.stdout)
+  assert all(report[k] is False for k in ('sourceFactsProduced','sourceAuthenticated','writerWindowVerified','isolationAnalysisReady'))
+  write_new(work/(name+'-report.json'),compact(report))
+  return report
+
+ complete=verify(start_path,covered_path,'writer-window-complete')
+ assert complete['ledgerDeltaCovered'] and complete['status']=='complete-ledger-delta'
+ assert complete['deltaEffects']==2 and not complete['unmatchedEffects']
+ assert {m['effect']['version'] for m in complete['matchedEffects']}=={late,kept}
+ assert int(late)<int(early)
+ incomplete=verify(start_path,final_path,'writer-window-incomplete',1)
+ assert incomplete['valid'] and not incomplete['ledgerDeltaCovered'] and incomplete['deltaEffects']==5
+ assert {e['version'] for e in incomplete['unmatchedEffects']}==unbound_versions
+ assert verify(start_path,start_path,'writer-window-empty')['deltaEffects']==0
+ assert 'snapshot-regression' in verify(covered_path,start_path,'writer-window-reversed',2)['reason']
+ assert verify(start_path,covered_path,'writer-window-budget',3,{'maxBindingChecks':0})['status']=='unknown'
+ assert verify(start_path,covered_path,'writer-window-shared-snapshot-budget',3,
+  {'maxChecks':complete['snapshotChecks']-1})['status']=='unknown'
+
+ def altered(envelope, name, *, remove):
+  records=list(map(json.loads,envelope['effectsLogText'].splitlines()))
+  # Choose a tombstone without a successor for the omission case.
+  pages=[event for event in records if event.get('queryId')=='effects-page' and event.get('kind')=='source-control']
+  candidates=((event,i,json.loads(cell)) for event in pages for i,(cell,) in enumerate(event['decodedRows']))
+  page,i,effect=next(row for row in candidates if row[2]['operation']==('DELETE' if remove else 'UPDATE'))
+  native=page['native']
+  if remove:
+   del page['decodedRows'][i];del native['rows'][i]
+   delivered=[row for event in pages for row in event['decodedRows']]
+   encoded=[row for event in pages for row in event['native']['rows']]
+   last='0'
+   for index,event in enumerate(pages):
+    offset=index*8
+    params=[last];event['parameters']=params;records[event['requestSeq']-1]['parameters']=params
+    event['decodedRows']=delivered[offset:offset+8]
+    event['native']['rows']=encoded[offset:offset+8]
+    event['native']['tag']='SELECT '+str(len(event['decodedRows']))
+    if event['decodedRows']:last=json.loads(event['decodedRows'][-1][0])['version']
+  else:
+   column=next(key for key,value in effect['rowValues'].items() if type(value) is bool)
+   effect['rowValues'][column]=not effect['rowValues'][column]
+   delivery=compact(effect).rstrip('\n')
+   page['decodedRows'][i][0]=delivery;native['rows'][i][0]=base64.b64encode(delivery.encode('utf8')).decode('ascii')
+  prefix=''.join(map(compact,records[:-1]));records[-1]['prefixSha256']=hashlib.sha256(prefix.encode('utf8')).hexdigest()
+  log=prefix+compact(records[-1]);raw=log.encode('utf8')
+  receipt=json.loads(envelope['effectsReceiptText'])
+  if remove:receipt['effectsObserved']-=1
+  receipt['log'].update(sha256=hashlib.sha256(raw).hexdigest(),bytes=len(raw))
+  path=work/(name+'-effects.json')
+  write_new(path,compact({**envelope,'effectsLogText':log,'effectsReceiptText':compact(receipt)}))
+  # The original single-snapshot verifier accepts each forged component.
+  subprocess.run([*cli[:-1],'verify-configured-effects-v4',str(path)],check=True,capture_output=True,timeout=90)
+  return path
+
+ changed=altered(covered,'writer-window-changed-row',remove=False)
+ assert 'changed-prior-effect' in verify(start_path,changed,'writer-window-changed-row',2)['reason']
+ dropped=altered(covered,'writer-window-dropped-row',remove=True)
+ assert 'missing-prior-effect' in verify(start_path,dropped,'writer-window-dropped-row',2)['reason']
+ omitted=altered(start,'writer-window-omitted-baseline',remove=True)
+ assert 'prior-XID-with-new-effect' in verify(omitted,covered_path,'writer-window-omitted-baseline',2)['reason']
+ return {'coveredDelta':complete['deltaEffects'],'unmatchedInWiderDelta':len(unbound_versions),
+         'lowerVersionLateCommitIncluded':True,'emptyDeltaChecked':True,'reversedSnapshotsRejected':True,
+         'snapshotAndBindingBudgetsChecked':True,'changedAndMissingPriorEffectsRejected':True,
+         'previouslyCompletedXidRejectedAsNew':True,'writerWindowVerified':False}
+
+
+def run_database(private,work,*,verify_effects=False,verify_bindings=False,verify_window=False):
  import psycopg
  values=json.loads(private.read_text(encoding='utf8'))
  # Reuse only the already-frozen three-table configuration, not any facade/projection.
@@ -310,7 +394,7 @@ def run_database(private,work,*,verify_effects=False,verify_bindings=False):
   else:raise AssertionError('Out-of-scope login bypassed row trigger scope')
  checks.append('unknown login cannot write even with base table DML privilege')
  effects=verify_effects_snapshot(work,owner,actor,configuration,policy) if verify_effects else None
- bindings=verify_writer_bindings(work,owner,actor,configuration,policy) if verify_bindings else None
+ bindings=verify_writer_bindings(work,owner,actor,configuration,policy,verify_window=verify_window) if verify_bindings or verify_window else None
  table=configuration.tables[0];target=q(table.schema)+'.'+q(table.table)
  owner.execute('ALTER TABLE '+target+' DISABLE TRIGGER '+q(BEFORE_TRIGGER))
  raw=owner.execute(TABLE_CATALOG_SQL,(table.schema,table.table)).fetchone()[0]
@@ -326,12 +410,12 @@ def run_database(private,work,*,verify_effects=False,verify_bindings=False):
  (work/'business-observations.json').write_text(json.dumps({'observations':observations,'sourceFactsProduced':False,'notDriverProjectionEvidence':True},ensure_ascii=False,indent=2)+'\n',encoding='utf8')
  receipt={'checks':checks,'checkCount':len(checks),'threeTableColumnCounts':[len(t.columns)for t in configuration.tables],'initialRows':result['initialRows'],'actualCommitConfirmed':result['actualCommitConfirmed'],'installationReceiptSha256':sha(work/'installation/receipt.json'),'sourceFactsProduced':False,'writerWindowVerified':False,'moonbitCatalogVerified':False,'driverFetchVerified':False}
  if verify_effects:receipt['configuredEffectsSnapshots']=effects
- if verify_bindings:receipt['configuredWriterBindings']=bindings
+ if verify_bindings or verify_window:receipt['configuredWriterBindings']=bindings
  return receipt
 
 
 def main():
- parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bin',required=True);parser.add_argument('--output',required=True);parser.add_argument('--verify-effects',action='store_true');parser.add_argument('--verify-writer-bindings',action='store_true');args=parser.parse_args()
+ parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bin',required=True);parser.add_argument('--output',required=True);parser.add_argument('--verify-effects',action='store_true');parser.add_argument('--verify-writer-bindings',action='store_true');parser.add_argument('--verify-writer-window',action='store_true');args=parser.parse_args()
  work=Path(args.output).resolve();work.mkdir(parents=True,exist_ok=False);data=work/'data';binaries=Path(args.bin).resolve();suffix='.exe'if os.name=='nt'else''
  for name in ('initdb','pg_ctl','postgres'):
   if not(binaries/(name+suffix)).is_file():raise ValueError('Existing complete PG18 bin required; no download')
@@ -345,7 +429,7 @@ def main():
    with socket.socket()as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
    run([binaries/('pg_ctl'+suffix),'-D',data,'-l',work/'server.log','-o','-h 127.0.0.1 -p '+str(port)+' -c shared_buffers=32MB -c max_connections=10 -c work_mem=2MB','-w','start']);started=True;receipt['actualDatabaseExecution']=True
    private.write_text(json.dumps({'host':'127.0.0.1','port':port,'dbname':'postgres','user':'mtw','password':secret}),encoding='utf8')
-   receipt.update(run_database(private,work,verify_effects=args.verify_effects,verify_bindings=args.verify_writer_bindings));receipt['status']='passed';code=0
+   receipt.update(run_database(private,work,verify_effects=args.verify_effects,verify_bindings=args.verify_writer_bindings,verify_window=args.verify_writer_window));receipt['status']='passed';code=0
   except BaseException as error:(work/'failure.txt').write_text(traceback.format_exc(),encoding='utf8');receipt.update(status='failed',errorClass=type(error).__name__)
   finally:
    if started:

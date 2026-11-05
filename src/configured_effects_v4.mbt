@@ -75,7 +75,7 @@ fn effects_check_peer_v4(peer : Json) -> Unit raise {
 fn effects_snapshot_bounds_v4(
   snapshot : String,
   work : SourceWorkV4,
-) -> (String, Map[String, Bool]) raise {
+) -> (String, String, Map[String, Bool]) raise {
   let parts = snapshot.split(":").to_array()
   if parts.length() != 3 {
     fail("mismatch:effect-snapshot-identity")
@@ -98,7 +98,16 @@ fn effects_snapshot_bounds_v4(
       active[xid] = true
     }
   }
-  (upper, active)
+  (lower, upper, active)
+}
+
+///|
+fn effects_xid_completed_v4(
+  xid : String,
+  upper : String,
+  active : Map[String, Bool],
+) -> Bool {
+  source_version_after_v4(upper, xid) && !active.contains(xid)
 }
 
 ///|
@@ -221,6 +230,7 @@ fn check_effect_snapshot_v4(
   receipt : Json,
   max_rows : Int32,
   work : SourceWorkV4,
+  retained_rows? : Map[String, Json],
 ) -> Json raise {
   let i = source_object_v4(installation.record)
   if i.at("valid") != Json(true) {
@@ -296,10 +306,10 @@ fn check_effect_snapshot_v4(
   } else {
     Json::null()
   }
-  let (upper, active) = if has_peer {
+  let (_, upper, active) = if has_peer {
     effects_snapshot_bounds_v4(snapshot, work)
   } else {
-    ("", Map([]))
+    ("", "", Map([]))
   }
   let environment = stream.one(
     "environment",
@@ -366,6 +376,7 @@ fn check_effect_snapshot_v4(
   let consumed : Map[String, Bool] = Map([])
   let writers : Map[String, (Json, Json)] = Map([])
   let mut previous = "0"
+  let mut short_page = false
   let sql = effects_snapshot_sql_v4(policy)
   while true {
     let page = stream.next("effects-page", sql, Json([Json(previous)]))
@@ -376,6 +387,10 @@ fn check_effect_snapshot_v4(
     if page.decoded.is_empty() {
       break
     }
+    if short_page {
+      fail("mismatch:effect-nonterminal-short-page")
+    }
+    short_page = page.decoded.length() < 8
     for index, row in page.decoded {
       if observations.length() >= max_rows {
         fail("budget:effect-rows")
@@ -385,8 +400,7 @@ fn check_effect_snapshot_v4(
       )
       let effect = source_object_v4(row)
       let xid = sql_string_v1(effect.at("writerXid"))
-      if has_peer &&
-        (!source_version_after_v4(upper, xid) || active.contains(xid)) {
+      if has_peer && !effects_xid_completed_v4(xid, upper, active) {
         fail("mismatch:effect-writer-not-visible-in-snapshot")
       }
       let identity = (effect.at("writerLogin"), effect.at("writerPid"))
@@ -395,6 +409,9 @@ fn check_effect_snapshot_v4(
           fail("mismatch:effect-writer-XID-identity")
         None => writers[xid] = identity
         _ => ()
+      }
+      if retained_rows is Some(rows) {
+        rows[previous] = row
       }
       observations.push({
         "version": Json(previous),
@@ -439,14 +456,27 @@ fn check_effect_snapshot_v4(
 }
 
 ///|
-fn verify_configured_effects_snapshot_v4(
-  input : Json,
-  options : Json,
-) -> Json raise {
-  let envelope = orm_exact(input, [
+priv struct ConfiguredEffectsContextV4 {
+  installation : SourceInstallationCheckV4
+  installation_receipt : Json
+  policy : SourcePolicyV4
+  max_rows : Int32
+  work : SourceWorkV4
+}
+
+///|
+fn configured_effects_envelope_v4(input : Json) -> Map[String, Json] raise {
+  orm_exact(input, [
     "configText", "policyText", "installationLogText", "installationReceiptText",
     "effectsLogText", "effectsReceiptText",
   ])
+}
+
+///|
+fn configured_effects_context_v4(
+  envelope : Map[String, Json],
+  options : Json,
+) -> ConfiguredEffectsContextV4 raise {
   let limits = source_object_v4(options)
   known_fields(
     limits,
@@ -478,19 +508,51 @@ fn verify_configured_effects_snapshot_v4(
     original_receipt,
     max_checks=source_wire_limit_v4(limits, "maxInstallationChecks", 1000000),
   )
+  {
+    installation,
+    installation_receipt: original_receipt,
+    policy: source_policy_v4(policy),
+    max_rows,
+    work,
+  }
+}
+
+///|
+fn configured_effects_observation_v4(
+  envelope : Map[String, Json],
+  context : ConfiguredEffectsContextV4,
+  retained_rows? : Map[String, Json],
+) -> (Json, String) raise {
   let log = sql_string_v1(envelope.at("effectsLogText"))
   let receipt = sql_json_v1(
     sql_string_v1(envelope.at("effectsReceiptText")),
     8192,
   )
   let observation = check_effect_snapshot_v4(
-    installation,
-    original_receipt,
-    source_policy_v4(policy),
+    context.installation,
+    context.installation_receipt,
+    context.policy,
     log,
     receipt,
-    max_rows,
-    work,
+    context.max_rows,
+    context.work,
+    retained_rows?,
+  )
+  let digest = source_object_v4(source_object_v4(receipt).at("log")).at(
+    "sha256",
+  )
+  (observation, sql_string_v1(digest))
+}
+
+///|
+fn verify_configured_effects_snapshot_v4(
+  input : Json,
+  options : Json,
+) -> Json raise {
+  let envelope = configured_effects_envelope_v4(input)
+  let context = configured_effects_context_v4(envelope, options)
+  let (observation, digest) = configured_effects_observation_v4(
+    envelope, context,
   )
   {
     "format": "moontxnwitness-configured-effects-verification/v4",
@@ -500,12 +562,12 @@ fn verify_configured_effects_snapshot_v4(
     "sourceAuthenticated": false,
     "writerWindowVerified": false,
     "isolationAnalysisReady": false,
-    "installationLogSha256": Json(installation.log_digest),
-    "effectsLogSha256": Json(v3_dislock_sha256(log)),
+    "installationLogSha256": Json(context.installation.log_digest),
+    "effectsLogSha256": Json(digest),
     "observation": observation,
-    "checks": Json(work.checks),
-    "maxChecks": Json(work.limit),
-    "maxRows": Json(max_rows),
+    "checks": Json(context.work.checks),
+    "maxChecks": Json(context.work.limit),
+    "maxRows": Json(context.max_rows),
   }
 }
 

@@ -287,6 +287,56 @@ fn writer_commits_v4(
 }
 
 ///|
+fn configured_writer_session_commits_v4(
+  effects : Map[String, Json],
+  session_input : String,
+  peer : Json,
+  work : SourceWorkV4,
+) -> Map[String, Json] raise {
+  let session = orm_exact(sql_json_v1(session_input, 33554432), [
+    "format", "configText", "lifecycleText", "diagnosticTraceText", "sourceInputsText",
+  ])
+  let install = orm_exact(
+    sql_json_v1(sql_string_v1(session.at("sourceInputsText")), 12582912),
+    ["format", "policyText", "logText", "receiptText", "sourceContextText"],
+  )
+  if session.at("format") != Json("moontxnwitness-configured-session-input/v1") ||
+    session.at("configText") != effects.at("configText") ||
+    install.at("format") !=
+    Json("moontxnwitness-configured-installation-input/v1") ||
+    install.at("policyText") != effects.at("policyText") ||
+    install.at("logText") != effects.at("installationLogText") ||
+    install.at("receiptText") != effects.at("installationReceiptText") {
+    fail("mismatch:writer-session-installation-binding")
+  }
+  writer_commits_v4(
+    sql_string_v1(session.at("lifecycleText")),
+    sql_string_v1(session.at("diagnosticTraceText")),
+    peer,
+    work,
+  )
+}
+
+///|
+fn configured_writer_binding_v4(
+  effect : Map[String, Json],
+  commits : Map[String, Json],
+) -> Json? raise {
+  let xid = sql_string_v1(effect.at("writerXid"))
+  match commits.get(xid) {
+    Some(binding) => {
+      let b = source_object_v4(binding)
+      if b.at("writerPid") != effect.at("writerPid") ||
+        b.at("writerLogin") != effect.at("writerLogin") {
+        fail("mismatch:writer-effect-identity")
+      }
+      Some(binding)
+    }
+    None => None
+  }
+}
+
+///|
 /// Match observed effects to confirmed client commits while keeping coverage open.
 pub fn verify_configured_writer_bindings_v4_json(
   effects_input : String,
@@ -315,27 +365,9 @@ pub fn verify_configured_writer_bindings_v4_json(
       Some(value) => value
       None => fail("mismatch:writer-effect-peer-required")
     }
-    let session = orm_exact(sql_json_v1(session_input, 33554432), [
-      "format", "configText", "lifecycleText", "diagnosticTraceText", "sourceInputsText",
-    ])
-    let effects = source_object_v4(effects_raw)
-    let install = orm_exact(
-      sql_json_v1(sql_string_v1(session.at("sourceInputsText")), 12582912),
-      ["format", "policyText", "logText", "receiptText", "sourceContextText"],
-    )
-    if session.at("format") !=
-      Json("moontxnwitness-configured-session-input/v1") ||
-      session.at("configText") != effects.at("configText") ||
-      install.at("format") !=
-      Json("moontxnwitness-configured-installation-input/v1") ||
-      install.at("policyText") != effects.at("policyText") ||
-      install.at("logText") != effects.at("installationLogText") ||
-      install.at("receiptText") != effects.at("installationReceiptText") {
-      fail("mismatch:writer-session-installation-binding")
-    }
-    let commits = writer_commits_v4(
-      sql_string_v1(session.at("lifecycleText")),
-      sql_string_v1(session.at("diagnosticTraceText")),
+    let commits = configured_writer_session_commits_v4(
+      source_object_v4(effects_raw),
+      session_input,
       peer,
       work,
     )
@@ -343,17 +375,9 @@ pub fn verify_configured_writer_bindings_v4_json(
     let unmatched : Array[Json] = []
     for raw in orm_array(observation.at("observations")) {
       work.charge()
-      let effect = source_object_v4(raw)
-      let xid = sql_string_v1(effect.at("writerXid"))
-      match commits.get(xid) {
-        Some(binding) => {
-          let b = source_object_v4(binding)
-          if b.at("writerPid") != effect.at("writerPid") ||
-            b.at("writerLogin") != effect.at("writerLogin") {
-            fail("mismatch:writer-effect-identity")
-          }
+      match configured_writer_binding_v4(source_object_v4(raw), commits) {
+        Some(binding) =>
           matched.push({ "effect": raw, "clientCommit": binding })
-        }
         None => unmatched.push(raw)
       }
     }

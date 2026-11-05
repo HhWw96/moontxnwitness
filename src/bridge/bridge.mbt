@@ -596,3 +596,14 @@ pub fn verify_configured_writer_bindings_v4_json(
 ) -> String {
   @txn.verify_configured_writer_bindings_v4_json(effects, session, options)
 }
+
+///|
+#export_name("verify_configured_writer_window_v4_json")
+pub fn verify_configured_writer_window_v4_json(
+  before : String,
+  after : String,
+  session : String,
+  options : String,
+) -> String {
+  @txn.verify_configured_writer_window_v4_json(before, after, session, options)
+}

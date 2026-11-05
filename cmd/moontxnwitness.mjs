@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { run_json, run_options_json, verify_certificate_json, shrink_json, shrink_options_json, compare_models_json, version } from './core.mjs';
 import { makeCapsule, replayCapsule, makeCapsuleV3, replayCapsuleV3 } from './evidence.mjs';
 import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFailuresV3, inspectOrmSourceV3,
-  verifyConfiguredEffectsSnapshotV4, verifyConfiguredWriterBindingsV4 } from './sdk.mjs';
+  verifyConfiguredEffectsSnapshotV4, verifyConfiguredWriterBindingsV4, verifyConfiguredWriterWindowV4 } from './sdk.mjs';
 import { analyzeOrmProfileV3, reduceOrmProfileV3, verifyOrmProfileV3,
   makeOrmProfileCapsuleV3, makeOrmProfileReductionCapsuleV3, replayOrmProfileCapsuleV3 } from './orm-profile.mjs';
 import { classifyModelsV3, verifyModelsClassificationV3, makeModelsClassificationCapsuleV3,
@@ -36,6 +36,7 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs diagnose-configured-session-v4 SESSION.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs verify-configured-effects-v4 SNAPSHOT.json [--options EXPECTED.json] [--output REPORT.json]
   node dist/moontxnwitness.mjs verify-configured-writer-bindings-v4 SNAPSHOT.json SESSION.json [--options EXPECTED.json] [--output REPORT.json]
+  node dist/moontxnwitness.mjs verify-configured-writer-window-v4 START.json END.json SESSION.json [--options EXPECTED.json] [--output REPORT.json]
   node dist/moontxnwitness.mjs verify-configured-session-v4 SESSION.json REPORT.json [--options EXPECTED.json] [--output VERIFIED.json]
   node dist/moontxnwitness.mjs replay-configured-session-v4 CAPSULE.json [--options EXPECTED.json] [--output REPLAY.json]
   node dist/moontxnwitness.mjs classify-models-v4 SOURCE.json [--options OPTIONS.json] [--models elle-core|NAME,...] [--list-profile native|captured-list-prefix-state/v2|captured-list-original-serial/v1] [--output REPORT.json] [--capsule CAPSULE.json]
@@ -195,17 +196,20 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
-  } else if (['verify-configured-effects-v4', 'verify-configured-writer-bindings-v4'].includes(args[0])) {
+  } else if (['verify-configured-effects-v4', 'verify-configured-writer-bindings-v4', 'verify-configured-writer-window-v4'].includes(args[0])) {
+    const window=args[0]==='verify-configured-writer-window-v4';
     const bindings=args[0]==='verify-configured-writer-bindings-v4';
-    const {paths,options}=localArgs(args.slice(1),['--options','--output'],bindings?2:1);
+    const {paths,options}=localArgs(args.slice(1),['--options','--output'],window?3:bindings?2:1);
     const inputs=options['--options']?[...paths,options['--options']]:paths;
     if(inputs.filter(path=>path==='-').length>1)throw new Error('Only one effects snapshot input may use standard input');
     const expected=options['--options']?readBounded(options['--options'],8192):'{}';
     const effects=readBounded(paths[0],24*1024*1024);
-    const result=bindings?verifyConfiguredWriterBindingsV4(effects,readBounded(paths[1],32*1024*1024),expected)
-      :verifyConfiguredEffectsSnapshotV4(effects,expected);
+    let result;
+    if(window) result=verifyConfiguredWriterWindowV4(effects,readBounded(paths[1],24*1024*1024),readBounded(paths[2],32*1024*1024),expected);
+    else if(bindings) result=verifyConfiguredWriterBindingsV4(effects,readBounded(paths[1],32*1024*1024),expected);
+    else result=verifyConfiguredEffectsSnapshotV4(effects,expected);
     emitJSON(result,options['--output'],inputs,[]);
-    process.exitCode=result.valid?0:result.status==='unknown'?3:2;
+    process.exitCode=result.valid?(window&&!result.ledgerDeltaCovered?1:0):result.status==='unknown'?3:2;
   } else if (['diagnose-configured-session-v4','verify-configured-session-v4','replay-configured-session-v4'].includes(args[0])) {
     const command=args[0],verify=command==='verify-configured-session-v4',replay=command==='replay-configured-session-v4';
     const {paths,options}=localArgs(args.slice(1),['--options','--output',...(!verify&&!replay?['--capsule']:[])],verify?2:1);

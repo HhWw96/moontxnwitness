@@ -192,6 +192,39 @@ The owned PostgreSQL test can also run the concurrent binding cases.
 python -B scripts/configured-source-postgres.py --bin PG18_BIN --output NEW_TEST_DIRECTORY --verify-effects --verify-writer-bindings
 ```
 
+### Verify the new effects between two snapshots
+
+Export a start and end snapshot using `include_writer_peer=True`, the same
+installation, and the same row limit. Supply the sealed configured session that
+contains the client checkpoints and commit confirmations for the window.
+
+```text
+node dist/moontxnwitness.mjs verify-configured-writer-window-v4 START.json END.json SESSION.json
+```
+
+The JavaScript API is `verifyConfiguredWriterWindowV4(start, end, session,
+options)`. It checks the installation once, verifies both original logs, and
+requires every starting row effect to remain identical in the ending snapshot.
+It then matches only newly visible effects. A lower allocated version may
+belong to this delta if its writer was still active at the start.
+
+The CLI exits 0 when all effects in the delta are matched, including an empty
+delta. Exit 1 means the snapshots passed verification but there are unmatched
+effects. Exit 2 indicates inconsistent or invalid evidence and exit 3 indicates
+budget exhaustion. `maxChecks` is shared by both snapshots,
+`maxInstallationChecks` covers the common installation, and
+`maxBindingChecks` covers the visibility comparison and client log checks.
+
+`ledgerDeltaCovered` covers committed row effects visible in the verified
+sidecar logs for the configured tables. Read coverage, server authentication,
+and complete isolation-analysis input require their own evidence. Both
+snapshots, the original session, and independent options are required to
+recompute the report.
+
+```text
+python -B scripts/configured-source-postgres.py --bin PG18_BIN --output NEW_TEST_DIRECTORY --verify-effects --verify-writer-window
+```
+
 ## Replay and preparation validation
 
 Use `scripts/diagnose-configured-session-v4.mjs` with explicit runtime path and

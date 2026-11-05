@@ -1,5 +1,6 @@
 # Unreleased
 
+- Verify coverage of newly visible PostgreSQL row effects across two snapshots, with explicit unmatched effects and detection of altered historical rows.
 - Match observed PostgreSQL effects to confirmed synchronous client commits using explicit native transaction checkpoints.
 - Export PostgreSQL source effects from a read-only snapshot and independently verify the sealed observations, catalog, and predecessor links.
 - Reduce relation predicate counterexamples using an explicit Adya or Elle rule set, with source checks, independent replay and unchanged point capsule semantics.
