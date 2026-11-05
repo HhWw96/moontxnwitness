@@ -1,4 +1,4 @@
-# Relation category reduction (v4 prototype)
+# Relation category reduction (v4)
 
 This namespace reduces a `relation-set-v1` point-history while preserving one explicitly selected category: `G0`, `G1a`, `G1b`, `G1c`, `G2-item`, or `INT`. It does not substitute a shorter unrelated anomaly, classify full isolation models or claim a global/operation minimum.
 
@@ -29,6 +29,26 @@ node dist/moontxnwitness.mjs replay-relation-category-reduction-v4 capsule.json 
 The example removes an unrelated transaction and preserves a two-transaction item anti-dependency cycle. CLI exits are 1 for a completed retained counterexample, 0 for a non-refuted input or matching replay, 3 for unknown/unsupported/budget-limited work, and 2 for invalid inputs or failed verification. Existing files and input paths cannot be overwritten.
 
 The new reduction capsule format is `moontxnwitness-relation-category-replay/v4`. It binds exact source/options/report bytes, the reduction contracts and expected caller category/budgets. Rehashing false evidence cannot pass core recomputation. A producer version is descriptive metadata, not an algorithm selector. Hashes do not authenticate the original observer. Source/options/report/capsule limits are 8 MiB/8 KiB/32 MiB/64 MiB of UTF-8 transport.
+
+## Predicate categories
+
+Supply `ruleSet` to select the predicate graph. The MoonBit entry is
+`reduce_relation_predicate_v4`. The JavaScript and CLI entry points accept the
+same categories and rule sets as [predicate classification](relation-predicate-categories-v4.md),
+plus `maxChecks` for the number of transaction deletions checked.
+
+```text
+node dist/moontxnwitness.mjs reduce-relation-category-v4 examples/relation-predicate-categories.json --category G2 --rule-set adya-2000-scoped-categories-v1 --output predicate-report.json --source reduced.json --capsule predicate-case.json
+node dist/moontxnwitness.mjs verify-relation-category-reduction-v4 examples/relation-predicate-categories.json predicate-report.json --category G2 --rule-set adya-2000-scoped-categories-v1
+node dist/moontxnwitness.mjs replay-relation-category-reduction-v4 predicate-case.json --category G2 --rule-set adya-2000-scoped-categories-v1
+```
+
+Every candidate uses the same category, rule set and per-candidate budgets.
+Deletions require closed sources and a complete predicate graph. A missing
+query, ambiguous source or exhausted graph check prevents a minimum claim. The
+final report retains the predicate witness and original event references. Its
+distinct predicate reduction contract binds the caller's rule set and budgets.
+Existing point reduction capsules retain their original contract.
 
 ## Incomplete event windows
 

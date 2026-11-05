@@ -40,7 +40,7 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs replay-models-v4 CAPSULE.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs check HISTORY.json [--format text|json|markdown|dot] [--output FILE] [--witness FILE]
   node dist/moontxnwitness.mjs verify HISTORY.json CERTIFICATE.json
-  node dist/moontxnwitness.mjs reduce-relation-category-v4 SOURCE.json --category G2-item [--options OPTIONS.json] [--max-checks 256] [--output REPORT.json] [--source REDUCED.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs reduce-relation-category-v4 SOURCE.json --category G2-item [--rule-set RULE_SET] [--options OPTIONS.json] [--max-checks 256] [--output REPORT.json] [--source REDUCED.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs verify-relation-category-reduction-v4 SOURCE.json REPORT.json --category G2-item [--options EXPECTED.json]
   node dist/moontxnwitness.mjs replay-relation-category-reduction-v4 CAPSULE.json --category G2-item [--options EXPECTED.json]
   node dist/moontxnwitness.mjs classify-relation-predicate-v4 SOURCE.json --options OPTIONS.json [--output REPORT.json] [--capsule CAPSULE.json]
@@ -222,11 +222,12 @@ try {
     process.exitCode=isVerify||isReplay?(result.valid===true?0:2):result.status==='checked-compatible'?0:result.status==='refuted'?1:result.status==='invalid'?2:3;
   } else if (['reduce-relation-category-v4','verify-relation-category-reduction-v4','replay-relation-category-reduction-v4'].includes(args[0])) {
     const command=args[0],isVerify=command.startsWith('verify-'),isReplay=command.startsWith('replay-');
-    const {paths,options}=localArgs(args.slice(1),['--category','--options','--max-checks','--output',...(!isVerify&&!isReplay?['--source','--capsule']:[])],isVerify?2:1);
+    const {paths,options}=localArgs(args.slice(1),['--category','--rule-set','--options','--max-checks','--output',...(!isVerify&&!isReplay?['--source','--capsule']:[])],isVerify?2:1);
     const inputs=[...paths,...(options['--options']?[options['--options']]:[])];
     if(inputs.filter(p=>p==='-').length>1)throw new Error('Only one relation reduction input may use standard input');
     const requested=options['--options']?parseRelationReductionOptionsV4(readBounded(options['--options'],8192)):{};
     if(options['--category']!==undefined){if(Object.hasOwn(requested,'category'))throw new Error('category must be specified once');requested.category=options['--category'];}
+    if(options['--rule-set']!==undefined){if(Object.hasOwn(requested,'ruleSet'))throw new Error('ruleSet must be specified once');requested.ruleSet=options['--rule-set'];}
     if(options['--max-checks']!==undefined){if(Object.hasOwn(requested,'maxChecks')||!/^(0|[1-9][0-9]*)$/.test(options['--max-checks']))throw new Error('maxChecks must be specified once as an integer');requested.maxChecks=Number(options['--max-checks']);}
     const source=readBounded(paths[0],isReplay?64*1024*1024:8*1024*1024),companions=[];
     let result;

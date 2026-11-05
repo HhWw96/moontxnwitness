@@ -44,6 +44,9 @@ function integer(value,fallback,maximum,label){
   if(!Number.isSafeInteger(value)||value<0||value>maximum)throw new RangeError(label+' must be an integer in 0..'+maximum);
   return value;
 }
+export function normalizeRelationPredicateOptionsV4(value){
+  return normalize('relation-predicate-classification',value);
+}
 function normalize(operation,value){
   plain(value,'source rules options');
   if(operation==='relation-predicate-classification'){

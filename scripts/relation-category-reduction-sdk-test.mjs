@@ -55,6 +55,71 @@ const openSQL=clone(source);const unprojected=openSQL.events.find(e=>e.tx==='N0'
 if(unprojected){const replacement={seq:unprojected.seq,time:unprojected.time,kind:'statement',tx:unprojected.tx,sql:'UPDATE records SET value=value'};openSQL.events[openSQL.events.indexOf(unprojected)]=replacement;}
 check('original unknown SQL window cannot be healed by deleting its entire transaction',()=>{assert(unprojected);const r=api.reduceRelationCategoryV4(openSQL,opts);assert.equal(r.classification.judgment.rules['G2-item'].status,'refuted');assert.equal(r.sourceCoverage.originalSourceClosed,false);assert.equal(r.sourceCoverage.reducedSourceClosed,false);assert.equal(r.status,'undetermined');assert.equal(r.oneMinimal,false);assert.equal(r.execution.candidateChecks,0);assert.deepEqual(r.removedTransactions,[]);});
 check('strict original source predicate has new bound algorithm and capsule identity',()=>{assert.equal(reduced.algorithm,'relation-category-single-delete-2');const c=JSON.parse(capsule);assert.equal(c.semanticContract,'relation-point-category-transaction-reduction-2');assert.equal(c.counterContract,'relation-category-candidate-checks-1');});
+const predicateSource=JSON.parse(readFileSync(resolve(root,'examples/relation-predicate-categories.json'),'utf8'));
+predicateSource.events.splice(1,0,...[begin('noise'),...end('noise')].map(e=>({...e,time:0})));
+predicateSource.events.forEach((e,i)=>{e.seq=i+1;});
+const predicateOptions={category:'G2',ruleSet:'adya-2000-scoped-categories-v1'};
+const predicateReport=api.reduceRelationCategoryV4(predicateSource,predicateOptions);
+const predicateCapsule=api.makeRelationCategoryReductionCapsuleV4(predicateSource,predicateOptions);
+check('predicate G2 reduction removes noise with either selected definition',()=>{
+  for(const ruleSet of [predicateOptions.ruleSet,'elle-4e359e5-scoped-categories-v1']){
+    const options={...predicateOptions,ruleSet};
+    const r=api.reduceRelationCategoryV4(predicateSource,options);
+    assert.equal(r.status,'reduced');
+    assert.deepEqual(r.removedTransactions,['noise']);
+    assert.equal(r.oneMinimal,true);
+    assert.equal(r.ruleSet,ruleSet);
+    assert.equal(r.classification.status,'refuted');
+    assert.equal(r.classification.predicateGraph.complete,true);
+    assert.equal(r.semanticContract,'relation-predicate-category-transaction-reduction-1');
+    for(const [i,event] of r.history.events.entries()){
+      const seq=r.originalEventSequence[i];
+      assert.deepEqual({...event,seq},predicateSource.events.find(e=>e.seq===seq));
+    }
+    assert.equal(api.verifyRelationCategoryReductionV4(predicateSource,r,options).valid,true);
+    assert.equal(api.replayRelationCategoryReductionCapsuleV4(api.makeRelationCategoryReductionCapsuleV4(predicateSource,options),options).valid,true);
+  }
+});
+check('predicate exact and short budgets distinguish completed single deletions',()=>{
+  for(const maxChecks of [0,2,3]){
+    const r=api.reduceRelationCategoryV4(predicateSource,{...predicateOptions,maxChecks});
+    assert.equal(r.execution.candidateChecks,maxChecks);
+    assert.equal(r.oneMinimal,maxChecks===3);
+    assert.equal(r.status,maxChecks===3?'reduced':'budget');
+    assert.equal(r.classification.status,'refuted');
+  }
+});
+check('predicate coverage gaps and graph budget cannot yield a minimum',()=>{
+  const open=clone(predicateSource);
+  open.events[0].consistent=false;
+  for(const [input,options] of [[open,predicateOptions],[predicateSource,{...predicateOptions,maxPredicateChecks:0}]]){
+    const r=api.reduceRelationCategoryV4(input,options);
+    assert.equal(r.status,'undetermined');
+    assert.equal(r.oneMinimal,false);
+    assert.equal(r.execution.candidateChecks,0);
+    assert.deepEqual(r.removedTransactions,[]);
+  }
+});
+check('predicate proof rejects an independently selected rule set or rehashed minimum',()=>{
+  const wrong={...predicateOptions,ruleSet:'elle-4e359e5-scoped-categories-v1'};
+  assert.equal(api.replayRelationCategoryReductionCapsuleV4(predicateCapsule,wrong).valid,false);
+  assert.equal(api.verifyRelationCategoryReductionV4(predicateSource,predicateReport,wrong).valid,false);
+  const tampered=JSON.parse(predicateCapsule);
+  tampered.reportText=JSON.stringify({...predicateReport,oneMinimal:false});
+  tampered.reportSha256=sha(tampered.reportText);
+  assert.equal(api.replayRelationCategoryReductionCapsuleV4(tampered,predicateOptions).valid,false);
+  assert.throws(()=>api.reduceRelationCategoryV4(predicateSource,{...predicateOptions,ruleSet:'unknown'}));
+});
+check('CLI predicate rule set and category carry through reduction, verification and replay',()=>{
+  const source=put('predicate-source.json',predicateSource),report=put('predicate-report.json',predicateReport),cap=put('predicate-capsule.json',predicateCapsule);
+  const flags=['--category','G2','--rule-set',predicateOptions.ruleSet];
+  const result=cli(['reduce-relation-category-v4',source,...flags]);
+  assert.equal(result.status,1,result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout),predicateReport);
+  assert.equal(cli(['verify-relation-category-reduction-v4',source,report,...flags]).status,0);
+  assert.equal(cli(['replay-relation-category-reduction-v4',cap,...flags]).status,0);
+  assert.equal(cli(['replay-relation-category-reduction-v4',cap,'--category','G2']).status,2);
+});
 check('source production code and runtime bytes remain unchanged throughout SDK tests',()=>assert.deepEqual(binding(),before));
 const failed=results.filter(x=>!x.passed),receipt={format:'relation-category-reduction-sdk-validation/v1',passed:!failed.length,checks:results.length,failed:failed.length,sourceBefore:before,sourceAfter:binding(),results,actualDatabaseExecution:false,formalPerformanceMeasurement:false,releasePerformed:false};
 writeFileSync(resolve(root,'artifacts/relation-category-reduction-sdk-validation.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify({passed:receipt.passed,checks:results.length,failed:failed.length,failures:failed}));if(failed.length)process.exitCode=1;
