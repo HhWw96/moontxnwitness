@@ -217,6 +217,14 @@ def validate_configured037_receipts(summary, package):
         assert foundation['pureProducerTests']['results'][name]['tests']==count
         assert foundation['pureProducerTests']['results'][name]['passed'] is True
     assert foundation['sqlGrammarCrossCheck']['passed'] is True
+    shared = summary['sharedConfiguredSdk']
+    assert shared['passed'] is True and shared['checks'] == 12 and shared['failed'] == 0
+    assert shared['defaultSDKCompiledCores'] == ['capture-core.mjs', 'core.mjs']
+    assert shared['sdkSha256'] == summary['testedFileSha256']['dist/sdk.mjs']
+    manifest = summary['buildManifest']
+    assert shared['roleHashes'] == {**manifest['configuredCoreSha256'],
+                                    'core.mjs': manifest['coreSha256'], 'capture-core.mjs': manifest['captureCoreSha256']}
+    assert len(shared['primitiveCalls']) == 13 and all(count > 0 for count in shared['primitiveCalls'].values())
     for kind in ('source','portable'):
         value=package['configured037Consumers'][kind]
         assert value['passed'] is True and value['checks']==14 and value['failed']==0
@@ -225,6 +233,8 @@ def validate_configured037_receipts(summary, package):
             assert value[key] is False
         assert value['runtimeSha256']==summary['buildManifest']['configuredCoreSha256']['configured-session-core.mjs']
         assert kind+' configured session runtime-only 14 diagnostics CLI and independent-caller capsule checks' in package['checks']
+        assert package['sharedConfiguredConsumers'][kind] == shared
+        assert kind+' shared configured SDK parity and bounded source-mapping replay' in package['checks']
     return package['configured037Consumers']
 
 

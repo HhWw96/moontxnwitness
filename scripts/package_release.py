@@ -13,6 +13,7 @@ from pathlib import Path
 from package_archive import sha256, write_archive
 from publication_privacy import private_home_paths
 from distribution_manifest import select_distribution_files, assert_complete, relation034_available, predicate035_available, models036_available, configured037_available
+from distribution_manifest import SHARED_CONFIGURED_WRAPPERS
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -47,7 +48,7 @@ if CONFIGURED037:
     assert set(MANIFEST['configuredCoreSha256']) == {'configured-session-core.mjs','source-components-core.mjs','sql-projection-core.mjs','sql-fetch-core.mjs'}, 'Configured runtime inventory differs'
     for runtime, digest in MANIFEST['configuredCoreSha256'].items():
         assert hashlib.sha256((ROOT/'dist'/runtime).read_bytes()).hexdigest() == digest, 'Configured runtime changed after build'
-    for runtime in ('configured-v4.mjs','configured-session-v4.mjs','source-components-v4.mjs','sql-candidate-v1.mjs','sql-fetch-v1.mjs'):
+    for runtime in ('configured-v4.mjs','configured-session-v4.mjs','source-components-v4.mjs','sql-candidate-v1.mjs','sql-fetch-v1.mjs') + SHARED_CONFIGURED_WRAPPERS:
         assert (ROOT/'cmd'/runtime).read_bytes() == (ROOT/'dist'/runtime).read_bytes(), 'Configured wrapper differs: '+runtime
 
 if RELATION034:
@@ -128,6 +129,7 @@ relation034_consumers = {}
 predicate035_consumers = {}
 models036_consumers = {}
 configured037_consumers = {}
+shared_configured_consumers = {}
 native038_consumers = {}
 public034_consumers = {}
 
@@ -332,6 +334,12 @@ for kind in ("portable", "source"):
         assert result['runtimeSha256'] == MANIFEST['configuredCoreSha256']['configured-session-core.mjs']
         configured037_consumers[kind] = result
         checks.append(kind+' configured session runtime-only 14 diagnostics CLI and independent-caller capsule checks')
+        shared_path = work / ('shared-configured-' + kind + '.json')
+        run([NODE, 'scripts/shared-core-runtime-test.mjs', str(shared_path)], consumer)
+        shared = load_receipt(shared_path)
+        assert shared == SUMMARY['sharedConfiguredSdk'], 'Fresh consumer shared SDK differs from the tested runtime'
+        shared_configured_consumers[kind] = shared
+        checks.append(kind + ' shared configured SDK parity and bounded source-mapping replay')
     if tuple(map(int, VERSION.split('.'))) >= (0, 3, 8):
         native_receipt_path = work / ('native-report-' + kind + '.json')
         result = json.loads(run([NODE, 'scripts/native-report-sdk-test.mjs', str(consumer / 'dist'), str(native_receipt_path)], consumer))
@@ -883,6 +891,7 @@ if MODELS036:
     receipt['models036Consumers'] = models036_consumers
 if CONFIGURED037:
     receipt['configured037Consumers'] = configured037_consumers
+    receipt['sharedConfiguredConsumers'] = shared_configured_consumers
 if tuple(map(int, VERSION.split('.'))) >= (0, 3, 8):
     receipt['native038Consumers'] = native038_consumers
 (ROOT / "verification/package.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

@@ -3,7 +3,19 @@ import {readFileSync,mkdirSync,mkdtempSync,writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
-import * as sdk from '../dist/sdk.mjs';
+import * as actualSDK from '../dist/sdk.mjs';
+import * as standalone from '../dist/configured-v4.mjs';
+const comparedCalls={};
+const sdk={...actualSDK};
+for(const name of ['diagnoseConfiguredSessionTextV4','diagnoseConfiguredSessionV4','verifyConfiguredSessionV4',
+ 'normalizeConfiguredSessionOptionsV4','makeConfiguredSessionCapsuleV4','replayConfiguredSessionCapsuleV4']){
+ sdk[name]=(...args)=>{
+  const shared=actualSDK[name](...args),separate=standalone[name](...args);
+  assert.deepEqual(shared,separate,'Actual shared and standalone route differ: '+name);
+  comparedCalls[name]=(comparedCalls[name]??0)+1;
+  return shared;
+ };
+}
 const root=resolve(import.meta.dirname,'..'),sha=v=>createHash('sha256').update(v).digest('hex');
 const actual=JSON.parse(readFileSync(resolve(root,'fixtures/source-components-v4/actual-fetch-other-installation.json'),'utf8'));
 assert.equal(actual.actualDriverExecution,true);assert.equal(actual.sameInstallationEpoch,false);
@@ -35,5 +47,9 @@ test('noncanonical capsule cannot hide duplicate decoded fields',()=>assert.equa
 test('CLI diagnose and independent verify use original same input',()=>{const i=file('input.json',original),rp=resolve(temp,'report.json');const child=run(['diagnose-configured-session-v4',i,'--output',rp]);assert.equal(child.status,0,child.stderr);const verified=run(['verify-configured-session-v4',i,rp]);assert.equal(verified.status,0,verified.stderr);assert.equal(JSON.parse(verified.stdout).valid,true);});
 test('CLI refuses changed report and replays exact capsule',()=>{const i=file('input-again.json',original),bad=file('changed.json',{...report,sourceFactsProduced:true});assert.equal(run(['verify-configured-session-v4',i,bad]).status,2);const replay=run(['replay-configured-session-v4',file('capsule.json',capsule)]);assert.equal(replay.status,0,replay.stderr);assert.equal(JSON.parse(replay.stdout).valid,true);});
 test('source observation input is immutable and complete-window flags stay false',()=>{assert.equal(JSON.stringify(input),original);noAuthority(sdk.diagnoseConfiguredSessionV4(original));});
-const out={format:'configured-session-runtime-tests/v1',passed:results.every(v=>v.passed),checks:results.length,failed:results.filter(v=>!v.passed).length,results,requiresSourceTree:false,sourceAuditPerformed:false,syntheticLifecycleGrouping:true,actualDatabaseExecution:false,sourceFactsProduced:false,writerWindowVerified:false,isolationAnalysisReady:false,runtimeSha256:sha(readFileSync(resolve(root,'dist/configured-session-core.mjs')))};
+const dispatchRuntimeBindings={format:'configured-shared-runtime-role-bindings/v1',sharedFile:'core.mjs',
+ sharedSha256:sha(readFileSync(resolve(root,'dist/core.mjs'))),standaloneFile:'configured-session-core.mjs',
+ standaloneSha256:sha(readFileSync(resolve(root,'dist/configured-session-core.mjs'))),
+ comparedCalls,actualSharedAndStandaloneExecution:Object.values(comparedCalls).reduce((a,b)=>a+b,0)>0};
+const out={format:'configured-session-runtime-tests/v1',passed:results.every(v=>v.passed),checks:results.length,failed:results.filter(v=>!v.passed).length,results,requiresSourceTree:false,sourceAuditPerformed:false,syntheticLifecycleGrouping:true,actualDatabaseExecution:false,sourceFactsProduced:false,writerWindowVerified:false,isolationAnalysisReady:false,runtimeSha256:dispatchRuntimeBindings.standaloneSha256,dispatchRuntimeBindings};
 console.log(JSON.stringify(out));if(!out.passed)process.exitCode=1;

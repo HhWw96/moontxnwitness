@@ -419,15 +419,18 @@ pub fn diagnose_configured_session_v4(
       } else {
         fail("mismatch:session-capture-config-binding")
       }
-      let native_check = configured_fetch_check_v1_json(
-        verify_configured_fetch_v1(
-          capture_config,
-          result.execution,
-          result.native,
-          Json(result.deliveries),
-          max_checks=options.max_fetch_checks,
-        ),
-      )
+      let check_delivery = fn(config) {
+        configured_fetch_check_v1_json(
+          verify_configured_fetch_v1(
+            config,
+            result.execution,
+            result.native,
+            Json(result.deliveries),
+            max_checks=options.max_fetch_checks,
+          ),
+        )
+      }
+      let native_check = check_delivery(capture_config)
       let selected = source_select_result_constraints_v4(
         native_check,
         result.native,
@@ -445,14 +448,22 @@ pub fn diagnose_configured_session_v4(
       let mapping = match installation {
         Some(checked) =>
           source_fetch_mapping_v4_json(
-            verify_source_fetch_mapping_v4(
+            source_fetch_mapping_with_delivery_v4(
               checked,
               result.execution,
               result.native,
-              Json(result.deliveries),
+              fn(config) {
+                // Only reuse this result's check under the same validated
+                // configuration and fetch budget. Mapping has its own budget.
+                if config.digest == capture_config.digest {
+                  native_check
+                } else {
+                  check_delivery(config)
+                }
+              },
               source_context,
-              max_checks=options.max_source_checks,
-              max_fetch_checks=options.max_fetch_checks,
+              options.max_source_checks,
+              options.max_fetch_checks,
             ),
           )
         None => Json::null()

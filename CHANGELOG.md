@@ -1,3 +1,9 @@
+# Unreleased
+
+- Share the main compiled core across the default JavaScript SDK's configured SQL, fetch, source and session methods. Keep dedicated bridge entry points available for standalone callers.
+- Reuse the native delivery check within a configured session's initial-source mapping under the same validated configuration and fetch budget. Preserve independent source-mapping budgets and report fields.
+- Validate SQL and fetch input Unicode without allocating an encoding round trip. Preserve original text and byte limits for standalone and shared SDK calls.
+
 # 0.4.0 — 2026-10-31
 
 - Integrate source-bound relation point and predicate classification, category-preserving reduction and replay with independent caller budgets.

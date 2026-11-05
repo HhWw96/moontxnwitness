@@ -15,8 +15,9 @@ MoonBit exposes `ConfiguredSessionOptionsV4`, `ConfiguredSessionDiagnosticV4`,
 recomputes the entire diagnostic record under independently supplied caller
 options, rather than accepting budgets/status from that record.
 
-The separate `configured_session_bridge` exports these JSON methods and the
-underlying configuration, SQL, fetch and source-component methods. The JS factory
+The default JavaScript SDK uses the main compiled core for these methods. The
+separate `configured_session_bridge` also exports them and the underlying
+configuration, SQL, fetch and source-component methods. The JS factory
 `createConfiguredSessionV4(core)` returns `diagnoseConfiguredSessionTextV4`,
 `diagnoseConfiguredSessionV4`, `verifyConfiguredSessionV4` and
 `normalizeConfiguredSessionOptionsV4`. Prefer original JSON text for exact int64
@@ -57,9 +58,10 @@ Defaults are 1,000,000 journal checks, 32 results (maximum 128), 1,000,000 sourc
 installation checks, and independent per-result fetch, returned-row and source
 mapping limits of 1,000,000 each. All zero budgets remain valid caller requests.
 The source installation is recomputed once into an opaque typed result and reused
-across the batch. The mapping helper retains its own fetch and row checks; no
-claim is made that all component work is deduplicated. Further cross-component
-reuse needs a separate counter and evidence contract.
+across the batch. Within each result, source mapping can reuse the delivery check
+under the same validated configuration and fetch budget. It still evaluates its
+own returned-row constraints and source rules within the mapping budget.
+Standalone mapping independently verifies delivery from its original inputs.
 
 Input bounds are configuration 256 KiB, lifecycle and optional trace 8 MiB each,
 source envelope 12 MiB, total bundle 32 MiB and report 64 MiB. Bounded details of
