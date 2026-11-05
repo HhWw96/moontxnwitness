@@ -1,5 +1,8 @@
 # Unreleased
 
+- Reduce relation predicate counterexamples using an explicit Adya or Elle rule set, with source checks, independent replay and unchanged point capsule semantics.
+- Record the published v0.4.0 register/list serializable comparison against frozen Elle results and add a digest-checked rerun command.
+- Provide a lightweight ZIP builder with clean-directory verification for the current SDK and CLI.
 - Share the main compiled core across the default JavaScript SDK's configured SQL, fetch, source and session methods. Keep dedicated bridge entry points available for standalone callers.
 - Reuse the native delivery check within a configured session's initial-source mapping under the same validated configuration and fetch budget. Preserve independent source-mapping budgets and report fields.
 - Validate SQL and fetch input Unicode without allocating an encoding round trip. Preserve original text and byte limits for standalone and shared SDK calls.
