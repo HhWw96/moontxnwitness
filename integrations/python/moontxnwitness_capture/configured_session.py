@@ -4,6 +4,7 @@ No global driver patches, business SQL rewriting, eager result consumption or
 model fact promotion. Default construction performs no database operation.
 """
 from __future__ import annotations
+import base64
 from dataclasses import dataclass, replace
 import hashlib
 import inspect
@@ -14,6 +15,7 @@ import stat
 from .configured_sql import SQLCaptureConfig, ColumnConfig, TableConfig, ConfiguredSQLParser
 from .configured_fetch import ConfiguredInstrumentation, StoredColumnObservation
 from .configured_source import SourceInstallPolicy, VERSION_COLUMN, install_configured_source
+from .capture_v3 import _pinned_connection
 
 INPUT_FORMAT = 'moontxnwitness-configured-session-input/v1'
 INSTALL_INPUT_FORMAT = 'moontxnwitness-configured-installation-input/v1'
@@ -120,6 +122,43 @@ class ConfiguredDiagnosticSession:
 
     def wrap_connection(self, raw, *, asynchronous=False):
         return self.observer.wrap_async(raw) if asynchronous else self.observer.wrap(raw)
+
+    def observe_writer_identity(self, connection):
+        """Record an explicit synchronous checkpoint immediately before commit."""
+        from psycopg.rows import tuple_row
+        from .configured_effects import WRITER_PROBE_SQL
+        from .configured_fetch import ConfiguredConnection
+
+        if (self.installation is None or self._sealed or not isinstance(connection, ConfiguredConnection)
+                or connection._session is not self.observer):
+            raise ValueError('A synchronous connection from this installed diagnostic session is required')
+        raw = connection._raw
+        with connection._operation_lock:
+            if (not _pinned_connection(raw) or raw.autocommit or raw._pipeline or raw._tpc
+                    or not connection._tx or int(raw.info.transaction_status) != 2):
+                raise ValueError('An active pinned psycopg transaction outside pipeline/two-phase mode is required')
+            pid = raw.info.backend_pid
+            with raw.cursor(row_factory=tuple_row) as cursor:
+                cursor.execute(WRITER_PROBE_SQL, prepare=False)
+                result = cursor.pgresult
+                if (result is None or int(result.status) != 2 or result.command_status != b'SELECT 1'
+                        or result.ntuples != 1 or result.nfields != 1
+                        or result.ftype(0) != 25 or result.fformat(0) != 0):
+                    raise ValueError('Writer checkpoint did not return the expected native text')
+                native = result.get_value(0, 0)
+                delivered = cursor.fetchone()
+            if (not isinstance(native, bytes) or len(native) > 4096 or type(delivered) is not tuple
+                    or len(delivered) != 1 or not isinstance(delivered[0], str)
+                    or delivered[0].encode('utf8') != native
+                    or raw.info.backend_pid != pid or int(raw.info.transaction_status) != 2):
+                raise ValueError('Writer checkpoint text or backend changed')
+            return self.observer.frame('configured-writer-checkpoint', {
+                'connection': connection._identity, 'tx': connection._tx, 'sql': WRITER_PROBE_SQL,
+                'driverPid': pid, 'statusBefore': 2, 'statusAfter': 2,
+                'nativeStatus': int(result.status), 'nativeTag': result.command_status.decode('ascii'),
+                'nativeColumns': [{'oid': result.ftype(0), 'format': result.fformat(0)}],
+                'nativeBase64': base64.b64encode(native).decode('ascii'), 'deliveredText': delivered[0],
+            })
 
     def seal(self):
         if self._sealed:

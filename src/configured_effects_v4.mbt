@@ -32,6 +32,76 @@ fn effects_decimal_v4(value : Json, ceiling : String) -> String raise {
 }
 
 ///|
+fn effects_peer_sql_v4() -> String {
+  "pg_catalog.jsonb_build_object('databaseOid',(SELECT oid::bigint FROM pg_catalog.pg_database " +
+  "WHERE datname=pg_catalog.current_database()),'postmasterStartMicros'," +
+  "(EXTRACT(EPOCH FROM pg_catalog.pg_postmaster_start_time())*1000000)::bigint::text," +
+  "'serverAddress',pg_catalog.host(pg_catalog.inet_server_addr()),'serverPort',pg_catalog.inet_server_port())"
+}
+
+///|
+fn effects_xid_v4(value : Json) -> String raise {
+  effects_decimal_v4(value, "18446744073709551615")
+}
+
+///|
+fn effects_check_peer_v4(peer : Json) -> Unit raise {
+  let p = orm_exact(peer, [
+    "databaseOid", "postmasterStartMicros", "serverAddress", "serverPort",
+  ])
+  if source_version_after_v4(
+      source_positive_v4(p.at("databaseOid")),
+      "4294967295",
+    ) {
+    fail("mismatch:effect-peer-database")
+  }
+  let _ = effects_decimal_v4(
+    p.at("postmasterStartMicros"),
+    "9223372036854775807",
+  )
+  let address = p.at("serverAddress")
+  let port = p.at("serverPort")
+  if address != Json::null() || port != Json::null() {
+    let host = sql_string_v1(address)
+    if host.is_empty() ||
+      host.length() > 64 ||
+      fetch_number_v1(port, 65535) == 0 {
+      fail("mismatch:effect-peer-endpoint")
+    }
+  }
+}
+
+///|
+fn effects_snapshot_bounds_v4(
+  snapshot : String,
+  work : SourceWorkV4,
+) -> (String, Map[String, Bool]) raise {
+  let parts = snapshot.split(":").to_array()
+  if parts.length() != 3 {
+    fail("mismatch:effect-snapshot-identity")
+  }
+  let lower = effects_xid_v4(Json(parts[0].to_owned()))
+  let upper = effects_xid_v4(Json(parts[1].to_owned()))
+  if source_version_after_v4(lower, upper) {
+    fail("mismatch:effect-snapshot-order")
+  }
+  let active : Map[String, Bool] = Map([])
+  if !parts[2].is_empty() {
+    for item in parts[2].split(",") {
+      work.charge()
+      let xid = effects_xid_v4(Json(item.to_owned()))
+      if source_version_after_v4(lower, xid) ||
+        !source_version_after_v4(upper, xid) ||
+        active.contains(xid) {
+        fail("mismatch:effect-snapshot-active-XID")
+      }
+      active[xid] = true
+    }
+  }
+  (upper, active)
+}
+
+///|
 priv struct EffectVersionV4 {
   oid : Json
   key : Json
@@ -64,7 +134,7 @@ fn effects_check_row_v4(
     installation.initial_versions.contains(version) {
     fail("mismatch:effect-version-enumeration")
   }
-  let _ = effects_decimal_v4(e.at("writerXid"), "18446744073709551615")
+  let _ = effects_xid_v4(e.at("writerXid"))
   if !policy.writers.contains(sql_string_v1(e.at("writerLogin"))) ||
     fetch_number_v1(e.at("writerPid"), 2147483647) == 0 {
     fail("mismatch:effect-writer-identity")
@@ -163,7 +233,12 @@ fn check_effect_snapshot_v4(
     "format", "status", "installationLogSha256", "configSha256", "maxRows", "effectsObserved",
     "sourceFactsProduced", "writerWindowVerified", "isolationAnalysisReady", "log",
   ])
-  if r.at("format") != Json("moontxnwitness-configured-effects-snapshot/v1") ||
+  let has_peer = r.at("format") ==
+    Json("moontxnwitness-configured-effects-snapshot/v2")
+  if (
+      !has_peer &&
+      r.at("format") != Json("moontxnwitness-configured-effects-snapshot/v1")
+    ) ||
     r.at("status") != Json("observed-snapshot") ||
     r.at("maxRows") != Json(max_rows) ||
     r.at("installationLogSha256") != Json(installation.log_digest) ||
@@ -210,6 +285,22 @@ fn check_effect_snapshot_v4(
     snapshot.is_empty() {
     fail("mismatch:effect-read-only-snapshot")
   }
+  let peer = if has_peer {
+    let value = stream.one(
+      "effects-writer-peer",
+      "SELECT " + effects_peer_sql_v4() + "::text",
+      Json::null(),
+    )
+    effects_check_peer_v4(value)
+    value
+  } else {
+    Json::null()
+  }
+  let (upper, active) = if has_peer {
+    effects_snapshot_bounds_v4(snapshot, work)
+  } else {
+    ("", Map([]))
+  }
   let environment = stream.one(
     "environment",
     source_v4_environment_sql(),
@@ -218,6 +309,10 @@ fn check_effect_snapshot_v4(
   let owner = source_environment_v4(environment, policy, work)
   let current = source_object_v4(environment)
   let installed = source_object_v4(i.at("environment"))
+  if has_peer &&
+    source_object_v4(peer).at("databaseOid") != current.at("databaseOid") {
+    fail("mismatch:effect-peer-environment")
+  }
   for key in ["database", "databaseOid", "owner"] {
     source_equal_v4(
       current.at(key),
@@ -290,6 +385,10 @@ fn check_effect_snapshot_v4(
       )
       let effect = source_object_v4(row)
       let xid = sql_string_v1(effect.at("writerXid"))
+      if has_peer &&
+        (!source_version_after_v4(upper, xid) || active.contains(xid)) {
+        fail("mismatch:effect-writer-not-visible-in-snapshot")
+      }
       let identity = (effect.at("writerLogin"), effect.at("writerPid"))
       match writers.get(xid) {
         Some(previous) if previous != identity =>
@@ -328,10 +427,85 @@ fn check_effect_snapshot_v4(
     Json(observations.length()),
     "effect-row-count",
   )
+  let report : Map[String, Json] = Map([
+    ("snapshot", Json(snapshot)),
+    ("effectsObserved", Json(observations.length())),
+    ("observations", Json(observations)),
+  ])
+  if has_peer {
+    report["peer"] = peer
+  }
+  Json(report)
+}
+
+///|
+fn verify_configured_effects_snapshot_v4(
+  input : Json,
+  options : Json,
+) -> Json raise {
+  let envelope = orm_exact(input, [
+    "configText", "policyText", "installationLogText", "installationReceiptText",
+    "effectsLogText", "effectsReceiptText",
+  ])
+  let limits = source_object_v4(options)
+  known_fields(
+    limits,
+    ["maxRows", "maxChecks", "maxInstallationChecks"],
+    "effects-options",
+  )
+  let max_rows = fetch_number_v1(
+    limits.get_or_default("maxRows", Json(256)),
+    4096,
+  )
+  let work : SourceWorkV4 = {
+    limit: source_wire_limit_v4(limits, "maxChecks", 1000000),
+    checks: 0,
+  }
+  let original_receipt = sql_json_v1(
+    sql_string_v1(envelope.at("installationReceiptText")),
+    2097152,
+  )
+  let policy = sql_json_v1(sql_string_v1(envelope.at("policyText")), 8192)
+  let config = match
+    parse_sql_config_v1(sql_string_v1(envelope.at("configText"))) {
+    Ok(value) => value
+    Err(reason) => fail(reason)
+  }
+  let installation = verify_source_installation_v4(
+    config,
+    policy,
+    sql_string_v1(envelope.at("installationLogText")),
+    original_receipt,
+    max_checks=source_wire_limit_v4(limits, "maxInstallationChecks", 1000000),
+  )
+  let log = sql_string_v1(envelope.at("effectsLogText"))
+  let receipt = sql_json_v1(
+    sql_string_v1(envelope.at("effectsReceiptText")),
+    8192,
+  )
+  let observation = check_effect_snapshot_v4(
+    installation,
+    original_receipt,
+    source_policy_v4(policy),
+    log,
+    receipt,
+    max_rows,
+    work,
+  )
   {
-    "snapshot": Json(snapshot),
-    "effectsObserved": Json(observations.length()),
-    "observations": Json(observations),
+    "format": "moontxnwitness-configured-effects-verification/v4",
+    "status": "matched-snapshot-observations",
+    "valid": true,
+    "sourceFactsProduced": false,
+    "sourceAuthenticated": false,
+    "writerWindowVerified": false,
+    "isolationAnalysisReady": false,
+    "installationLogSha256": Json(installation.log_digest),
+    "effectsLogSha256": Json(v3_dislock_sha256(log)),
+    "observation": observation,
+    "checks": Json(work.checks),
+    "maxChecks": Json(work.limit),
+    "maxRows": Json(max_rows),
   }
 }
 
@@ -341,78 +515,14 @@ pub fn verify_configured_effects_snapshot_v4_json(
   input : String,
   options : String,
 ) -> String {
-  let format = "moontxnwitness-configured-effects-verification/v4"
-  try {
-    let envelope = orm_exact(sql_json_v1(input, 25165824), [
-      "configText", "policyText", "installationLogText", "installationReceiptText",
-      "effectsLogText", "effectsReceiptText",
-    ])
-    let limits = source_object_v4(sql_json_v1(options, 8192))
-    known_fields(
-      limits,
-      ["maxRows", "maxChecks", "maxInstallationChecks"],
-      "effects-options",
-    )
-    let max_rows = fetch_number_v1(
-      limits.get_or_default("maxRows", Json(256)),
-      4096,
-    )
-    let work : SourceWorkV4 = {
-      limit: source_wire_limit_v4(limits, "maxChecks", 1000000),
-      checks: 0,
-    }
-    let original_receipt = sql_json_v1(
-      sql_string_v1(envelope.at("installationReceiptText")),
-      2097152,
-    )
-    let policy = sql_json_v1(sql_string_v1(envelope.at("policyText")), 8192)
-    let config = match
-      parse_sql_config_v1(sql_string_v1(envelope.at("configText"))) {
-      Ok(value) => value
-      Err(reason) => fail(reason)
-    }
-    let installation = verify_source_installation_v4(
-      config,
-      policy,
-      sql_string_v1(envelope.at("installationLogText")),
-      original_receipt,
-      max_checks=source_wire_limit_v4(limits, "maxInstallationChecks", 1000000),
-    )
-    let log = sql_string_v1(envelope.at("effectsLogText"))
-    let receipt = sql_json_v1(
-      sql_string_v1(envelope.at("effectsReceiptText")),
-      8192,
-    )
-    let observation = check_effect_snapshot_v4(
-      installation,
-      original_receipt,
-      source_policy_v4(policy),
-      log,
-      receipt,
-      max_rows,
-      work,
-    )
-    (
-      {
-        "format": Json(format),
-        "status": "matched-snapshot-observations",
-        "valid": true,
-        "sourceFactsProduced": false,
-        "sourceAuthenticated": false,
-        "writerWindowVerified": false,
-        "isolationAnalysisReady": false,
-        "installationLogSha256": Json(installation.log_digest),
-        "effectsLogSha256": Json(v3_dislock_sha256(log)),
-        "observation": observation,
-        "checks": Json(work.checks),
-        "maxChecks": Json(work.limit),
-        "maxRows": Json(max_rows),
-      } : Json).stringify()
-  } catch {
+  verify_configured_effects_snapshot_v4(
+    sql_json_v1(input, 25165824),
+    sql_json_v1(options, 8192),
+  ).stringify() catch {
     error =>
       (
         {
-          "format": Json(format),
+          "format": "moontxnwitness-configured-effects-verification/v4",
           "status": if error.to_string().contains("budget:") {
             Json("unknown")
           } else {

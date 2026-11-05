@@ -7,7 +7,7 @@ sys.path.insert(0,str(ROOT/'integrations/python'))
 from moontxnwitness_capture.configured_source import (SourceInstallPolicy,SourceInstallError,VERSION_COLUMN,BEFORE_TRIGGER,
  install_configured_source,TABLE_CATALOG_SQL,verify_table_catalog,identifier,literal)
 from moontxnwitness_capture.configured_effects import configured_effects_input, observe_configured_effects
-from moontxnwitness_capture.configured_session import InstallationInputs, write_new
+from moontxnwitness_capture.configured_session import ConfiguredDiagnosticSession, InstallationInputs, write_new
 
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def jsonable(value):
@@ -108,7 +108,125 @@ def verify_effects_snapshot(work, owner, actor, configuration, policy):
          'producerSha256':sha(ROOT/'integrations/python/moontxnwitness_capture/configured_effects.py'),
          'falseWriterWindowClaimRejected':True,'writerWindowVerified':False}
 
-def run_database(private,work,*,verify_effects=False):
+def verify_writer_bindings(work, owner, actor, configuration, policy):
+ import psycopg
+ installation=InstallationInputs.from_attempt(work/'installation',policy)
+ capture=ConfiguredDiagnosticSession(work/'writer-binding-session',configuration,installation=installation)
+ target=configuration.tables[0]
+ table=identifier(target.schema)+'.'+identifier(target.table)
+ key=identifier(target.primary_key);value=identifier(target.columns[1].name);version=identifier(VERSION_COLUMN)
+ def update(connection, k, v):
+  with connection.cursor() as cursor:
+   cursor.execute(f'UPDATE {table} SET {value}=%s WHERE {key}=%s RETURNING {version}',(v,k))
+   rows=cursor.fetchall()
+   assert len(rows)==1
+   return str(rows[0][0])
+ def checkpoint(connection):
+  assert capture.observe_writer_identity(connection) is not None
+ def snapshot(name, *, include_writer_peer=True):
+  path=work/name
+  observe_configured_effects(owner,path,configuration,policy,installation,opt_in=True,include_writer_peer=include_writer_peer)
+  return configured_effects_input(configuration,installation,path)
+
+ with psycopg.connect(**actor) as slow_raw, psycopg.connect(**actor) as fast_raw:
+  slow,fast=capture.wrap_connection(slow_raw),capture.wrap_connection(fast_raw)
+  late=update(slow,17,310);checkpoint(slow)
+  early=update(fast,101,311);checkpoint(fast);fast.commit()
+  before=snapshot('writer-bindings-before-late-commit')
+  slow.commit()
+  kept=update(fast,102,312)
+  with fast.cursor() as cursor:cursor.execute('SAVEPOINT writer_case')
+  rolled_back_savepoint=update(fast,103,313)
+  with fast.cursor() as cursor:cursor.execute('ROLLBACK TO SAVEPOINT writer_case')
+  checkpoint(fast);fast.commit()
+  rolled_back=update(slow,104,314);checkpoint(slow);slow.rollback()
+  with slow.cursor() as cursor:
+   cursor.execute(f'SELECT {key} FROM {table} WHERE {key}=%s',(17,))
+   assert cursor.fetchall()==[(17,)]
+  checkpoint(slow);slow.commit()
+  stale=update(slow,105,315);checkpoint(slow)
+  stale_second=update(slow,106,316);slow.commit()
+  session_path=capture.seal()
+ assert int(late)<int(early)
+ final=snapshot('writer-bindings-final')
+ session=json.loads(session_path.read_text(encoding='utf8'))
+ cli=[os.environ.get('MTW_NODE','node'),str(ROOT/'dist/moontxnwitness.mjs'),'verify-configured-writer-bindings-v4']
+ def compact(value):return json.dumps(value,ensure_ascii=False,separators=(',',':'))+'\n'
+ def verify(effects, name, *, session_data=session, expected=0, options=None):
+  path=work/(name+'-effects.json')
+  write_new(path,compact(effects))
+  flags=[]
+  if options is not None:
+   option_path=work/(name+'-options.json');write_new(option_path,compact(options))
+   flags=['--options',str(option_path)]
+  test_session=session_path
+  if session_data is not session:
+   test_session=work/(name+'-session.json');write_new(test_session,compact(session_data))
+  child=subprocess.run([*cli,str(path),str(test_session),*flags],capture_output=True,encoding='utf8',timeout=90)
+  if child.returncode!=expected:raise AssertionError(child.stdout+child.stderr)
+  report=json.loads(child.stdout)
+  assert all(report[k] is False for k in ('sourceFactsProduced','writerWindowVerified','isolationAnalysisReady'))
+  write_new(work/(name+'-report.json'),compact(report))
+  return report
+ def matched(report):return {row['effect']['version']:row['clientCommit'] for row in report['matchedEffects']}
+ before_report=verify(before,'writer-binding-before')
+ assert set(matched(before_report))=={early}
+ final_report=verify(final,'writer-binding-final')
+ bindings=matched(final_report)
+ assert set(bindings)=={early,late,kept} and final_report['confirmedClientCheckpoints']==3
+ assert bindings[early]['connection']==bindings[kept]['connection'] and bindings[early]['tx']!=bindings[kept]['tx']
+ unmatched={row['version'] for row in final_report['unmatchedEffects']}
+ assert {stale,stale_second}<=unmatched and not {rolled_back,rolled_back_savepoint}&(unmatched|set(bindings))
+ assert verify(final,'writer-binding-budget',expected=3,options={'maxBindingChecks':0})['status']=='unknown'
+ assert 'writer-effect-peer-required' in verify(snapshot('writer-bindings-without-peer',include_writer_peer=False),
+  'writer-binding-legacy-snapshot',expected=2)['reason']
+
+ def edit_lifecycle(edit):
+  records=list(map(json.loads,session['lifecycleText'].splitlines()))
+  edit(records)
+  prefix=''.join(map(compact,records[:-1]));records[-1]['prefixSha256']=hashlib.sha256(prefix.encode('utf8')).hexdigest()
+  return {**session,'lifecycleText':prefix+compact(records[-1])}
+ def no_commit_ack(records):
+  records[bindings[late]['commitEndSeq']-1]['nativeCommandTag']=None
+ no_ack=verify(final,'writer-binding-unconfirmed',session_data=edit_lifecycle(no_commit_ack))
+ assert set(matched(no_ack))=={early,kept} and late in {row['version'] for row in no_ack['unmatchedEffects']}
+ def other_peer(records):
+  event=records[bindings[late]['checkpointSeq']-1];frame=json.loads(event['frameText'])
+  delivery=json.loads(frame['deliveredText']);delivery['peer']['databaseOid']+=1
+  frame['deliveredText']=compact(delivery).rstrip('\n')
+  frame['nativeBase64']=base64.b64encode(frame['deliveredText'].encode('utf8')).decode('ascii')
+  event['frameText']=compact(frame).rstrip('\n')
+ assert 'writer-checkpoint-peer-or-driver' in verify(final,'writer-binding-wrong-peer',expected=2,
+  session_data=edit_lifecycle(other_peer))['reason']
+ def wrong_reference(records):
+  records[bindings[late]['commitResponseSeq']-1]['request']=bindings[early]['traceCommitRequestSeq']
+ assert 'writer-commit-evidence' in verify(final,'writer-binding-wrong-commit',expected=2,
+  session_data=edit_lifecycle(wrong_reference))['reason']
+ # The slow writer was active in the first snapshot. Rewriting both native
+ # and delivered bytes cannot make its XID visible in that snapshot.
+ records=list(map(json.loads,before['effectsLogText'].splitlines()))
+ for event in records:
+  if event.get('kind')!='source-control' or event.get('queryId')!='effects-page':continue
+  for i,(cell,) in enumerate(event['decodedRows']):
+   effect=json.loads(cell)
+   if effect['version']==early:
+    effect['writerXid']=bindings[late]['writerXid']
+    delivery=compact(effect).rstrip('\n')
+    event['decodedRows'][i][0]=delivery
+    event['native']['rows'][i][0]=base64.b64encode(delivery.encode('utf8')).decode('ascii')
+ prefix=''.join(map(compact,records[:-1]));records[-1]['prefixSha256']=hashlib.sha256(prefix.encode('utf8')).hexdigest()
+ log=prefix+compact(records[-1]);raw=log.encode('utf8')
+ receipt=json.loads(before['effectsReceiptText']);receipt['log'].update(sha256=hashlib.sha256(raw).hexdigest(),bytes=len(raw))
+ invisible=verify({**before,'effectsLogText':log,'effectsReceiptText':compact(receipt)},'writer-binding-active-xid',expected=2)
+ assert 'effect-writer-not-visible-in-snapshot' in invisible['reason']
+ return {'matchedBeforeLateCommit':len(matched(before_report)),'matchedAfterLateCommitAndReuse':len(bindings),
+  'unmatchedEffects':len(unmatched),'sameConnectionNewTransactionVerified':True,'rollbackAndSavepointExcluded':True,
+  'staleCheckpointExcluded':True,'unconfirmedCommitUnmatched':True,'rehashedPeerAndCommitTamperingRejected':True,
+  'legacySnapshotRejectedForBinding':True,'bindingBudgetExhaustionChecked':True,'activeSnapshotXidRejected':True,
+  'writerWindowVerified':False}
+
+
+def run_database(private,work,*,verify_effects=False,verify_bindings=False):
  import psycopg
  values=json.loads(private.read_text(encoding='utf8'))
  # Reuse only the already-frozen three-table configuration, not any facade/projection.
@@ -192,6 +310,7 @@ def run_database(private,work,*,verify_effects=False):
   else:raise AssertionError('Out-of-scope login bypassed row trigger scope')
  checks.append('unknown login cannot write even with base table DML privilege')
  effects=verify_effects_snapshot(work,owner,actor,configuration,policy) if verify_effects else None
+ bindings=verify_writer_bindings(work,owner,actor,configuration,policy) if verify_bindings else None
  table=configuration.tables[0];target=q(table.schema)+'.'+q(table.table)
  owner.execute('ALTER TABLE '+target+' DISABLE TRIGGER '+q(BEFORE_TRIGGER))
  raw=owner.execute(TABLE_CATALOG_SQL,(table.schema,table.table)).fetchone()[0]
@@ -207,11 +326,12 @@ def run_database(private,work,*,verify_effects=False):
  (work/'business-observations.json').write_text(json.dumps({'observations':observations,'sourceFactsProduced':False,'notDriverProjectionEvidence':True},ensure_ascii=False,indent=2)+'\n',encoding='utf8')
  receipt={'checks':checks,'checkCount':len(checks),'threeTableColumnCounts':[len(t.columns)for t in configuration.tables],'initialRows':result['initialRows'],'actualCommitConfirmed':result['actualCommitConfirmed'],'installationReceiptSha256':sha(work/'installation/receipt.json'),'sourceFactsProduced':False,'writerWindowVerified':False,'moonbitCatalogVerified':False,'driverFetchVerified':False}
  if verify_effects:receipt['configuredEffectsSnapshots']=effects
+ if verify_bindings:receipt['configuredWriterBindings']=bindings
  return receipt
 
 
 def main():
- parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bin',required=True);parser.add_argument('--output',required=True);parser.add_argument('--verify-effects',action='store_true');args=parser.parse_args()
+ parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bin',required=True);parser.add_argument('--output',required=True);parser.add_argument('--verify-effects',action='store_true');parser.add_argument('--verify-writer-bindings',action='store_true');args=parser.parse_args()
  work=Path(args.output).resolve();work.mkdir(parents=True,exist_ok=False);data=work/'data';binaries=Path(args.bin).resolve();suffix='.exe'if os.name=='nt'else''
  for name in ('initdb','pg_ctl','postgres'):
   if not(binaries/(name+suffix)).is_file():raise ValueError('Existing complete PG18 bin required; no download')
@@ -225,7 +345,7 @@ def main():
    with socket.socket()as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
    run([binaries/('pg_ctl'+suffix),'-D',data,'-l',work/'server.log','-o','-h 127.0.0.1 -p '+str(port)+' -c shared_buffers=32MB -c max_connections=10 -c work_mem=2MB','-w','start']);started=True;receipt['actualDatabaseExecution']=True
    private.write_text(json.dumps({'host':'127.0.0.1','port':port,'dbname':'postgres','user':'mtw','password':secret}),encoding='utf8')
-   receipt.update(run_database(private,work,verify_effects=args.verify_effects));receipt['status']='passed';code=0
+   receipt.update(run_database(private,work,verify_effects=args.verify_effects,verify_bindings=args.verify_writer_bindings));receipt['status']='passed';code=0
   except BaseException as error:(work/'failure.txt').write_text(traceback.format_exc(),encoding='utf8');receipt.update(status='failed',errorClass=type(error).__name__)
   finally:
    if started:

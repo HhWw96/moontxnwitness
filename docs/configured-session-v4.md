@@ -145,6 +145,53 @@ after building the JavaScript runtime.
 python -B scripts/configured-source-postgres.py --bin PG18_BIN --output NEW_TEST_DIRECTORY --verify-effects
 ```
 
+### Match sidecar effects to a client transaction
+
+For a dedicated synchronous psycopg connection in an installed diagnostic
+session, take an explicit checkpoint after the final business statement and
+before the wrapped commit. Ordinary diagnostic capture still performs no extra
+query. The checkpoint uses a separate cursor and obtains the assigned top-level
+XID without allocating one for read-only work. A later statement or transaction
+boundary on the same connection invalidates the checkpoint.
+
+```python
+writer = session.wrap_connection(raw_writer)
+# The application executes its statements and consumes its own results.
+session.observe_writer_identity(writer)
+writer.commit()
+# Seal after the workers finish.
+session_input = session.seal()
+
+observe_configured_effects(owner_control, "effects", config, policy, installation,
+                           opt_in=True, include_writer_peer=True)
+# Export the original snapshot envelope as shown above.
+```
+
+```text
+node dist/moontxnwitness.mjs verify-configured-writer-bindings-v4 effects-input.json SESSION_INPUT.json
+```
+
+The matching SDK call is `verifyConfiguredWriterBindingsV4(effects, session,
+options)`. It independently replays the source snapshot and checks the native
+checkpoint, database and endpoint observations, client transaction identity, and
+actual COMMIT tag. It reports matched and unmatched effects separately. The
+default snapshot remains v1; a snapshot with `include_writer_peer=True` records
+the additional peer observation for this check. The optional
+`maxBindingChecks` budget applies to the client logs and matching step.
+
+The peer observation uses the database OID, server endpoint and postmaster
+start time. Server restart or a change of endpoint requires new evidence. This
+component covers explicit synchronous checkpoints on pinned psycopg connections
+outside pipeline and two-phase modes. Missing acknowledgements, independent
+writers and unsupported boundaries leave effects unmatched. Reports preserve
+the open writer-window and isolation-coverage fields.
+
+The owned PostgreSQL test can also run the concurrent binding cases.
+
+```text
+python -B scripts/configured-source-postgres.py --bin PG18_BIN --output NEW_TEST_DIRECTORY --verify-effects --verify-writer-bindings
+```
+
 ## Replay and preparation validation
 
 Use `scripts/diagnose-configured-session-v4.mjs` with explicit runtime path and

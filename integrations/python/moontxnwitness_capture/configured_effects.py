@@ -20,6 +20,14 @@ SNAPSHOT_SQL = ("SELECT pg_catalog.jsonb_build_object('isolation',pg_catalog.cur
                 "'readOnly',pg_catalog.current_setting('transaction_read_only'),"
                 "'snapshot',pg_catalog.pg_current_snapshot()::text)::text")
 FORMAT = 'moontxnwitness-configured-effects-snapshot/v1'
+WRITER_FORMAT = 'moontxnwitness-configured-effects-snapshot/v2'
+PEER_SQL = ("pg_catalog.jsonb_build_object('databaseOid',(SELECT oid::bigint FROM pg_catalog.pg_database "
+            "WHERE datname=pg_catalog.current_database()),'postmasterStartMicros',"
+            "(EXTRACT(EPOCH FROM pg_catalog.pg_postmaster_start_time())*1000000)::bigint::text,"
+            "'serverAddress',pg_catalog.host(pg_catalog.inet_server_addr()),'serverPort',pg_catalog.inet_server_port())")
+WRITER_PROBE_SQL = ("SELECT pg_catalog.jsonb_build_object('peer'," + PEER_SQL +
+                    ",'xid',pg_catalog.pg_current_xact_id_if_assigned()::text,"
+                    "'login',SESSION_USER,'pid',pg_catalog.pg_backend_pid())::text")
 
 
 def effects_snapshot_sql(policy):
@@ -47,7 +55,8 @@ def _ack(control, query_id, sql, tag, state):
         raise SourceInstallError(f'Effects snapshot control acknowledgement differs: {query_id}')
 
 
-def observe_configured_effects(connection, output, config, policy, installation, *, max_rows=256, opt_in=False):
+def observe_configured_effects(connection, output, config, policy, installation, *, max_rows=256, opt_in=False,
+                               include_writer_peer=False):
     """Seal native and delivered sidecar observations using a dedicated control connection."""
     if opt_in is not True:
         raise ValueError('Explicit opt_in=True is required for a private effects read')
@@ -55,6 +64,8 @@ def observe_configured_effects(connection, output, config, policy, installation,
         raise ValueError('Explicit configured tables, policy and original installation are required')
     if type(max_rows) is not int or not 0 <= max_rows <= 4096:
         raise ValueError('Effects snapshot max_rows must be an integer from 0 to 4096')
+    if type(include_writer_peer) is not bool:
+        raise ValueError('include_writer_peer must be a boolean')
     if not connection.autocommit or int(connection.info.transaction_status) != 0:
         raise ValueError('A dedicated idle autocommit control connection is required')
     install_receipt = json.loads(installation.receipt_text)
@@ -72,7 +83,8 @@ def observe_configured_effects(connection, output, config, policy, installation,
     path.mkdir(parents=True, exist_ok=False)
     log = _LifecycleLog(path / 'effects-snapshot.jsonl', max_bytes=min(policy.max_log_bytes, 8 * 1024 * 1024))
     control = _Control(connection, log)
-    receipt = {'format': FORMAT, 'status': 'failed', 'installationLogSha256': original_digest,
+    receipt = {'format': WRITER_FORMAT if include_writer_peer else FORMAT,
+               'status': 'failed', 'installationLogSha256': original_digest,
                'configSha256': config.sha256, 'maxRows': max_rows, 'effectsObserved': 0,
                'sourceFactsProduced': False, 'writerWindowVerified': False, 'isolationAnalysisReady': False}
     try:
@@ -81,6 +93,8 @@ def observe_configured_effects(connection, output, config, policy, installation,
         snapshot = _one(control, 'effects-snapshot-mode', SNAPSHOT_SQL)
         if snapshot.get('isolation') != 'repeatable read' or snapshot.get('readOnly') != 'on' or not snapshot.get('snapshot'):
             raise SourceInstallError('Read-only repeatable snapshot was not observed')
+        if include_writer_peer:
+            _one(control, 'effects-writer-peer', 'SELECT ' + PEER_SQL + '::text')
         environment = _one(control, 'environment', ENVIRONMENT_SQL, (list(policy.writers),))
         owner = verify_environment(policy, environment)
         if any(environment.get(key) != install_receipt['environment'].get(key) for key in ('database', 'databaseOid', 'owner')):

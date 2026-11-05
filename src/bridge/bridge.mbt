@@ -586,3 +586,13 @@ pub fn verify_configured_effects_snapshot_v4_json(
 ) -> String {
   @txn.verify_configured_effects_snapshot_v4_json(input, options)
 }
+
+///|
+#export_name("verify_configured_writer_bindings_v4_json")
+pub fn verify_configured_writer_bindings_v4_json(
+  effects : String,
+  session : String,
+  options : String,
+) -> String {
+  @txn.verify_configured_writer_bindings_v4_json(effects, session, options)
+}

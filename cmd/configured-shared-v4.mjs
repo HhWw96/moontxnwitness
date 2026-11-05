@@ -12,14 +12,23 @@ export const {normalizeSQLConfigV1,normalizeSQLCandidateV1,verifySQLCandidateV1,
 export const {verifyConfiguredFetchV1}=createSQLFetchV1(core);
 export {CONFIGURED_SESSION_LIMITS} from './configured-session-v4.mjs';
 
+function boundedText(value, maximum, label) {
+  const text = typeof value === 'string' ? value : JSON.stringify(value);
+  if (typeof text !== 'string' || !text.isWellFormed() || Buffer.byteLength(text) > maximum) {
+    throw new TypeError(label + ' exceeds its text contract');
+  }
+  return text;
+}
+
 export function verifyConfiguredEffectsSnapshotV4(input, options = {}) {
-  const source = typeof input === 'string' ? input : JSON.stringify(input);
-  const limits = typeof options === 'string' ? options : JSON.stringify(options);
-  if (typeof source !== 'string' || !source.isWellFormed() || Buffer.byteLength(source) > 24 * 1024 * 1024) {
-    throw new TypeError('Original effects snapshot exceeds its text contract');
-  }
-  if (typeof limits !== 'string' || !limits.isWellFormed() || Buffer.byteLength(limits) > 8192) {
-    throw new TypeError('Effects snapshot options exceed their text contract');
-  }
+  const source = boundedText(input, 24 * 1024 * 1024, 'Original effects snapshot');
+  const limits = boundedText(options, 8192, 'Effects snapshot options');
   return JSON.parse(core.verify_configured_effects_snapshot_v4_json(source, limits));
+}
+
+export function verifyConfiguredWriterBindingsV4(effects, session, options = {}) {
+  const source = boundedText(effects, 24 * 1024 * 1024, 'Original effects snapshot');
+  const trace = boundedText(session, 32 * 1024 * 1024, 'Original configured session');
+  const limits = boundedText(options, 8192, 'Writer binding options');
+  return JSON.parse(core.verify_configured_writer_bindings_v4_json(source, trace, limits));
 }
