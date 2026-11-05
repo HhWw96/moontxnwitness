@@ -1,5 +1,6 @@
 # Unreleased
 
+- Export PostgreSQL source effects from a read-only snapshot and independently verify the sealed observations, catalog, and predecessor links.
 - Reduce relation predicate counterexamples using an explicit Adya or Elle rule set, with source checks, independent replay and unchanged point capsule semantics.
 - Record the published v0.4.0 register/list serializable comparison against frozen Elle results and add a digest-checked rerun command.
 - Provide a lightweight ZIP builder with clean-directory verification for the current SDK and CLI.

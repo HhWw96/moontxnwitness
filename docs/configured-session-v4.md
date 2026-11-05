@@ -92,6 +92,59 @@ version. Private transactional effect rows alone do not prove this closure.
 Authentication is a separate protocol. None of these obligations is satisfied by
 flipping a producer Boolean, reusing a backend PID, or querying a source later.
 
+## Post-installation write observations
+
+An opt-in read through the existing private effect table captures a bounded
+snapshot of the INSERT, UPDATE and DELETE effects visible to a dedicated
+PostgreSQL 18 control connection. It records the original SQL, native cells
+and decoded rows, including the version, predecessor, keys, and server-reported
+writer identifiers. The MoonBit verifier checks the original installation,
+read-only transaction, table and sidecar catalog, sealed log, and predecessor
+links. The report points to the original records in the log.
+
+```python
+from moontxnwitness_capture.configured_effects import (
+    configured_effects_input, observe_configured_effects,
+)
+from moontxnwitness_capture.configured_session import InstallationInputs, write_new
+import json
+
+installation = InstallationInputs.from_attempt("installation", policy)
+observe_configured_effects(owner_control, "effects", config, policy,
+                           installation, opt_in=True)
+write_new("effects-input.json", json.dumps(
+    configured_effects_input(config, installation, "effects"), ensure_ascii=False,
+))
+```
+
+The control connection must be idle, in autocommit mode, and able to read as the
+source owner. Use a new output directory. The SDK entry is
+`verifyConfiguredEffectsSnapshotV4(input, options)`.
+
+```text
+node dist/moontxnwitness.mjs verify-configured-effects-v4 effects-input.json
+```
+
+The default row limit is 256, with an allowed range of 0 through 4096. Supply
+the same independently chosen `maxRows` in the verifier options when using a
+nondefault limit. Each page contains up to eight rows. The verifier requires a
+terminal empty page and rejects a partial log, oversized row or unknown
+predecessor. Source and installation checks have separate caller budgets.
+
+Each observation starts its own read-only Repeatable Read snapshot and scans
+from the beginning. A version assigned earlier can become visible after a
+higher version. The cursor orders pages within this snapshot and carries no
+commit-order or cross-snapshot checkpoint meaning. Rolled-back effects do not
+appear in the committed sidecar view. The result keeps writer-window coverage,
+writer-to-client transaction matching, and isolation analysis open.
+
+Run the owned database test with an existing PostgreSQL 18 binary directory
+after building the JavaScript runtime.
+
+```text
+python -B scripts/configured-source-postgres.py --bin PG18_BIN --output NEW_TEST_DIRECTORY --verify-effects
+```
+
 ## Replay and preparation validation
 
 Use `scripts/diagnose-configured-session-v4.mjs` with explicit runtime path and

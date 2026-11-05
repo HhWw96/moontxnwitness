@@ -1,18 +1,114 @@
 """Owned PG18 installation/sidecar checks. Run only when the database window is enabled."""
 from __future__ import annotations
-import argparse,hashlib,json,os,runpy,secrets,socket,subprocess,sys,traceback
+import argparse,base64,hashlib,json,os,runpy,secrets,socket,subprocess,sys,traceback
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'integrations/python'))
 from moontxnwitness_capture.configured_source import (SourceInstallPolicy,SourceInstallError,VERSION_COLUMN,BEFORE_TRIGGER,
  install_configured_source,TABLE_CATALOG_SQL,verify_table_catalog,identifier,literal)
+from moontxnwitness_capture.configured_effects import configured_effects_input, observe_configured_effects
+from moontxnwitness_capture.configured_session import InstallationInputs, write_new
 
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def jsonable(value):
  if isinstance(value,tuple):return list(value)
  return value
 
-def run_database(private,work):
+def verify_effects_snapshot(work, owner, actor, configuration, policy):
+ import psycopg
+ installation=InstallationInputs.from_attempt(work/'installation',policy)
+ core_path=ROOT/'dist/core.mjs';core_sha=sha(core_path)
+ manifest=json.loads((ROOT/'dist/build-manifest.json').read_text(encoding='utf8'))
+ assert core_sha==manifest['coreSha256']
+ cli=[os.environ.get('MTW_NODE','node'),str(ROOT/'dist/moontxnwitness.mjs'),'verify-configured-effects-v4']
+ def verify(envelope, expected=0, options=None):
+  flags=[]
+  if options is not None:
+   flags=['--options',str(work/'expected-effects.json')]
+   (work/'expected-effects.json').write_text(json.dumps(options),encoding='utf8')
+  child=subprocess.run([*cli,'-',*flags],input=json.dumps(envelope,ensure_ascii=False),capture_output=True,encoding='utf8',timeout=60)
+  if child.returncode != expected:raise AssertionError(child.stdout+child.stderr)
+  report=json.loads(child.stdout)
+  assert all(report[k] is False for k in ('writerWindowVerified','sourceFactsProduced','isolationAnalysisReady'))
+  return report
+ def snapshot(name):
+  path=work/name
+  observe_configured_effects(owner,path,configuration,policy,installation,opt_in=True)
+  envelope=configured_effects_input(configuration,installation,path)
+  report=verify(envelope)
+  assert report['valid'] and report['status']=='matched-snapshot-observations'
+  write_new(path/'verified.json',json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+  return envelope,report
+
+ table=configuration.tables[0]
+ target=identifier(table.schema)+'.'+identifier(table.table)
+ key=identifier(table.primary_key);version=identifier(VERSION_COLUMN);balance=identifier(table.columns[1].name)
+ with psycopg.connect(**actor) as slow, psycopg.connect(**actor) as fast:
+  lower=slow.execute(f'UPDATE {target} SET {balance}=901 WHERE {key}=17 RETURNING {version}').fetchone()[0]
+  higher=fast.execute(f'UPDATE {target} SET {key}=5100,{balance}=NULL WHERE {key}=100 RETURNING {version}').fetchone()[0]
+  assert lower<higher
+  fast.commit()
+  _, observed=snapshot('effects-before-lower-commit')
+  seen={int(row['version']) for row in observed['observation']['observations']}
+  assert len(seen)==10 and higher in seen and lower not in seen
+  slow.commit()
+  final_input,final_report=snapshot('effects-after-lower-commit')
+  seen={int(row['version']) for row in final_report['observation']['observations']}
+  assert len(seen)==11 and {lower,higher}<=seen
+
+ assert verify(final_input,3,{'maxChecks':0})['status']=='unknown'
+ assert verify(final_input,3,{'maxInstallationChecks':0})['status']=='unknown'
+ assert not verify(final_input,2,{'maxRows':1})['valid']
+ altered=json.loads(final_input['effectsReceiptText']);altered['writerWindowVerified']=True
+ assert not verify({**final_input,'effectsReceiptText':json.dumps(altered)},2)['valid']
+ # Change decoded and native bytes together, then reseal to exercise the
+ # semantic predecessor check independently of transport hash validation.
+ def compact(value):return json.dumps(value,ensure_ascii=False,separators=(',',':'))+'\n'
+ def reject_rehashed(predicate, edit, reason):
+  lines=[json.loads(line) for line in final_input['effectsLogText'].splitlines()]
+  candidates=((line,index,json.loads(delivered[0])) for line in lines if line.get('kind')=='source-control' and line.get('queryId')=='effects-page'
+              for index,delivered in enumerate(line['decodedRows']))
+  line,index,row=next(entry for entry in candidates if predicate(entry[2]))
+  edit(row)
+  replacement=compact(row).rstrip('\n')
+  line['decodedRows'][index][0]=replacement
+  line['native']['rows'][index][0]=base64.b64encode(replacement.encode('utf8')).decode('ascii')
+  prefix=''.join(map(compact,lines[:-1]));lines[-1]['prefixSha256']=hashlib.sha256(prefix.encode('utf8')).hexdigest()
+  modified=prefix+compact(lines[-1]);encoded=modified.encode('utf8')
+  receipt=json.loads(final_input['effectsReceiptText']);receipt['log'].update(sha256=hashlib.sha256(encoded).hexdigest(),bytes=len(encoded))
+  rejected=verify({**final_input,'effectsLogText':modified,'effectsReceiptText':json.dumps(receipt)},2)
+  assert reason in rejected['reason']
+  write_new(work/(reason+'-rejection.json'),compact(rejected))
+ reject_rehashed(lambda row:row['operation']=='UPDATE',lambda row:row.update(baseVersion='9223372036854775807'),'effect-missing-predecessor')
+ install_receipt=json.loads(installation.receipt_text)
+ oid=install_receipt['tables'][0]['catalog']['oid']
+ # The first initial row of another relation uses a different key column.
+ other_table=configuration.tables[1]
+ other_target=identifier(other_table.schema)+'.'+identifier(other_table.table)
+ install_events=map(json.loads,installation.log_text.splitlines())
+ other_initial=next(event for event in install_events if event['kind']=='source-control'
+  and event['queryId']=='initial-snapshot' and other_target in event['sql'] and event['decodedRows'])
+ other_version=str(json.loads(other_initial['decodedRows'][0][0])['row'][VERSION_COLUMN])
+ reject_rehashed(lambda row:row['relationOid']==oid and row['version']==str(lower),lambda row:row.update(baseVersion=other_version),'effect-predecessor-key-or-table')
+ lower_effect=next(row for row in final_report['observation']['observations'] if row['version']==str(lower))
+ reject_rehashed(lambda row:row['version']==str(higher),
+  lambda row:row.update(writerXid=lower_effect['writerXid'],writerPid=lower_effect['writerPid']+1),
+  'effect-writer-XID-identity')
+ try:observe_configured_effects(owner,work/'effects-row-budget',configuration,policy,installation,max_rows=1,opt_in=True)
+ except SourceInstallError:
+  incomplete=configured_effects_input(configuration,installation,work/'effects-row-budget')
+  assert not verify(incomplete,2,{'maxRows':1})['valid']
+ else:raise AssertionError('Effects producer accepted a truncated snapshot')
+ assert int(owner.info.transaction_status)==0
+ assert sha(core_path)==core_sha
+ return {'snapshotBeforeLowerVersionCommit':10,'snapshotAfterLowerVersionCommit':11,'retainedNullAndKeyChange':True,
+         'independentBudgetChecks':3,'rehashedWrongPredecessorRejected':True,'crossTablePredecessorRejected':True,
+         'contradictoryWriterIdentityRejected':True,'producerRowLimitRejected':True,
+         'coreSha256':core_sha,'sourceFingerprint':manifest['sourceSha256'],
+         'producerSha256':sha(ROOT/'integrations/python/moontxnwitness_capture/configured_effects.py'),
+         'falseWriterWindowClaimRejected':True,'writerWindowVerified':False}
+
+def run_database(private,work,*,verify_effects=False):
  import psycopg
  values=json.loads(private.read_text(encoding='utf8'))
  # Reuse only the already-frozen three-table configuration, not any facade/projection.
@@ -95,19 +191,27 @@ def run_database(private,work):
   except psycopg.Error as error:assert error.sqlstate=='42501';intruder.rollback()
   else:raise AssertionError('Out-of-scope login bypassed row trigger scope')
  checks.append('unknown login cannot write even with base table DML privilege')
+ effects=verify_effects_snapshot(work,owner,actor,configuration,policy) if verify_effects else None
  table=configuration.tables[0];target=q(table.schema)+'.'+q(table.table)
  owner.execute('ALTER TABLE '+target+' DISABLE TRIGGER '+q(BEFORE_TRIGGER))
  raw=owner.execute(TABLE_CATALOG_SQL,(table.schema,table.table)).fetchone()[0]
  try:verify_table_catalog(table,policy,owner_role,json.loads(raw),installed=True)
  except SourceInstallError:checks.append('disabled trigger is rejected by fresh catalog validation')
  else:raise AssertionError('Disabled trigger was accepted')
+ if verify_effects:
+  installation=InstallationInputs.from_attempt(work/'installation',policy)
+  try:observe_configured_effects(owner,work/'effects-disabled-trigger',configuration,policy,installation,opt_in=True)
+  except SourceInstallError:effects['disabledTriggerRejected']=True
+  else:raise AssertionError('Effects snapshot accepted disabled trigger')
  owner.execute('ALTER TABLE '+target+' ENABLE ALWAYS TRIGGER '+q(BEFORE_TRIGGER));owner.close()
  (work/'business-observations.json').write_text(json.dumps({'observations':observations,'sourceFactsProduced':False,'notDriverProjectionEvidence':True},ensure_ascii=False,indent=2)+'\n',encoding='utf8')
- return {'checks':checks,'checkCount':len(checks),'threeTableColumnCounts':[len(t.columns)for t in configuration.tables],'initialRows':result['initialRows'],'actualCommitConfirmed':result['actualCommitConfirmed'],'installationReceiptSha256':sha(work/'installation/receipt.json'),'sourceFactsProduced':False,'writerWindowVerified':False,'moonbitCatalogVerified':False,'driverFetchVerified':False}
+ receipt={'checks':checks,'checkCount':len(checks),'threeTableColumnCounts':[len(t.columns)for t in configuration.tables],'initialRows':result['initialRows'],'actualCommitConfirmed':result['actualCommitConfirmed'],'installationReceiptSha256':sha(work/'installation/receipt.json'),'sourceFactsProduced':False,'writerWindowVerified':False,'moonbitCatalogVerified':False,'driverFetchVerified':False}
+ if verify_effects:receipt['configuredEffectsSnapshots']=effects
+ return receipt
 
 
 def main():
- parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bin',required=True);parser.add_argument('--output',required=True);args=parser.parse_args()
+ parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bin',required=True);parser.add_argument('--output',required=True);parser.add_argument('--verify-effects',action='store_true');args=parser.parse_args()
  work=Path(args.output).resolve();work.mkdir(parents=True,exist_ok=False);data=work/'data';binaries=Path(args.bin).resolve();suffix='.exe'if os.name=='nt'else''
  for name in ('initdb','pg_ctl','postgres'):
   if not(binaries/(name+suffix)).is_file():raise ValueError('Existing complete PG18 bin required; no download')
@@ -121,7 +225,7 @@ def main():
    with socket.socket()as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
    run([binaries/('pg_ctl'+suffix),'-D',data,'-l',work/'server.log','-o','-h 127.0.0.1 -p '+str(port)+' -c shared_buffers=32MB -c max_connections=10 -c work_mem=2MB','-w','start']);started=True;receipt['actualDatabaseExecution']=True
    private.write_text(json.dumps({'host':'127.0.0.1','port':port,'dbname':'postgres','user':'mtw','password':secret}),encoding='utf8')
-   receipt.update(run_database(private,work));receipt['status']='passed';code=0
+   receipt.update(run_database(private,work,verify_effects=args.verify_effects));receipt['status']='passed';code=0
   except BaseException as error:(work/'failure.txt').write_text(traceback.format_exc(),encoding='utf8');receipt.update(status='failed',errorClass=type(error).__name__)
   finally:
    if started:

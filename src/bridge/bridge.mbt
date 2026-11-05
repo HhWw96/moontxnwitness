@@ -577,3 +577,12 @@ pub fn verify_source_fetch_mapping_report_v4_json(
 pub fn compare_c_text_v1(a : String, b : String) -> Int32 {
   @txn.compare_configured_c_text_v1(a, b)
 }
+
+///|
+#export_name("verify_configured_effects_snapshot_v4_json")
+pub fn verify_configured_effects_snapshot_v4_json(
+  input : String,
+  options : String,
+) -> String {
+  @txn.verify_configured_effects_snapshot_v4_json(input, options)
+}
