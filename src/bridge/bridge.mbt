@@ -607,3 +607,28 @@ pub fn verify_configured_writer_window_v4_json(
 ) -> String {
   @txn.verify_configured_writer_window_v4_json(before, after, session, options)
 }
+
+///|
+#export_name("analyze_configured_point_window_v4_json")
+pub fn analyze_configured_point_window_v4_json(
+  before : String,
+  after : String,
+  session : String,
+  options : String,
+) -> String {
+  @txn.analyze_configured_point_window_v4_json(before, after, session, options)
+}
+
+///|
+#export_name("verify_configured_point_window_v4_json")
+pub fn verify_configured_point_window_v4_json(
+  before : String,
+  after : String,
+  session : String,
+  report : String,
+  options : String,
+) -> Bool {
+  @txn.verify_configured_point_window_v4_json(
+    before, after, session, report, options,
+  )
+}

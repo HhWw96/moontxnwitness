@@ -1,9 +1,17 @@
 ///|
+priv struct ConfiguredPointSourceV4 {
+  commits : Map[String, Json]
+  mut installation : SourceInstallationCheckV4?
+  mut effects : Map[String, Json]?
+}
+
+///|
 fn configured_writer_window_v4(
   before_input : String,
   after_input : String,
   session_input : String,
   options : String,
+  point_source? : ConfiguredPointSourceV4,
 ) -> Json raise {
   let limits = source_object_v4(sql_json_v1(options, 8192))
   known_fields(
@@ -74,9 +82,21 @@ fn configured_writer_window_v4(
       _ => ()
     }
   }
-  let commits = configured_writer_session_commits_v4(
-    after, session_input, peer, work,
-  )
+  let commits = match point_source {
+    Some(source) => {
+      source.installation = Some(context.installation)
+      source.effects = Some(after_rows)
+      configured_writer_session_commits_v4(
+        after,
+        session_input,
+        peer,
+        work,
+        by_tx=source.commits,
+      )
+    }
+    None =>
+      configured_writer_session_commits_v4(after, session_input, peer, work)
+  }
   let matched : Array[Json] = []
   let unmatched : Array[Json] = []
   for raw in orm_array(after_observation.at("observations")) {

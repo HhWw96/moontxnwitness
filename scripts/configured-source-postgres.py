@@ -415,7 +415,7 @@ def run_database(private,work,*,verify_effects=False,verify_bindings=False,verif
 
 
 def main():
- parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bin',required=True);parser.add_argument('--output',required=True);parser.add_argument('--verify-effects',action='store_true');parser.add_argument('--verify-writer-bindings',action='store_true');parser.add_argument('--verify-writer-window',action='store_true');args=parser.parse_args()
+ parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bin',required=True);parser.add_argument('--output',required=True);parser.add_argument('--verify-effects',action='store_true');parser.add_argument('--verify-writer-bindings',action='store_true');parser.add_argument('--verify-writer-window',action='store_true');parser.add_argument('--verify-point-window',action='store_true');args=parser.parse_args()
  work=Path(args.output).resolve();work.mkdir(parents=True,exist_ok=False);data=work/'data';binaries=Path(args.bin).resolve();suffix='.exe'if os.name=='nt'else''
  for name in ('initdb','pg_ctl','postgres'):
   if not(binaries/(name+suffix)).is_file():raise ValueError('Existing complete PG18 bin required; no download')
@@ -429,7 +429,13 @@ def main():
    with socket.socket()as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
    run([binaries/('pg_ctl'+suffix),'-D',data,'-l',work/'server.log','-o','-h 127.0.0.1 -p '+str(port)+' -c shared_buffers=32MB -c max_connections=10 -c work_mem=2MB','-w','start']);started=True;receipt['actualDatabaseExecution']=True
    private.write_text(json.dumps({'host':'127.0.0.1','port':port,'dbname':'postgres','user':'mtw','password':secret}),encoding='utf8')
-   receipt.update(run_database(private,work,verify_effects=args.verify_effects,verify_bindings=args.verify_writer_bindings,verify_window=args.verify_writer_window));receipt['status']='passed';code=0
+   if args.verify_point_window:
+    run_points=runpy.run_path(str(ROOT/'scripts/configured-point-postgres.py'))['run_cases']
+    points=run_points(json.loads(private.read_text(encoding='utf8')),work/'point-windows')
+    receipt.update(pointCases=len(points['cases']),pointNegativeChecks=points['negativeChecks'])
+   else:
+    receipt.update(run_database(private,work,verify_effects=args.verify_effects,verify_bindings=args.verify_writer_bindings,verify_window=args.verify_writer_window))
+   receipt['status']='passed';code=0
   except BaseException as error:(work/'failure.txt').write_text(traceback.format_exc(),encoding='utf8');receipt.update(status='failed',errorClass=type(error).__name__)
   finally:
    if started:

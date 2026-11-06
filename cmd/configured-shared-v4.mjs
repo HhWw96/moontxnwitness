@@ -40,3 +40,22 @@ export function verifyConfiguredWriterWindowV4(before, after, session, options =
   const limits = boundedText(options, 8192, 'Writer window options');
   return JSON.parse(core.verify_configured_writer_window_v4_json(start, end, trace, limits));
 }
+
+function pointInputs(before, after, session) {
+  return [
+    boundedText(before, 24 * 1024 * 1024, 'Original start snapshot'),
+    boundedText(after, 24 * 1024 * 1024, 'Original end snapshot'),
+    boundedText(session, 32 * 1024 * 1024, 'Original configured session'),
+  ];
+}
+
+export function analyzeConfiguredPointWindowV4(before, after, session, options = {}) {
+  return JSON.parse(core.analyze_configured_point_window_v4_json(
+    ...pointInputs(before, after, session), boundedText(options, 8192, 'Point window options')));
+}
+
+export function verifyConfiguredPointWindowV4(before, after, session, report, options = {}) {
+  return {valid: core.verify_configured_point_window_v4_json(
+    ...pointInputs(before, after, session), boundedText(report, 32 * 1024 * 1024, 'Point window report'),
+    boundedText(options, 8192, 'Point window options'))};
+}

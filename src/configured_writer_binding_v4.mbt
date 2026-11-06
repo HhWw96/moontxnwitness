@@ -121,6 +121,7 @@ fn writer_commits_v4(
   trace : String,
   peer : Json,
   work : SourceWorkV4,
+  by_tx? : Map[String, Json],
 ) -> Map[String, Json] raise {
   let (events, begins, requests, ends) = writer_trace_events_v4(trace, work)
   if !lifecycle.has_suffix("\n") || orm_utf8_size(lifecycle) > 8388608 {
@@ -250,23 +251,34 @@ fn writer_commits_v4(
                 refs.get("commit_ok") != Some(Json(end)) {
                 fail("mismatch:writer-commit-evidence")
               }
+              let xid_value = match commit.checkpoint.xid {
+                Some(xid) => Json(xid)
+                None => Json::null()
+              }
+              let binding : Json = {
+                "tx": Json(tx),
+                "connection": Json(connection),
+                "writerXid": xid_value,
+                "writerPid": commit.checkpoint.pid,
+                "writerLogin": commit.checkpoint.login,
+                "checkpointSeq": Json(commit.checkpoint.note),
+                "commitStartSeq": Json(commit.start),
+                "commitResponseSeq": Json(response_seq),
+                "commitEndSeq": Json(seq),
+                "traceCommitRequestSeq": Json(request),
+                "traceCommitSeq": Json(end),
+              }
+              if by_tx is Some(records) {
+                if records.contains(tx) {
+                  fail("mismatch:writer-duplicate-commit")
+                }
+                records[tx] = binding
+              }
               if commit.checkpoint.xid is Some(xid) {
                 if bindings.contains(xid) {
                   fail("mismatch:writer-duplicate-commit")
                 }
-                bindings[xid] = {
-                  "tx": Json(tx),
-                  "connection": Json(connection),
-                  "writerXid": Json(xid),
-                  "writerPid": commit.checkpoint.pid,
-                  "writerLogin": commit.checkpoint.login,
-                  "checkpointSeq": Json(commit.checkpoint.note),
-                  "commitStartSeq": Json(commit.start),
-                  "commitResponseSeq": Json(response_seq),
-                  "commitEndSeq": Json(seq),
-                  "traceCommitRequestSeq": Json(request),
-                  "traceCommitSeq": Json(end),
-                }
+                bindings[xid] = binding
               }
             }
           }
@@ -292,6 +304,7 @@ fn configured_writer_session_commits_v4(
   session_input : String,
   peer : Json,
   work : SourceWorkV4,
+  by_tx? : Map[String, Json],
 ) -> Map[String, Json] raise {
   let session = orm_exact(sql_json_v1(session_input, 33554432), [
     "format", "configText", "lifecycleText", "diagnosticTraceText", "sourceInputsText",
@@ -314,6 +327,7 @@ fn configured_writer_session_commits_v4(
     sql_string_v1(session.at("diagnosticTraceText")),
     peer,
     work,
+    by_tx?,
   )
 }
 

@@ -1,5 +1,7 @@
 # Unreleased
 
+- Verify delivered PostgreSQL point reads and updates against captured row versions, then analyze the sealed window with the serializable relation model.
+- Reuse the verified installation digest and the SHA-256 message schedule to reduce repeated work during source replay.
 - Verify coverage of newly visible PostgreSQL row effects across two snapshots, with explicit unmatched effects and detection of altered historical rows.
 - Match observed PostgreSQL effects to confirmed synchronous client commits using explicit native transaction checkpoints.
 - Export PostgreSQL source effects from a read-only snapshot and independently verify the sealed observations, catalog, and predecessor links.

@@ -10,11 +10,15 @@ const sha=x=>createHash('sha256').update(x).digest('hex');
 const pinBytes=await readFile(resolve(root,'fixtures/source-components-v4/integration-components.json'));
 assert.equal(sha(pinBytes),'5cfb5fa9330dae4da1377d62bdabc52f9fd54ce4807b48e12f4012e12709a770');
 const pins=JSON.parse(pinBytes);
-// The historical fixture still binds its original revision. Apply one exact
-// source delta for the delivery reuse refactor and retain every other pin.
+// The historical fixture still binds its original revision. Pin the current
+// delivery and installation digest reuse separately from the frozen inputs.
 const mapping='src/source_fetch_mapping_v4.mbt';
+const installation='src/source_install_v4.mbt';
 assert.equal(pins.files[mapping],'7187215852dda78ba8227f3bb69b57fdfa20cf2bcc34deee85b77ab52beac510');
-const expected={...pins.files,[mapping]:'0481a9b988d68d9032083b61825b630f9d3a48ed3797cf4c4cfb20b989be2e6a'};
+assert.equal(pins.files[installation],'f032bea135511157dcaea325e0b7437d73e7b21f08219a74156e86224d6269d2');
+const expected={...pins.files,
+ [mapping]:'0481a9b988d68d9032083b61825b630f9d3a48ed3797cf4c4cfb20b989be2e6a',
+ [installation]:'e65443162b1461cb9aa4cf190eda12484790eee1ae97f587c357cd9915949edf'};
 const clone=x=>structuredClone(x);const before={};
 for(const [name,digest]of Object.entries(expected)){const actual=sha(await readFile(resolve(root,name)));assert.equal(actual,digest,name);before[name]=actual;}
 const runtime=resolve(args[1]);const core=await import(pathToFileURL(runtime));

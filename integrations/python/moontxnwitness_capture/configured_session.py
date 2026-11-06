@@ -188,6 +188,73 @@ class ConfiguredDiagnosticSession:
         return target
 
 
+class ConfiguredPointWindow(ConfiguredDiagnosticSession):
+    """Owned PostgreSQL point window with explicit snapshot boundaries."""
+
+    def __init__(self, output, config, control, policy, installation, *, opt_in=False, max_rows=256):
+        if opt_in is not True or len(config.tables) != 1 or not _pinned_connection(control):
+            raise ValueError('An owned PostgreSQL point window with one configured table is required')
+        super().__init__(output, config, installation=installation)
+        self._control, self._policy, self._max_rows = control, policy, max_rows
+        self._participants = []
+        self._ending = False
+        self.start_path = self._snapshot('start')
+        self.end_path = None
+
+    def _snapshot(self, side):
+        from .configured_effects import configured_effects_input, observe_configured_effects
+
+        directory = self.output / side
+        observe_configured_effects(self._control, directory, self.config, self._policy,
+                                   self.installation, opt_in=True, max_rows=self._max_rows,
+                                   include_writer_peer=True)
+        envelope = configured_effects_input(self.config, self.installation, directory)
+        text = canonical(envelope) + '\n'
+        path = self.output / (side + '-input.json')
+        write_new(path, text)
+        if self.observer.frame('configured-point-' + side, {
+            'sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
+        }) is None:
+            raise ValueError('Point window boundary was not retained')
+        return path
+
+    def wrap_connection(self, raw, *, asynchronous=False):
+        with self.observer._lock:
+            if (self._ending or asynchronous or not _pinned_connection(raw) or raw is self._control
+                    or raw.autocommit or int(raw.info.transaction_status) != 0
+                    or any(raw is connection._raw for connection in self._participants)
+                    or len(self._participants) >= 32):
+                raise ValueError('An idle, new synchronous writer connection is required')
+            connection = super().wrap_connection(raw)
+            self._participants.append(connection)
+            return connection
+
+    def psycopg_factory(self, factory, *, asynchronous=False):
+        if asynchronous:
+            raise ValueError('Point windows require synchronous connections')
+
+        def connect(*args, **kwargs):
+            raw = factory(*args, **kwargs)
+            try:
+                return self.wrap_connection(raw)
+            except BaseException:
+                raw.close()
+                raise
+        return connect
+
+    def instrument_engine(self, engine):
+        raise ValueError('Point windows require direct writer connections')
+
+    def seal(self):
+        with self.observer._lock:
+            if self._ending or not self._participants or any(
+                    not connection._raw.closed for connection in self._participants):
+                raise ValueError('Close all enrolled writer connections before sealing the point window')
+            self._ending = True
+        self.end_path = self._snapshot('end')
+        return super().seal()
+
+
 def install_and_capture_initial_reads(connection, output, config, policy, queries, *, opt_in=False):
     """Explicit read-only smoke controller on one caller-owned physical connection.
 

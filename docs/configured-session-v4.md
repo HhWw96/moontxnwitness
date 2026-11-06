@@ -225,6 +225,57 @@ recompute the report.
 python -B scripts/configured-source-postgres.py --bin PG18_BIN --output NEW_TEST_DIRECTORY --verify-effects --verify-writer-window
 ```
 
+## Analyze a captured point window
+
+`ConfiguredPointWindow` is an opt-in synchronous psycopg 3.3.6 controller for
+an owned PostgreSQL 18 database. Install the source in a dedicated database and
+use one configured table. Construct the controller before opening any writer
+connections. Use explicitly schema-qualified primary-key equality statements
+and include the primary key, every business column and
+`__mtw_source_version` in the original SELECT or UPDATE RETURNING.
+
+```python
+from moontxnwitness_capture.configured_session import ConfiguredPointWindow
+
+window = ConfiguredPointWindow("point-run", config, owner_control, policy,
+                               installation, opt_in=True)
+writer = window.wrap_connection(raw_writer)
+# Execute the original statements and fully consume each result.
+window.observe_writer_identity(writer)
+writer.commit()
+writer.close()
+session_input = window.seal()
+```
+
+Both snapshots and the original session are required for analysis and verification.
+
+```text
+node dist/moontxnwitness.mjs analyze-configured-point-window-v4 point-run/start-input.json point-run/end-input.json point-run/configured-session-input.json --output report.json
+node dist/moontxnwitness.mjs verify-configured-point-window-v4 point-run/start-input.json point-run/end-input.json point-run/configured-session-input.json report.json
+```
+
+The SDK equivalents are `analyzeConfiguredPointWindowV4` and
+`verifyConfiguredPointWindowV4`. Pass the original snapshot texts so that the
+sealed boundary digests match. The verifier independently checks both snapshots,
+actual result exhaustion, SQL and parameter bindings, catalog column identity,
+row values and the committed write ledger. It then analyzes the verified relation
+history under the formal serializable model and checks G2-item.
+
+The profile requires a fresh installation, complete positive point reads, and
+one non-key update per transaction and key preceded by a read of its predecessor.
+It covers up to 32 transactions and 128 business statements. The caller controls
+`maxPointChecks` from 0 through 1,000,000 along with the existing snapshot,
+binding and model budgets. Reports apply to the supplied owned-window
+observations. Empty reads, partial results, savepoints, unbound effects and
+unconfirmed transactions yield incomplete coverage. Exit codes are 0 for
+checked-compatible, 1 for refuted, 2 for invalid evidence, and 3 for unknown.
+
+The following test runs PostgreSQL 18 in an isolated local directory.
+
+```text
+python -B scripts/configured-source-postgres.py --bin PG18_BIN --output NEW_TEST_DIRECTORY --verify-point-window
+```
+
 ## Replay and preparation validation
 
 Use `scripts/diagnose-configured-session-v4.mjs` with explicit runtime path and
