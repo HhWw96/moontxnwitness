@@ -15,8 +15,9 @@ MoonBit exposes `ConfiguredSessionOptionsV4`, `ConfiguredSessionDiagnosticV4`,
 recomputes the entire diagnostic record under independently supplied caller
 options, rather than accepting budgets/status from that record.
 
-The separate `configured_session_bridge` exports these JSON methods and the
-underlying configuration, SQL, fetch and source-component methods. The JS factory
+The default JavaScript SDK uses the main compiled core for these methods. The
+separate `configured_session_bridge` also exports them and the underlying
+configuration, SQL, fetch and source-component methods. The JS factory
 `createConfiguredSessionV4(core)` returns `diagnoseConfiguredSessionTextV4`,
 `diagnoseConfiguredSessionV4`, `verifyConfiguredSessionV4` and
 `normalizeConfiguredSessionOptionsV4`. Prefer original JSON text for exact int64
@@ -57,9 +58,10 @@ Defaults are 1,000,000 journal checks, 32 results (maximum 128), 1,000,000 sourc
 installation checks, and independent per-result fetch, returned-row and source
 mapping limits of 1,000,000 each. All zero budgets remain valid caller requests.
 The source installation is recomputed once into an opaque typed result and reused
-across the batch. The mapping helper retains its own fetch and row checks; no
-claim is made that all component work is deduplicated. Further cross-component
-reuse needs a separate counter and evidence contract.
+across the batch. Within each result, source mapping can reuse the delivery check
+under the same validated configuration and fetch budget. It still evaluates its
+own returned-row constraints and source rules within the mapping budget.
+Standalone mapping independently verifies delivery from its original inputs.
 
 Input bounds are configuration 256 KiB, lifecycle and optional trace 8 MiB each,
 source envelope 12 MiB, total bundle 32 MiB and report 64 MiB. Bounded details of
@@ -89,6 +91,190 @@ prove negative/tombstone sources without choosing an arbitrary missing-row
 version. Private transactional effect rows alone do not prove this closure.
 Authentication is a separate protocol. None of these obligations is satisfied by
 flipping a producer Boolean, reusing a backend PID, or querying a source later.
+
+## Post-installation write observations
+
+An opt-in read through the existing private effect table captures a bounded
+snapshot of the INSERT, UPDATE and DELETE effects visible to a dedicated
+PostgreSQL 18 control connection. It records the original SQL, native cells
+and decoded rows, including the version, predecessor, keys, and server-reported
+writer identifiers. The MoonBit verifier checks the original installation,
+read-only transaction, table and sidecar catalog, sealed log, and predecessor
+links. The report points to the original records in the log.
+
+```python
+from moontxnwitness_capture.configured_effects import (
+    configured_effects_input, observe_configured_effects,
+)
+from moontxnwitness_capture.configured_session import InstallationInputs, write_new
+import json
+
+installation = InstallationInputs.from_attempt("installation", policy)
+observe_configured_effects(owner_control, "effects", config, policy,
+                           installation, opt_in=True)
+write_new("effects-input.json", json.dumps(
+    configured_effects_input(config, installation, "effects"), ensure_ascii=False,
+))
+```
+
+The control connection must be idle, in autocommit mode, and able to read as the
+source owner. Use a new output directory. The SDK entry is
+`verifyConfiguredEffectsSnapshotV4(input, options)`.
+
+```text
+node dist/moontxnwitness.mjs verify-configured-effects-v4 effects-input.json
+```
+
+The default row limit is 256, with an allowed range of 0 through 4096. Supply
+the same independently chosen `maxRows` in the verifier options when using a
+nondefault limit. Each page contains up to eight rows. The verifier requires a
+terminal empty page and rejects a partial log, oversized row or unknown
+predecessor. Source and installation checks have separate caller budgets.
+
+Each observation starts its own read-only Repeatable Read snapshot and scans
+from the beginning. A version assigned earlier can become visible after a
+higher version. The cursor orders pages within this snapshot and carries no
+commit-order or cross-snapshot checkpoint meaning. Rolled-back effects do not
+appear in the committed sidecar view. The result keeps writer-window coverage,
+writer-to-client transaction matching, and isolation analysis open.
+
+Run the owned database test with an existing PostgreSQL 18 binary directory
+after building the JavaScript runtime.
+
+```text
+python -B scripts/configured-source-postgres.py --bin PG18_BIN --output NEW_TEST_DIRECTORY --verify-effects
+```
+
+### Match sidecar effects to a client transaction
+
+For a dedicated synchronous psycopg connection in an installed diagnostic
+session, take an explicit checkpoint after the final business statement and
+before the wrapped commit. Ordinary diagnostic capture still performs no extra
+query. The checkpoint uses a separate cursor and obtains the assigned top-level
+XID without allocating one for read-only work. A later statement or transaction
+boundary on the same connection invalidates the checkpoint.
+
+```python
+writer = session.wrap_connection(raw_writer)
+# The application executes its statements and consumes its own results.
+session.observe_writer_identity(writer)
+writer.commit()
+# Seal after the workers finish.
+session_input = session.seal()
+
+observe_configured_effects(owner_control, "effects", config, policy, installation,
+                           opt_in=True, include_writer_peer=True)
+# Export the original snapshot envelope as shown above.
+```
+
+```text
+node dist/moontxnwitness.mjs verify-configured-writer-bindings-v4 effects-input.json SESSION_INPUT.json
+```
+
+The matching SDK call is `verifyConfiguredWriterBindingsV4(effects, session,
+options)`. It independently replays the source snapshot and checks the native
+checkpoint, database and endpoint observations, client transaction identity, and
+actual COMMIT tag. It reports matched and unmatched effects separately. The
+default snapshot remains v1; a snapshot with `include_writer_peer=True` records
+the additional peer observation for this check. The optional
+`maxBindingChecks` budget applies to the client logs and matching step.
+
+The peer observation uses the database OID, server endpoint and postmaster
+start time. Server restart or a change of endpoint requires new evidence. This
+component covers explicit synchronous checkpoints on pinned psycopg connections
+outside pipeline and two-phase modes. Missing acknowledgements, independent
+writers and unsupported boundaries leave effects unmatched. Reports preserve
+the open writer-window and isolation-coverage fields.
+
+The owned PostgreSQL test can also run the concurrent binding cases.
+
+```text
+python -B scripts/configured-source-postgres.py --bin PG18_BIN --output NEW_TEST_DIRECTORY --verify-effects --verify-writer-bindings
+```
+
+### Verify the new effects between two snapshots
+
+Export a start and end snapshot using `include_writer_peer=True`, the same
+installation, and the same row limit. Supply the sealed configured session that
+contains the client checkpoints and commit confirmations for the window.
+
+```text
+node dist/moontxnwitness.mjs verify-configured-writer-window-v4 START.json END.json SESSION.json
+```
+
+The JavaScript API is `verifyConfiguredWriterWindowV4(start, end, session,
+options)`. It checks the installation once, verifies both original logs, and
+requires every starting row effect to remain identical in the ending snapshot.
+It then matches only newly visible effects. A lower allocated version may
+belong to this delta if its writer was still active at the start.
+
+The CLI exits 0 when all effects in the delta are matched, including an empty
+delta. Exit 1 means the snapshots passed verification but there are unmatched
+effects. Exit 2 indicates inconsistent or invalid evidence and exit 3 indicates
+budget exhaustion. `maxChecks` is shared by both snapshots,
+`maxInstallationChecks` covers the common installation, and
+`maxBindingChecks` covers the visibility comparison and client log checks.
+
+`ledgerDeltaCovered` covers committed row effects visible in the verified
+sidecar logs for the configured tables. Read coverage, server authentication,
+and complete isolation-analysis input require their own evidence. Both
+snapshots, the original session, and independent options are required to
+recompute the report.
+
+```text
+python -B scripts/configured-source-postgres.py --bin PG18_BIN --output NEW_TEST_DIRECTORY --verify-effects --verify-writer-window
+```
+
+## Analyze a captured point window
+
+`ConfiguredPointWindow` is an opt-in synchronous psycopg 3.3.6 controller for
+an owned PostgreSQL 18 database. Install the source in a dedicated database and
+use one configured table. Construct the controller before opening any writer
+connections. Use explicitly schema-qualified primary-key equality statements
+and include the primary key, every business column and
+`__mtw_source_version` in the original SELECT or UPDATE RETURNING.
+
+```python
+from moontxnwitness_capture.configured_session import ConfiguredPointWindow
+
+window = ConfiguredPointWindow("point-run", config, owner_control, policy,
+                               installation, opt_in=True)
+writer = window.wrap_connection(raw_writer)
+# Execute the original statements and fully consume each result.
+window.observe_writer_identity(writer)
+writer.commit()
+writer.close()
+session_input = window.seal()
+```
+
+Both snapshots and the original session are required for analysis and verification.
+
+```text
+node dist/moontxnwitness.mjs analyze-configured-point-window-v4 point-run/start-input.json point-run/end-input.json point-run/configured-session-input.json --output report.json
+node dist/moontxnwitness.mjs verify-configured-point-window-v4 point-run/start-input.json point-run/end-input.json point-run/configured-session-input.json report.json
+```
+
+The SDK equivalents are `analyzeConfiguredPointWindowV4` and
+`verifyConfiguredPointWindowV4`. Pass the original snapshot texts so that the
+sealed boundary digests match. The verifier independently checks both snapshots,
+actual result exhaustion, SQL and parameter bindings, catalog column identity,
+row values and the committed write ledger. It then analyzes the verified relation
+history under the formal serializable model and checks G2-item.
+
+The profile requires a fresh installation, complete positive point reads, and
+one non-key update per transaction and key preceded by a read of its predecessor.
+It covers up to 32 transactions and 128 business statements. The caller controls
+`maxPointChecks` from 0 through 1,000,000 along with the existing snapshot,
+binding and model budgets. Reports apply to the supplied owned-window
+observations. Empty reads, partial results, savepoints, unbound effects and
+unconfirmed transactions yield incomplete coverage. Exit codes are 0 for
+checked-compatible, 1 for refuted, 2 for invalid evidence, and 3 for unknown.
+
+The following test runs PostgreSQL 18 in an isolated local directory.
+
+```text
+python -B scripts/configured-source-postgres.py --bin PG18_BIN --output NEW_TEST_DIRECTORY --verify-point-window
+```
 
 ## Replay and preparation validation
 

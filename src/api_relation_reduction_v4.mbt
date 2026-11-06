@@ -1,11 +1,26 @@
 ///|
 fn wire_relation_reduction_options_v4(
   text : String,
-) -> (String, Int32, Int32, Int32, Int32) raise {
+) -> (String, Int32, Int32, Int32, Int32, WireRelationPredicateOptionsV4?) raise {
   let fields = object_fields(
     guarded_json(text, limit=8192),
     "relation reduction options",
   )
+  if fields.contains("ruleSet") {
+    let max_checks = wire_v4_int(fields, "maxChecks", 256, 256)
+    fields.remove("maxChecks")
+    let predicate = wire_relation_predicate_options_v4(
+      Json::object(fields).stringify(),
+    )
+    return (
+      scoped_category_name_v4(predicate.category),
+      max_checks,
+      predicate.states,
+      predicate.edges,
+      predicate.graph,
+      Some(predicate),
+    )
+  }
   known_fields(
     fields,
     ["category", "maxChecks", "maxStates", "maxEdgeChecks", "maxGraphChecks"],
@@ -26,6 +41,26 @@ fn wire_relation_reduction_options_v4(
     wire_v4_int(fields, "maxStates", 100000, 100000),
     wire_v4_int(fields, "maxEdgeChecks", 1000000, 1000000),
     wire_v4_int(fields, "maxGraphChecks", 1000000, 1000000),
+    None,
+  )
+}
+
+///|
+fn wire_relation_category_reduce_v4(
+  text : String,
+  options : String,
+) -> RelationCategoryReductionV4 raise {
+  let (category, checks, states, edges, graph, predicate) = wire_relation_reduction_options_v4(
+    options,
+  )
+  reduce_relation_category_impl_v4(
+    wire_v4_history(text),
+    category,
+    checks,
+    states,
+    edges,
+    graph,
+    predicate,
   )
 }
 
@@ -34,21 +69,9 @@ pub fn reduce_relation_category_v4_json(
   text : String,
   options : String,
 ) -> String {
-  try {
-    let (category, max_checks, max_states, max_edge_checks, max_graph_checks) = wire_relation_reduction_options_v4(
-      options,
-    )
-    relation_category_reduction_v4_json(
-      reduce_relation_category_v4(
-        wire_v4_history(text),
-        category~,
-        max_checks~,
-        max_states~,
-        max_edge_checks~,
-        max_graph_checks~,
-      ),
-    ).stringify(indent=2)
-  } catch {
+  relation_category_reduction_v4_json(
+    wire_relation_category_reduce_v4(text, options),
+  ).stringify(indent=2) catch {
     error => wire_v4_failure(error.to_string())
   }
 }
@@ -59,22 +82,10 @@ pub fn verify_relation_category_reduction_v4_json(
   report : String,
   options : String,
 ) -> String {
-  try {
-    let (category, max_checks, max_states, max_edge_checks, max_graph_checks) = wire_relation_reduction_options_v4(
-      options,
-    )
-    wire_v4_verified(
-      verify_relation_category_reduction_v4(
-        wire_v4_history(text),
-        guarded_json(report, limit=33554432),
-        category~,
-        max_checks~,
-        max_states~,
-        max_edge_checks~,
-        max_graph_checks~,
-      ),
-    )
-  } catch {
+  wire_v4_verified(
+    guarded_json(report, limit=33554432) ==
+    wire_relation_category_reduce_v4(text, options).record,
+  ) catch {
     _ => wire_v4_verified(false)
   }
 }

@@ -489,6 +489,19 @@ pub fn verify_source_installation_v4(
   if !complete {
     bindings = []
   }
+  // The original stream already checked this exact digest on success.
+  // A partial report still records the hash of its supplied bytes.
+  let log_digest = if complete {
+    let verified = object_fields_unchecked_v3(
+      object_fields_unchecked_v3(receipt).at("log"),
+    ).at("sha256")
+    match verified {
+      String(digest) => digest
+      _ => v3_dislock_sha256(original_log)
+    }
+  } else {
+    v3_dislock_sha256(original_log)
+  }
   {
     record: {
       "format": "moontxnwitness-source-installation-check/v4",
@@ -506,7 +519,7 @@ pub fn verify_source_installation_v4(
       "driverFetchVerified": false,
       "isolationModelChecked": false,
       "configSha256": Json(config.digest),
-      "installationLogSha256": Json(v3_dislock_sha256(original_log)),
+      "installationLogSha256": Json(log_digest),
       "installationReceiptCanonicalSha256": Json(
         v3_dislock_sha256(sql_canonical_v1(receipt)),
       ),
@@ -534,6 +547,6 @@ pub fn verify_source_installation_v4(
     config,
     installed_catalogs: catalogs,
     initial_versions: initial,
-    log_digest: v3_dislock_sha256(original_log),
+    log_digest,
   }
 }

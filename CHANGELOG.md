@@ -1,3 +1,17 @@
+# Unreleased
+
+- Verify delivered PostgreSQL point reads and updates against captured row versions, then analyze the sealed window with the serializable relation model.
+- Reuse the verified installation digest and the SHA-256 message schedule to reduce repeated work during source replay.
+- Verify coverage of newly visible PostgreSQL row effects across two snapshots, with explicit unmatched effects and detection of altered historical rows.
+- Match observed PostgreSQL effects to confirmed synchronous client commits using explicit native transaction checkpoints.
+- Export PostgreSQL source effects from a read-only snapshot and independently verify the sealed observations, catalog, and predecessor links.
+- Reduce relation predicate counterexamples using an explicit Adya or Elle rule set, with source checks, independent replay and unchanged point capsule semantics.
+- Record the published v0.4.0 register/list serializable comparison against frozen Elle results and add a digest-checked rerun command.
+- Provide a lightweight ZIP builder with clean-directory verification for the current SDK and CLI.
+- Share the main compiled core across the default JavaScript SDK's configured SQL, fetch, source and session methods. Keep dedicated bridge entry points available for standalone callers.
+- Reuse the native delivery check within a configured session's initial-source mapping under the same validated configuration and fetch budget. Preserve independent source-mapping budgets and report fields.
+- Validate SQL and fetch input Unicode without allocating an encoding round trip. Preserve original text and byte limits for standalone and shared SDK calls.
+
 # 0.4.0 — 2026-10-31
 
 - Integrate source-bound relation point and predicate classification, category-preserving reduction and replay with independent caller budgets.

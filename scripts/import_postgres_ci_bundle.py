@@ -155,14 +155,20 @@ def checkout_identity(root):
         configured_runtime_binding({**{'dist/'+name:no_links(root,'dist/'+name).read_bytes() for name in CONFIGURED_SLOTS},'dist/build-manifest.json':manifest_raw},identity,manifest,tested)
     return identity
 
+def run_matches_checkout(run, expected, pr_head=None):
+    # GitHub reports a PR's branch tip as head_sha even when its job ran the
+    # synthetic merge commit. A branch job must wait for a branch producer.
+    if run.get('event') == 'pull_request':
+        return pr_head is not None and run.get('head_sha') == pr_head
+    return run.get('head_sha') == expected
+
+
 def validate_run(run, repository, expected, pr_head=None):
     require(run.get('repository',{}).get('full_name','').lower() == repository.lower(), 'Wrong workflow repository')
     require(run.get('path') == '.github/workflows/postgres.yml', 'Wrong PostgreSQL workflow')
     require(run.get('status') == 'completed' and run.get('conclusion') == 'success', 'PostgreSQL run is not successful')
     require(type(run.get('id')) is int and run['id'] > 0 and type(run.get('run_attempt')) is int and run['run_attempt'] > 0, 'Invalid run identity')
-    same = run.get('head_sha') == expected
-    pr = pr_head is not None and run.get('event') == 'pull_request' and run.get('head_sha') == pr_head
-    require(same or pr, 'Workflow source is neither exact HEAD nor this PR head')
+    require(run_matches_checkout(run, expected, pr_head), 'Workflow source is neither exact HEAD nor this PR head')
 
 def validate_payload(payload, run, artifact, expected, *, require_runtime_bytes=True):
     version, commit = expected['version'], expected['commit']; prefix = f'verification/releases/{version}/postgres/'
@@ -595,7 +601,7 @@ def main():
     deadline=time.monotonic()+args.wait_seconds;chosen=None
     while True:
         runs=api(f'/repos/{args.repository}/actions/workflows/postgres.yml/runs?per_page=100',token).get('workflow_runs',[])
-        relevant=[r for r in runs if r.get('head_sha') in [expected['commit'],pr] and r.get('path')=='.github/workflows/postgres.yml']
+        relevant=[r for r in runs if r.get('path')=='.github/workflows/postgres.yml' and run_matches_checkout(r,expected['commit'],pr)]
         for run in relevant:
             if run.get('status')!='completed' or run.get('conclusion')!='success':continue
             validate_run(run,args.repository,expected['commit'],pr)

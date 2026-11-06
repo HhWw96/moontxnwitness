@@ -56,6 +56,101 @@ pub fn reduce_relation_category_v4(
   max_edge_checks~ : Int32 = 1000000,
   max_graph_checks~ : Int32 = 1000000,
 ) -> RelationCategoryReductionV4 {
+  reduce_relation_category_impl_v4(
+    history,
+    category,
+    max_checks,
+    max_states,
+    max_edge_checks,
+    max_graph_checks,
+    None,
+  )
+}
+
+///|
+/// Reduces a relation trace under the same scoped predicate rule on every deletion.
+pub fn reduce_relation_predicate_v4(
+  history : HistoryV4,
+  category : ScopedCategoryV4,
+  rule_set~ : ScopedRuleSetV4,
+  max_checks~ : Int32 = 256,
+  max_states~ : Int32 = 100000,
+  max_edge_checks~ : Int32 = 1000000,
+  max_graph_checks~ : Int32 = 1000000,
+  max_predicate_checks~ : Int32 = 1000000,
+  max_candidate_visits~ : Int32 = 100000,
+) -> RelationCategoryReductionV4 {
+  reduce_relation_category_impl_v4(
+    history,
+    scoped_category_name_v4(category),
+    max_checks,
+    max_states,
+    max_edge_checks,
+    max_graph_checks,
+    Some({
+      category,
+      rules: rule_set,
+      graph: max_graph_checks,
+      predicates: max_predicate_checks,
+      candidates: max_candidate_visits,
+      states: max_states,
+      edges: max_edge_checks,
+    }),
+  )
+}
+
+///|
+fn reduce_relation_category_impl_v4(
+  history : HistoryV4,
+  category : String,
+  max_checks : Int32,
+  max_states : Int32,
+  max_edge_checks : Int32,
+  max_graph_checks : Int32,
+  predicate : WireRelationPredicateOptionsV4?,
+) -> RelationCategoryReductionV4 {
+  fn classify(input : HistoryV4) -> (String, Json, Bool) {
+    match predicate {
+      None => {
+        let report = classify_relation_point_v4(
+          input,
+          categories=[category],
+          max_states~,
+          max_edge_checks~,
+          max_graph_checks~,
+        )
+        (
+          relation_category_rule_status_v4(report, category),
+          report.record,
+          true,
+        )
+      }
+      Some(options) =>
+        match
+          classify_relation_predicate_v4(
+            input,
+            options.category,
+            rule_set=options.rules,
+            max_graph_checks~,
+            max_predicate_checks=options.predicates,
+            max_candidate_visits=options.candidates,
+            max_states~,
+            max_edge_checks~,
+          ) {
+          Ok(report) =>
+            (
+              report.status,
+              report.record,
+              relation_classification_at_v4(report.record, [
+                "predicateGraph", "complete",
+              ]) ==
+              Json(true),
+            )
+          Err(reason) =>
+            ("unknown", { "status": "unknown", "reason": Json(reason) }, false)
+        }
+    }
+  }
   let original_sequence_window_closed = relation_reduction_sequence_window_v4(
     history,
   )
@@ -69,7 +164,15 @@ pub fn reduce_relation_category_v4(
   let mut unresolved : Array[Json] = []
   let audit : Array[Json] = []
   let mut budget_exhausted = false
-  let valid = relation_classification_categories_v4().contains(category) &&
+  let valid_category = match predicate {
+    None => relation_classification_categories_v4().contains(category)
+    Some(options) =>
+      options.predicates >= 0 &&
+      options.predicates <= 1000000 &&
+      options.candidates >= 0 &&
+      options.candidates <= 100000
+  }
+  let valid = valid_category &&
     max_checks >= 0 &&
     max_checks <= 256 &&
     max_states >= 0 &&
@@ -78,27 +181,21 @@ pub fn reduce_relation_category_v4(
     max_edge_checks <= 1000000 &&
     max_graph_checks >= 0 &&
     max_graph_checks <= 1000000
-  let initial = classify_relation_point_v4(
-    history,
-    categories=[category],
-    max_states~,
-    max_edge_checks~,
-    max_graph_checks~,
-  )
-  let initial_status = relation_category_rule_status_v4(initial, category)
+  let (initial_status, _, initial_graph_complete) = classify(history)
   let mut status = if !valid {
     "invalid"
   } else if history.data_model != RelationSetV4 {
     "unsupported"
   } else if initial_status == "refuted" {
     "budget"
-  } else if initial_status == "checked-compatible" {
+  } else if initial_status == "checked-compatible" && initial_graph_complete {
     "not-refuted"
   } else {
     "undetermined"
   }
   let mut changed = valid &&
     original_source_closed &&
+    initial_graph_complete &&
     original_sequence_window_closed &&
     history.data_model == RelationSetV4 &&
     initial_status == "refuted"
@@ -142,18 +239,10 @@ pub fn reduce_relation_category_v4(
           })
         }
         Some((next, relative_origins)) => {
-          let outcome = classify_relation_point_v4(
-            next,
-            categories=[category],
-            max_states~,
-            max_edge_checks~,
-            max_graph_checks~,
-          )
-          let result_status = relation_category_rule_status_v4(
-            outcome, category,
-          )
+          let (result_status, _, graph_complete) = classify(next)
           let source_closed = original_source_closed &&
             original_sequence_window_closed &&
+            graph_complete &&
             v4_reduction_source_closed(next)
           audit.push({
             "check": Json(checks),
@@ -199,18 +288,13 @@ pub fn reduce_relation_category_v4(
   if changed && checks >= max_checks {
     budget_exhausted = true
   }
+  let (final_status, final_report, final_graph_complete) = classify(current)
   let final_source_closed = original_sequence_window_closed &&
+    final_graph_complete &&
     v4_reduction_source_closed(current)
   one_minimal = one_minimal && final_source_closed
-  let final_report = classify_relation_point_v4(
-    current,
-    categories=[category],
-    max_states~,
-    max_edge_checks~,
-    max_graph_checks~,
-  )
   if valid && history.data_model == RelationSetV4 && initial_status == "refuted" {
-    if relation_category_rule_status_v4(final_report, category) != "refuted" {
+    if final_status != "refuted" {
       status = "invalid"
       one_minimal = false
     } else if one_minimal {
@@ -221,12 +305,23 @@ pub fn reduce_relation_category_v4(
       status = "undetermined"
     }
   }
+  let (semantic, algorithm, profile, counter) = if predicate is Some(_) {
+    (
+      "relation-predicate-category-transaction-reduction-1", "relation-predicate-single-delete-1",
+      "relation-predicate-category-reduction/v4-1", "relation-predicate-candidate-checks-1",
+    )
+  } else {
+    (
+      "relation-point-category-transaction-reduction-2", "relation-category-single-delete-2",
+      "relation-point-category-reduction/v4-2", "relation-category-candidate-checks-1",
+    )
+  }
   let record : Json = {
     "format": "moontxnwitness-relation-category-reduction/v4",
     "schemaVersion": 4,
-    "semanticContract": "relation-point-category-transaction-reduction-2",
-    "algorithm": "relation-category-single-delete-2",
-    "profile": "relation-point-category-reduction/v4-2",
+    "semanticContract": Json(semantic),
+    "algorithm": Json(algorithm),
+    "profile": Json(profile),
     "dataModel": Json(v4_model_name(history.data_model)),
     "preserveCategory": Json(category),
     "status": Json(status),
@@ -243,9 +338,9 @@ pub fn reduce_relation_category_v4(
       "originalSequenceWindowClosed": Json(original_sequence_window_closed),
       "reducedSourceClosed": Json(final_source_closed),
     },
-    "classification": final_report.record,
+    "classification": final_report,
     "execution": {
-      "counterContract": "relation-category-candidate-checks-1",
+      "counterContract": Json(counter),
       "candidateChecks": Json(checks),
       "passes": Json(passes),
       "candidateAudit": Json(audit),
@@ -260,6 +355,16 @@ pub fn reduce_relation_category_v4(
         "graphChecksPerCandidate": Json(max_graph_checks),
       },
     },
+  }
+  if predicate is Some(options) {
+    let fields = object_fields_unchecked_v3(record)
+    fields["ruleSet"] = Json(scoped_ruleset_name_v4(options.rules))
+    let execution = object_fields_unchecked_v3(fields.at("execution"))
+    let limits = object_fields_unchecked_v3(execution.at("limits"))
+    limits["predicateChecksPerCandidate"] = Json(options.predicates)
+    limits["candidateVisitsPerCandidate"] = Json(options.candidates)
+    let coverage = object_fields_unchecked_v3(fields.at("sourceCoverage"))
+    coverage["originalPredicateGraphComplete"] = Json(initial_graph_complete)
   }
   { history: current, record, }
 }

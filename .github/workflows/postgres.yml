@@ -72,6 +72,10 @@ jobs:
           MTW_CONFIGURED_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
         run: |
           python -B scripts/configured-session-ci-postgres.py --execute --owned-database --dsn-env MTW_CONFIGURED_PG_DSN --output verification/configured-session-v4/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Verify PostgreSQL point windows and replay the model reports
+        env:
+          MTW_CONFIGURED_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: python -B scripts/configured-point-postgres.py --owned-database --dsn-env MTW_CONFIGURED_PG_DSN --output verification/configured-point-v4/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Capture all ten configured model scenarios and verify the current build
         shell: bash
         env:
@@ -238,5 +242,6 @@ jobs:
             verification/faults/mlflow/ci-model/
             verification/model-profile-v3/postgres-ci-*/
             verification/configured-session-v4/postgres-ci-*/
+            verification/configured-point-v4/postgres-ci-*/
             verification/postgres-ci-runtime/${{ github.run_id }}-${{ github.run_attempt }}/
             dist/

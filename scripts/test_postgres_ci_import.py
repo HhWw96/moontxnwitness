@@ -78,6 +78,11 @@ class Boundaries(unittest.TestCase):
     def test_future_or_unrelated_head_is_rejected(self):
         r={**self.run,'head_sha':'b'*40}
         with self.assertRaises(pg.ImportFailure):self.validate(run=r)
+    def test_branch_consumer_ignores_pr_run_reporting_the_same_head(self):
+        pr_run={**self.run,'event':'pull_request'}
+        self.assertFalse(pg.run_matches_checkout(pr_run,COMMIT))
+        self.assertTrue(pg.run_matches_checkout(self.run,COMMIT))
+        with self.assertRaises(pg.ImportFailure):self.validate(run=pr_run)
     def test_pr_api_head_needs_the_exact_event_head_and_original_merge_source(self):
         pr='b'*40;r={**self.run,'head_sha':pr,'event':'pull_request'};path,a=self.archive();a['workflow_run']['head_sha']=pr
         files,_=pg.validate_archive(path,r,a,self.expected,REPO,pr);self.assertEqual(len(files),17)

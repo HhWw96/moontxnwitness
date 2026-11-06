@@ -170,6 +170,10 @@ CONFIGURED037_RUNTIME_INPUTS = (
  'dist/configured-v4.mjs','dist/configured-session-v4.mjs','dist/source-components-v4.mjs',
  'dist/sql-candidate-v1.mjs','dist/sql-fetch-v1.mjs',
 )
+SHARED_CONFIGURED_WRAPPERS = ('configured-shared-v4.mjs', 'sql-candidate-host-v1.mjs', 'sql-fetch-host-v1.mjs')
+SHARED_CONFIGURED_CONSUMER_INPUTS = (
+ 'scripts/shared-core-runtime-test.mjs','scripts/bench/full-sdk/parse-static-imports.mjs',
+)
 
 
 NATIVE038_PORTABLE_INPUTS = ('scripts/native-report-sdk-test.mjs', 'docs/native-report-performance.md', 'docs/native-report-performance.json')
@@ -450,6 +454,11 @@ def select_distribution_files(root, public_names, tested_files, version):
     if configured037:
         for name in CONFIGURED037_SOURCE_INPUTS + CONFIGURED037_PORTABLE_INPUTS + CONFIGURED037_RUNTIME_INPUTS:
             require(name, 'configured session current source/runtime and independent-option diagnostic replay closure')
+        for name in SHARED_CONFIGURED_WRAPPERS:
+            require('cmd/' + name, 'shared configured SDK source')
+            require('dist/' + name, 'shared configured SDK runtime')
+        for name in SHARED_CONFIGURED_CONSUMER_INPUTS:
+            require(name, 'shared and standalone runtime consumer checks')
         require_tree('fixtures/source-components-v4', 'original installation, actual other-cluster fetch and explicit synthetic mapping controls')
         require_tree('examples/configured-session', 'startup configuration and explicit installation controller')
         require('integrations/python/requirements-configured-sql.txt', 'optional parser version/hash and license closure')
@@ -565,6 +574,7 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.update(MODELS036_PORTABLE_INPUTS)
     if configured037:
         portable.update(CONFIGURED037_PORTABLE_INPUTS)
+        portable.update(SHARED_CONFIGURED_CONSUMER_INPUTS)
         portable.update(n for n in public_names if n.startswith('fixtures/source-components-v4/'))
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         portable.update(NATIVE038_PORTABLE_INPUTS)

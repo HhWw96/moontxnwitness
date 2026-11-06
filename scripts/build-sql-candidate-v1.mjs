@@ -18,6 +18,7 @@ assert.equal(result.status,0,result.stderr);
 const dist=resolve(root,'dist');mkdirSync(dist,{recursive:true});
 copyFileSync(resolve(root,'_build/js/release/build/sql_projection_bridge/sql_projection_bridge.js'),resolve(dist,'sql-projection-core.mjs'));
 copyFileSync(resolve(root,'cmd/sql-candidate-v1.mjs'),resolve(dist,'sql-candidate-v1.mjs'));
+copyFileSync(resolve(root,'cmd/sql-candidate-host-v1.mjs'),resolve(dist,'sql-candidate-host-v1.mjs'));
 const hash=path=>createHash('sha256').update(readFileSync(path)).digest('hex');
 const receipt={format:'independent-sql-bridge-build/v1',sourceFingerprint:sourceFingerprint(root),coreSha256:hash(resolve(dist,'sql-projection-core.mjs')),sdkSha256:hash(resolve(dist,'sql-candidate-v1.mjs')),actualDatabaseExecution:false,historicalInputsRestored:false,publicReleasePerformed:false};
 writeFileSync(resolve(root,'artifacts/sql-projection-build.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));

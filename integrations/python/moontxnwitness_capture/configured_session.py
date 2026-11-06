@@ -4,6 +4,7 @@ No global driver patches, business SQL rewriting, eager result consumption or
 model fact promotion. Default construction performs no database operation.
 """
 from __future__ import annotations
+import base64
 from dataclasses import dataclass, replace
 import hashlib
 import inspect
@@ -14,6 +15,7 @@ import stat
 from .configured_sql import SQLCaptureConfig, ColumnConfig, TableConfig, ConfiguredSQLParser
 from .configured_fetch import ConfiguredInstrumentation, StoredColumnObservation
 from .configured_source import SourceInstallPolicy, VERSION_COLUMN, install_configured_source
+from .capture_v3 import _pinned_connection
 
 INPUT_FORMAT = 'moontxnwitness-configured-session-input/v1'
 INSTALL_INPUT_FORMAT = 'moontxnwitness-configured-installation-input/v1'
@@ -121,6 +123,43 @@ class ConfiguredDiagnosticSession:
     def wrap_connection(self, raw, *, asynchronous=False):
         return self.observer.wrap_async(raw) if asynchronous else self.observer.wrap(raw)
 
+    def observe_writer_identity(self, connection):
+        """Record an explicit synchronous checkpoint immediately before commit."""
+        from psycopg.rows import tuple_row
+        from .configured_effects import WRITER_PROBE_SQL
+        from .configured_fetch import ConfiguredConnection
+
+        if (self.installation is None or self._sealed or not isinstance(connection, ConfiguredConnection)
+                or connection._session is not self.observer):
+            raise ValueError('A synchronous connection from this installed diagnostic session is required')
+        raw = connection._raw
+        with connection._operation_lock:
+            if (not _pinned_connection(raw) or raw.autocommit or raw._pipeline or raw._tpc
+                    or not connection._tx or int(raw.info.transaction_status) != 2):
+                raise ValueError('An active pinned psycopg transaction outside pipeline/two-phase mode is required')
+            pid = raw.info.backend_pid
+            with raw.cursor(row_factory=tuple_row) as cursor:
+                cursor.execute(WRITER_PROBE_SQL, prepare=False)
+                result = cursor.pgresult
+                if (result is None or int(result.status) != 2 or result.command_status != b'SELECT 1'
+                        or result.ntuples != 1 or result.nfields != 1
+                        or result.ftype(0) != 25 or result.fformat(0) != 0):
+                    raise ValueError('Writer checkpoint did not return the expected native text')
+                native = result.get_value(0, 0)
+                delivered = cursor.fetchone()
+            if (not isinstance(native, bytes) or len(native) > 4096 or type(delivered) is not tuple
+                    or len(delivered) != 1 or not isinstance(delivered[0], str)
+                    or delivered[0].encode('utf8') != native
+                    or raw.info.backend_pid != pid or int(raw.info.transaction_status) != 2):
+                raise ValueError('Writer checkpoint text or backend changed')
+            return self.observer.frame('configured-writer-checkpoint', {
+                'connection': connection._identity, 'tx': connection._tx, 'sql': WRITER_PROBE_SQL,
+                'driverPid': pid, 'statusBefore': 2, 'statusAfter': 2,
+                'nativeStatus': int(result.status), 'nativeTag': result.command_status.decode('ascii'),
+                'nativeColumns': [{'oid': result.ftype(0), 'format': result.fformat(0)}],
+                'nativeBase64': base64.b64encode(native).decode('ascii'), 'deliveredText': delivered[0],
+            })
+
     def seal(self):
         if self._sealed:
             raise ValueError('Diagnostic session already sealed')
@@ -147,6 +186,73 @@ class ConfiguredDiagnosticSession:
         write_new(self.output / 'session-receipt.json', canonical(receipt) + '\n')
         self._sealed = True
         return target
+
+
+class ConfiguredPointWindow(ConfiguredDiagnosticSession):
+    """Owned PostgreSQL point window with explicit snapshot boundaries."""
+
+    def __init__(self, output, config, control, policy, installation, *, opt_in=False, max_rows=256):
+        if opt_in is not True or len(config.tables) != 1 or not _pinned_connection(control):
+            raise ValueError('An owned PostgreSQL point window with one configured table is required')
+        super().__init__(output, config, installation=installation)
+        self._control, self._policy, self._max_rows = control, policy, max_rows
+        self._participants = []
+        self._ending = False
+        self.start_path = self._snapshot('start')
+        self.end_path = None
+
+    def _snapshot(self, side):
+        from .configured_effects import configured_effects_input, observe_configured_effects
+
+        directory = self.output / side
+        observe_configured_effects(self._control, directory, self.config, self._policy,
+                                   self.installation, opt_in=True, max_rows=self._max_rows,
+                                   include_writer_peer=True)
+        envelope = configured_effects_input(self.config, self.installation, directory)
+        text = canonical(envelope) + '\n'
+        path = self.output / (side + '-input.json')
+        write_new(path, text)
+        if self.observer.frame('configured-point-' + side, {
+            'sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
+        }) is None:
+            raise ValueError('Point window boundary was not retained')
+        return path
+
+    def wrap_connection(self, raw, *, asynchronous=False):
+        with self.observer._lock:
+            if (self._ending or asynchronous or not _pinned_connection(raw) or raw is self._control
+                    or raw.autocommit or int(raw.info.transaction_status) != 0
+                    or any(raw is connection._raw for connection in self._participants)
+                    or len(self._participants) >= 32):
+                raise ValueError('An idle, new synchronous writer connection is required')
+            connection = super().wrap_connection(raw)
+            self._participants.append(connection)
+            return connection
+
+    def psycopg_factory(self, factory, *, asynchronous=False):
+        if asynchronous:
+            raise ValueError('Point windows require synchronous connections')
+
+        def connect(*args, **kwargs):
+            raw = factory(*args, **kwargs)
+            try:
+                return self.wrap_connection(raw)
+            except BaseException:
+                raw.close()
+                raise
+        return connect
+
+    def instrument_engine(self, engine):
+        raise ValueError('Point windows require direct writer connections')
+
+    def seal(self):
+        with self.observer._lock:
+            if self._ending or not self._participants or any(
+                    not connection._raw.closed for connection in self._participants):
+                raise ValueError('Close all enrolled writer connections before sealing the point window')
+            self._ending = True
+        self.end_path = self._snapshot('end')
+        return super().seal()
 
 
 def install_and_capture_initial_reads(connection, output, config, policy, queries, *, opt_in=False):

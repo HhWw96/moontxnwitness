@@ -488,4 +488,6 @@ export {diagnoseConfiguredSessionTextV4,diagnoseConfiguredSessionV4,verifyConfig
  normalizeConfiguredSessionOptionsV4,makeConfiguredSessionCapsuleV4,replayConfiguredSessionCapsuleV4,
  verifySourceInstallationV4,verifySourceInstallationReportV4,mapInitialSourceFetchV4,
  verifyInitialSourceFetchReportV4,normalizeSQLConfigV1,normalizeSQLCandidateV1,verifySQLCandidateV1,
- compareConfiguredCTextV1,verifyConfiguredFetchV1,CONFIGURED_SESSION_LIMITS} from './configured-v4.mjs';
+ compareConfiguredCTextV1,verifyConfiguredFetchV1,verifyConfiguredEffectsSnapshotV4,verifyConfiguredWriterBindingsV4,
+ verifyConfiguredWriterWindowV4,analyzeConfiguredPointWindowV4,verifyConfiguredPointWindowV4,
+ CONFIGURED_SESSION_LIMITS} from './configured-shared-v4.mjs';

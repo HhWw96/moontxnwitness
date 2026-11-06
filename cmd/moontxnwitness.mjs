@@ -3,7 +3,9 @@ import { openSync, readSync, closeSync, writeFileSync, existsSync, unlinkSync } 
 import { resolve } from 'node:path';
 import { run_json, run_options_json, verify_certificate_json, shrink_json, shrink_options_json, compare_models_json, version } from './core.mjs';
 import { makeCapsule, replayCapsule, makeCapsuleV3, replayCapsuleV3 } from './evidence.mjs';
-import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFailuresV3, inspectOrmSourceV3 } from './sdk.mjs';
+import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFailuresV3, inspectOrmSourceV3,
+  verifyConfiguredEffectsSnapshotV4, verifyConfiguredWriterBindingsV4, verifyConfiguredWriterWindowV4,
+  analyzeConfiguredPointWindowV4, verifyConfiguredPointWindowV4 } from './sdk.mjs';
 import { analyzeOrmProfileV3, reduceOrmProfileV3, verifyOrmProfileV3,
   makeOrmProfileCapsuleV3, makeOrmProfileReductionCapsuleV3, replayOrmProfileCapsuleV3 } from './orm-profile.mjs';
 import { classifyModelsV3, verifyModelsClassificationV3, makeModelsClassificationCapsuleV3,
@@ -33,6 +35,11 @@ import {diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,normalizeConfigure
 const help = `MoonTxnWitness v${version()}
 用法：
   node dist/moontxnwitness.mjs diagnose-configured-session-v4 SESSION.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs verify-configured-effects-v4 SNAPSHOT.json [--options EXPECTED.json] [--output REPORT.json]
+  node dist/moontxnwitness.mjs verify-configured-writer-bindings-v4 SNAPSHOT.json SESSION.json [--options EXPECTED.json] [--output REPORT.json]
+  node dist/moontxnwitness.mjs verify-configured-writer-window-v4 START.json END.json SESSION.json [--options EXPECTED.json] [--output REPORT.json]
+  node dist/moontxnwitness.mjs analyze-configured-point-window-v4 START.json END.json SESSION.json [--options OPTIONS.json] [--output REPORT.json]
+  node dist/moontxnwitness.mjs verify-configured-point-window-v4 START.json END.json SESSION.json REPORT.json [--options EXPECTED.json]
   node dist/moontxnwitness.mjs verify-configured-session-v4 SESSION.json REPORT.json [--options EXPECTED.json] [--output VERIFIED.json]
   node dist/moontxnwitness.mjs replay-configured-session-v4 CAPSULE.json [--options EXPECTED.json] [--output REPLAY.json]
   node dist/moontxnwitness.mjs classify-models-v4 SOURCE.json [--options OPTIONS.json] [--models elle-core|NAME,...] [--list-profile native|captured-list-prefix-state/v2|captured-list-original-serial/v1] [--output REPORT.json] [--capsule CAPSULE.json]
@@ -40,7 +47,7 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs replay-models-v4 CAPSULE.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs check HISTORY.json [--format text|json|markdown|dot] [--output FILE] [--witness FILE]
   node dist/moontxnwitness.mjs verify HISTORY.json CERTIFICATE.json
-  node dist/moontxnwitness.mjs reduce-relation-category-v4 SOURCE.json --category G2-item [--options OPTIONS.json] [--max-checks 256] [--output REPORT.json] [--source REDUCED.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs reduce-relation-category-v4 SOURCE.json --category G2-item [--rule-set RULE_SET] [--options OPTIONS.json] [--max-checks 256] [--output REPORT.json] [--source REDUCED.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs verify-relation-category-reduction-v4 SOURCE.json REPORT.json --category G2-item [--options EXPECTED.json]
   node dist/moontxnwitness.mjs replay-relation-category-reduction-v4 CAPSULE.json --category G2-item [--options EXPECTED.json]
   node dist/moontxnwitness.mjs classify-relation-predicate-v4 SOURCE.json --options OPTIONS.json [--output REPORT.json] [--capsule CAPSULE.json]
@@ -192,6 +199,31 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (['analyze-configured-point-window-v4', 'verify-configured-point-window-v4'].includes(args[0])) {
+    const verify = args[0] === 'verify-configured-point-window-v4';
+    const {paths,options}=localArgs(args.slice(1),['--options','--output'],verify?4:3);
+    const inputs=options['--options']?[...paths,options['--options']]:paths;
+    if(inputs.filter(path=>path==='-').length>1)throw new Error('Only one point window input may use standard input');
+    const expected=options['--options']?readBounded(options['--options'],8192):'{}';
+    const original=[readBounded(paths[0],24*1024*1024),readBounded(paths[1],24*1024*1024),readBounded(paths[2],32*1024*1024)];
+    const result=verify?verifyConfiguredPointWindowV4(...original,readBounded(paths[3],32*1024*1024),expected)
+      :analyzeConfiguredPointWindowV4(...original,expected);
+    emitJSON(result,options['--output'],inputs,[]);
+    process.exitCode=verify?(result.valid?0:2):({ 'checked-compatible':0,refuted:1,invalid:2,unknown:3 }[result.status]??3);
+  } else if (['verify-configured-effects-v4', 'verify-configured-writer-bindings-v4', 'verify-configured-writer-window-v4'].includes(args[0])) {
+    const window=args[0]==='verify-configured-writer-window-v4';
+    const bindings=args[0]==='verify-configured-writer-bindings-v4';
+    const {paths,options}=localArgs(args.slice(1),['--options','--output'],window?3:bindings?2:1);
+    const inputs=options['--options']?[...paths,options['--options']]:paths;
+    if(inputs.filter(path=>path==='-').length>1)throw new Error('Only one effects snapshot input may use standard input');
+    const expected=options['--options']?readBounded(options['--options'],8192):'{}';
+    const effects=readBounded(paths[0],24*1024*1024);
+    let result;
+    if(window) result=verifyConfiguredWriterWindowV4(effects,readBounded(paths[1],24*1024*1024),readBounded(paths[2],32*1024*1024),expected);
+    else if(bindings) result=verifyConfiguredWriterBindingsV4(effects,readBounded(paths[1],32*1024*1024),expected);
+    else result=verifyConfiguredEffectsSnapshotV4(effects,expected);
+    emitJSON(result,options['--output'],inputs,[]);
+    process.exitCode=result.valid?(window&&!result.ledgerDeltaCovered?1:0):result.status==='unknown'?3:2;
   } else if (['diagnose-configured-session-v4','verify-configured-session-v4','replay-configured-session-v4'].includes(args[0])) {
     const command=args[0],verify=command==='verify-configured-session-v4',replay=command==='replay-configured-session-v4';
     const {paths,options}=localArgs(args.slice(1),['--options','--output',...(!verify&&!replay?['--capsule']:[])],verify?2:1);
@@ -222,11 +254,12 @@ try {
     process.exitCode=isVerify||isReplay?(result.valid===true?0:2):result.status==='checked-compatible'?0:result.status==='refuted'?1:result.status==='invalid'?2:3;
   } else if (['reduce-relation-category-v4','verify-relation-category-reduction-v4','replay-relation-category-reduction-v4'].includes(args[0])) {
     const command=args[0],isVerify=command.startsWith('verify-'),isReplay=command.startsWith('replay-');
-    const {paths,options}=localArgs(args.slice(1),['--category','--options','--max-checks','--output',...(!isVerify&&!isReplay?['--source','--capsule']:[])],isVerify?2:1);
+    const {paths,options}=localArgs(args.slice(1),['--category','--rule-set','--options','--max-checks','--output',...(!isVerify&&!isReplay?['--source','--capsule']:[])],isVerify?2:1);
     const inputs=[...paths,...(options['--options']?[options['--options']]:[])];
     if(inputs.filter(p=>p==='-').length>1)throw new Error('Only one relation reduction input may use standard input');
     const requested=options['--options']?parseRelationReductionOptionsV4(readBounded(options['--options'],8192)):{};
     if(options['--category']!==undefined){if(Object.hasOwn(requested,'category'))throw new Error('category must be specified once');requested.category=options['--category'];}
+    if(options['--rule-set']!==undefined){if(Object.hasOwn(requested,'ruleSet'))throw new Error('ruleSet must be specified once');requested.ruleSet=options['--rule-set'];}
     if(options['--max-checks']!==undefined){if(Object.hasOwn(requested,'maxChecks')||!/^(0|[1-9][0-9]*)$/.test(options['--max-checks']))throw new Error('maxChecks must be specified once as an integer');requested.maxChecks=Number(options['--max-checks']);}
     const source=readBounded(paths[0],isReplay?64*1024*1024:8*1024*1024),companions=[];
     let result;

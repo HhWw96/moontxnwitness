@@ -1,5 +1,22 @@
 # Register/list comparison with fixed Elle results
 
+## v0.4.0 published runtime follow-up
+
+The published v0.4.0 runtime at `0745b562` reproduced the original canonical
+serializable comparison. There were 1,997 agreements, zero differences or
+execution failures, and three ineligible upstream results. The run performed
+2,000 classifications and 2,000 report verifications without adding inferred
+order or running the Elle JVM again. The [v0.4.0 receipt](evidence/elle-common-v040.json)
+binds the exact original input, frozen reference and observed runtime digests.
+
+`node scripts/compare-fixed-elle-serializable.mjs ORIGINAL_JOB.json FROZEN_REFERENCE.json NEW_OUTPUT_DIR DIST_DIR`
+reruns these checks using the original `fixed2000-job.original.json` and the
+`preflight-upstream-bindings.json` reference derived from the original hosted
+Elle artifact. Both file digests are checked before execution. Results and the
+first example of each non-matching outcome are written to the new directory.
+
+## v0.3.6 maintained comparison
+
 The maintained v0.3.6 2,000-history comparison executed frozen classifier
 `2c5245e` / core `c7c62b521af6068c…` and its verifier once per history,
 using unchanged original observations. In the common

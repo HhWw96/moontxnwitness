@@ -105,8 +105,8 @@ fn v3_dislock_sha256(text : String) -> String {
     0x5b9cca4fU, 0x682e6ff3U, 0x748f82eeU, 0x78a5636fU, 0x84c87814U, 0x8cc70208U,
     0x90befffaU, 0xa4506cebU, 0xbef9a3f7U, 0xc67178f2U,
   ]
+  let w : Array[UInt32] = Array::make(64, 0U)
   for block in 0..<(bytes.length() / 64) {
-    let w : Array[UInt32] = Array::make(64, 0U)
     for i in 0..<16 {
       let j = block * 64 + i * 4
       w[i] = (bytes[j] << 24) |

@@ -30,15 +30,15 @@ fn source_augmented_config_v4(config : SQLConfigV1) -> SQLConfigV1 raise {
 }
 
 ///|
-pub fn verify_source_fetch_mapping_v4(
+fn source_fetch_mapping_with_delivery_v4(
   installation : SourceInstallationCheckV4,
   execution : Json,
   native : Json,
-  deliveries : Json,
+  check_delivery : (SQLConfigV1) -> Json,
   source_context : Json,
-  max_checks~ : Int32 = 1000000,
-  max_fetch_checks~ : Int32 = 1000000,
-  grammar_options~ : SQLVerificationOptionsV1 = sql_verification_options_v1(),
+  max_checks : Int32,
+  max_fetch_checks : Int32,
+  // Failure call-site positions below are part of v4 replay.
 ) -> SourceFetchMappingV4 {
   let work : SourceWorkV4 = { limit: max_checks, checks: 0, }
   let mut reason = ""
@@ -83,17 +83,17 @@ pub fn verify_source_fetch_mapping_v4(
     } else {
       fail("mismatch:source-fetch-config-contract")
     }
-    // The selected candidate is still independently recomputed against this allowed configuration.
-    native_delivery = configured_fetch_check_v1_json(
-      verify_configured_fetch_v1(
-        fetch_config,
-        execution,
-        native,
-        deliveries,
-        max_checks=max_fetch_checks,
-        grammar_options~,
-      ),
-    )
+    // Select the allowed configuration above before checking delivery. A
+    // session supplies its per-result verifier and can share an existing
+    // check only under the same configuration, grammar and fetch budget.
+    // Standalone mapping independently checks the original delivery.
+    // Its public API never accepts a precomputed report from a caller.
+    //
+    // Row constraints and the source join still charge the mapping budget.
+    // Keep the existing failure call sites below at their original positions
+    // because their source locations appear in stored and replayed reports.
+    //
+    native_delivery = check_delivery(fetch_config)
     let f = source_object_v4(native_delivery)
     fetch = source_select_result_constraints_v4(native_delivery, native, work)
     if f.at("valid") != Json(true) {
@@ -302,4 +302,37 @@ pub fn verify_source_fetch_mapping_v4(
       },
     },
   }
+}
+
+///|
+pub fn verify_source_fetch_mapping_v4(
+  installation : SourceInstallationCheckV4,
+  execution : Json,
+  native : Json,
+  deliveries : Json,
+  source_context : Json,
+  max_checks~ : Int32 = 1000000,
+  max_fetch_checks~ : Int32 = 1000000,
+  grammar_options~ : SQLVerificationOptionsV1 = sql_verification_options_v1(),
+) -> SourceFetchMappingV4 {
+  source_fetch_mapping_with_delivery_v4(
+    installation,
+    execution,
+    native,
+    fn(config) {
+      configured_fetch_check_v1_json(
+        verify_configured_fetch_v1(
+          config,
+          execution,
+          native,
+          deliveries,
+          max_checks=max_fetch_checks,
+          grammar_options~,
+        ),
+      )
+    },
+    source_context,
+    max_checks,
+    max_fetch_checks,
+  )
 }
