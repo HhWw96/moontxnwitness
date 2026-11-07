@@ -247,6 +247,14 @@ writer.close()
 session_input = window.seal()
 ```
 
+To record the native writer checkpoint from the connection's `commit()` method,
+pass `automatic_writer_checkpoints=True` to `ConfiguredPointWindow` and omit the
+explicit `observe_writer_identity` call. The option is disabled by default.
+The probe and actual COMMIT share the connection operation lock. A probe failure
+records a coverage gap; the actual COMMIT response remains independently
+observed. Idle, aborted and disabled connections issue no probe. This option
+retains the existing synchronous point-window SQL and coverage requirements.
+
 Both snapshots and the original session are required for analysis and verification.
 
 ```text

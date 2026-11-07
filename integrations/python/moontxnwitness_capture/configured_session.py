@@ -191,13 +191,18 @@ class ConfiguredDiagnosticSession:
 class ConfiguredPointWindow(ConfiguredDiagnosticSession):
     """Owned PostgreSQL point window with explicit snapshot boundaries."""
 
-    def __init__(self, output, config, control, policy, installation, *, opt_in=False, max_rows=256):
+    def __init__(self, output, config, control, policy, installation, *, opt_in=False, max_rows=256,
+                 automatic_writer_checkpoints=False):
+        if type(automatic_writer_checkpoints) is not bool:
+            raise ValueError('An explicit boolean checkpoint option is required')
         if opt_in is not True or len(config.tables) != 1 or not _pinned_connection(control):
             raise ValueError('An owned PostgreSQL point window with one configured table is required')
         super().__init__(output, config, installation=installation)
         self._control, self._policy, self._max_rows = control, policy, max_rows
         self._participants = []
         self._ending = False
+        if automatic_writer_checkpoints:
+            self.observer._configured_before_commit = self.observe_writer_identity
         self.start_path = self._snapshot('start')
         self.end_path = None
 

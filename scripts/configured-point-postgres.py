@@ -54,7 +54,8 @@ def run_case(base, output, scenario):
         install = output / 'installation'
         install_configured_source(control, install, config, policy, opt_in=True)
         capture = ConfiguredPointWindow(output / 'capture', config, control, policy,
-                                        InstallationInputs.from_attempt(install, policy), opt_in=True)
+                                        InstallationInputs.from_attempt(install, policy), opt_in=True,
+                                        automatic_writer_checkpoints=True)
         columns = 'id,active,__mtw_source_version'
         select_columns = 'id,active' if scenario == 'missing-version' else columns
         query = f'SELECT {select_columns} FROM {target} WHERE id=%s'
@@ -80,7 +81,8 @@ def run_case(base, output, scenario):
                         assert evidence['updated'][0][:2] == evidence['ownRead'][0][:2]
                         if scenario != 'missing-version':
                             assert evidence['updated'] == evidence['ownRead']
-                assert capture.observe_writer_identity(conn) is not None
+                # The enrolled connection records its identity immediately
+                # before COMMIT; business code does not issue a probe.
                 conn.commit()
                 evidence['outcome'] = 'committed'
             except psycopg.errors.SerializationFailure as error:

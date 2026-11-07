@@ -93,6 +93,21 @@ class ConfiguredInstrumentation(Instrumentation):
 
 
 class ConfiguredConnection(DiagnosticConnection):
+    def commit(self):
+        # The point-window controller installs this opt-in callback. Ordinary
+        # diagnostics issue no extra SQL. Hold the same lock across the probe
+        # and COMMIT so another cursor cannot interleave a statement.
+        with self._operation_lock:
+            checkpoint = getattr(self._session, '_configured_before_commit', None)
+            if (self._session._enabled and checkpoint is not None and self._tx
+                    and int(self._raw.info.transaction_status) == 2):
+                try:
+                    checkpoint(self)
+                except Exception:
+                    self._session.gap('configured_writer_checkpoint_missing',
+                                      'Automatic writer identity could not be retained; commit is observed independently.')
+            return super().commit()
+
     def cursor(self,*args,**kwargs):
         raw=self._raw.cursor(*args,**kwargs)
         return _cursor(self,raw,args,kwargs,False)
