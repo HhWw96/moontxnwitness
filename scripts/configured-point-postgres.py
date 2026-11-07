@@ -191,6 +191,10 @@ def run_cases(base, output, repetitions=5):
                 assert rendered.returncode == 0, rendered.stdout + rendered.stderr
                 html = explained.read_text('utf8')
                 assert html.startswith('<!doctype html>') and f'>{status}</p>' in html
+                capsule_checks = subprocess.run([os.environ.get('MTW_NODE', 'node'),
+                    str(ROOT / 'scripts/point-window-capsule-test.mjs'), str(RUNTIME / 'sdk.mjs'),
+                    *map(str, inputs)], capture_output=True, encoding='utf8', timeout=90)
+                assert capsule_checks.returncode == 0, capsule_checks.stdout + capsule_checks.stderr
             if attempt == 0 and scenario == 'ordered':
                 check_negative(inputs, folder)
             cases.append({'attempt': attempt + 1, 'scenario': scenario, 'status': status,

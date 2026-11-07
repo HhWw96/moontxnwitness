@@ -1,5 +1,6 @@
 // Default SDK shares the main MoonBit instance. Standalone entries remain separate.
 import * as core from './core.mjs';
+import {createHash} from 'node:crypto';
 import {createPointWindowExplanationV4} from './point-window-explanation-v4.mjs';
 import {createConfiguredSessionV4} from './configured-session-v4.mjs';
 import {createSourceComponentsV4} from './source-components-v4.mjs';
@@ -62,3 +63,35 @@ export function verifyConfiguredPointWindowV4(before, after, session, report, op
 }
 
 export const explainConfiguredPointWindowV4 = createPointWindowExplanationV4(verifyConfiguredPointWindowV4);
+
+const pointCapsuleFormat='moontxnwitness-configured-point-capsule/v1';
+const pointHash=text=>createHash('sha256').update(text,'utf8').digest('hex');
+const pointCapsuleFields=['format','beforeText','afterText','sessionText','reportText','optionsText',
+ 'beforeSha256','afterSha256','sessionSha256','reportSha256','optionsSha256'];
+
+export function makeConfiguredPointWindowCapsuleV4(before,after,session,options={}) {
+ const [beforeText,afterText,sessionText]=pointInputs(before,after,session);
+ const optionsText=boundedText(options,8192,'Point window options');
+ const reportText=core.analyze_configured_point_window_v4_json(beforeText,afterText,sessionText,optionsText);
+ const capsule={format:pointCapsuleFormat,beforeText,afterText,sessionText,reportText,optionsText};
+ for(const name of ['before','after','session','report','options'])capsule[name+'Sha256']=pointHash(capsule[name+'Text']);
+ return boundedText(capsule,64*1024*1024,'Point window capsule');
+}
+
+export function replayConfiguredPointWindowCapsuleV4(capsule,options={}) {
+ try {
+  const value=JSON.parse(boundedText(capsule,64*1024*1024,'Point window capsule'));
+  if(!value||value.format!==pointCapsuleFormat||Object.keys(value).length!==pointCapsuleFields.length
+    ||pointCapsuleFields.some(name=>!Object.hasOwn(value,name)))throw Error('envelope');
+  for(const name of ['before','after','session','report','options']) {
+   if(typeof value[name+'Text']!=='string'||pointHash(value[name+'Text'])!==value[name+'Sha256'])throw Error('digest');
+  }
+  // Capsule options describe the original run; they cannot authorize a replay.
+  const caller=boundedText(options,8192,'Point window options');
+  if(value.optionsText!==caller)throw Error('caller-options');
+  if(!verifyConfiguredPointWindowV4(value.beforeText,value.afterText,value.sessionText,value.reportText,caller).valid)throw Error('report');
+  return {valid:true,sourceAuthenticated:false,report:JSON.parse(value.reportText)};
+ } catch {
+  return {valid:false,sourceAuthenticated:false,reason:'invalid-point-capsule-or-caller-options'};
+ }
+}

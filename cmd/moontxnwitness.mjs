@@ -5,7 +5,8 @@ import { run_json, run_options_json, verify_certificate_json, shrink_json, shrin
 import { makeCapsule, replayCapsule, makeCapsuleV3, replayCapsuleV3 } from './evidence.mjs';
 import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFailuresV3, inspectOrmSourceV3,
   verifyConfiguredEffectsSnapshotV4, verifyConfiguredWriterBindingsV4, verifyConfiguredWriterWindowV4,
-  analyzeConfiguredPointWindowV4, verifyConfiguredPointWindowV4, explainConfiguredPointWindowV4 } from './sdk.mjs';
+  analyzeConfiguredPointWindowV4, verifyConfiguredPointWindowV4, explainConfiguredPointWindowV4,
+  makeConfiguredPointWindowCapsuleV4, replayConfiguredPointWindowCapsuleV4 } from './sdk.mjs';
 import { analyzeOrmProfileV3, reduceOrmProfileV3, verifyOrmProfileV3,
   makeOrmProfileCapsuleV3, makeOrmProfileReductionCapsuleV3, replayOrmProfileCapsuleV3 } from './orm-profile.mjs';
 import { classifyModelsV3, verifyModelsClassificationV3, makeModelsClassificationCapsuleV3,
@@ -41,6 +42,8 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs analyze-configured-point-window-v4 START.json END.json SESSION.json [--options OPTIONS.json] [--output REPORT.json]
   node dist/moontxnwitness.mjs verify-configured-point-window-v4 START.json END.json SESSION.json REPORT.json [--options EXPECTED.json]
   node dist/moontxnwitness.mjs explain-configured-point-window-v4 START.json END.json SESSION.json REPORT.json [--options EXPECTED.json] [--output REPORT.html]
+  node dist/moontxnwitness.mjs capsule-configured-point-window-v4 START.json END.json SESSION.json [--options OPTIONS.json] [--output CASE.json]
+  node dist/moontxnwitness.mjs replay-configured-point-window-v4 CASE.json [--options EXPECTED.json] [--output REPLAY.json]
   node dist/moontxnwitness.mjs verify-configured-session-v4 SESSION.json REPORT.json [--options EXPECTED.json] [--output VERIFIED.json]
   node dist/moontxnwitness.mjs replay-configured-session-v4 CAPSULE.json [--options EXPECTED.json] [--output REPLAY.json]
   node dist/moontxnwitness.mjs classify-models-v4 SOURCE.json [--options OPTIONS.json] [--models elle-core|NAME,...] [--list-profile native|captured-list-prefix-state/v2|captured-list-original-serial/v1] [--output REPORT.json] [--capsule CAPSULE.json]
@@ -200,6 +203,17 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (['capsule-configured-point-window-v4','replay-configured-point-window-v4'].includes(args[0])) {
+    const replay=args[0]==='replay-configured-point-window-v4';
+    const {paths,options}=localArgs(args.slice(1),['--options','--output'],replay?1:3);
+    const inputs=options['--options']?[...paths,options['--options']]:paths;
+    if(inputs.filter(path=>path==='-').length>1)throw new Error('Only one input may use standard input');
+    const expected=options['--options']?readBounded(options['--options'],8192):'{}';
+    const result=replay?replayConfiguredPointWindowCapsuleV4(readBounded(paths[0],64*1024*1024),expected)
+      :JSON.parse(makeConfiguredPointWindowCapsuleV4(readBounded(paths[0],24*1024*1024),
+        readBounded(paths[1],24*1024*1024),readBounded(paths[2],32*1024*1024),expected));
+    emitJSON(result,options['--output'],inputs,[]);
+    process.exitCode=replay?(result.valid?0:2):0;
   } else if (args[0] === 'explain-configured-point-window-v4') {
     const {paths,options}=localArgs(args.slice(1),['--options','--output'],4);
     const inputs=options['--options']?[...paths,options['--options']]:paths;

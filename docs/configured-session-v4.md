@@ -292,6 +292,21 @@ The SDK entry is `explainConfiguredPointWindowV4(start, end, session, report, op
 It returns HTML after successful verification and rejects a mismatched report or
 caller budget. A recomputed unknown report remains unknown in the explanation.
 
+Package a regression case with both original snapshots, the original session,
+the report and their SHA-256 digests. Replay independently verifies the complete
+report using caller-provided options. Options inside a capsule do not authorize
+its replay; supply the same original options text or object explicitly when the
+case uses non-default budgets. Capsules are bounded to 64 MiB.
+
+```text
+node dist/moontxnwitness.mjs capsule-configured-point-window-v4 START.json END.json SESSION.json --output CASE.json
+node dist/moontxnwitness.mjs replay-configured-point-window-v4 CASE.json
+```
+
+SDK entries are `makeConfiguredPointWindowCapsuleV4` and
+`replayConfiguredPointWindowCapsuleV4`. Successful replay means the same report
+was recomputed; its model status and coverage remain separate fields.
+
 The following test runs PostgreSQL 18 in an isolated local directory.
 
 ```text
