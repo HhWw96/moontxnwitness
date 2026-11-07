@@ -13,6 +13,7 @@ from pathlib import Path
 from threading import Barrier
 
 ROOT = Path(__file__).resolve().parents[1]
+RUNTIME = Path(os.environ.get('MTW_POINT_RUNTIME_DIR', ROOT / 'dist')).resolve()
 sys.path.insert(0, str(ROOT / 'integrations/python'))
 
 from moontxnwitness_capture.configured_session import ConfiguredPointWindow, InstallationInputs, canonical, write_new
@@ -54,7 +55,8 @@ def run_case(base, output, scenario):
         install = output / 'installation'
         install_configured_source(control, install, config, policy, opt_in=True)
         capture = ConfiguredPointWindow(output / 'capture', config, control, policy,
-                                        InstallationInputs.from_attempt(install, policy), opt_in=True)
+                                        InstallationInputs.from_attempt(install, policy), opt_in=True,
+                                        automatic_writer_checkpoints=True)
         columns = 'id,active,__mtw_source_version'
         select_columns = 'id,active' if scenario == 'missing-version' else columns
         query = f'SELECT {select_columns} FROM {target} WHERE id=%s'
@@ -80,7 +82,8 @@ def run_case(base, output, scenario):
                         assert evidence['updated'][0][:2] == evidence['ownRead'][0][:2]
                         if scenario != 'missing-version':
                             assert evidence['updated'] == evidence['ownRead']
-                assert capture.observe_writer_identity(conn) is not None
+                # The enrolled connection records its identity immediately
+                # before COMMIT; business code does not issue a probe.
                 conn.commit()
                 evidence['outcome'] = 'committed'
             except psycopg.errors.SerializationFailure as error:
@@ -120,7 +123,7 @@ def run_case(base, output, scenario):
 
 
 def cli(command, inputs, expected):
-    child = subprocess.run([os.environ.get('MTW_NODE', 'node'), str(ROOT / 'dist/moontxnwitness.mjs'),
+    child = subprocess.run([os.environ.get('MTW_NODE', 'node'), str(RUNTIME / 'moontxnwitness.mjs'),
                             command, *map(str, inputs)], capture_output=True, encoding='utf-8', timeout=60)
     if child.returncode != expected:
         raise AssertionError(child.stdout + child.stderr)
@@ -179,6 +182,24 @@ def run_cases(base, output, repetitions=5):
             report_path = folder / 'point-report.json'
             write_new(report_path, canonical(report) + '\n')
             assert cli('verify-configured-point-window-v4', [*inputs, report_path], 0)['valid']
+            if attempt == 0 and scenario in ('ordered', 'skew'):
+                explained = folder / 'point-explanation.html'
+                rendered = subprocess.run([os.environ.get('MTW_NODE', 'node'),
+                    str(RUNTIME / 'moontxnwitness.mjs'), 'explain-configured-point-window-v4',
+                    *map(str, inputs), str(report_path), '--output', str(explained)],
+                    capture_output=True, encoding='utf8', timeout=60)
+                assert rendered.returncode == 0, rendered.stdout + rendered.stderr
+                html = explained.read_text('utf8')
+                assert html.startswith('<!doctype html>') and f'>{status}</p>' in html
+                capsule = cli('capsule-configured-point-window-v4', inputs, 0)
+                capsule_path = folder / 'point-case.json'
+                write_new(capsule_path, canonical(capsule) + '\n')
+                replayed = cli('replay-configured-point-window-v4', [capsule_path], 0)
+                assert replayed['valid'] and replayed['report']['status'] == status
+                capsule_checks = subprocess.run([os.environ.get('MTW_NODE', 'node'),
+                    str(ROOT / 'scripts/point-window-capsule-test.mjs'), str(RUNTIME / 'sdk.mjs'),
+                    *map(str, inputs)], capture_output=True, encoding='utf8', timeout=90)
+                assert capsule_checks.returncode == 0, capsule_checks.stdout + capsule_checks.stderr
             if attempt == 0 and scenario == 'ordered':
                 check_negative(inputs, folder)
             cases.append({'attempt': attempt + 1, 'scenario': scenario, 'status': status,
@@ -191,7 +212,7 @@ def run_cases(base, output, repetitions=5):
         assert not report['coverageComplete']
         write_new(folder / 'point-report.json', canonical(report) + '\n')
     receipt = {'passed': True, 'repetitions': repetitions, 'cases': cases,
-               'negativeChecks': 6, 'build': json.loads((ROOT / 'dist/build-manifest.json').read_text('utf8'))}
+               'negativeChecks': 6, 'build': json.loads((RUNTIME / 'build-manifest.json').read_text('utf8'))}
     write_new(output / 'receipt.json', canonical(receipt) + '\n')
     return receipt
 

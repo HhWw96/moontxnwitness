@@ -1,6 +1,10 @@
 # Unreleased
 
 - Accelerate source SHA-256 on supported Node hosts while retaining the original MoonBit implementation for other targets and malformed Unicode. Preserve complete report bytes and budgets; record full-call comparisons and common-path P95 controls in `docs/source-digest-performance.md`.
+- Package original point-window observations and reports into bounded SHA-256 capsules with independent caller-budget replay and tamper rejection.
+- Explain verified point windows in an offline HTML report linking original SQL, actual delivery, source versions, relation events and model evidence.
+- Record optional synchronous point-window writer checkpoints automatically immediately before the actual commit, preserving commit responses and explicit coverage gaps.
+- Add an explicit conflict-noop CRUD capture-cost protocol with original zero-row outcomes, frozen input restoration and unchanged legacy measurements.
 
 # 0.4.1 — 2026-11-07
 
