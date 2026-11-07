@@ -39,6 +39,18 @@ class Tests(unittest.TestCase):
             self.assertEqual(connection.commit(), 123)
         self.assertEqual(calls, [('probe', 't1'), 'commit'])
 
+    def test_default_path_preserves_original_call_and_lock_order(self):
+        class PoisonLock:
+            def __enter__(self):
+                raise AssertionError('New lock acquired before inherited call observation')
+            def __exit__(self, *args):
+                pass
+        for enabled, callback in ((True, None), (False, lambda c: None)):
+            connection = self.connection(enabled=enabled, callback=callback)
+            connection._operation_lock = PoisonLock()
+            with patch.object(DiagnosticConnection, 'commit', return_value='original'):
+                self.assertEqual(connection.commit(), 'original')
+
     def test_disabled_idle_and_aborted_transactions_are_not_probed(self):
         for arguments in ({'enabled': False}, {'tx': None}, {'status': 0}, {'status': 3}):
             calls = []
