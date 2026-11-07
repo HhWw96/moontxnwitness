@@ -1,5 +1,7 @@
 # Unreleased
 
+- Accelerate source SHA-256 on supported Node hosts while retaining the original MoonBit implementation for other targets and malformed Unicode. Preserve complete report bytes and budgets; record full-call comparisons and common-path P95 controls in `docs/source-digest-performance.md`.
+
 # 0.4.1 — 2026-11-07
 
 - Verify delivered PostgreSQL point reads and updates against captured row versions, then analyze the sealed window with the serializable relation model.
