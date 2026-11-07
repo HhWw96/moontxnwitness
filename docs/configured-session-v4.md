@@ -306,6 +306,10 @@ node dist/moontxnwitness.mjs replay-configured-point-window-v4 CASE.json
 SDK entries are `makeConfiguredPointWindowCapsuleV4` and
 `replayConfiguredPointWindowCapsuleV4`. Successful replay means the same report
 was recomputed; its model status and coverage remain separate fields.
+The PostgreSQL controller retains `point-case.json` and `point-explanation.html`
+for its first write-skew and ordered-serial cases. Replay these cases directly
+without starting PostgreSQL. Text options are byte-bound, including whitespace;
+retain the exact options text when creating a case with non-default text options.
 
 The following test runs PostgreSQL 18 in an isolated local directory.
 

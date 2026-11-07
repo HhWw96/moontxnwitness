@@ -191,6 +191,11 @@ def run_cases(base, output, repetitions=5):
                 assert rendered.returncode == 0, rendered.stdout + rendered.stderr
                 html = explained.read_text('utf8')
                 assert html.startswith('<!doctype html>') and f'>{status}</p>' in html
+                capsule = cli('capsule-configured-point-window-v4', inputs, 0)
+                capsule_path = folder / 'point-case.json'
+                write_new(capsule_path, canonical(capsule) + '\n')
+                replayed = cli('replay-configured-point-window-v4', [capsule_path], 0)
+                assert replayed['valid'] and replayed['report']['status'] == status
                 capsule_checks = subprocess.run([os.environ.get('MTW_NODE', 'node'),
                     str(ROOT / 'scripts/point-window-capsule-test.mjs'), str(RUNTIME / 'sdk.mjs'),
                     *map(str, inputs)], capture_output=True, encoding='utf8', timeout=90)
