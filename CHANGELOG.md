@@ -1,5 +1,7 @@
 # Unreleased
 
+- Reduce verified PostgreSQL point windows under an explicit G2-item category, retaining the original window and source references and independently replaying candidate checks and budgets.
+
 - Package original point-window observations and reports into bounded SHA-256 capsules with independent caller-budget replay and tamper rejection.
 - Explain verified point windows in an offline HTML report linking original SQL, actual delivery, source versions, relation events and model evidence.
 - Record optional synchronous point-window writer checkpoints automatically immediately before the actual commit, preserving commit responses and explicit coverage gaps.
