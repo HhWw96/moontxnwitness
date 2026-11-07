@@ -21,7 +21,7 @@ from moontxnwitness_capture.configured_source import SourceInstallPolicy, identi
 from moontxnwitness_capture.configured_sql import SQLCaptureConfig
 
 
-def run_case(base, output, scenario):
+def run_case(base, output, scenario, *, read_noise=False):
     import psycopg
     from psycopg.conninfo import make_conninfo
 
@@ -94,6 +94,19 @@ def run_case(base, output, scenario):
                 conn.close()
             return evidence
 
+        noise = None
+        if read_noise:
+            raw = psycopg.connect(make_conninfo(**actor))
+            raw.isolation_level = isolation
+            conn = capture.wrap_connection(raw)
+            try:
+                with conn.cursor() as cursor:
+                    cursor.execute(query, (1,))
+                    noise = cursor.fetchall()
+                    assert len(noise) == 1 and noise[0][1] is True
+                conn.commit()
+            finally:
+                conn.close()
         if scenario in ('ordered', 'unobserved-write', 'missing-version'):
             results = [attempt(1), attempt(2)]
             assert results[0]['updated'][0][:2] == results[1]['rows'][0][:2]
@@ -117,7 +130,7 @@ def run_case(base, output, scenario):
         assert sum(row[1] for row in final) == (0 if scenario in ('skew', 'unobserved-write') else 1)
         write_new(output / 'database-result.json', canonical({
             'scenario': scenario, 'serverVersion': control.info.server_version,
-            'isolation': isolation.name, 'attempts': results, 'final': final,
+            'isolation': isolation.name, 'attempts': results, 'final': final, 'actualReadNoise': noise,
         }) + '\n')
     return [capture.start_path, capture.end_path, session]
 
@@ -169,7 +182,7 @@ def run_cases(base, output, repetitions=5):
         for scenario, status, code in [('skew', 'refuted', 1), ('ordered', 'checked-compatible', 0), ('retry', 'unknown', 3)]:
             folder = output / f'{attempt + 1}-{scenario}'
             folder.mkdir()
-            inputs = run_case(base, folder, scenario)
+            inputs = run_case(base, folder, scenario, read_noise=attempt == 0 and scenario == 'skew')
             report = cli('analyze-configured-point-window-v4', inputs, code)
             assert report['status'] == status
             assert report['coverageComplete'] == (scenario != 'retry')
@@ -200,6 +213,20 @@ def run_cases(base, output, repetitions=5):
                     str(ROOT / 'scripts/point-window-capsule-test.mjs'), str(RUNTIME / 'sdk.mjs'),
                     *map(str, inputs)], capture_output=True, encoding='utf8', timeout=90)
                 assert capsule_checks.returncode == 0, capsule_checks.stdout + capsule_checks.stderr
+            if attempt == 0 and scenario == 'skew':
+                options = folder / 'point-reduction-options.json'
+                write_new(options, '{"category":"G2-item"}\n')
+                reduction = cli('reduce-configured-point-window-v4', [*inputs, '--options', options], 0)
+                assert reduction['status'] == 'reduced' and reduction['oneMinimal']
+                assert len(reduction['reduction']['removedTransactions']) == 1
+                reduced_path = folder / 'point-reduction.json'
+                write_new(reduced_path, canonical(reduction) + '\n')
+                assert cli('verify-configured-point-reduction-v4', [*inputs, reduced_path, '--options', options], 0)['valid']
+                checked = subprocess.run([os.environ.get('MTW_NODE', 'node'),
+                    str(ROOT / 'scripts/point-window-reduction-test.mjs'), str(RUNTIME / 'sdk.mjs'),
+                    *map(str, inputs)], capture_output=True, encoding='utf8', timeout=120)
+                assert checked.returncode == 0, checked.stdout + checked.stderr
+                write_new(folder / 'point-reduction-checks.json', checked.stdout)
             if attempt == 0 and scenario == 'ordered':
                 check_negative(inputs, folder)
             cases.append({'attempt': attempt + 1, 'scenario': scenario, 'status': status,

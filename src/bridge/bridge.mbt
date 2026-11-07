@@ -632,3 +632,30 @@ pub fn verify_configured_point_window_v4_json(
     before, after, session, report, options,
   )
 }
+
+///|
+#export_name("reduce_configured_point_window_v4_json")
+pub fn reduce_configured_point_window_v4_json(
+  before : String,
+  after : String,
+  session : String,
+  options : String,
+) -> String {
+  @txn.reduce_configured_point_window_v4_json(before, after, session, options)
+}
+
+///|
+#export_name("verify_configured_point_reduction_v4_json")
+pub fn verify_configured_point_reduction_v4_json(
+  before : String,
+  after : String,
+  session : String,
+  report : String,
+  options : String,
+) -> Bool {
+  @txn.verify_configured_point_reduction_v4_json(
+    before, after, session, report, options,
+  )
+}
+
+///|

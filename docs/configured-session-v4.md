@@ -348,3 +348,49 @@ The CLI commands diagnose-configured-session-v4, verify-configured-session-v4 an
 CLI diagnostic exit 0 means the supported observation check executed. A returned-result mismatch exits 1, invalid verification exits 2, and input-unverified diagnostics exit 3. These statuses do not report isolation compatibility.
 
 The owned PostgreSQL initial-read controller uses a fresh limited owner, writer and three configured table layouts, then performs explicit installation and actual SELECT/fetch on the same physical connection. It retains installation, lifecycle, input, result and execution records. Complete point-window analysis uses the separate snapshot and commit-binding workflow above.
+
+## Source-closed point-window reduction
+
+`reduceConfiguredPointWindowV4(start, end, session, options)` verifies the complete
+original window, then passes its verified relation history to the MoonBit
+category reducer. `category: "G2-item"` is required explicitly. Original snapshots
+and the sealed session remain unchanged; the candidate selects transactions from
+the verified history. The report retains the complete window analysis, original
+source references, reduced history, original event mapping and candidate audit.
+
+```json
+{"category":"G2-item","maxChecks":256,"windowOptions":{"maxPointChecks":1000000}}
+```
+
+```text
+node dist/moontxnwitness.mjs reduce-configured-point-window-v4 start-input.json end-input.json configured-session-input.json --options reduce-options.json --output reduction.json
+node dist/moontxnwitness.mjs verify-configured-point-reduction-v4 start-input.json end-input.json configured-session-input.json reduction.json --options reduce-options.json
+```
+
+The SDK verifier is `verifyConfiguredPointReductionV4`. MoonBit recomputes the
+original source verification, candidate selection and complete result using
+independently supplied options. Altering a digest, conclusion, selection,
+minimality claim or budget cannot authorize a new result. Verification requires
+all three original input files. Reports accept ordinary JSON formatting but
+reject duplicate fields and unexpected authority fields by full recomputation.
+
+The source window keeps its existing 32-transaction/128-statement limits and
+independent budgets. Reduction allows at most 256 candidates, 100,000 search
+states, 1,000,000 edge checks and 1,000,000 graph/source checks per candidate.
+Zero budgets are valid requests. Every deletion rechecks source closure; final
+evidence is recomputed. `oneMinimal` is copied only from the completed MoonBit
+single-delete audit. An incomplete source window or exhausted candidate budget
+cannot gain a minimality claim. The report limit is 64 MiB.
+
+An ordered compatible window returns `not-refuted` without a reduction. A
+refuted window whose reduction cannot finish retains the original refutation in
+`window`, separately from the reduction outcome. Successful verification means
+the result recomputed, including any recorded `unknown` or invalid outcome;
+it does not authenticate the observations. CLI exit codes are 0 for reduced or
+unchanged counterexamples, 1 for not-refuted, 2 for invalid input/verification,
+and 3 for an unresolved reduction.
+
+The PostgreSQL controller adds a real committed read-only transaction before
+one write-skew case. That three-transaction capture must reduce to the two
+anomalous transactions. It retains the original SQL results and runs budget,
+rehashing, source and minimality tamper checks against the compiled SDK.
