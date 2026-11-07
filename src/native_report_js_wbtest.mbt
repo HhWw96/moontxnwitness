@@ -222,3 +222,32 @@ test "native038 12 extras preserve business version strings and nested values" {
     ]),
   )
 }
+
+///|
+#cfg(target="js")
+extern "js" fn source_digest_test_host_available() -> Bool =
+  #| () => typeof globalThis.process?.getBuiltinModule === 'function' && typeof ''.isWellFormed === 'function'
+
+///|
+#cfg(target="js")
+extern "js" fn source_digest_test_malformed() -> String =
+  #| () => '\ud800x\udc00'
+
+///|
+#cfg(target="js")
+test "source digest uses the available Node primitive without changing SHA" {
+  let native = source_digest_native("abc")
+  if source_digest_test_host_available() {
+    assert_eq(
+      native, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    )
+  } else {
+    assert_eq(native, "")
+  }
+}
+
+///|
+#cfg(target="js")
+test "source digest keeps malformed UTF-16 on the original encoder path" {
+  assert_eq(source_digest_native(source_digest_test_malformed()), "")
+}
