@@ -1,5 +1,6 @@
 // Default SDK shares the main MoonBit instance. Standalone entries remain separate.
 import * as core from './core.mjs';
+import {createPointWindowExplanationV4} from './point-window-explanation-v4.mjs';
 import {createConfiguredSessionV4} from './configured-session-v4.mjs';
 import {createSourceComponentsV4} from './source-components-v4.mjs';
 import {createSQLCandidateV1} from './sql-candidate-host-v1.mjs';
@@ -59,3 +60,5 @@ export function verifyConfiguredPointWindowV4(before, after, session, report, op
     ...pointInputs(before, after, session), boundedText(report, 32 * 1024 * 1024, 'Point window report'),
     boundedText(options, 8192, 'Point window options'))};
 }
+
+export const explainConfiguredPointWindowV4 = createPointWindowExplanationV4(verifyConfiguredPointWindowV4);

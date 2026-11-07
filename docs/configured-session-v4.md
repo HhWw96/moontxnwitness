@@ -278,6 +278,20 @@ observations. Empty reads, partial results, savepoints, unbound effects and
 unconfirmed transactions yield incomplete coverage. Exit codes are 0 for
 checked-compatible, 1 for refuted, 2 for invalid evidence, and 3 for unknown.
 
+Generate an offline HTML explanation with the same original inputs and independently
+supplied options. The renderer first recomputes the report in MoonBit, then shows
+each original statement, actual delivered rows, source version, history reference
+and model witness. It includes no scripts or network dependencies and escapes SQL,
+parameters and result values. Existing output files are never overwritten.
+
+```text
+node dist/moontxnwitness.mjs explain-configured-point-window-v4 START.json END.json SESSION.json REPORT.json --output REPORT.html
+```
+
+The SDK entry is `explainConfiguredPointWindowV4(start, end, session, report, options)`.
+It returns HTML after successful verification and rejects a mismatched report or
+caller budget. A recomputed unknown report remains unknown in the explanation.
+
 The following test runs PostgreSQL 18 in an isolated local directory.
 
 ```text
