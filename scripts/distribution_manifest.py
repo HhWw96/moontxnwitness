@@ -170,7 +170,7 @@ CONFIGURED037_RUNTIME_INPUTS = (
  'dist/configured-v4.mjs','dist/configured-session-v4.mjs','dist/source-components-v4.mjs',
  'dist/sql-candidate-v1.mjs','dist/sql-fetch-v1.mjs',
 )
-SHARED_CONFIGURED_WRAPPERS = ('configured-shared-v4.mjs', 'sql-candidate-host-v1.mjs', 'sql-fetch-host-v1.mjs')
+SHARED_CONFIGURED_WRAPPERS = ('configured-shared-v4.mjs', 'sql-candidate-host-v1.mjs', 'sql-fetch-host-v1.mjs', 'point-window-explanation-v4.mjs')
 SHARED_CONFIGURED_CONSUMER_INPUTS = (
  'scripts/shared-core-runtime-test.mjs','scripts/bench/full-sdk/parse-static-imports.mjs',
 )

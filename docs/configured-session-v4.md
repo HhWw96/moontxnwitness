@@ -247,6 +247,14 @@ writer.close()
 session_input = window.seal()
 ```
 
+To record the native writer checkpoint from the connection's `commit()` method,
+pass `automatic_writer_checkpoints=True` to `ConfiguredPointWindow` and omit the
+explicit `observe_writer_identity` call. The option is disabled by default.
+The probe and actual COMMIT share the connection operation lock. A probe failure
+records a coverage gap; the actual COMMIT response remains independently
+observed. Idle, aborted and disabled connections issue no probe. This option
+retains the existing synchronous point-window SQL and coverage requirements.
+
 Both snapshots and the original session are required for analysis and verification.
 
 ```text
@@ -269,6 +277,39 @@ binding and model budgets. Reports apply to the supplied owned-window
 observations. Empty reads, partial results, savepoints, unbound effects and
 unconfirmed transactions yield incomplete coverage. Exit codes are 0 for
 checked-compatible, 1 for refuted, 2 for invalid evidence, and 3 for unknown.
+
+Generate an offline HTML explanation with the same original inputs and independently
+supplied options. The renderer first recomputes the report in MoonBit, then shows
+each original statement, actual delivered rows, source version, history reference
+and model witness. It includes no scripts or network dependencies and escapes SQL,
+parameters and result values. Existing output files are never overwritten.
+
+```text
+node dist/moontxnwitness.mjs explain-configured-point-window-v4 START.json END.json SESSION.json REPORT.json --output REPORT.html
+```
+
+The SDK entry is `explainConfiguredPointWindowV4(start, end, session, report, options)`.
+It returns HTML after successful verification and rejects a mismatched report or
+caller budget. A recomputed unknown report remains unknown in the explanation.
+
+Package a regression case with both original snapshots, the original session,
+the report and their SHA-256 digests. Replay independently verifies the complete
+report using caller-provided options. Options inside a capsule do not authorize
+its replay; supply the same original options text or object explicitly when the
+case uses non-default budgets. Capsules are bounded to 64 MiB.
+
+```text
+node dist/moontxnwitness.mjs capsule-configured-point-window-v4 START.json END.json SESSION.json --output CASE.json
+node dist/moontxnwitness.mjs replay-configured-point-window-v4 CASE.json
+```
+
+SDK entries are `makeConfiguredPointWindowCapsuleV4` and
+`replayConfiguredPointWindowCapsuleV4`. Successful replay means the same report
+was recomputed; its model status and coverage remain separate fields.
+The PostgreSQL controller retains `point-case.json` and `point-explanation.html`
+for its first write-skew and ordered-serial cases. Replay these cases directly
+without starting PostgreSQL. Text options are byte-bound, including whitespace;
+retain the exact options text when creating a case with non-default text options.
 
 The following test runs PostgreSQL 18 in an isolated local directory.
 

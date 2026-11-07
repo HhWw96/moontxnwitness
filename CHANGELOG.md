@@ -1,5 +1,10 @@
 # Unreleased
 
+- Package original point-window observations and reports into bounded SHA-256 capsules with independent caller-budget replay and tamper rejection.
+- Explain verified point windows in an offline HTML report linking original SQL, actual delivery, source versions, relation events and model evidence.
+- Record optional synchronous point-window writer checkpoints automatically immediately before the actual commit, preserving commit responses and explicit coverage gaps.
+- Add an explicit conflict-noop CRUD capture-cost protocol with original zero-row outcomes, frozen input restoration and unchanged legacy measurements.
+
 # 0.4.1 — 2026-11-07
 
 - Verify delivered PostgreSQL point reads and updates against captured row versions, then analyze the sealed window with the serializable relation model.
