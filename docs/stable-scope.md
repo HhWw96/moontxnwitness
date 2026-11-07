@@ -1,6 +1,12 @@
 # 当前支持范围
 
-## v0.3.6 候选：独立规范模型与原子关系行
+## v0.4.1：PostgreSQL 点窗口与基础库
+
+`analyzeConfiguredPointWindowV4` 将原始起止快照、已封存会话、实际读取与提交效果交给 MoonBit 核验，再检查关系模型 `serializable` 和 `G2-item`。`verifyConfiguredPointWindowV4` 使用三份原始输入和调用者独立提供的预算重算报告。支持受控 PostgreSQL 18、同步 psycopg 3.3.6、一张配置表、完整正向主键点读及读取前驱后的单行非主键更新；上限为 32 笔事务、128 条业务语句。使用方法及具体边界见[点窗口接入](configured-session-v4.md#analyze-a-captured-point-window)。
+
+基础库同时提供寄存器、追加列表和关系行／谓词的独立分析、类别缩减与来源核验。下面按接口引入顺序记录各能力；历史入口继续遵循原有契约。
+
+## 独立规范模型与原子关系行
 
 `classifyModelsV4` / `classify_models_v4` 通过独立命名空间组合 14 个固定 Elle 定义的来源、图与补全义务。寄存器、显式捕获列表配置以及 `captured-relation-row-slots/v1` 原子主键行配置各自核验原始操作；只有所选模型全部必要检查完成，才报告与给定事实相容。会话和实时关系需要独立提供，BEGIN 不代表数据库逻辑快照。原六模型入口和旧类别默认含义保持。
 

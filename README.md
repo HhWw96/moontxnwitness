@@ -12,6 +12,12 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
+## v0.4.1：PostgreSQL 点窗口分析
+
+新增 `analyzeConfiguredPointWindowV4` / `verifyConfiguredPointWindowV4`：从原始起止快照、实际交付的点读写及已确认提交中核验关系历史，检查 `serializable` 和 `G2-item`。支持配置化表名、列名和主键，提供 SDK、CLI 及 PostgreSQL 18 真实执行示例。使用方法见[点窗口接入](docs/configured-session-v4.md#analyze-a-captured-point-window)。
+
+来源快照支持新增效果闭包核验和客户端写者绑定；默认 SDK 共享编译核心，轻量便携包可在全新目录运行当前示例。完整支持范围见[支持矩阵](docs/stable-scope.md)。
+
 ## v0.4.0：可嵌入的事务异常分析基础库
 
 提供 MoonBit 结构化核心、JavaScript SDK 与命令行，将事务观察转换为异常见证、逐模型结果、可缩减反例和可验证的复现包。核心支持唯一版本寄存器、追加列表与关系行集合；业务侧可使用启动插桩或配置化适配器提供原始观察。
@@ -115,7 +121,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.4.0
+moon add HhWw96/moontxnwitness@0.4.1
 ```
 
 ```javascript

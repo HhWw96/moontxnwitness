@@ -290,10 +290,13 @@ report authority upgrades. The inherited original installation observations,
 other-cluster actual native fetches and synthetic mapping inputs retain distinct
 origins. Re-grouped lifecycle test envelopes are explicitly synthetic.
 
-See the patch preparation receipt for checks actually executed. The new MoonBit
-module and consolidated SDK must be compiled/run in an integration checkout before
-being described as validated or shipped. The same-connection PostgreSQL controller
-is prepared, but no database run is implied by its presence or by mock tests.
+The compiled SDK and configured-session checks run in the Windows and Linux CI
+jobs. The owned PostgreSQL job runs the source installation and point-window
+controllers with the exact checked-out source. Its retained artifact includes
+original inputs, actual SQL outcomes, compiled cores and verification receipts.
+The point controller repeats write skew, ordered serial execution and confirmed
+serialization-failure/retry five times each, plus incomplete-source and tampering
+checks. Match source SHA and runtime digests when replaying a receipt.
 
 ## Installed SDK and diagnostic evidence
 
@@ -303,4 +306,4 @@ The CLI commands diagnose-configured-session-v4, verify-configured-session-v4 an
 
 CLI diagnostic exit 0 means the supported observation check executed. A returned-result mismatch exits 1, invalid verification exits 2, and input-unverified diagnostics exit 3. These statuses do not report isolation compatibility.
 
-The owned PostgreSQL CI controller uses a fresh limited owner, writer and three configured table layouts, then performs explicit installation followed by actual initial SELECT/fetch on the same physical connection. It retains installation, lifecycle, input, result and execution records. This controller is prepared for CI and is not a claim that a complete business writer window has been observed.
+The owned PostgreSQL initial-read controller uses a fresh limited owner, writer and three configured table layouts, then performs explicit installation and actual SELECT/fetch on the same physical connection. It retains installation, lifecycle, input, result and execution records. Complete point-window analysis uses the separate snapshot and commit-binding workflow above.
