@@ -83,6 +83,38 @@ check('exact original window is retained', () => {
   const altered = [...originals];altered[0] += ' ';
   assert.equal(sdk.verifyConfiguredPointReductionV4(...altered, result, options).valid, false);
 });
+const capsule = sdk.makeConfiguredPointReductionCapsuleV4(...originals, options);
+check('capsule replays the entire reduction under independent options', () => {
+  const replay = sdk.replayConfiguredPointReductionCapsuleV4(capsule, options);
+  assert.equal(replay.valid, true);
+  assert.equal(replay.sourceAuthenticated, false);
+  assert.deepEqual(replay.report, result);
+});
+check('capsule requires independent options', () => {
+  assert.equal(sdk.replayConfiguredPointReductionCapsuleV4(capsule).valid, false);
+  assert.equal(sdk.replayConfiguredPointReductionCapsuleV4(capsule, {...options, maxChecks: 0}).valid, false);
+});
+check('capsule rejects digest and rehashed report changes', () => {
+  const changed = JSON.parse(capsule);
+  const report = JSON.parse(changed[1][4]);
+  report.oneMinimal = false;
+  changed[1][4] = JSON.stringify(report);
+  assert.equal(sdk.replayConfiguredPointReductionCapsuleV4(changed, options).valid, false);
+  changed[2][4] = createHash('sha256').update(changed[1][4]).digest('hex');
+  assert.equal(sdk.replayConfiguredPointReductionCapsuleV4(changed, options).valid, false);
+});
+check('capsule rejects an invalid or incompatible envelope', () => {
+  assert.throws(() => sdk.makeConfiguredPointReductionCapsuleV4(...originals, {category: 'G0'}));
+  assert.equal(sdk.replayConfiguredPointReductionCapsuleV4([capsule], options).valid, false);
+});
+check('capsule preserves an unresolved window', () => {
+  const bounded = {...options, windowOptions: {maxPointChecks: 0}};
+  const unknown = sdk.makeConfiguredPointReductionCapsuleV4(...originals, bounded);
+  const replay = sdk.replayConfiguredPointReductionCapsuleV4(unknown, bounded);
+  assert.equal(replay.valid, true);
+  assert.equal(replay.report.status, 'unknown');
+  assert.equal(replay.report.oneMinimal, false);
+});
 console.log(JSON.stringify({passed: true, checks, notExecuted, originalTransactions,
 retainedTransactions: result.reduction.history.events.filter(event => event.kind === 'begin').length,
 originalWindowRetained: true, sourceAuthenticated: false}));

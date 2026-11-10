@@ -394,3 +394,19 @@ The PostgreSQL controller adds a real committed read-only transaction before
 one write-skew case. That three-transaction capture must reduce to the two
 anomalous transactions. It retains the original SQL results and runs budget,
 rehashing, source and minimality tamper checks against the compiled SDK.
+
+To transfer the original observations and the reduction report together, use
+`makeConfiguredPointReductionCapsuleV4` and `replayConfiguredPointReductionCapsuleV4`
+in a source build, or run the corresponding CLI commands.
+
+```text
+node dist/moontxnwitness.mjs capsule-configured-point-reduction-v4 start-input.json end-input.json configured-session-input.json --options reduce-options.json --output case.json
+node dist/moontxnwitness.mjs replay-configured-point-reduction-v4 case.json --options reduce-options.json
+```
+
+The capsule binds the start snapshot, end snapshot, sealed session, options and
+report as exact UTF-8 texts with SHA-256 digests. The caller independently
+supplies the original options bytes, including whitespace. Replay recomputes
+source verification and the reduction through MoonBit. An unresolved result
+can replay successfully with status `unknown` and its original budget limits.
+Invalid reports are rejected. The total capsule is limited to 64 MiB.

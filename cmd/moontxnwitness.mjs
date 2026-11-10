@@ -7,6 +7,7 @@ import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFail
   verifyConfiguredEffectsSnapshotV4, verifyConfiguredWriterBindingsV4, verifyConfiguredWriterWindowV4,
   analyzeConfiguredPointWindowV4, verifyConfiguredPointWindowV4, explainConfiguredPointWindowV4,
   reduceConfiguredPointWindowV4, verifyConfiguredPointReductionV4,
+  makeConfiguredPointReductionCapsuleV4, replayConfiguredPointReductionCapsuleV4,
   makeConfiguredPointWindowCapsuleV4, replayConfiguredPointWindowCapsuleV4 } from './sdk.mjs';
 import { analyzeOrmProfileV3, reduceOrmProfileV3, verifyOrmProfileV3,
   makeOrmProfileCapsuleV3, makeOrmProfileReductionCapsuleV3, replayOrmProfileCapsuleV3 } from './orm-profile.mjs';
@@ -45,6 +46,8 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs explain-configured-point-window-v4 START.json END.json SESSION.json REPORT.json [--options EXPECTED.json] [--output REPORT.html]
   node dist/moontxnwitness.mjs reduce-configured-point-window-v4 START.json END.json SESSION.json --options OPTIONS.json [--output REDUCTION.json]
   node dist/moontxnwitness.mjs verify-configured-point-reduction-v4 START.json END.json SESSION.json REDUCTION.json --options EXPECTED.json
+  node dist/moontxnwitness.mjs capsule-configured-point-reduction-v4 START.json END.json SESSION.json --options OPTIONS.json [--output CASE.json]
+  node dist/moontxnwitness.mjs replay-configured-point-reduction-v4 CASE.json --options EXPECTED.json
   node dist/moontxnwitness.mjs capsule-configured-point-window-v4 START.json END.json SESSION.json [--options OPTIONS.json] [--output CASE.json]
   node dist/moontxnwitness.mjs replay-configured-point-window-v4 CASE.json [--options EXPECTED.json] [--output REPLAY.json]
   node dist/moontxnwitness.mjs verify-configured-session-v4 SESSION.json REPORT.json [--options EXPECTED.json] [--output VERIFIED.json]
@@ -206,14 +209,19 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
-  } else if (['capsule-configured-point-window-v4','replay-configured-point-window-v4'].includes(args[0])) {
-    const replay=args[0]==='replay-configured-point-window-v4';
+  } else if (['capsule-configured-point-window-v4','replay-configured-point-window-v4',
+    'capsule-configured-point-reduction-v4','replay-configured-point-reduction-v4'].includes(args[0])) {
+    const replay=args[0].startsWith('replay-');
+    const reduction=args[0].endsWith('-reduction-v4');
     const {paths,options}=localArgs(args.slice(1),['--options','--output'],replay?1:3);
+    if(reduction&&!options['--options'])throw new Error('Point reduction capsules require independent --options');
     const inputs=options['--options']?[...paths,options['--options']]:paths;
     if(inputs.filter(path=>path==='-').length>1)throw new Error('Only one input may use standard input');
     const expected=options['--options']?readBounded(options['--options'],8192):'{}';
-    const result=replay?replayConfiguredPointWindowCapsuleV4(readBounded(paths[0],64*1024*1024),expected)
-      :JSON.parse(makeConfiguredPointWindowCapsuleV4(readBounded(paths[0],24*1024*1024),
+    const replayCapsule=reduction?replayConfiguredPointReductionCapsuleV4:replayConfiguredPointWindowCapsuleV4;
+    const makeCapsule=reduction?makeConfiguredPointReductionCapsuleV4:makeConfiguredPointWindowCapsuleV4;
+    const result=replay?replayCapsule(readBounded(paths[0],64*1024*1024),expected)
+      :JSON.parse(makeCapsule(readBounded(paths[0],24*1024*1024),
         readBounded(paths[1],24*1024*1024),readBounded(paths[2],32*1024*1024),expected));
     emitJSON(result,options['--output'],inputs,[]);
     process.exitCode=replay?(result.valid?0:2):0;
