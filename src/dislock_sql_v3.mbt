@@ -76,7 +76,7 @@ fn v3_dislock_ror(value : UInt32, count : Int32) -> UInt32 {
 ///|
 /// SHA-256 only binds captured text to its declared digest; it does not attest
 /// that PostgreSQL executed that text. Inputs here are bounded source/DDL.
-fn v3_dislock_sha256(text : String) -> String {
+fn v3_dislock_sha256_pure(text : String) -> String {
   let bytes = v3_dislock_utf8(text)
   let bit_length = bytes.length().to_int64() * 8L
   bytes.push(128U)
