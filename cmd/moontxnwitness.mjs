@@ -6,6 +6,7 @@ import { makeCapsule, replayCapsule, makeCapsuleV3, replayCapsuleV3 } from './ev
 import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFailuresV3, inspectOrmSourceV3,
   verifyConfiguredEffectsSnapshotV4, verifyConfiguredWriterBindingsV4, verifyConfiguredWriterWindowV4,
   analyzeConfiguredPointWindowV4, verifyConfiguredPointWindowV4, explainConfiguredPointWindowV4,
+  reduceConfiguredPointWindowV4, verifyConfiguredPointReductionV4,
   makeConfiguredPointWindowCapsuleV4, replayConfiguredPointWindowCapsuleV4 } from './sdk.mjs';
 import { analyzeOrmProfileV3, reduceOrmProfileV3, verifyOrmProfileV3,
   makeOrmProfileCapsuleV3, makeOrmProfileReductionCapsuleV3, replayOrmProfileCapsuleV3 } from './orm-profile.mjs';
@@ -42,6 +43,8 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs analyze-configured-point-window-v4 START.json END.json SESSION.json [--options OPTIONS.json] [--output REPORT.json]
   node dist/moontxnwitness.mjs verify-configured-point-window-v4 START.json END.json SESSION.json REPORT.json [--options EXPECTED.json]
   node dist/moontxnwitness.mjs explain-configured-point-window-v4 START.json END.json SESSION.json REPORT.json [--options EXPECTED.json] [--output REPORT.html]
+  node dist/moontxnwitness.mjs reduce-configured-point-window-v4 START.json END.json SESSION.json --options OPTIONS.json [--output REDUCTION.json]
+  node dist/moontxnwitness.mjs verify-configured-point-reduction-v4 START.json END.json SESSION.json REDUCTION.json --options EXPECTED.json
   node dist/moontxnwitness.mjs capsule-configured-point-window-v4 START.json END.json SESSION.json [--options OPTIONS.json] [--output CASE.json]
   node dist/moontxnwitness.mjs replay-configured-point-window-v4 CASE.json [--options EXPECTED.json] [--output REPLAY.json]
   node dist/moontxnwitness.mjs verify-configured-session-v4 SESSION.json REPORT.json [--options EXPECTED.json] [--output VERIFIED.json]
@@ -224,6 +227,18 @@ try {
       readBounded(paths[1],24*1024*1024),readBounded(paths[2],32*1024*1024),readBounded(paths[3],32*1024*1024),expected);
     if(options['--output'])saveArtifacts([[options['--output'],html]]);
     else process.stdout.write(html);
+  } else if (['reduce-configured-point-window-v4', 'verify-configured-point-reduction-v4'].includes(args[0])) {
+    const verify=args[0]==='verify-configured-point-reduction-v4';
+    const {paths,options}=localArgs(args.slice(1),['--options','--output'],verify?4:3);
+    if(!options['--options'])throw new Error('Point reduction requires independent --options with an explicit category');
+    const inputs=[...paths,options['--options']];
+    if(inputs.filter(path=>path==='-').length>1)throw new Error('Only one point reduction input may use standard input');
+    const expected=readBounded(options['--options'],8192);
+    const original=[readBounded(paths[0],24*1024*1024),readBounded(paths[1],24*1024*1024),readBounded(paths[2],32*1024*1024)];
+    const result=verify?verifyConfiguredPointReductionV4(...original,readBounded(paths[3],64*1024*1024),expected)
+      :reduceConfiguredPointWindowV4(...original,expected);
+    emitJSON(result,options['--output'],inputs,[]);
+    process.exitCode=verify?(result.valid?0:2):({reduced:0,unchanged:0,'not-refuted':1,invalid:2,unknown:3}[result.status]??3);
   } else if (['analyze-configured-point-window-v4', 'verify-configured-point-window-v4'].includes(args[0])) {
     const verify = args[0] === 'verify-configured-point-window-v4';
     const {paths,options}=localArgs(args.slice(1),['--options','--output'],verify?4:3);

@@ -62,6 +62,17 @@ export function verifyConfiguredPointWindowV4(before, after, session, report, op
     boundedText(options, 8192, 'Point window options'))};
 }
 
+export function reduceConfiguredPointWindowV4(before, after, session, options) {
+  return JSON.parse(core.reduce_configured_point_window_v4_json(
+    ...pointInputs(before, after, session), boundedText(options, 8192, 'Point reduction options')));
+}
+
+export function verifyConfiguredPointReductionV4(before, after, session, report, options) {
+  return {valid: core.verify_configured_point_reduction_v4_json(
+    ...pointInputs(before, after, session), boundedText(report, 64 * 1024 * 1024, 'Point reduction report'),
+    boundedText(options, 8192, 'Independent point reduction options'))};
+}
+
 export const explainConfiguredPointWindowV4 = createPointWindowExplanationV4(verifyConfiguredPointWindowV4);
 
 const pointCapsuleFormat='moontxnwitness-configured-point-capsule/v1';
