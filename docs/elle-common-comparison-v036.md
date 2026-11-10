@@ -1,5 +1,18 @@
 # Register/list comparison with fixed Elle results
 
+## v0.4.1 published runtime follow-up
+
+The public v0.4.1 lightweight ZIP reproduced the same fixed `serializable`
+comparison on November 10, 2026. The run classified and verified all 2,000
+original histories. It recorded 1,997 agreements, zero differences or execution
+failures, and three ineligible upstream results. Per-item digests match the
+v0.4.0 run. The original Elle outputs are reused.
+
+The [v0.4.1 receipt](evidence/elle-common-v041.json) binds the public runtime,
+original inputs and frozen Elle output. The [public lightweight ZIP](https://github.com/HhWw96/moontxnwitness/releases/download/v0.4.1/MoonTxnWitness-v0.4.1-lite.zip)
+has SHA-256 `b85390fc323ca187fde2dc597c185e80dbd4d543a541c02d4a2f6472410458e0`.
+Use the same command and inputs below to reproduce the comparison.
+
 ## v0.4.0 published runtime follow-up
 
 The published v0.4.0 runtime at `0745b562` reproduced the original canonical

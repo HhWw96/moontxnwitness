@@ -2,10 +2,10 @@
 
 这是独立的 MoonBit 消费者项目，仅通过公开 API 导入 `HhWw96/moontxnwitness`。运行不需要数据库、Node.js 或 Python；需要 moonc 0.10.16 或以上版本。
 
-发布版本安装后，在本目录运行：
+本示例的 `moon.mod` 已固定使用公开发布的 0.4.1。在本目录运行以下命令：
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.3.2
+moon update
 moon run --target wasm-gc . --deny-warn
 ```
 
@@ -16,9 +16,9 @@ moon run --target wasm-gc . --deny-warn
 ```text
 register: violation; category witness and reduced counterexample verified
 append-list: consistent; complete analysis verified
-relation-set: consistent; category classification unsupported in this version
+relation-set: consistent; dedicated category report independently verified
 ```
 
-v4 当前分类入口检查寄存器与列表的 G0、G1c、G2-item。关系的串行分析可用，类别分类在本版明确返回 `unsupported`。类别检查完成与完整隔离模型判定分别处理；这些输入是显式提供的模型事实，不认证数据库或采集者。
+寄存器和列表通过通用 v4 入口检查 G0、G1c 和 G2-item。关系样例使用专用分类入口 `classify_relation_v4_json` 和 `verify_relation_classification_v4`。类别报告与隔离模型分析分别验证。输入是显式提供的模型事实。
 
 源码开发期间可使用临时 MoonBit workspace 将依赖指向当前源码；公开安装验证应使用上面的注册表版本，不保留本地依赖替换。

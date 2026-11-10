@@ -222,6 +222,11 @@ def run_cases(base, output, repetitions=5):
                 reduced_path = folder / 'point-reduction.json'
                 write_new(reduced_path, canonical(reduction) + '\n')
                 assert cli('verify-configured-point-reduction-v4', [*inputs, reduced_path, '--options', options], 0)['valid']
+                capsule_path = folder / 'point-reduction-capsule.json'
+                capsule = cli('capsule-configured-point-reduction-v4', [*inputs, '--options', options], 0)
+                write_new(capsule_path, canonical(capsule) + '\n')
+                replay = cli('replay-configured-point-reduction-v4', [capsule_path, '--options', options], 0)
+                assert replay['valid'] and replay['report'] == reduction
                 checked = subprocess.run([os.environ.get('MTW_NODE', 'node'),
                     str(ROOT / 'scripts/point-window-reduction-test.mjs'), str(RUNTIME / 'sdk.mjs'),
                     *map(str, inputs)], capture_output=True, encoding='utf8', timeout=120)

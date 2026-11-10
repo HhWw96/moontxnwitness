@@ -106,3 +106,40 @@ export function replayConfiguredPointWindowCapsuleV4(capsule,options={}) {
   return {valid:false,sourceAuthenticated:false,reason:'invalid-point-capsule-or-caller-options'};
  }
 }
+
+const reductionCapsuleFormat = 'moontxnwitness-configured-point-reduction-capsule/v1';
+const reductionCapsuleLimit = 64 * 1024 * 1024;
+
+export function makeConfiguredPointReductionCapsuleV4(before, after, session, options) {
+  const originals = pointInputs(before, after, session);
+  const optionsText = boundedText(options, 8192, 'Point reduction options');
+  const reportText = core.reduce_configured_point_window_v4_json(...originals, optionsText);
+  if (JSON.parse(reportText).status === 'invalid') throw new Error('Invalid point reduction');
+  const texts = [...originals, optionsText, reportText];
+  return boundedText([reductionCapsuleFormat, texts, texts.map(pointHash)],
+    reductionCapsuleLimit, 'Point reduction capsule');
+}
+
+export function replayConfiguredPointReductionCapsuleV4(capsule, options) {
+  try {
+    const value = JSON.parse(boundedText(capsule, reductionCapsuleLimit, 'Point reduction capsule'));
+    if (!Array.isArray(value) || value.length !== 3 || value[0] !== reductionCapsuleFormat) {
+      throw new Error('Unexpected point reduction capsule format');
+    }
+    const [, texts, digests] = value;
+    if (!Array.isArray(texts) || texts.length !== 5 || !Array.isArray(digests) || digests.length !== 5
+      || texts.some((item, index) => typeof item !== 'string' || pointHash(item) !== digests[index])) {
+      throw new Error('Invalid point reduction capsule entries');
+    }
+    const [before, after, session, optionsText, reportText] = texts;
+    const expected = boundedText(options, 8192, 'Independent point reduction options');
+    if (optionsText !== expected || !verifyConfiguredPointReductionV4(before, after, session, reportText, expected).valid) {
+      throw new Error('Point reduction replay differs');
+    }
+    const report = JSON.parse(reportText);
+    if (report.status === 'invalid') throw new Error('Invalid point reduction');
+    return {valid: true, sourceAuthenticated: false, report};
+  } catch {
+    return {valid: false, sourceAuthenticated: false, reason: 'invalid-point-reduction-capsule-or-caller-options'};
+  }
+}

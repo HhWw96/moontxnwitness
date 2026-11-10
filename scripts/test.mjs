@@ -88,8 +88,25 @@ for(const group of Object.keys(PUBLIC034_GROUPS)){
 }
 const public034Compatibility=collectPublic034Groups(public034Parts);
 for(const result of public034Compatibility.receipts){result.runtime=relativeEvidencePath(root,result.runtime);result.runDirectory=relativeEvidencePath(root,result.runDirectory);}
-const public034Schema1Child=spawnSync(process.execPath,['scripts/public034-v1-capsule-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:8*1024*1024});
-if(public034Schema1Child.error||public034Schema1Child.status!==0)throw Error('Public034 schema1 supplement failed: '+public034Schema1Child.stdout+public034Schema1Child.stderr);
+// Windows can spend additional time verifying and disposing the fixed legacy
+// runtime. A completed receipt still requires the child to exit successfully.
+const public034Schema1Timeout = process.platform === 'win32' ? 300000 : 180000;
+const public034Schema1Start = performance.now();
+const public034Schema1Child = spawnSync(process.execPath, ['scripts/public034-v1-capsule-test.mjs'], {
+  cwd: root, encoding: 'utf8', windowsHide: true, timeout: public034Schema1Timeout, maxBuffer: 8 * 1024 * 1024,
+});
+if (public034Schema1Child.error || public034Schema1Child.status !== 0 || public034Schema1Child.signal) {
+  const failure = {
+    status: public034Schema1Child.status,
+    signal: public034Schema1Child.signal,
+    errorCode: public034Schema1Child.error?.code ?? null,
+    errorMessage: public034Schema1Child.error?.message ?? null,
+    elapsedMs: Math.round(performance.now() - public034Schema1Start),
+    timeoutMs: public034Schema1Timeout,
+  };
+  throw Error('Public034 schema1 supplement failed: ' + JSON.stringify(failure) + '\n'
+    + public034Schema1Child.stdout + public034Schema1Child.stderr);
+}
 const public034Schema1=JSON.parse(public034Schema1Child.stdout);assert.equal(public034Schema1.passed,true);assert.equal(public034Schema1.checks,6);assert.equal(public034Schema1.failed,0);
 assert.equal(public034Schema1.currentVersion,public034Compatibility.currentVersion);assert.equal(public034Schema1.original47SuiteModified,false);assert.equal(public034Schema1.original15FamiliesModified,false);assert.equal(public034Schema1.producerBytesUnchanged,true);
 for(const field of ['producerSourceCommit','producerArchiveSha256','producerComponentSha256'])assert.equal(public034Schema1[field],public034Compatibility[field]);

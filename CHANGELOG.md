@@ -1,5 +1,7 @@
 # Unreleased
 
+- Export and replay self-contained PostgreSQL point-reduction capsules with independent caller budgets and full recomputation.
+
 - Reduce verified PostgreSQL point windows under an explicit G2-item category, retaining the original window and source references and independently replaying candidate checks and budgets.
 - Accelerate source SHA-256 on supported Node hosts while retaining the original MoonBit implementation for other targets and malformed Unicode. Preserve complete report bytes and budgets; record full-call comparisons and common-path P95 controls in `docs/source-digest-performance.md`.
 - Package original point-window observations and reports into bounded SHA-256 capsules with independent caller-budget replay and tamper rejection.
