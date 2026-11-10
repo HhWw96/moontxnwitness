@@ -70,20 +70,34 @@ fn main {
   }
   println("append-list: consistent; complete analysis verified")
 
-  let relation = load(
-    (
-      #|{"traceSchema":3,"dataModel":"relation-set-v1","clockDomain":"example-relation","relationSchema":{"accounts":{"primaryKey":"id","columns":{"id":"int64","balance":"int64"}}},"scope":{"exclusiveWriters":true,"completeSnapshotTables":["accounts"]},"gaps":[],"events":[
-      #|{"seq":1,"time":0,"kind":"snapshot","initial":{"accounts":[]},"consistent":true}]}
-    ),
-  )
+  let relation_text =
+    #|{"traceSchema":3,"dataModel":"relation-set-v1","clockDomain":"example-relation","relationSchema":{"accounts":{"primaryKey":"id","columns":{"id":"int64","balance":"int64"}}},"scope":{"exclusiveWriters":true,"completeSnapshotTables":["accounts"]},"gaps":[],"events":[
+    #|{"seq":1,"time":0,"kind":"snapshot","initial":{"accounts":[]},"consistent":true}]}
+  let relation = load(relation_text)
   let relation_analysis = @txn.analyze_v4(relation)
+  let category_report = @json.parse(
+    @txn.classify_relation_v4_json(relation_text, "{}"),
+  ) catch {
+    _ => abort("Relation category report could not be parsed")
+  }
+  let categories_complete = match category_report {
+    Object(fields) =>
+      match fields.get("judgment") {
+        Some(Object(judgment)) =>
+          judgment.get("status") == Some(Json("checked-compatible"))
+        _ => false
+      }
+    _ => false
+  }
   if relation.data_model() != @txn.RelationSetV4 ||
     relation_analysis.outcome() != @txn.Consistent ||
     !@txn.verify_v4(relation, @txn.analysis_v4_json(relation_analysis)) ||
-    @txn.classify_v4(relation).status() != "unsupported" {
+    @txn.classify_v4(relation).status() != "unsupported" ||
+    !categories_complete ||
+    !@txn.verify_relation_classification_v4(relation, category_report) {
     abort("Relation analysis or its explicit classification boundary changed")
   }
   println(
-    "relation-set: consistent; category classification unsupported in this version",
+    "relation-set: consistent; dedicated category report independently verified",
   )
 }
