@@ -35,6 +35,8 @@ import {inferDependenciesV4,classifyWithInferenceV4,verifyInferenceV4,verifyWith
   parseInferenceOptionsV4,makeInferenceCapsuleV4,replayInferenceCapsuleV4} from './inference-v4.mjs';
 import {classifyRelationModelsV4,verifyRelationModelsV4,parseRelationModelOptionsV4,
   makeRelationModelsCapsuleV4,replayRelationModelsCapsuleV4} from './relation-models-v4.mjs';
+import {reduceRelationModelsV4,verifyRelationModelReductionV4,parseRelationModelReductionOptionsV4,
+  makeRelationModelReductionCapsuleV4,replayRelationModelReductionCapsuleV4} from './relation-models-reduction-v4.mjs';
 
 import {diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,normalizeConfiguredSessionOptionsV4,
  makeConfiguredSessionCapsuleV4,replayConfiguredSessionCapsuleV4} from './configured-v4.mjs';
@@ -65,6 +67,9 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs classify-relation-models-v4 SOURCE.json [--options OPTIONS.json] [--models elle-core|NAME,...] [--output REPORT.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs verify-relation-models-v4 SOURCE.json REPORT.json [--options EXPECTED.json] [--models elle-core|NAME,...]
   node dist/moontxnwitness.mjs replay-relation-models-v4 CAPSULE.json [--options EXPECTED.json] [--models elle-core|NAME,...]
+  node dist/moontxnwitness.mjs reduce-relation-models-v4 SOURCE.json --options TARGET.json [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs verify-relation-model-reduction-v4 SOURCE.json REPORT.json --options EXPECTED.json
+  node dist/moontxnwitness.mjs replay-relation-model-reduction-v4 CAPSULE.json --options EXPECTED.json
   node dist/moontxnwitness.mjs verify-models-v4 SOURCE.json REPORT.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs replay-models-v4 CAPSULE.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs check HISTORY.json [--format text|json|markdown|dot] [--output FILE] [--witness FILE]
@@ -314,6 +319,20 @@ try {
     }else result=(command==='infer-dependencies-v4'?inferDependenciesV4:classifyWithInferenceV4)(source,expected);
     emitJSON(result,options['--output'],inputs,companions);
     process.exitCode=isVerify||isReplay?(result.valid===true?0:2):['executed','checked-compatible'].includes(result.status)?0:result.status==='refuted'?1:3;
+  } else if (['reduce-relation-models-v4','verify-relation-model-reduction-v4','replay-relation-model-reduction-v4'].includes(args[0])) {
+    const command=args[0],isVerify=command.startsWith('verify-'),isReplay=command.startsWith('replay-');
+    const {paths,options}=localArgs(args.slice(1),['--options','--output',...(!isVerify&&!isReplay?['--capsule']:[])],isVerify?2:1);
+    if(!options['--options'])throw new Error('Independent --options with an explicit model is required');
+    const inputs=[...paths,options['--options']];
+    if(inputs.filter(p=>p==='-').length>1)throw new Error('Only one model reduction input may use standard input');
+    const requested=parseRelationModelReductionOptionsV4(readBounded(options['--options'],8192));
+    const source=readBounded(paths[0],isReplay?64*1024*1024:8*1024*1024),companions=[];let result;
+    if(isReplay)result=replayRelationModelReductionCapsuleV4(source,requested);
+    else if(isVerify)result=verifyRelationModelReductionV4(source,readBounded(paths[1],32*1024*1024),requested);
+    else if(options['--capsule']){const capsule=makeRelationModelReductionCapsuleV4(source,requested);result=JSON.parse(JSON.parse(capsule).reportText);companions.push([options['--capsule'],capsule+'\n']);}
+    else result=reduceRelationModelsV4(source,requested);
+    emitJSON(result,options['--output'],inputs,companions);
+    process.exitCode=isVerify||isReplay?(result.valid===true?0:2):['reduced','unchanged'].includes(result.status)?1:result.status==='not-refuted'?0:result.status==='invalid'?2:3;
   } else if (['classify-relation-models-v4','verify-relation-models-v4','replay-relation-models-v4'].includes(args[0])) {
     const command=args[0],isVerify=command==='verify-relation-models-v4',isReplay=command==='replay-relation-models-v4';
     const {paths,options}=localArgs(args.slice(1),['--options','--models','--output',...(!isVerify&&!isReplay?['--capsule']:[])],isVerify?2:1);

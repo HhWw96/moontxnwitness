@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {reduceRelationModelsV4,verifyRelationModelReductionV4,makeRelationModelReductionCapsuleV4,replayRelationModelReductionCapsuleV4} from '../dist/sdk.mjs';
+const source=readFileSync(new URL('./relation-category-reduction.json',import.meta.url),'utf8');
+const options={model:'serializable',maxChecks:256};
+const report=reduceRelationModelsV4(source,options);
+assert.equal(report.status,'reduced');
+assert.equal(report.selectedTransactions.length,2);
+assert.equal(report.oneMinimal,true);
+assert.equal(report.classification.status,'refuted');
+assert.equal(verifyRelationModelReductionV4(source,report,options).valid,true);
+assert.equal(verifyRelationModelReductionV4(source,report,{...options,model:'read-committed'}).valid,false);
+assert.equal(replayRelationModelReductionCapsuleV4(makeRelationModelReductionCapsuleV4(source,options),options).valid,true);
+console.log('relation reduction: Serializable refutation preserved; 3 transactions to 2; one-minimal source-bound capsule verified');

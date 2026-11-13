@@ -216,6 +216,10 @@ pub fn reduce_relation_category_v4(HistoryV4, category~ : String, max_checks? : 
 
 pub fn reduce_relation_category_v4_json(String, String) -> String
 
+pub fn reduce_relation_models_v4(ModelFactsV4, ElleModelV4, ModelOptionsV4, max_checks? : Int32, realtime_known? : Bool) -> RelationModelReductionV4
+
+pub fn reduce_relation_models_v4_json(String, String) -> String
+
 pub fn reduce_relation_predicate_v4(HistoryV4, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, max_checks? : Int32, max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32) -> RelationCategoryReductionV4
 
 pub fn reduce_v3_json(String, String) -> String
@@ -245,6 +249,14 @@ pub fn relation_model_capsule_v4_content_json(String) -> String
 pub fn relation_model_classification_v4_json(RelationModelClassificationV4) -> Json
 
 pub fn relation_model_options_v4_content_json(String) -> String
+
+pub fn relation_model_reduction_capsule_v4_content_json(String) -> String
+
+pub fn relation_model_reduction_options_v4_content_json(String) -> String
+
+pub fn relation_model_reduction_report_v4_content_json(String) -> String
+
+pub fn relation_model_reduction_v4_json(RelationModelReductionV4) -> Json
 
 pub fn relation_model_report_v4_content_json(String) -> String
 
@@ -373,6 +385,10 @@ pub fn verify_relation_category_reduction_v4_json(String, String, String) -> Str
 pub fn verify_relation_classification_v4(HistoryV4, Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> Bool
 
 pub fn verify_relation_classification_v4_json(String, String, String) -> String
+
+pub fn verify_relation_model_reduction_v4(ModelFactsV4, Json, ElleModelV4, ModelOptionsV4, max_checks? : Int32, realtime_known? : Bool) -> Bool
+
+pub fn verify_relation_model_reduction_v4_json(String, String, String) -> String
 
 pub fn verify_relation_models_v4(ModelFactsV4, Json, ModelOptionsV4, realtime_known? : Bool) -> Bool
 
@@ -754,6 +770,11 @@ pub fn RelationClassificationV4::status(Self) -> String
 pub struct RelationModelClassificationV4 {
   // private fields
 }
+
+pub struct RelationModelReductionV4 {
+  // private fields
+}
+pub fn RelationModelReductionV4::facts(Self) -> ModelFactsV4
 
 pub struct RelationPointGraphV4 {
   // private fields

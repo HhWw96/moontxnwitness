@@ -105,6 +105,8 @@ Use `--options` for independently selected client declarations and budgets. Caps
 
 ## References
 
+Model-preserving shrinking is available through [relation model reduction](relation-models-reduction-v4.md), with explicit target, original-event mapping and independently checked source closure.
+
 * [Adya, Weak Consistency: A Generalized Theory and Optimistic Implementations for Distributed Transactions (2000)](https://pmg.csail.mit.edu/papers/adya-phd.pdf)
 * [Fixed Elle reference](https://github.com/jepsen-io/elle/tree/4e359e597c52938b0afebb8bc42273914d68a424)
 * [Elle consistency phenomena and model descriptions](https://jepsen.io/consistency)

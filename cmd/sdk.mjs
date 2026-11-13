@@ -490,6 +490,9 @@ export {inferDependenciesV4,classifyWithInferenceV4,verifyInferenceV4,verifyWith
 
 export {classifyRelationModelsV4,verifyRelationModelsV4,parseRelationModelOptionsV4,
   makeRelationModelsCapsuleV4,replayRelationModelsCapsuleV4,RELATION_MODEL_V4_LIMITS} from './relation-models-v4.mjs';
+export {reduceRelationModelsV4,verifyRelationModelReductionV4,parseRelationModelReductionOptionsV4,
+  makeRelationModelReductionCapsuleV4,replayRelationModelReductionCapsuleV4,
+  RELATION_MODEL_REDUCTION_V4_LIMITS} from './relation-models-reduction-v4.mjs';
 
 export {diagnoseConfiguredSessionTextV4,diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,
  normalizeConfiguredSessionOptionsV4,makeConfiguredSessionCapsuleV4,replayConfiguredSessionCapsuleV4,

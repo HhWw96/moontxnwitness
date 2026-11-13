@@ -99,6 +99,9 @@ jobs:
       - name: Verify fourteen relation definitions and source-policy boundaries
         if: runner.os == 'Linux'
         run: node scripts/relation-model-matrix-v4.mjs dist artifacts/relation-model-matrix
+      - name: Preserve each selected model when reducing noisy counterexamples
+        if: runner.os == 'Linux'
+        run: node scripts/relation-model-reduction-matrix-v4.mjs dist artifacts/relation-model-matrix/cases.json artifacts/relation-model-reduction-matrix
       - name: Retain relation reference inputs, compiled core and per-model results
         if: always() && runner.os == 'Linux' && (steps.relation_reference.outcome == 'success' || steps.relation_reference.outcome == 'failure')
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -107,6 +110,7 @@ jobs:
           path: |
             artifacts/relation-model-comparison/
             artifacts/relation-model-matrix/
+            artifacts/relation-model-reduction-matrix/
           if-no-files-found: error
           compression-level: 6
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

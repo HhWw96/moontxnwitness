@@ -20,6 +20,8 @@ MoonBit 程序可注册多个独立推断模块，共享原始历史索引，分
 
 固定 Elle 的[实际十四模型对照](docs/elle-model-matrix.md)覆盖寄存器与列表；关系扩展使用独立原程序解释器和[逐项证据](docs/evidence/relation-models-v044.json)。各组证据分别保留确定结论、无法判定和不适用项，完整功能边界见[矩阵](docs/feature-matrix-v4.md)。
 
+`reduceRelationModelsV4` 可指定保留的模型反证，重新核验每次删除的来源闭包，并保留原始事件与分析视图的映射。运行 `node examples/relation-model-reduction-v4-roundtrip.mjs` 可将带噪声的案例缩成两个事务，再独立验证与重放。[缩减说明](docs/relation-models-reduction-v4.md)列出预算及单最小的完成条件。
+
 ## v0.4.1：PostgreSQL 点窗口分析
 
 新增 `analyzeConfiguredPointWindowV4` / `verifyConfiguredPointWindowV4`：从原始起止快照、实际交付的点读写及已确认提交中核验关系历史，检查 `serializable` 和 `G2-item`。支持配置化表名、列名和主键，提供 SDK、CLI 及 PostgreSQL 18 真实执行示例。使用方法见[点窗口接入](docs/configured-session-v4.md#analyze-a-captured-point-window)。

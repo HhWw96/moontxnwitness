@@ -1,5 +1,11 @@
 # Unreleased
 
+- Reduce relation histories while preserving one independently selected model refutation, rechecking source closure and the complete final result.
+- Retain original events and a verified mapping to the derived analysis view; missing producers, unresolved candidates and incomplete budgets prevent a one-minimal claim.
+- Add model-reduction SDK, CLI and capsules with independent target, budget, client and real-time policy verification.
+
+# 0.4.4 — 2026-11-13
+
 - Classify complete relation predicate histories under a separate model contract, with per-rule sources, item/predicate dependencies and serial, fixed-snapshot or per-query-prefix certificates.
 - Add independent relation-model SDK, CLI, verification and source-bound capsules while retaining existing point-row model semantics.
 - Distinguish RC changing reads, RR mixed item/predicate cycles, SI write skew and explicitly declared session/real-time contexts.

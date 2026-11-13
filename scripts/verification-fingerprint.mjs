@@ -46,6 +46,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   names.push('examples/classification-roundtrip.mjs');
   names.push('examples/classification-models-roundtrip.mjs');
   names.push('examples/relation-models-v4-roundtrip.mjs');
+  names.push('examples/relation-model-reduction-v4-roundtrip.mjs');
   const result=Object.fromEntries([...new Set(names)].sort().map(name=>[name,
     createHash('sha256').update(readFileSync(resolve(root,name))).digest('hex')]));
   for(const[name,record]of Object.entries(pinned))if(!name.startsWith('artifacts/')&&result[name]!==record.sha256)throw Error('Frozen input differs from pinned bytes: '+name);
