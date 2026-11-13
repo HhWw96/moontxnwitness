@@ -1,0 +1,84 @@
+{
+  "format": "moontxnwitness-feature-declaration/v1",
+  "semanticNamespace": "v4",
+  "reference": {
+    "project": "Elle",
+    "commit": "4e359e597c52938b0afebb8bc42273914d68a424",
+    "commonComparison": "docs/evidence/elle-common-v041.json",
+    "commonModels": ["serializable"],
+    "commonDataModels": ["point-register-v1", "append-list-v1"],
+    "allModelsDifferentiallyVerified": false
+  },
+  "extension": {
+    "level": "caller-declared-provenance-graph",
+    "constructor": "scoped_dependency_graph_v4",
+    "search": "search_scoped_category_v4",
+    "verifier": "verify_scoped_category_v4",
+    "dataKinds": ["ww-item", "wr-item", "rw-item", "ww-predicate", "wr-predicate", "rw-predicate"],
+    "orderKinds": ["process", "realtime"],
+    "authenticatesObservations": false,
+    "automaticallyCompletesModelObligations": false
+  },
+  "profiles": [
+    {
+      "id": "register-original-program",
+      "dataModel": "point-register-v1",
+      "sourceProfile": "captured-register-full-program/v2",
+      "incompleteSourceProfiles": ["captured-register-full-program/v2"],
+      "options": {},
+      "requiredFacts": ["unique-version-identities", "original-program", "confirmed-outcomes", "source-closed-window"],
+      "directCategories": ["G0", "G1c", "G2-item", "G-single"],
+      "modelApi": "classifyModelsV4",
+      "canonicalModels": "conditional-14",
+      "upstreamComparison": "serializable-only"
+    },
+    {
+      "id": "list-prefix-program",
+      "dataModel": "append-list-v1",
+      "sourceProfile": "captured-list-prefix-state/v2",
+      "incompleteSourceProfiles": ["captured-list-prefix-state/v2", "effective-list-appends/v1"],
+      "options": {"listProfile": "captured-list-prefix-state/v2"},
+      "requiredFacts": ["unique-element-identities", "delivered-prefixes", "effective-write-journal", "source-closed-window"],
+      "directCategories": ["G0", "G1c", "G2-item", "G-single"],
+      "modelApi": "classifyModelsV4",
+      "canonicalModels": "conditional-14",
+      "upstreamComparison": "serializable-original-program-profile-only"
+    },
+    {
+      "id": "relation-atomic-row-program",
+      "dataModel": "relation-set-v1",
+      "sourceProfile": "captured-relation-row-slots/v1",
+      "incompleteSourceProfiles": ["captured-relation-row-slots/v1", "relation-point-final-installed/v1"],
+      "options": {"relationProfile": "captured-relation-row-slots/v1"},
+      "requiredFacts": ["typed-primary-key-slots", "full-row-versions", "predecessor-links", "complete-point-reads", "source-closed-window"],
+      "directCategories": ["G0", "G1c", "G2-item"],
+      "modelApi": "classifyModelsV4",
+      "canonicalModels": "conditional-14",
+      "upstreamComparison": "not-in-common-corpus"
+    }
+  ],
+  "predicateProfile": {
+    "dataModel": "relation-set-v1",
+    "api": "classifyRelationPredicateV4",
+    "categories": ["G0", "G1c", "G2-item", "G2", "G-single-item", "G-single", "G-nonadjacent"],
+    "ruleSets": ["adya-2000-scoped-categories-v1", "elle-4e359e5-scoped-categories-v1"],
+    "canonicalModels": "not-composed-for-general-predicates",
+    "requiredFacts": ["complete-query-result", "typed-predicate", "separate-write-effects", "membership-transitions", "source-closure"]
+  },
+  "models": [
+    {"name": "read-uncommitted", "projection": "W", "context": "data-only"},
+    {"name": "read-committed", "projection": "I", "context": "data-only"},
+    {"name": "repeatable-read", "projection": "I+Ai", "context": "data-only"},
+    {"name": "serializable", "projection": "D", "context": "data-only"},
+    {"name": "strict-serializable", "projection": "D", "context": "realtime"},
+    {"name": "snapshot-isolation", "projection": "Ext(I,A)", "context": "data-only"},
+    {"name": "consistent-view", "projection": "G-single", "context": "data-only"},
+    {"name": "strong-session-read-uncommitted", "projection": "W", "context": "process"},
+    {"name": "strong-read-uncommitted", "projection": "W", "context": "realtime"},
+    {"name": "strong-session-read-committed", "projection": "I", "context": "process"},
+    {"name": "strong-read-committed", "projection": "I", "context": "realtime"},
+    {"name": "strong-session-serializable", "projection": "D", "context": "process"},
+    {"name": "strong-session-snapshot-isolation", "projection": "Ext(I,A)", "context": "process"},
+    {"name": "strong-snapshot-isolation", "projection": "Ext(I,A)", "context": "realtime"}
+  ]
+}

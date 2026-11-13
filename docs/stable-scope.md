@@ -1,5 +1,7 @@
 # 当前支持范围
 
+按能力而非历史版本查阅时，请先看[功能与互操作矩阵](feature-matrix-v4.md)：其中逐项区分依赖推断接口、三种数据模型、异常类别、十四模型所需条件与已经执行的参考对照。下文保留各历史入口的具体契约。
+
 ## v0.4.1：PostgreSQL 点窗口与基础库
 
 `analyzeConfiguredPointWindowV4` 将原始起止快照、已封存会话、实际读取与提交效果交给 MoonBit 核验，再检查关系模型 `serializable` 和 `G2-item`。`verifyConfiguredPointWindowV4` 使用三份原始输入和调用者独立提供的预算重算报告。支持受控 PostgreSQL 18、同步 psycopg 3.3.6、一张配置表、完整正向主键点读及读取前驱后的单行非主键更新；上限为 32 笔事务、128 条业务语句。使用方法及具体边界见[点窗口接入](configured-session-v4.md#analyze-a-captured-point-window)。
