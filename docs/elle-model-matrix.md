@@ -24,6 +24,10 @@ An early local fixture audit found list WR cycles with reads before the producer
 
 Comparison binds the request digest and each result's identity, actual checker datatype and requested canonical model. A same-valued result routed to another checker or model is rejected rather than counted as a match.
 
+The [retained actual run](evidence/elle-model-matrix-v042.json) executed 342 fixed-Elle requests: 289 matched, 53 unknown, no determinate differences, timeouts or checker failures. All 84 required actual pairs matched. The 36 incomplete-source/context positions remain separately not-comparable. The receipt binds the actual workflow commit, exact runtime, prepared inputs, raw result digest, per-model counts and downloadable artifact digest. It covers these discriminating fixtures; the earlier 2,000-history serializable comparison retains its separate scope.
+
+The comparison also verifies the upstream runner's successful completion record, exact request/result/checker bindings, fixed-source inventory, toolchain identities and post-run source check. A checker output left behind by a subsequently failed run cannot receive a passing comparison receipt. Accounting tests inject those failure conditions independently.
+
 ## Reproduce
 
 From the source checkout on Linux, after installing the fixed compiler and building:

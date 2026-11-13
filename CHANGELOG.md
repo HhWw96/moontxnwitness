@@ -2,6 +2,7 @@
 
 - Add a maintained fixed-Elle model comparison workflow using the current SDK, original observations and independently declared logical clients.
 - Separate required positive/negative model pairs, incomplete captures, future-read boundaries, reference unknowns, timeouts and execution failures; retain raw upstream results and dependency bindings.
+- Execute 342 fixed-Elle fourteen-model comparisons, retaining 289 matched results, 53 unknown results and zero determinate differences; distinguish logical-client order from real-time order and validate runner completion and result identities.
 
 - Publish a machine-readable source-profile, anomaly and canonical-model declaration with an executable 126-row model matrix, independent-option verification, tamper rejection and capsule checks.
 - Add a MoonBit example composing caller-owned read-source and predecessor inferencers through the public scoped dependency graph, with explicit provenance, rule selection and budget handling.

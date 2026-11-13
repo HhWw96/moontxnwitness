@@ -43,6 +43,8 @@ jobs:
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
       - name: Validate actual compiler
         run: node scripts/toolchain-policy.mjs
+      - name: Verify comparison accounting and evidence-failure refusal
+        run: node scripts/elle-model-matrix/compare-test.mjs
       - name: Build the current SDK
         run: node scripts/build.mjs
       - name: Prepare frozen common inputs and current SDK results
