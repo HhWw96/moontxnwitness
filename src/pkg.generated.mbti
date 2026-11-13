@@ -66,6 +66,10 @@ pub fn classify_models_v4(ModelFactsV4, ModelOptionsV4) -> ModelClassificationV4
 
 pub fn classify_models_v4_json(String, String) -> String
 
+pub fn classify_relation_models_v4(ModelFactsV4, ModelOptionsV4, realtime_known? : Bool) -> Result[RelationModelClassificationV4, String]
+
+pub fn classify_relation_models_v4_json(String, String) -> String
+
 pub fn classify_relation_point_v4(HistoryV4, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> RelationClassificationV4
 
 pub fn classify_relation_predicate_v4(HistoryV4, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32, max_states? : Int32, max_edge_checks? : Int32) -> Result[RelationPredicateClassificationV4, String]
@@ -236,6 +240,14 @@ pub fn relation_category_reduction_v4_json(RelationCategoryReductionV4) -> Json
 
 pub fn relation_classification_v4_json(RelationClassificationV4) -> Json
 
+pub fn relation_model_capsule_v4_content_json(String) -> String
+
+pub fn relation_model_classification_v4_json(RelationModelClassificationV4) -> Json
+
+pub fn relation_model_options_v4_content_json(String) -> String
+
+pub fn relation_model_report_v4_content_json(String) -> String
+
 pub fn relation_point_graph_v4_json(RelationPointGraphV4) -> Json
 
 pub fn relation_predicate_classification_v4_json(RelationPredicateClassificationV4) -> Json
@@ -361,6 +373,10 @@ pub fn verify_relation_category_reduction_v4_json(String, String, String) -> Str
 pub fn verify_relation_classification_v4(HistoryV4, Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> Bool
 
 pub fn verify_relation_classification_v4_json(String, String, String) -> String
+
+pub fn verify_relation_models_v4(ModelFactsV4, Json, ModelOptionsV4, realtime_known? : Bool) -> Bool
+
+pub fn verify_relation_models_v4_json(String, String, String) -> String
 
 pub fn verify_relation_predicate_classification_v4(HistoryV4, Json, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32, max_states? : Int32, max_edge_checks? : Int32) -> Bool
 
@@ -734,6 +750,10 @@ pub struct RelationClassificationV4 {
   // private fields
 }
 pub fn RelationClassificationV4::status(Self) -> String
+
+pub struct RelationModelClassificationV4 {
+  // private fields
+}
 
 pub struct RelationPointGraphV4 {
   // private fields

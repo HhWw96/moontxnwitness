@@ -12,6 +12,14 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
+## 关系谓词模型与可组合推断
+
+关系谓词入口 `classifyRelationModelsV4` 检查完整查询集合、行版本、写入效果及事务顺序，提供六个默认模型和十四个显式可选定义。报告逐项保留来源检查、项目／谓词依赖和原程序执行证书；`verifyRelationModelsV4` 与复现包按调用者独立指定的模型、预算和时钟策略重新计算。运行 `node examples/relation-models-v4-roundtrip.mjs`，可看到同一谓词写偏斜在 Serializable、RR 和 SI 下的不同结果。详见[关系模型定义](docs/relation-models-v4.md)。
+
+MoonBit 程序可注册多个独立推断模块，共享原始历史索引，分别产生带来源的约束；SDK 和 CLI 可选择已编译模块。模块参数、顺序、预算及完整结果进入可验证证据。[模块示例](examples/inference-modules-v4)展示两个调用者模块的组合、分类与策略变更拒绝。
+
+固定 Elle 的[实际十四模型对照](docs/elle-model-matrix.md)覆盖寄存器与列表；关系扩展使用独立原程序解释器和[逐项证据](docs/evidence/relation-models-v044.json)。各组证据分别保留确定结论、无法判定和不适用项，完整功能边界见[矩阵](docs/feature-matrix-v4.md)。
+
 ## v0.4.1：PostgreSQL 点窗口分析
 
 新增 `analyzeConfiguredPointWindowV4` / `verifyConfiguredPointWindowV4`：从原始起止快照、实际交付的点读写及已确认提交中核验关系历史，检查 `serializable` 和 `G2-item`。支持配置化表名、列名和主键，提供 SDK、CLI 及 PostgreSQL 18 真实执行示例。使用方法见[点窗口接入](docs/configured-session-v4.md#analyze-a-captured-point-window)。
@@ -121,7 +129,7 @@ node dist/moontxnwitness.mjs compare-models examples/strict-realtime.json
 ## 库与 SDK
 
 ```powershell
-moon add HhWw96/moontxnwitness@0.4.1
+moon add HhWw96/moontxnwitness
 ```
 
 ```javascript

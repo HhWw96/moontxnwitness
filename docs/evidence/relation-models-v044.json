@@ -1,0 +1,311 @@
+{
+  "format": "moontxnwitness-relation-model-reference-evidence/v1",
+  "date": "2026-11-13",
+  "passed": true,
+  "runtimeScope": "Actual caller-supplied compiled JavaScript SDK; source recomputation plus an independent original-program interpreter",
+  "publicPackageVerified": false,
+  "formalPerformanceMeasurement": false,
+  "semanticContract": "relation-predicate-models/v1",
+  "referenceCommit": "4e359e597c52938b0afebb8bc42273914d68a424",
+  "seed": 20261113,
+  "histories": 1000,
+  "modelJudgmentPositions": 14000,
+  "sdkReportsRecomputed": 1000,
+  "sdkExecutionFailures": 0,
+  "independentContradictionsOrCertificateFailures": 0,
+  "categories": {
+    "determinate-agreement": 10800,
+    "model-certificate-replays": 7000,
+    "independent-reference-undecided": 1800,
+    "premise-certificate-replays": 200,
+    "conservative-sdk-unknown": 800,
+    "both-undecided": 600
+  },
+  "fullFourteenModelParity": false,
+  "comparisonScope": "The reference supplies exact bounded serial decisions, direct aborted/intermediate-source findings and sufficient RC/SI certificates. Nonserial RR/CV prefixes independently replay RC semantic premises only. Pending, unknown and premise-only checks are not full model parity.",
+  "families": [
+    "serial-savepoint-and-delete-reinsert",
+    "legal-rc-external-reread",
+    "si-write-skew",
+    "real-time-and-process-stale-read",
+    "known-aborted-row-source"
+  ],
+  "schemaVariations": {
+    "tableNames": 3,
+    "columnLayouts": 2,
+    "primaryKeyTypes": [
+      "int64",
+      "text"
+    ],
+    "values": [
+      "int64",
+      "bool",
+      "Unicode-scalar text"
+    ]
+  },
+  "runtimeBindings": {
+    "core.mjs": {
+      "bytes": 5015047,
+      "sha256": "c29305477a8fdaf350ac883fa188835adf2513807f3e49341866683926ffa961"
+    },
+    "relation-models-v4.mjs": {
+      "bytes": 6828,
+      "sha256": "00cf30fbcfbd865b58f53495144389c9161fc725712010046ef2c5d3001a08b2"
+    }
+  },
+  "rawBindings": {
+    "histories.json": {
+      "bytes": 2862026,
+      "sha256": "b6e7d376c4a4b4664c3f728b0a57ca9171399cbbc42088082ebdbd3871037a9a"
+    },
+    "sdk-results.jsonl": {
+      "bytes": 124891667,
+      "sha256": "974c2b36f5caf9bf873141e2c2fe590f8493270286ef93bc674a636034926587"
+    },
+    "independent-oracle.py": {
+      "sha256": "6b96e196b7f7e3311d2b829db63c702f0fb46b80f8cecd0d2a54eb5195913e5f"
+    },
+    "generator.py": {
+      "sha256": "9be897bd360e708657e75d09940d8d81559c2c6306068401fb2a4c197f4b17d7"
+    }
+  },
+  "maintainedRunnerVerification": {
+    "faultTests": 15,
+    "freshSmokeHistories": 5,
+    "freshSmokeJudgments": 70,
+    "freshSmokePassed": true,
+    "freshSmokeSummarySha256": "9bce1ad1acea48a274afeafd1549b8b9e76619e768e3ae1d315a11e029c3cc11",
+    "existingThousandReportRecheckPassed": true,
+    "recheckSummarySha256": "c0866fce6f71dc9fbdb528046882ebf8e3f2fc213b2ca726f528dd793f3d9b6f",
+    "recheckItemsSha256": "acf38189c1486eb6ca5f0c741cd2bca17bac4386de40cf0299e4dadb717168ea"
+  },
+  "fourteenModelMatrix": {
+    "passed": true,
+    "publicPackageVerified": false,
+    "requiredPositions": 42,
+    "requiredDeterminatePositions": 28,
+    "requiredUnknownBoundaries": 14,
+    "definitionControls": 14,
+    "executedPositions": 56,
+    "matchedDeterminatePositions": 38,
+    "matchedUnknownBoundaries": 18,
+    "originalCapsulesReplayed": 56,
+    "rehashedTamperChecks": 280,
+    "separateInvalidInputCases": 4,
+    "invalidInputGuardChecks": 12,
+    "realTimePolicy": "A syntactic clock identifier remains mandatory; independently supplied realtimeKnown:false removes real-time edges and completion while preserving data/session evidence.",
+    "coverage": [
+      "G0 from original final writes, session order and real time",
+      "G1a aborted sources, G1b intermediate sources and WR plus real-time cycles",
+      "RR item/mixed cycles versus pure predicate phantom cycles",
+      "SI and consistent-view single anti-dependency",
+      "serializable G2 and session/real-time stale-read distinctions",
+      "unproven real-time witnesses stay unknown; reliable data witnesses remain refuted"
+    ],
+    "fullFourteenModelParity": false,
+    "scope": "Actual public SDK examples, source recomputation, capsule replay and fixed definition boundaries; not independent full-model or upstream Elle predicate equivalence.",
+    "runtimeCoreSha256": "3f39ed19aa194db74decb4d95778bd468546af5d33538a9ed5cfb025b170ca0c",
+    "matrixDriverSha256": "e83da4ecd4dedff9d2657eeaeb5cfc0dc28a9ba6294195946e22787f5a9c4465",
+    "summarySha256": "9dd7bb21be6fd6aa9f5c1dd3c01a070d01d1d319656c975f7c498a6b49348dec"
+  },
+  "reproduce": [
+    "node scripts/relation-models-compare.mjs DIST NEW_OUTPUT",
+    "node scripts/relation-models-compare.mjs DIST NEW_SMOKE_OUTPUT --count 5",
+    "python -X utf8 -B -m unittest discover -s scripts -p test_relation_models_compare.py -q",
+    "node scripts/relation-model-matrix-v4.mjs DIST NEW_MATRIX_OUTPUT",
+    "python -X utf8 -B scripts/relation-models-compare.py --histories HISTORIES.json --sdk-results SDK_RESULTS.jsonl --output NEW_RECHECK_OUTPUT"
+  ],
+  "currentSourceValidation": {
+    "version": "0.4.4",
+    "publicPackageVerified": false,
+    "runtime": {
+      "core.mjs": {
+        "bytes": 5232146,
+        "sha256": "f1c1013a75008ae8e4f329cde03a2edfaf545a48d485fb7b82e8aa015046b307"
+      },
+      "relation-models-v4.mjs": {
+        "bytes": 6828,
+        "sha256": "00cf30fbcfbd865b58f53495144389c9161fc725712010046ef2c5d3001a08b2"
+      },
+      "build-manifest.json": {
+        "bytes": 808,
+        "sha256": "bcd1c7f994f3e1e22eb999da4b31042e8ad445d13f8833d934f57ca44493416f"
+      }
+    },
+    "independentCampaign": {
+      "binding": {
+        "bytes": 3800,
+        "sha256": "ba1e48e86334445d9edc7e77ef09dcc2e266f6fa6b2d50e267b4826c4d27de50"
+      },
+      "summary": {
+        "format": "moontxnwitness-maintained-relation-reference-campaign/v1",
+        "passed": true,
+        "publicApiExecution": true,
+        "publicPackageVerified": false,
+        "formalPerformanceMeasurement": false,
+        "histories": 1000,
+        "judgments": 14000,
+        "seed": 20261113,
+        "fullFrozenCorpus": true,
+        "sdkReportsVerified": 1000,
+        "sdkFailures": [],
+        "totals": {
+          "read-uncommitted/checked-compatible": 800,
+          "read-committed/checked-compatible": 800,
+          "repeatable-read/checked-compatible": 400,
+          "serializable/checked-compatible": 400,
+          "strict-serializable/checked-compatible": 200,
+          "snapshot-isolation/checked-compatible": 600,
+          "consistent-view/checked-compatible": 600,
+          "strong-session-read-uncommitted/checked-compatible": 600,
+          "strong-read-uncommitted/checked-compatible": 600,
+          "strong-session-read-committed/checked-compatible": 600,
+          "strong-read-committed/checked-compatible": 600,
+          "strong-session-serializable/checked-compatible": 200,
+          "strong-session-snapshot-isolation/checked-compatible": 400,
+          "strong-snapshot-isolation/checked-compatible": 400,
+          "repeatable-read/refuted": 600,
+          "serializable/refuted": 600,
+          "strict-serializable/refuted": 800,
+          "snapshot-isolation/refuted": 400,
+          "consistent-view/refuted": 400,
+          "strong-session-serializable/refuted": 800,
+          "strong-session-snapshot-isolation/refuted": 600,
+          "strong-snapshot-isolation/refuted": 600,
+          "strong-session-read-uncommitted/unknown": 400,
+          "strong-read-uncommitted/unknown": 400,
+          "strong-session-read-committed/unknown": 200,
+          "strong-read-committed/unknown": 200,
+          "read-uncommitted/unknown": 200,
+          "read-committed/refuted": 200,
+          "strong-session-read-committed/refuted": 200,
+          "strong-read-committed/refuted": 200
+        },
+        "categories": {
+          "determinate-agreement": 10800,
+          "model-certificate-replays": 7000,
+          "independent-reference-undecided": 1800,
+          "premise-certificate-replays": 200,
+          "conservative-sdk-unknown": 800,
+          "both-undecided": 600
+        },
+        "independentFailures": 0,
+        "fullFourteenModelParity": false,
+        "scope": "Exact original serial decisions, direct source findings and sufficient RC/SI certificates. Nonserial RR/CV prefixes replay RC semantic premises only; pending and unknown are not model parity.",
+        "sourceBindings": {
+          "runtime/core.mjs": {
+            "bytes": 5232146,
+            "sha256": "f1c1013a75008ae8e4f329cde03a2edfaf545a48d485fb7b82e8aa015046b307"
+          },
+          "runtime/relation-models-v4.mjs": {
+            "bytes": 6828,
+            "sha256": "00cf30fbcfbd865b58f53495144389c9161fc725712010046ef2c5d3001a08b2"
+          },
+          "runtime/build-manifest.json": {
+            "bytes": 808,
+            "sha256": "bcd1c7f994f3e1e22eb999da4b31042e8ad445d13f8833d934f57ca44493416f"
+          },
+          "tools/relation-models-compare.mjs": {
+            "bytes": 6429,
+            "sha256": "886eede3ce094c844898c88f07c5d7c4d4f6b9f7d8beeb32a1eef0891702357a"
+          },
+          "tools/relation-models-compare.py": {
+            "bytes": 13339,
+            "sha256": "234234eb92e3964fa11035e9ae6d075d2bc21e0e5334870b2cb534615093d2ec"
+          },
+          "tools/relation-models-oracle.py": {
+            "bytes": 38977,
+            "sha256": "6b96e196b7f7e3311d2b829db63c702f0fb46b80f8cecd0d2a54eb5195913e5f"
+          },
+          "tools/relation-models-corpus.py": {
+            "bytes": 10992,
+            "sha256": "9be897bd360e708657e75d09940d8d81559c2c6306068401fb2a4c197f4b17d7"
+          }
+        },
+        "inputs": {
+          "histories": {
+            "bytes": 2862026,
+            "sha256": "b6e7d376c4a4b4664c3f728b0a57ca9171399cbbc42088082ebdbd3871037a9a"
+          },
+          "sdkResults": {
+            "bytes": 125012667,
+            "sha256": "70d59e0a4cc1897dbecf12da331d435d5470205f6848b092d04badcbc5501a56"
+          }
+        },
+        "independentSummary": {
+          "bytes": 3984,
+          "sha256": "09e9c944abccd76cd8841807bc9d5be27c55f6a57c5b8ea3e3123a5a0e19b9d7"
+        }
+      }
+    },
+    "definitionMatrix": {
+      "binding": {
+        "bytes": 2382,
+        "sha256": "102e2c7b15327f997abc606b9abdbf5f1849f863f8bd3e03198a2df710d02bcb"
+      },
+      "summary": {
+        "format": "moontxnwitness-relation-fourteen-model-matrix-result/v1",
+        "passed": true,
+        "publicApiExecution": true,
+        "publicPackageVerified": false,
+        "formalPerformanceMeasurement": false,
+        "models": 14,
+        "requiredPositions": 42,
+        "requiredDeterminatePositions": 28,
+        "requiredUnknownBoundaries": 14,
+        "definitionControls": 14,
+        "executedPositions": 56,
+        "originalCapsulesReplayed": 56,
+        "invalidInputCases": 4,
+        "invalidInputGuardChecks": 12,
+        "determinateJudgmentPositions": 38,
+        "unknownBoundaryPositions": 18,
+        "matchedDeterminatePositions": 38,
+        "matchedUnknownBoundaries": 18,
+        "rehashedTamperChecks": 280,
+        "fullFourteenModelParity": false,
+        "scope": "Predeclared relation model examples and definition boundaries; actual public SDK execution and source recomputation. This matrix is not independent full-model or upstream Elle predicate equivalence.",
+        "sourceBindings": {
+          "runtime/core.mjs": {
+            "bytes": 5232146,
+            "sha256": "f1c1013a75008ae8e4f329cde03a2edfaf545a48d485fb7b82e8aa015046b307"
+          },
+          "runtime/relation-models-v4.mjs": {
+            "bytes": 6828,
+            "sha256": "00cf30fbcfbd865b58f53495144389c9161fc725712010046ef2c5d3001a08b2"
+          },
+          "runtime/build-manifest.json": {
+            "bytes": 808,
+            "sha256": "bcd1c7f994f3e1e22eb999da4b31042e8ad445d13f8833d934f57ca44493416f"
+          },
+          "tools/relation-model-matrix-v4.mjs": {
+            "bytes": 19406,
+            "sha256": "e83da4ecd4dedff9d2657eeaeb5cfc0dc28a9ba6294195946e22787f5a9c4465"
+          },
+          "tools/relation-models-corpus.py": {
+            "bytes": 10992,
+            "sha256": "9be897bd360e708657e75d09940d8d81559c2c6306068401fb2a4c197f4b17d7"
+          },
+          "tools/relation-models-oracle.py": {
+            "bytes": 38977,
+            "sha256": "6b96e196b7f7e3311d2b829db63c702f0fb46b80f8cecd0d2a54eb5195913e5f"
+          }
+        },
+        "inputs": {
+          "cases": {
+            "bytes": 436281,
+            "sha256": "84b8e3e91729333e25fc1924d47f46004f1a0d435cf0ce002a6fac44af65373a"
+          },
+          "reference": {
+            "bytes": 14180,
+            "sha256": "7b26debdafd239318894b9d324f09811107f3b055102010966083e4a260b57c3"
+          }
+        },
+        "resultsSha256": "83cd5af43c929308683f4908d32071736573ef614cb6403b3b9c83edebcd2996",
+        "tamperCasesSha256": "b595d2e419a25dbef57cd78718741e97fff1bf9cd6369644de6c34769765303a",
+        "invalidInputResultsSha256": "5f90ffb9da1d39890f99b3a29a24d1422d19fed27e1d84b332aa85f9cb5c8ad4",
+        "failures": []
+      }
+    }
+  }
+}

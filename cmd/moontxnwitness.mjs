@@ -33,6 +33,8 @@ import { analyzeModelProfileV3, verifyModelProfileV3, makeModelProfileCapsuleV3,
 import {classifyModelsV4,verifyModelsV4,makeModelsCapsuleV4,replayModelsCapsuleV4,parseModelOptionsV4} from "./models-v4.mjs";
 import {inferDependenciesV4,classifyWithInferenceV4,verifyInferenceV4,verifyWithInferenceV4,
   parseInferenceOptionsV4,makeInferenceCapsuleV4,replayInferenceCapsuleV4} from './inference-v4.mjs';
+import {classifyRelationModelsV4,verifyRelationModelsV4,parseRelationModelOptionsV4,
+  makeRelationModelsCapsuleV4,replayRelationModelsCapsuleV4} from './relation-models-v4.mjs';
 
 import {diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,normalizeConfiguredSessionOptionsV4,
  makeConfiguredSessionCapsuleV4,replayConfiguredSessionCapsuleV4} from './configured-v4.mjs';
@@ -60,6 +62,9 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs verify-inference-v4 SOURCE.json REPORT.json --options EXPECTED.json
   node dist/moontxnwitness.mjs verify-with-inference-v4 SOURCE.json REPORT.json --options EXPECTED.json
   node dist/moontxnwitness.mjs replay-inference-v4 CAPSULE.json --options EXPECTED.json
+  node dist/moontxnwitness.mjs classify-relation-models-v4 SOURCE.json [--options OPTIONS.json] [--models elle-core|NAME,...] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs verify-relation-models-v4 SOURCE.json REPORT.json [--options EXPECTED.json] [--models elle-core|NAME,...]
+  node dist/moontxnwitness.mjs replay-relation-models-v4 CAPSULE.json [--options EXPECTED.json] [--models elle-core|NAME,...]
   node dist/moontxnwitness.mjs verify-models-v4 SOURCE.json REPORT.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs replay-models-v4 CAPSULE.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs check HISTORY.json [--format text|json|markdown|dot] [--output FILE] [--witness FILE]
@@ -309,6 +314,20 @@ try {
     }else result=(command==='infer-dependencies-v4'?inferDependenciesV4:classifyWithInferenceV4)(source,expected);
     emitJSON(result,options['--output'],inputs,companions);
     process.exitCode=isVerify||isReplay?(result.valid===true?0:2):['executed','checked-compatible'].includes(result.status)?0:result.status==='refuted'?1:3;
+  } else if (['classify-relation-models-v4','verify-relation-models-v4','replay-relation-models-v4'].includes(args[0])) {
+    const command=args[0],isVerify=command==='verify-relation-models-v4',isReplay=command==='replay-relation-models-v4';
+    const {paths,options}=localArgs(args.slice(1),['--options','--models','--output',...(!isVerify&&!isReplay?['--capsule']:[])],isVerify?2:1);
+    const inputs=[...paths,...(options['--options']?[options['--options']]:[])];
+    if(inputs.filter(p=>p==='-').length>1)throw new Error('Only one relation model input may use standard input');
+    const requested=options['--options']?parseRelationModelOptionsV4(readBounded(options['--options'],8192)):{};
+    if(options['--models']!==undefined){if(Object.hasOwn(requested,'models'))throw new Error('models must be supplied once');requested.models=options['--models']==='elle-core'?'elle-core':options['--models'].split(',');}
+    const source=readBounded(paths[0],isReplay?64*1024*1024:8*1024*1024),companions=[];let result;
+    if(isReplay)result=replayRelationModelsCapsuleV4(source,requested);
+    else if(isVerify)result=verifyRelationModelsV4(source,readBounded(paths[1],32*1024*1024),requested);
+    else if(options['--capsule']){const capsule=makeRelationModelsCapsuleV4(source,requested);result=JSON.parse(JSON.parse(capsule).reportText);companions.push([options['--capsule'],capsule+'\n']);}
+    else result=classifyRelationModelsV4(source,requested);
+    emitJSON(result,options['--output'],inputs,companions);
+    process.exitCode=isVerify||isReplay?(result.valid===true?0:2):result.status==='checked-compatible'?0:result.status==='refuted'?1:3;
   } else if (['classify-models-v4','verify-models-v4','replay-models-v4'].includes(args[0])) {
     const command=args[0],isVerify=command==='verify-models-v4',isReplay=command==='replay-models-v4';
     const {paths,options}=localArgs(args.slice(1),['--options','--models','--list-profile','--output',...(!isVerify&&!isReplay?['--capsule']:[])],isVerify?2:1);

@@ -29,18 +29,18 @@ Graph provenance is not source authentication. A custom adapter can compose depe
 | G0, G1c, G2-item | Direct `classifyV4` | Direct; opt into effective graph for multiple appends | Direct `classifyRelationV4` | Separate scoped-category API |
 | G-single | Direct explicit category | Direct explicit category with applicable list graph | Composed in model namespace | Separate G-single / G-single-item categories |
 | G-nonadjacent | Composed, category-specific graph rule | Composed under selected source profile | Composed under atomic-row profile | Separate category; cyclic first/last adjacency checked |
-| G1a / G1b | Original delivered reads vs aborted/intermediate writes | Source/prefix checks; producer and own-overlay applicability remains explicit | Original row source / projection checks | General predicate model composition not declared |
-| Internal consistency | Original program and own-write checks | Own append overlay and observed prefixes | Original row program / savepoint effect checks | Query and source checks do not establish a complete isolation model |
+| G1a / G1b | Original delivered reads vs aborted/intermediate writes | Source/prefix checks; producer and own-overlay applicability remains explicit | Original row source / projection checks | Composed from original complete-query sources in `relation-predicate-models/v1` |
+| Internal consistency | Original program and own-write checks | Own append overlay and observed prefixes | Original row program / savepoint effect checks | Original complete queries, active own effects and savepoint rollback |
 | Future read, lost update, dirty update | Source inspectors under their explicit premises | Applicable source diagnostics / model obligations; no blanket register-label parity | Row source and model obligations; no blanket register-label parity | Not claimed as complete named-detector coverage |
 | Missing source / conflicting version facts | Explicit gap / order-conflict diagnostics | Explicit missing producer / incompatible-prefix diagnostics | Explicit missing writer / predecessor / row-value gaps | Incomplete result or ambiguous membership remains a gap |
 | Item vs predicate anti-dependency | Item scope | Item scope | Item point profile | Both scopes retained; seven selected categories |
-| Logical session / real-time | Explicit source facts and separate contexts | Same, subject to profile applicability | Same, subject to row projection | Scoped order graph supported; general full-model composition not declared |
+| Logical session / real-time | Explicit source facts and separate contexts | Same, subject to profile applicability | Same, subject to row projection | Separate model namespace with caller-declared clients and confirmed order facts |
 
 Relations support typed int64, Boolean and explicitly compared text, primary-key/equality/range/AND predicates and distinct write effects. Full-query coverage is required for negative/predicate evidence. An UPDATE RETURNING result is not a complete predicate read. Atomic row-slot semantics do not assert equivalence to physical entity incarnations. Mixed-model transactions, NULL, JOIN, aggregates and arbitrary SQL functions are outside this stable scope.
 
 ## Canonical model matrix
 
-All entries below are **conditional model checks** for captured registers, explicitly selected list prefix programs and explicitly selected atomic row programs. The default native list and relation interpretations have a narrower completion scope. General relation predicates currently expose seven categories rather than these fourteen complete model checks.
+All entries below are **conditional model checks** for captured registers, explicitly selected list prefix programs and explicitly selected atomic row programs. The default native list and relation interpretations have a narrower completion scope. General relation predicates now have the separate [relation-model namespace](relation-models-v4.md): six default selections and fourteen explicitly selectable definitions, original query/source checks and bounded constructive certificates. Its literal Adya mixed-item RR rule is declared separately from the existing fixed-Elle point/list projection. The original seven predicate-category APIs retain their semantics.
 
 | Canonical model | Main graph projection | Additional order / premises |
 | --- | --- | --- |

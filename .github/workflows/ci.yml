@@ -44,6 +44,8 @@ jobs:
         run: python -B -m unittest discover -s scripts -p test_auto_writer_checkpoint.py -v
       - name: Test frozen input cache faults
         run: python -B -m unittest discover -s scripts -p test_input_cache.py -v
+      - name: Test independent relation semantics and comparison failures
+        run: python -B -m unittest discover -s scripts -p 'test_relation_models*.py' -v
       - name: Check package and publication contracts before compilation
         run: python -B scripts/preflight_release.py
       - name: Install official MoonBit (Windows)
@@ -90,6 +92,23 @@ jobs:
         run: npm test
       - name: Verify declared source profiles and canonical model results
         run: node scripts/feature-matrix-v4.mjs --output artifacts/feature-matrix-v4
+      - name: Compare original relation programs with the independent interpreter
+        id: relation_reference
+        if: runner.os == 'Linux'
+        run: node scripts/relation-models-compare.mjs dist artifacts/relation-model-comparison
+      - name: Verify fourteen relation definitions and source-policy boundaries
+        if: runner.os == 'Linux'
+        run: node scripts/relation-model-matrix-v4.mjs dist artifacts/relation-model-matrix
+      - name: Retain relation reference inputs, compiled core and per-model results
+        if: always() && runner.os == 'Linux' && (steps.relation_reference.outcome == 'success' || steps.relation_reference.outcome == 'failure')
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: relation-model-reference-linux
+          path: |
+            artifacts/relation-model-comparison/
+            artifacts/relation-model-matrix/
+          if-no-files-found: error
+          compression-level: 6
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -110,6 +129,17 @@ jobs:
         run: python -B scripts/import_postgres_ci_bundle.py
       - name: Verify fresh source and portable consumers
         run: npm run package
+      - name: Verify new MoonBit model APIs from a separate source consumer
+        run: >-
+          python -c "import json,os,subprocess,sys; from pathlib import Path; subprocess.run([sys.executable,'-B','scripts/verify-model-library-consumer.py','--version',json.loads(Path('package.json').read_text())['version'],'--source',str(Path.cwd()),'--output',str(Path(os.environ['RUNNER_TEMP'])/'mtw-new-model-library-consumer')],check=True)"
+      - name: Retain new library consumer and actual compiled cores
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: new-model-library-consumer-${{ matrix.os }}
+          path: ${{ runner.temp }}/mtw-new-model-library-consumer/
+          if-no-files-found: warn
+          compression-level: 6
       - name: Validate actual integration compatibility receipt
         run: python scripts/release.py --check-compatibility-receipt
       - name: Stage current-run evidence and exact current-version downloads

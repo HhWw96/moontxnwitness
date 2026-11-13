@@ -1,6 +1,6 @@
 name = "HhWw96/moontxnwitness"
 
-version = "0.4.3"
+version = "0.4.4"
 
 source = "src"
 
@@ -18,6 +18,6 @@ keywords = [
   "offline",
 ]
 
-description = "Offline transactional history analysis with independently verifiable dependency-cycle witnesses"
+description = "Embeddable transaction consistency analysis with composable inference, isolation-model checks and source-bound evidence"
 
 preferred_target = "js"

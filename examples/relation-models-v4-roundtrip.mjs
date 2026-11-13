@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {classifyRelationModelsV4,verifyRelationModelsV4,makeRelationModelsCapsuleV4,replayRelationModelsCapsuleV4} from '../dist/sdk.mjs';
+const source=readFileSync(new URL('./relation-predicate-categories.json',import.meta.url),'utf8');
+const options={models:'elle-core'};
+const report=classifyRelationModelsV4(source,options);
+const status=Object.fromEntries(report.models.map(model=>[model.model,model.status]));
+assert.equal(report.models.length,14);
+assert.equal(status.serializable,'refuted');
+assert.equal(status['repeatable-read'],'checked-compatible');
+assert.equal(status['snapshot-isolation'],'checked-compatible');
+assert.equal(verifyRelationModelsV4(source,report,options).valid,true);
+assert.equal(replayRelationModelsCapsuleV4(makeRelationModelsCapsuleV4(source,options),options).valid,true);
+console.log('relation predicates: 14 model results verified; Serializable refuted, RR and SI compatible');

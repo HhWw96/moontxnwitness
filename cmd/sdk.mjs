@@ -488,6 +488,9 @@ export {inferDependenciesV4,classifyWithInferenceV4,verifyInferenceV4,verifyWith
   parseInferenceOptionsV4,makeInferenceCapsuleV4,replayInferenceCapsuleV4,
   INFERENCE_MODULES_V4,INFERENCE_V4_LIMITS} from './inference-v4.mjs';
 
+export {classifyRelationModelsV4,verifyRelationModelsV4,parseRelationModelOptionsV4,
+  makeRelationModelsCapsuleV4,replayRelationModelsCapsuleV4,RELATION_MODEL_V4_LIMITS} from './relation-models-v4.mjs';
+
 export {diagnoseConfiguredSessionTextV4,diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,
  normalizeConfiguredSessionOptionsV4,makeConfiguredSessionCapsuleV4,replayConfiguredSessionCapsuleV4,
  verifySourceInstallationV4,verifySourceInstallationReportV4,mapInitialSourceFetchV4,

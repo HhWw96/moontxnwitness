@@ -218,6 +218,8 @@ const foundation036 = {newIndependentReviewPerformed:false,finalCoreElle2000Exec
 for(const [field,script,count] of [
   ['modelsHostTests','scripts/models-v4-sdk-test.mjs',90],
   ['rowModelsHostTests','scripts/models-row-v4-sdk-test.mjs',38],
+  ['relationPredicateModelsHostTests','scripts/relation-models-v4-sdk-test.mjs',54],
+  ['relationPredicateModelsCLI','scripts/relation-models-cli-test.mjs',8],
 ]) {
   const child=spawnSync(process.execPath,[script],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
   if(child.error||child.status!==0)throw Error(script+' failed: '+child.stdout+child.stderr);
@@ -227,12 +229,15 @@ for(const [field,script,count] of [
   const manifest=JSON.parse(readFileSync(resolve(root,'dist/build-manifest.json'),'utf8'));assert.equal(evidence.coreSha256,manifest.coreSha256);
   foundation036[field]={passed:true,tests:count,failed:0,coreSha256:evidence.coreSha256,receipt:relativeEvidencePath(root,output.receipt)};
 }
-for(const [field,script] of [['modelsExample','examples/models-v4-roundtrip.mjs'],['rowModelsExample','examples/relation-atomic-models-roundtrip.mjs']]) {
+for(const [field,script] of [['modelsExample','examples/models-v4-roundtrip.mjs'],['rowModelsExample','examples/relation-atomic-models-roundtrip.mjs'],['predicateModelsExample','examples/relation-models-v4-roundtrip.mjs']]) {
   const child=spawnSync(process.execPath,[script],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
   if(child.error||child.status!==0)throw Error(script+' failed: '+child.stdout+child.stderr);
   if(field==='modelsExample'){
     assert.deepEqual(child.stdout.trim().split(/\r?\n/),['register: 14 model result(s) and source-bound evidence verified','list: 1 model result(s) and source-bound evidence verified']);
     foundation036[field]={passed:true,registerModels:14,listModels:1};
+  }else if(field==='predicateModelsExample'){
+    assert.equal(child.stdout.trim(),'relation predicates: 14 model results verified; Serializable refuted, RR and SI compatible');
+    foundation036[field]={passed:true,models:14};
   }else{
     const result=JSON.parse(child.stdout);assert.equal(result.passed,true);assert.equal(result.models,14);assert.equal(result.profile,'captured-relation-row-slots/v1');assert.equal(result.replayValid,true);
     foundation036[field]=result;

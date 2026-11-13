@@ -1,5 +1,13 @@
 # Unreleased
 
+- Classify complete relation predicate histories under a separate model contract, with per-rule sources, item/predicate dependencies and serial, fixed-snapshot or per-query-prefix certificates.
+- Add independent relation-model SDK, CLI, verification and source-bound capsules while retaining existing point-row model semantics.
+- Distinguish RC changing reads, RR mixed item/predicate cycles, SI write skew and explicitly declared session/real-time contexts.
+- Bind the independent `realtimeKnown` policy: unproved real-time order cannot form a witness or completion certificate, while reliable data witnesses remain usable.
+- Retain a 56-position relation definition matrix, 280 rehashed tamper checks and an independently rechecked 1,000-history campaign with separate undecided and certificate-premise accounting.
+
+# 0.4.3 — 2026-11-13
+
 - Compose caller-registered deterministic inference modules over one original-history view, retaining module order, parameters, algorithms, provenance and independently selected budgets.
 - Expose compiled built-in inference through the SDK and CLI, with source-bound capsules, exact policy replay and rejection of changed modules, evidence and budgets.
 - Preserve independently established model refutations and completion evidence; auxiliary graphs do not become forbidden-model witnesses.
