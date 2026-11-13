@@ -26,16 +26,20 @@ function convert(row) {
   for(const event of events){if(event.kind==='begin')txs.set(event.tx,{ops:[],begin:event});else if(event.tx){const tx=txs.get(event.tx);assert(tx);if(['read','write','list_read','append'].includes(event.kind))tx.ops.push(event);else if(['commit_ok','rollback_ok'].includes(event.kind)){assert(!tx.end);tx.end=event;}}}
   const history=[],completion=new Map();
   const initial=events[0].initial;
+  const operations=tx=>tx.ops.map(o=>{
+    if(o.kind==='read')return [kw('r'),o.key,o.version===initial[o.key]?null:o.version];
+    if(o.kind==='write')return [kw('w'),o.key,o.version];
+    if(o.kind==='list_read')return [kw('r'),o.key,o.items.map(v=>v.id)];
+    return [kw('append'),o.key,o.id];
+  });
   for(const e of events){
-    if(e.kind==='begin'){history.push({index:history.length,type:kw('invoke'),f:kw('txn'),process:membership.get(e.tx),time:e.time,value:null});}
+    if(e.kind==='begin'){
+      const planned=operations(txs.get(e.tx)).map(op=>op[0][keywordTag]==='r'?[op[0],op[1],null]:op);
+      history.push({index:history.length,type:kw('invoke'),f:kw('txn'),process:membership.get(e.tx),time:e.time,value:planned});
+    }
     if(['commit_ok','rollback_ok'].includes(e.kind)){
       const tx=txs.get(e.tx);
-      const value=tx.ops.map(o=>{
-        if(o.kind==='read')return [kw('r'),o.key,o.version===initial[o.key]?null:o.version];
-        if(o.kind==='write')return [kw('w'),o.key,o.version];
-        if(o.kind==='list_read')return [kw('r'),o.key,o.items.map(v=>v.id)];
-        return [kw('append'),o.key,o.id];
-      });
+      const value=operations(tx);
       completion.set(e.tx,history.length);
       history.push({index:history.length,type:kw(e.kind==='commit_ok'?'ok':'fail'),f:kw('txn'),process:membership.get(e.tx),time:e.time,value});
     }
