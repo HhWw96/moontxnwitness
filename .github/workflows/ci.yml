@@ -86,6 +86,78 @@ jobs:
               args.append('--publish')
           subprocess.run(args, check=True)
           PY
+      - name: Diagnose artifact index after failure without executing contents
+        if: failure()
+        run: |
+          python - <<'PY'
+          import collections, hashlib, json, os, zipfile
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP']) / 'github-release-candidate'
+          evidence = root / 'evidence'
+          evidence.mkdir(parents=True, exist_ok=True)
+          path = root / 'original-artifact.zip'
+          limit = 8 * 1024 * 1024
+          summary = {'format': 'moontxnwitness-artifact-index-diagnostic/v1', 'artifactCodeExecuted': False, 'memberReadLimitBytes': limit}
+          try:
+              if not path.is_file():
+                  raise ValueError('No downloaded original-artifact.zip is available')
+              summary['archiveBytes'] = path.stat().st_size
+              hasher = hashlib.sha256()
+              with path.open('rb') as stream:
+                  for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                      hasher.update(chunk)
+              summary['archiveSha256'] = hasher.hexdigest()
+              with zipfile.ZipFile(path) as archive:
+                  members = archive.infolist()
+                  if len(members) > 100000:
+                      raise ValueError('Too many ZIP central-directory entries')
+                  counts = collections.Counter(item.filename for item in members if not item.is_dir())
+                  summary['duplicateMembersFirst50'] = sorted(name for name, count in counts.items() if count != 1)[:50]
+                  actual = set(counts)
+                  def read(name):
+                      if counts[name] != 1:
+                          raise ValueError('Required member missing or duplicated: ' + name)
+                      item = archive.getinfo(name)
+                      if item.file_size > limit or item.flag_bits & 1:
+                          raise ValueError('Oversized or encrypted diagnostic member: ' + name)
+                      with archive.open(item) as stream:
+                          data = stream.read(limit + 1)
+                      if len(data) != item.file_size or len(data) > limit:
+                          raise ValueError('Diagnostic member length differs: ' + name)
+                      return data
+                  def strict(data):
+                      def pairs(items):
+                          result = {}
+                          for key, value in items:
+                              if key in result:
+                                  raise ValueError('Duplicate JSON key')
+                              result[key] = value
+                          return result
+                      return json.loads(data.decode('utf8'), object_pairs_hook=pairs, parse_constant=lambda value: (_ for _ in ()).throw(ValueError('Nonfinite JSON')))
+                  raw = read('current-run-index.json')
+                  index = strict(raw)
+                  expected = {row['file'] for row in index['files']}
+                  unindexed = sorted(actual - expected - {'current-run-index.json'})
+                  missing = sorted(expected - actual)
+                  summary.update(actualFileCount=len(actual), indexedFileCount=len(expected), unindexedCount=len(unindexed), missingCount=len(missing), unindexedFirst50=unindexed[:50], missingFirst50=missing[:50], indexSelfExcludedFromDifference=True)
+                  saved = {}
+                  for name, output in [('current-run-index.json', 'current-run-index.json'), ('receipt-bound-unit-logs.json', 'receipt-bound-unit-logs.json'), ('dist/build-manifest.json', 'diagnostic-dist-build-manifest.json')]:
+                      if name not in actual:
+                          saved[name] = {'present': False}
+                          continue
+                      data = raw if name == 'current-run-index.json' else read(name)
+                      with (evidence / output).open('xb') as stream:
+                          stream.write(data)
+                      value = strict(data)
+                      saved[name] = {'present': True, 'file': output, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest(), 'topLevelKeys': sorted(value)[:50] if isinstance(value, dict) else None}
+                  summary['savedDiagnosticMembers'] = saved
+          except Exception as error:
+              summary['diagnosticError'] = {'type': type(error).__name__, 'message': str(error)[:512]}
+          with (evidence / 'artifact-index-diagnostic.json').open('x', encoding='utf8') as stream:
+              json.dump(summary, stream, indent=2)
+              stream.write('\n')
+          print(json.dumps(summary))
+          PY
       - name: Retain candidate assets and validation receipts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
