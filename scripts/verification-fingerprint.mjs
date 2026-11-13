@@ -31,6 +31,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   if(existsSync(resolve(root,'verification/model-profile-v3/v027-initial')))visit('verification/model-profile-v3/v027-initial',true);
   for(const name of ['verification/v3/dislock-explicit-policy-preregistration-2026-10-21.json','verification/v3/dislock-sql-supplement-preregistration-2026-10-21.json'])if(existsSync(resolve(root,name)))names.push(name);
   visit('examples/configured-session',true);
+  visit('examples/inference-modules-v4',true);
   names.push('examples/postgres-requirements.txt');
   names.push('verification/formal-harness-fix/reproduction/original-full-capture-cost.yml.gz');
   names.push('examples/orm-requirements.txt');

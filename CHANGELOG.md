@@ -1,5 +1,12 @@
 # Unreleased
 
+- Compose caller-registered deterministic inference modules over one original-history view, retaining module order, parameters, algorithms, provenance and independently selected budgets.
+- Expose compiled built-in inference through the SDK and CLI, with source-bound capsules, exact policy replay and rejection of changed modules, evidence and budgets.
+- Preserve independently established model refutations and completion evidence; auxiliary graphs do not become forbidden-model witnesses.
+- Add a runnable MoonBit module-composition example and cross-target, SDK, CLI and tamper regression checks.
+
+# 0.4.2 — 2026-11-13
+
 - Add a maintained fixed-Elle model comparison workflow using the current SDK, original observations and independently declared logical clients.
 - Separate required positive/negative model pairs, incomplete captures, future-read boundaries, reference unknowns, timeouts and execution failures; retain raw upstream results and dependency bindings.
 - Execute 342 fixed-Elle fourteen-model comparisons, retaining 289 matched results, 53 unknown results and zero determinate differences; distinguish logical-client order from real-time order and validate runner completion and result identities.

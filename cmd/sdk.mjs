@@ -484,6 +484,10 @@ export {reduceRelationCategoryV4,verifyRelationCategoryReductionV4,makeRelationC
 
 export {classifyModelsV4,verifyModelsV4,makeModelsCapsuleV4,replayModelsCapsuleV4,parseModelOptionsV4,ELLE_CORE_MODELS_V4,MODEL_V4_LIMITS} from "./models-v4.mjs";
 
+export {inferDependenciesV4,classifyWithInferenceV4,verifyInferenceV4,verifyWithInferenceV4,
+  parseInferenceOptionsV4,makeInferenceCapsuleV4,replayInferenceCapsuleV4,
+  INFERENCE_MODULES_V4,INFERENCE_V4_LIMITS} from './inference-v4.mjs';
+
 export {diagnoseConfiguredSessionTextV4,diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,
  normalizeConfiguredSessionOptionsV4,makeConfiguredSessionCapsuleV4,replayConfiguredSessionCapsuleV4,
  verifySourceInstallationV4,verifySourceInstallationReportV4,mapInitialSourceFetchV4,

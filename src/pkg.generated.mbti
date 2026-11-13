@@ -50,6 +50,8 @@ pub fn build_relation_point_graph_v4(HistoryV4, max_checks? : Int32) -> Result[R
 
 pub fn build_relation_predicate_graph_v4(HistoryV4, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32) -> Result[RelationPredicateGraphV4, String]
 
+pub fn builtin_inference_module_v4(BuiltinInferenceModuleV4) -> InferenceModuleV4
+
 pub fn capsule_content_json(String) -> String
 
 pub fn capsule_v3_content_json(String) -> String
@@ -78,6 +80,10 @@ pub fn classify_v4(HistoryV4, categories? : Array[String], max_states? : Int32, 
 
 pub fn classify_v4_json(String, String) -> String
 
+pub fn classify_with_inference_v4(ModelFactsV4, Array[InferenceModuleV4], options? : ModelOptionsV4, max_inference_checks? : Int32) -> Result[InferenceClassificationV4, String]
+
+pub fn classify_with_inference_v4_json(String, String) -> String
+
 pub fn compare_configured_c_text_v1(String, String) -> Int32
 
 pub fn compare_models(History) -> Json
@@ -105,6 +111,20 @@ pub fn elle_core_models_v4() -> Array[ElleModelV4]
 pub fn history_json(History) -> Json
 
 pub fn history_v4_json(HistoryV4) -> Json
+
+pub fn infer_dependencies_v4(ModelFactsV4, Array[InferenceModuleV4], options? : ModelOptionsV4, max_inference_checks? : Int32) -> Result[InferenceV4, String]
+
+pub fn infer_dependencies_v4_json(String, String) -> String
+
+pub fn inference_classification_v4_json(InferenceClassificationV4) -> Json
+
+pub fn inference_module_v4(String, String, (InferenceViewV4, Json, InferenceBudgetV4) -> Result[InferenceContributionV4, String], parameters? : Json, algorithm? : String?) -> Result[InferenceModuleV4, String]
+
+pub fn inference_options_v4_content_json(String) -> String
+
+pub fn inference_report_v4_content_json(String) -> String
+
+pub fn inference_v4_json(InferenceV4) -> Json
 
 pub fn inspect_anomalies_v4(HistoryV4, max_checks? : Int32) -> Json
 
@@ -314,6 +334,8 @@ pub fn verify_configured_writer_window_v4_json(String, String, String, String) -
 
 pub fn verify_cycle(History, Array[Edge]) -> Bool
 
+pub fn verify_inference_v4_json(String, String, String) -> String
+
 pub fn verify_internal_consistency_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
 
 pub fn verify_internal_consistency_v4_json(String, String, String) -> String
@@ -374,6 +396,10 @@ pub fn verify_v4(HistoryV4, Json, options? : AnalysisOptionsV4) -> Bool
 
 pub fn verify_v4_json(String, String, String) -> String
 
+pub fn verify_with_inference_v4(ModelFactsV4, Json, Array[InferenceModuleV4], options? : ModelOptionsV4, max_inference_checks? : Int32) -> Bool
+
+pub fn verify_with_inference_v4_json(String, String, String) -> String
+
 pub fn version() -> String
 
 // Errors
@@ -410,6 +436,15 @@ pub struct AnalysisV4 {
 }
 pub fn AnalysisV4::data_model(Self) -> DataModelV4
 pub fn AnalysisV4::outcome(Self) -> Outcome
+
+pub(all) enum BuiltinInferenceModuleV4 {
+  InferenceReadSources
+  InferenceGivenVersions
+  InferenceListPrefixes
+  InferenceDeclaredOrders
+} derive(Eq)
+pub fn BuiltinInferenceModuleV4::equal(Self, Self) -> Bool
+pub fn BuiltinInferenceModuleV4::not_equal(Self, Self) -> Bool
 
 pub struct CaptureAnomaliesV4 {
   // private fields
@@ -526,6 +561,39 @@ pub struct HistoryV4 {
 }
 pub fn HistoryV4::data_model(Self) -> DataModelV4
 pub fn HistoryV4::source_text(Self) -> String
+
+pub struct InferenceBudgetV4 {
+  // private fields
+}
+pub fn InferenceBudgetV4::charge(Self) -> Bool
+pub fn InferenceBudgetV4::remaining(Self) -> Int32
+
+pub struct InferenceClassificationV4 {
+  // private fields
+}
+
+pub(all) struct InferenceContributionV4 {
+  data_edges : Array[ScopedDataEdgeInputV4]
+  order_edges : Array[ScopedOrderEdgeInputV4]
+  gaps : Array[Json]
+}
+
+pub struct InferenceModuleV4 {
+  // private fields
+}
+
+pub struct InferenceV4 {
+  // private fields
+}
+
+pub struct InferenceViewV4 {
+  // private fields
+}
+pub fn InferenceViewV4::data_edges(Self) -> Array[ScopedDataEdgeInputV4]
+pub fn InferenceViewV4::data_model(Self) -> DataModelV4
+pub fn InferenceViewV4::history_json(Self) -> Json
+pub fn InferenceViewV4::nodes(Self) -> Array[String]
+pub fn InferenceViewV4::order_edges(Self) -> Array[ScopedOrderEdgeInputV4]
 
 pub struct InternalConsistencyV4 {
   // private fields

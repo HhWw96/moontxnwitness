@@ -206,6 +206,15 @@ const configuredCross=spawnSync(process.execPath,['scripts/configured-sql-cross-
 if(configuredCross.error||configuredCross.status!==0)throw Error('Independent configured grammar cross-check failed: '+configuredCross.stdout+configuredCross.stderr);
 foundation037.sqlGrammarCrossCheck=JSON.parse(configuredCross.stdout);assert.equal(foundation037.sqlGrammarCrossCheck.passed,true);
 const foundation036 = {newIndependentReviewPerformed:false,finalCoreElle2000Executed:false,formalPerformanceMeasurement:false};
+{
+  const child=spawnSync(process.execPath,['scripts/inference-v4-sdk-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:8*1024*1024});
+  if(child.error||child.status!==0)throw Error('Registered inference SDK checks failed: '+child.stdout+child.stderr);
+  const result=JSON.parse(child.stdout),evidence=JSON.parse(readFileSync(result.receipt,'utf8'));
+  assert.equal(result.passed,true);assert.equal(result.tests,43);assert.deepEqual(result.failed,[]);
+  assert.equal(evidence.passed,true);assert.equal(evidence.tests,43);assert(evidence.results.every(x=>x.passed));
+  assert.equal(evidence.coreSha256,JSON.parse(readFileSync(resolve(root,'dist/build-manifest.json'),'utf8')).coreSha256);
+  foundation036.registeredInference={passed:true,tests:43,coreSha256:evidence.coreSha256,receipt:relativeEvidencePath(root,result.receipt)};
+}
 for(const [field,script,count] of [
   ['modelsHostTests','scripts/models-v4-sdk-test.mjs',90],
   ['rowModelsHostTests','scripts/models-row-v4-sdk-test.mjs',38],

@@ -31,6 +31,8 @@ import { analyzeModelProfileV3, verifyModelProfileV3, makeModelProfileCapsuleV3,
   replayModelProfileCapsuleV3 } from './model-profile.mjs';
 
 import {classifyModelsV4,verifyModelsV4,makeModelsCapsuleV4,replayModelsCapsuleV4,parseModelOptionsV4} from "./models-v4.mjs";
+import {inferDependenciesV4,classifyWithInferenceV4,verifyInferenceV4,verifyWithInferenceV4,
+  parseInferenceOptionsV4,makeInferenceCapsuleV4,replayInferenceCapsuleV4} from './inference-v4.mjs';
 
 import {diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,normalizeConfiguredSessionOptionsV4,
  makeConfiguredSessionCapsuleV4,replayConfiguredSessionCapsuleV4} from './configured-v4.mjs';
@@ -53,6 +55,11 @@ const help = `MoonTxnWitness v${version()}
   node dist/moontxnwitness.mjs verify-configured-session-v4 SESSION.json REPORT.json [--options EXPECTED.json] [--output VERIFIED.json]
   node dist/moontxnwitness.mjs replay-configured-session-v4 CAPSULE.json [--options EXPECTED.json] [--output REPLAY.json]
   node dist/moontxnwitness.mjs classify-models-v4 SOURCE.json [--options OPTIONS.json] [--models elle-core|NAME,...] [--list-profile native|captured-list-prefix-state/v2|captured-list-original-serial/v1] [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs infer-dependencies-v4 SOURCE.json --options MODULES.json [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs classify-with-inference-v4 SOURCE.json --options MODULES.json [--output REPORT.json] [--capsule CAPSULE.json]
+  node dist/moontxnwitness.mjs verify-inference-v4 SOURCE.json REPORT.json --options EXPECTED.json
+  node dist/moontxnwitness.mjs verify-with-inference-v4 SOURCE.json REPORT.json --options EXPECTED.json
+  node dist/moontxnwitness.mjs replay-inference-v4 CAPSULE.json --options EXPECTED.json
   node dist/moontxnwitness.mjs verify-models-v4 SOURCE.json REPORT.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs replay-models-v4 CAPSULE.json [--options EXPECTED.json] [--models elle-core|NAME,...] [--list-profile PROFILE]
   node dist/moontxnwitness.mjs check HISTORY.json [--format text|json|markdown|dot] [--output FILE] [--witness FILE]
@@ -285,6 +292,23 @@ try {
     const companions=options['--capsule']?[[options['--capsule'],makeConfiguredSessionCapsuleV4(source,expected)]]:[];
     emitJSON(result,options['--output'],inputs,companions);
     process.exitCode=verify||replay?(result.valid?0:2):result.status==='input-unverified'?3:result.resultConsistency==='mismatch'?1:0;
+  } else if (['infer-dependencies-v4','classify-with-inference-v4','verify-inference-v4','verify-with-inference-v4','replay-inference-v4'].includes(args[0])) {
+    const command=args[0],isVerify=command.startsWith('verify-'),isReplay=command==='replay-inference-v4';
+    const {paths,options}=localArgs(args.slice(1),['--options','--output',...(!isVerify&&!isReplay?['--capsule']:[])],isVerify?2:1);
+    if(!options['--options'])throw new Error('Independent --options with explicit compiled modules is required');
+    const inputs=[...paths,options['--options']];
+    if(inputs.filter(p=>p==='-').length>1)throw new Error('Only one inference input may use standard input');
+    const expected=parseInferenceOptionsV4(readBounded(options['--options'],16384));
+    const source=readBounded(paths[0],isReplay?160*1024*1024:8*1024*1024),companions=[];
+    let result;
+    if(isReplay)result=replayInferenceCapsuleV4(source,expected);
+    else if(isVerify)result=(command==='verify-inference-v4'?verifyInferenceV4:verifyWithInferenceV4)(source,readBounded(paths[1],64*1024*1024),expected);
+    else if(options['--capsule']){
+      const capsule=makeInferenceCapsuleV4(source,expected,command==='infer-dependencies-v4'?'infer-dependencies':'classify-with-inference');
+      result=JSON.parse(JSON.parse(capsule).reportText);companions.push([options['--capsule'],capsule]);
+    }else result=(command==='infer-dependencies-v4'?inferDependenciesV4:classifyWithInferenceV4)(source,expected);
+    emitJSON(result,options['--output'],inputs,companions);
+    process.exitCode=isVerify||isReplay?(result.valid===true?0:2):['executed','checked-compatible'].includes(result.status)?0:result.status==='refuted'?1:3;
   } else if (['classify-models-v4','verify-models-v4','replay-models-v4'].includes(args[0])) {
     const command=args[0],isVerify=command==='verify-models-v4',isReplay=command==='replay-models-v4';
     const {paths,options}=localArgs(args.slice(1),['--options','--models','--list-profile','--output',...(!isVerify&&!isReplay?['--capsule']:[])],isVerify?2:1);

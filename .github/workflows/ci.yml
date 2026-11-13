@@ -68,6 +68,9 @@ jobs:
         run: node scripts/moon.mjs run --target wasm-gc src/demo
       - name: Run the dependency inference extension example
         run: node scripts/moon.mjs run --target wasm-gc src/inference_demo
+      - name: Run registered inference modules from a separate consumer
+        working-directory: examples/inference-modules-v4
+        run: moon run --target wasm-gc . --deny-warn
       - name: Restore checksum-pinned public test inputs
         run: python scripts/input_cache.py prepare --scope tests
       - name: Check publication privacy including history

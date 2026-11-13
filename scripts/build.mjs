@@ -36,7 +36,7 @@ const configuredCores={
 };
 for(const [name,folder]of Object.entries(configuredCores))copyFileSync(resolve(root,'_build/js/release/build',folder,folder+'.js'),resolve(output,name));
 for(const name of ['configured-v4.mjs','configured-session-v4.mjs','source-components-v4.mjs','sql-candidate-v1.mjs','sql-fetch-v1.mjs','sql-candidate-host-v1.mjs','sql-fetch-host-v1.mjs','configured-shared-v4.mjs','point-window-explanation-v4.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
-for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'v4.mjs', 'relation-v4.mjs', 'relation-reduction-v4.mjs', 'models-v4.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
+for (const file of ['moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'v4.mjs', 'relation-v4.mjs', 'relation-reduction-v4.mjs', 'models-v4.mjs', 'inference-v4.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
 copyFileSync(resolve(root,'cmd/legacy-v024.mjs'),resolve(output,'legacy-v024.mjs'));
 copyFrozenLegacyV024(root,output);
 for(const name of ['legacy-v025.mjs','legacy-v025-runtime.mjs','legacy-v025-worker.mjs','legacy-v025-binding.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
