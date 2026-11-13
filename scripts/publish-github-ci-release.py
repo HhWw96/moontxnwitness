@@ -34,6 +34,10 @@ VERSION = re.compile(r'(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\Z
 # cache omissions additionally require the commit-bound data index below.
 SOURCE_EXCLUDED_DIRS = {'.git', '_build', '.mooncakes', 'node_modules', 'artifacts', 'dist', '__pycache__', '.venv-pg'}
 SOURCE_EXCLUDED_NAMES = {'.local-toolchain.json', '.DS_Store'}
+UNIT_LOG_APPENDIX = 'receipt-bound-unit-logs.json'
+UNIT_LOG_LIMITS = {'perLogBytes': 8 * 1024 ** 2, 'totalLogReadBytes': 64 * 1024 ** 2,
+                   'indexBytes': 8 * 1024 ** 2, 'perReceiptBytes': 8 * 1024 ** 2,
+                   'totalReceiptBytes': 64 * 1024 ** 2, 'receiptCount': 4096}
 
 
 class ReleaseError(ValueError):
@@ -260,6 +264,88 @@ def validate_nested(path, kind, version, manifest, tested, outer_bindings, recor
                 require(prefix + 'dist/' + name in rows, 'Portable missing current core: ' + name)
 
 
+def validate_unit_log_appendix(archive, rows, bindings, index_raw, index):
+    """Independently replay the fixed v1 data protocol, never producer code.
+
+    Original index rows stay sealed. Only their direct receipt-bound log bytes
+    can justify additional files; a retention pass is not a unit-test verdict.
+    """
+    if UNIT_LOG_APPENDIX not in rows:
+        return set(), None, None
+    require(UNIT_LOG_APPENDIX not in bindings, 'Retention appendix cannot replace an indexed file')
+    raw = read_member(archive, rows, UNIT_LOG_APPENDIX, 8 * 1024 ** 2)
+    appendix = strict_json(raw, 8 * 1024 ** 2)
+    fields = {'schema', 'kind', 'passed', 'scope', 'originalIndexModified', 'originalReceiptsModified',
+              'originalLogsModified', 'limits', 'sourceIndex', 'selectedReceipts',
+              'receiptsWithoutDirectLog', 'logBytesRead', 'retainedLogBytes', 'logs', 'errors'}
+    require(isinstance(appendix, dict) and set(appendix) == fields, 'Unknown/incomplete retention appendix')
+    require(type(appendix['schema']) is int and appendix['schema'] == 1
+            and appendix['kind'] == 'current-receipt-bound-unit-log-retention'
+            and appendix['scope'] == 'Log retention only; does not change unit results or prove performance.'
+            and appendix['passed'] is True and appendix['errors'] == []
+            and all(appendix[name] is False for name in ('originalIndexModified', 'originalReceiptsModified', 'originalLogsModified')),
+            'Failed, mutable or unsupported retention appendix')
+    source_index = {'file': 'artifacts/ci-evidence/current-run-index.json', 'bytes': len(index_raw),
+                    'sha256': digest(index_raw), 'sourceCommit': index['sourceCommit'],
+                    'runId': index['runId'], 'runAttempt': index['runAttempt']}
+    require(appendix['sourceIndex'] == source_index and type(appendix['sourceIndex'].get('bytes')) is int,
+            'Retention appendix is not bound to original index bytes and run')
+    limits = appendix['limits']
+    require(isinstance(limits, dict) and set(limits) == set(UNIT_LOG_LIMITS)
+            and all(type(limits[name]) is int and 0 < limits[name] <= maximum for name, maximum in UNIT_LOG_LIMITS.items()),
+            'Retention limit contract differs')
+    require(len(index_raw) <= limits['indexBytes'], 'Retention index budget exceeded')
+    candidates = [name for name in bindings if name.startswith('verification/') and PurePosixPath(name).name == 'receipt.json']
+    require(len(candidates) <= limits['receiptCount'], 'Retention receipt count exceeded')
+    logs, additions, receipt_bytes, no_log, log_bytes = [], set(), 0, 0, 0
+    for name in candidates:
+        row = bindings[name]
+        receipt_bytes += row['bytes']
+        require(row['bytes'] <= limits['perReceiptBytes'] and receipt_bytes <= limits['totalReceiptBytes'],
+                'Retention receipt byte budget exceeded')
+        receipt = strict_json(read_member(archive, rows, name, limits['perReceiptBytes']), limits['perReceiptBytes'])
+        require(isinstance(receipt, dict), 'Retention source receipt must be an object')
+        if 'log' not in receipt:
+            no_log += 1
+            continue
+        reference = receipt['log']
+        require(isinstance(reference, dict) and isinstance(reference.get('sha256'), str)
+                and SHA.fullmatch(reference['sha256']), 'Missing actual receipt direct-log binding')
+        leaf = safe_name(reference.get('file'))
+        require(len(PurePosixPath(leaf).parts) == 1 and leaf.lower().endswith(('.log', '.txt', '.out', '.stdout', '.stderr')),
+                'Retained log must be a non-executable same-directory leaf')
+        source = (PurePosixPath(name).parent / leaf).as_posix()
+        require(source.startswith('verification/') and source in rows
+                and not (rows[source].external_attr >> 16) & 0o111, 'Retained log missing or marked executable')
+        length = rows[source].file_size
+        log_bytes += length
+        require(length <= limits['perLogBytes'] and log_bytes <= limits['totalLogReadBytes'], 'Retention log byte budget exceeded')
+        require(member_digest(archive, rows[source]) == reference['sha256'], 'Retained log differs from actual receipt SHA-256')
+        already = source in bindings
+        if already:
+            require(bindings[source]['bytes'] == length and bindings[source]['sha256'] == reference['sha256'], 'Existing indexed log differs')
+        else:
+            require(source not in additions, 'Duplicate appended log source')
+            additions.add(source)
+        logs.append({'receipt': name, 'retained': True, 'receiptSha256': row['sha256'],
+                     'source': source, 'sha256': reference['sha256'], 'sourceBytes': length,
+                     'status': 'already-present-verified' if already else 'copied-exact-original',
+                     'retainedBytes': length})
+    require(isinstance(appendix['logs'], list) and appendix['logs'] == logs
+            and all(type(item.get('sourceBytes')) is int and type(item.get('retainedBytes')) is int
+                    and item.get('retained') is True for item in appendix['logs']),
+            'Retention log rows, sources, statuses or counters differ')
+    counts = {'selectedReceipts': len(candidates), 'receiptsWithoutDirectLog': no_log,
+              'logBytesRead': log_bytes, 'retainedLogBytes': log_bytes}
+    require(all(type(appendix[name]) is int and appendix[name] == value for name, value in counts.items()),
+            'Retention summary counters differ')
+    metadata = {'passed': True, 'schema': 1, 'file': UNIT_LOG_APPENDIX, 'bytes': len(raw), 'sha256': digest(raw),
+                'originalIndexSha256': digest(index_raw), 'retainedLogs': len(logs), 'appendedLogs': len(additions),
+                **counts, 'originalIndexAndReceiptsUnchanged': True,
+                'scope': 'Direct receipt log retention only; original unit outcomes are not promoted'}
+    return additions | {UNIT_LOG_APPENDIX}, metadata, raw
+
+
 def validate_archive(path, artifact, run, version, source_sha, output, source_tree):
     artifact_metadata(artifact, run)
     require(Path(path).stat().st_size == artifact['size_in_bytes']
@@ -284,7 +370,8 @@ def validate_archive(path, artifact, run, version, source_sha, output, source_tr
                     and isinstance(row['sha256'], str) and SHA.fullmatch(row['sha256']), 'Invalid/duplicate indexed binding')
             require(name in rows and rows[name].file_size == row['bytes'] and member_digest(archive, rows[name]) == row['sha256'], 'Indexed member bytes differ: ' + name)
             bindings[name] = row
-        require(set(rows) == set(bindings) | {'current-run-index.json'}, 'Unindexed or missing artifact files')
+        additions, retention, retention_raw = validate_unit_log_appendix(archive, rows, bindings, index_raw, index)
+        require(set(rows) == set(bindings) | {'current-run-index.json'} | additions, 'Unindexed or missing artifact files')
         summary = strict_json(read_member(archive, rows, 'verification/summary.json'))
         package = strict_json(read_member(archive, rows, 'verification/package.json'))
         manifest = strict_json(read_member(archive, rows, 'dist/build-manifest.json'))
@@ -327,6 +414,7 @@ def validate_archive(path, artifact, run, version, source_sha, output, source_tr
         for name in asset_names:
             (review / name).rename(output / name)
         return {'index': index, 'summary': summary, 'package': package, 'buildManifest': manifest,
+                'unitLogRetention': retention, 'unitLogAppendixRaw': retention_raw,
                 'assets': [{'name': name, 'bytes': (output / name).stat().st_size, 'sha256': file_digest(output / name)} for name in asset_names],
                 'nativeExecution': 'successful exact-run Linux Native job step; not synthesized into the three-target summary'}
 
@@ -484,12 +572,15 @@ def prepare(client, version, source_sha, run_id, notes, output, publish=False):
     packet = validate_archive(original, artifact, run, version, source_sha, output / 'release', source_tree)
     for name in ('index', 'summary', 'package', 'buildManifest'):
         save(output / ('evidence/' + name + '.json'), packet[name])
+    if packet['unitLogAppendixRaw'] is not None:
+        save(output / 'evidence' / UNIT_LOG_APPENDIX, packet['unitLogAppendixRaw'])
     tag = 'v' + version
     actual_tag, release, existing = release_state(client, tag, source_sha, text_notes, packet['assets'])
     receipt = {'format': 'moontxnwitness-github-ci-release/v1', 'version': version, 'sourceCommit': source_sha,
                'runId': run_id, 'runAttempt': run['run_attempt'], 'artifactId': artifact['id'],
                'originalArtifactSha256': artifact['digest'].removeprefix('sha256:'), 'assets': packet['assets'],
                'notesSha256': digest(raw_notes), 'nativeExecution': packet['nativeExecution'],
+               'unitLogRetention': packet['unitLogRetention'],
                'artifactCodeExecuted': False, 'publishRequested': publish, 'published': False,
                'plan': {'createTag': actual_tag is None, 'createRelease': release is None,
                         'uploadAssets': [row['name'] for row in packet['assets'] if row['name'] not in existing]},
@@ -530,7 +621,7 @@ def main():
     token = os.environ.get('GITHUB_TOKEN') or os.environ.get('GH_TOKEN')
     require(bool(token), 'A GitHub Actions read token is required; publication additionally requires contents:write')
     result = prepare(GitHub(token), args.version, args.source_sha, args.ci_run_id, args.notes, args.output, args.publish)
-    print(json.dumps({key: result[key] for key in ('version', 'sourceCommit', 'runId', 'published', 'artifactCodeExecuted')}))
+    print(json.dumps({key: result[key] for key in ('version', 'sourceCommit', 'runId', 'runAttempt', 'artifactId', 'originalArtifactSha256', 'assets', 'unitLogRetention', 'published', 'artifactCodeExecuted')}))
 
 
 if __name__ == '__main__':
