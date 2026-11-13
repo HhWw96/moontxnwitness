@@ -22,11 +22,17 @@ def raw(value):
     return json.dumps(value, separators=(',', ':')).encode()
 
 
-def packed(files, extra=None):
+def packed(files, extra=None, modes=None):
     output = io.BytesIO()
     with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
         for name, content in files.items():
-            archive.writestr(name, content)
+            if modes and name in modes:
+                info = zipfile.ZipInfo(name)
+                info.create_system = 3
+                info.external_attr = modes[name] << 16
+                archive.writestr(info, content)
+            else:
+                archive.writestr(name, content)
         if extra:
             archive.writestr(*extra)
     return output.getvalue()
@@ -86,6 +92,70 @@ def fixture(*, index_change=None, summary_change=None, outer_extra=None, nested_
             for system in ('ubuntu-24.04', 'windows-2022')]
     artifact = {'id': 9, 'name': M.ARTIFACT, 'expired': False, 'workflow_run': {'id': RUN_ID, 'head_sha': SHA},
                 'size_in_bytes': len(data), 'digest': 'sha256:' + M.digest(data), 'created_at': '2026-11-13T02:00:00Z'}
+    return data, run, jobs, artifact
+
+
+def retention_fixture(*, specs=None, change=None, files_change=None, appendix_raw_change=None, modes=None):
+    """Independent v1 packet data, without importing the producer controller."""
+    specs = specs if specs is not None else [
+        {'receipt': 'verification/unit-current/receipt.json', 'raw': b'actual failed first attempt\x00\xff\r\n', 'indexed': False},
+        {'receipt': 'verification/unit-existing/receipt.json', 'raw': b'existing unchanged log\n', 'indexed': True},
+        {'receipt': 'verification/unit-no-log/receipt.json', 'raw': None},
+    ]
+    additions, contents = {}, {}
+    for spec in specs:
+        name = spec['receipt']
+        receipt = {'passed': False, 'testsRun': 74, 'failures': 1}
+        if spec['raw'] is not None:
+            leaf = spec.get('leaf', 'first.log')
+            source = (M.PurePosixPath(name).parent / leaf).as_posix()
+            reference = spec.get('reference', {'file': leaf, 'sha256': M.digest(spec['raw'])})
+            receipt['log'] = reference
+            contents[source] = spec['raw']
+            if spec.get('indexed'):
+                additions[source] = spec['raw']
+        additions[name] = raw(receipt)
+    data, run, jobs, artifact = fixture(outer_additions=additions)
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        files = {info.filename: archive.read(info) for info in archive.infolist()}
+    index_raw = files['current-run-index.json']
+    index = json.loads(index_raw)
+    bindings = {row['file']: row for row in index['files']}
+    logs, no_log, total = [], 0, 0
+    for name, row in bindings.items():
+        if not (name.startswith('verification/') and M.PurePosixPath(name).name == 'receipt.json'):
+            continue
+        receipt = json.loads(files[name])
+        if 'log' not in receipt:
+            no_log += 1
+            continue
+        ref = receipt['log']
+        source = (M.PurePosixPath(name).parent / ref['file']).as_posix()
+        content = contents.get(source, b'placeholder for malformed reference')
+        files[source] = content
+        total += len(content)
+        logs.append({'receipt': name, 'retained': True, 'receiptSha256': row['sha256'],
+                     'source': source, 'sha256': ref['sha256'], 'sourceBytes': len(content),
+                     'status': 'already-present-verified' if source in bindings else 'copied-exact-original',
+                     'retainedBytes': len(content)})
+    appendix = {'schema': 1, 'kind': 'current-receipt-bound-unit-log-retention', 'passed': True,
+                'scope': 'Log retention only; does not change unit results or prove performance.',
+                'originalIndexModified': False, 'originalReceiptsModified': False, 'originalLogsModified': False,
+                'limits': dict(M.UNIT_LOG_LIMITS),
+                'sourceIndex': {'file': 'artifacts/ci-evidence/current-run-index.json', 'bytes': len(index_raw),
+                                'sha256': M.digest(index_raw), 'sourceCommit': SHA, 'runId': str(RUN_ID), 'runAttempt': '1'},
+                'selectedReceipts': len(logs) + no_log, 'receiptsWithoutDirectLog': no_log,
+                'logBytesRead': total, 'retainedLogBytes': total, 'logs': logs, 'errors': []}
+    if change:
+        change(appendix)
+    appendix_raw = raw(appendix)
+    if appendix_raw_change:
+        appendix_raw = appendix_raw_change(appendix_raw)
+    files[M.UNIT_LOG_APPENDIX] = appendix_raw
+    if files_change:
+        files_change(files)
+    data = packed(files, modes=modes)
+    artifact.update(size_in_bytes=len(data), digest='sha256:' + M.digest(data))
     return data, run, jobs, artifact
 
 
@@ -352,6 +422,134 @@ class ReleaseTests(unittest.TestCase):
             self.notes.write_text(heading + '\n\n- Technical changes.\n', encoding='utf8')
             with self.subTest(heading=heading), self.assertRaises(M.ReleaseError):
                 self.prepare(name='heading' + str(index))
+
+    def test_valid_v1_retention_appendix_preserves_failed_receipts_and_exact_log_bytes(self):
+        client = FakeGitHub(retention_fixture())
+        result = self.prepare(client)
+        value = result['unitLogRetention']
+        self.assertTrue(value['passed'])
+        self.assertEqual(value['retainedLogs'], 2)
+        self.assertEqual(value['appendedLogs'], 1)
+        self.assertEqual(value['selectedReceipts'], 3)
+        self.assertEqual(value['receiptsWithoutDirectLog'], 1)
+        saved = (self.root / 'candidate/evidence' / M.UNIT_LOG_APPENDIX).read_bytes()
+        self.assertEqual(M.digest(saved), value['sha256'])
+        self.assertEqual(client.mutations, [])
+        self.assertEqual(len(list((self.root / 'candidate/release').iterdir())), 3)
+
+    def test_v1_retention_with_no_direct_logs_is_not_an_unindexed_file_exemption(self):
+        client = FakeGitHub(retention_fixture(specs=[{'receipt': 'verification/no-log/receipt.json', 'raw': None}]))
+        self.assertEqual(self.prepare(client)['unitLogRetention']['retainedLogs'], 0)
+        client = FakeGitHub(retention_fixture(specs=[], files_change=lambda files: files.update({'verification/extra.log': b'not bound'})))
+        with self.assertRaises(M.ReleaseError):
+            self.prepare(client, name='unbound-empty')
+
+    def test_v1_retention_source_index_bytes_commit_run_and_attempt_are_exact(self):
+        changes = [('file', 'current-run-index.json'), ('bytes', 0), ('sha256', '0' * 64),
+                   ('sourceCommit', 'b' * 40), ('runId', '124'), ('runAttempt', '2')]
+        for number, (key, value) in enumerate(changes):
+            packet = retention_fixture(change=lambda appendix, k=key, v=value: appendix['sourceIndex'].update({k: v}))
+            with self.subTest(key=key), self.assertRaises(M.ReleaseError):
+                self.prepare(FakeGitHub(packet), name='appendix-index-' + str(number))
+        packet = retention_fixture(files_change=lambda files: files.update({'current-run-index.json': b' ' + files['current-run-index.json']}))
+        with self.assertRaises(M.ReleaseError):
+            self.prepare(FakeGitHub(packet), name='index-equivalent-json-new-bytes')
+
+    def test_v1_retention_failed_flags_errors_schema_and_unknown_fields_rejected(self):
+        changes = [('schema', 2), ('schema', True), ('kind', 'unknown'), ('passed', False),
+                   ('scope', 'all tests passed'), ('errors', ['failed']), ('originalIndexModified', True),
+                   ('originalReceiptsModified', True), ('originalLogsModified', True), ('execute', 'code')]
+        for number, (key, value) in enumerate(changes):
+            packet = retention_fixture(change=lambda appendix, k=key, v=value: appendix.update({k: v}))
+            with self.subTest(key=key), self.assertRaises(M.ReleaseError):
+                self.prepare(FakeGitHub(packet), name='appendix-flag-' + str(number))
+
+    def test_v1_retention_limits_are_independent_bounded_and_enforced(self):
+        cases = [('perLogBytes', 1), ('totalLogReadBytes', 1), ('indexBytes', 1),
+                 ('perReceiptBytes', 1), ('totalReceiptBytes', 1), ('receiptCount', 1),
+                 ('receiptCount', 0), ('receiptCount', True), ('perLogBytes', 8 * 1024 ** 2 + 1)]
+        for number, (key, value) in enumerate(cases):
+            packet = retention_fixture(change=lambda appendix, k=key, v=value: appendix['limits'].update({k: v}))
+            with self.subTest(key=key, value=value), self.assertRaises(M.ReleaseError):
+                self.prepare(FakeGitHub(packet), name='appendix-limit-' + str(number))
+        packet = retention_fixture(change=lambda appendix: appendix['limits'].update({'unknown': 1}))
+        with self.assertRaises(M.ReleaseError):
+            self.prepare(FakeGitHub(packet), name='unknown-limit')
+
+    def test_v1_retention_exact_limits_and_empty_original_log_are_legal(self):
+        def tighten(appendix):
+            appendix['limits'].update(perLogBytes=max(row['sourceBytes'] for row in appendix['logs']),
+                                      totalLogReadBytes=appendix['logBytesRead'],
+                                      indexBytes=appendix['sourceIndex']['bytes'], receiptCount=appendix['selectedReceipts'])
+        self.assertTrue(self.prepare(FakeGitHub(retention_fixture(change=tighten)))['unitLogRetention']['passed'])
+        spec = [{'receipt': 'verification/empty/receipt.json', 'raw': b'', 'indexed': False}]
+        self.assertEqual(self.prepare(FakeGitHub(retention_fixture(specs=spec)), name='empty-log')['unitLogRetention']['retainedLogBytes'], 0)
+
+    def test_v1_retention_summary_counters_cannot_be_forged(self):
+        for number, key in enumerate(['selectedReceipts', 'receiptsWithoutDirectLog', 'logBytesRead', 'retainedLogBytes']):
+            packet = retention_fixture(change=lambda appendix, k=key: appendix.update({k: 0}))
+            with self.subTest(key=key), self.assertRaises(M.ReleaseError):
+                self.prepare(FakeGitHub(packet), name='appendix-count-' + str(number))
+        packet = retention_fixture(change=lambda appendix: appendix.update(selectedReceipts='3'))
+        with self.assertRaises(M.ReleaseError):
+            self.prepare(FakeGitHub(packet), name='string-counter')
+
+    def test_v1_retention_each_row_source_receipt_digest_status_and_length_recomputed(self):
+        cases = [('receipt', 'verification/forged/receipt.json'), ('receiptSha256', '0' * 64),
+                 ('source', 'verification/unit-existing/first.log'), ('sha256', '0' * 64),
+                 ('sourceBytes', 0), ('retainedBytes', 0), ('retained', False),
+                 ('status', 'already-present-verified'), ('unknown', True)]
+        for number, (key, value) in enumerate(cases):
+            packet = retention_fixture(change=lambda appendix, k=key, v=value: appendix['logs'][0].update({k: v}))
+            with self.subTest(key=key), self.assertRaises(M.ReleaseError):
+                self.prepare(FakeGitHub(packet), name='appendix-row-' + str(number))
+        packet = retention_fixture(change=lambda appendix: appendix['logs'][1].update(status='copied-exact-original'))
+        with self.assertRaises(M.ReleaseError):
+            self.prepare(FakeGitHub(packet), name='indexed-log-declared-copied')
+
+    def test_v1_retention_duplicate_missing_or_reordered_rows_rejected(self):
+        changes = [lambda appendix: appendix['logs'].append(dict(appendix['logs'][0])),
+                   lambda appendix: appendix['logs'].pop(), lambda appendix: appendix['logs'].reverse()]
+        for number, change in enumerate(changes):
+            with self.subTest(number=number), self.assertRaises(M.ReleaseError):
+                self.prepare(FakeGitHub(retention_fixture(change=change)), name='appendix-rows-' + str(number))
+
+    def test_v1_retention_actual_log_tampering_and_missing_bytes_rejected(self):
+        name = 'verification/unit-current/first.log'
+        changes = [lambda files: files.update({name: b'tampered'}), lambda files: files.pop(name)]
+        for number, change in enumerate(changes):
+            with self.subTest(number=number), self.assertRaises(M.ReleaseError):
+                self.prepare(FakeGitHub(retention_fixture(files_change=change)), name='appendix-bytes-' + str(number))
+
+    def test_v1_retention_log_reference_must_come_from_indexed_receipt_and_same_directory(self):
+        for number, reference in enumerate([{'file': '../outside.log', 'sha256': '0' * 64},
+                                            {'file': 'sub/first.log', 'sha256': '0' * 64},
+                                            {'file': 'first.log', 'sha256': '0' * 64}]):
+            specs = [{'receipt': 'verification/unit/receipt.json', 'raw': b'actual', 'indexed': False, 'reference': reference}]
+            with self.subTest(reference=reference), self.assertRaises(M.ReleaseError):
+                self.prepare(FakeGitHub(retention_fixture(specs=specs)), name='appendix-reference-' + str(number))
+
+    def test_v1_retention_new_executable_files_and_marked_executable_logs_rejected(self):
+        for number, leaf in enumerate(['ship.py', 'ship.mjs', 'ship.sh', 'ship.exe', 'ship.ps1']):
+            specs = [{'receipt': 'verification/unit/receipt.json', 'raw': b'code', 'indexed': False, 'leaf': leaf}]
+            with self.subTest(leaf=leaf), self.assertRaises(M.ReleaseError):
+                self.prepare(FakeGitHub(retention_fixture(specs=specs)), name='appendix-executable-' + str(number))
+        packet = retention_fixture(modes={'verification/unit-current/first.log': stat.S_IFREG | 0o755})
+        with self.assertRaises(M.ReleaseError):
+            self.prepare(FakeGitHub(packet), name='appendix-executable-mode')
+
+    def test_v1_retention_never_authorizes_unexplained_unindexed_files_or_receipts(self):
+        for number, name in enumerate(['verification/extra.log', 'verification/extra/receipt.json', 'unrelated.json', 'ship.py']):
+            packet = retention_fixture(files_change=lambda files, name=name: files.update({name: b'not in sealed index'}))
+            with self.subTest(name=name), self.assertRaises(M.ReleaseError):
+                self.prepare(FakeGitHub(packet), name='appendix-extra-' + str(number))
+
+    def test_v1_retention_decoded_duplicate_appendix_fields_rejected(self):
+        changes = [lambda content: b'{"schema":1,' + content[1:],
+                   lambda content: content.replace(b'"sourceIndex":{', b'"sourceIndex":{"runId":"123",', 1)]
+        for number, change in enumerate(changes):
+            with self.subTest(number=number), self.assertRaises(M.ReleaseError):
+                self.prepare(FakeGitHub(retention_fixture(appendix_raw_change=change)), name='appendix-duplicates-' + str(number))
 
 
 if __name__ == '__main__':

@@ -5,6 +5,7 @@
 - Reuse one immutable original source/order index when composing inference and model checks.
 - Build the full relation scoped graph once per model call, preserving separate projections, sources, budgets and complete reports.
 - Add reproducible full-call performance measurements and exact-source CI release asset verification.
+- Verify appended CI logs through their sealed original receipts, including independent source/index digests, budgets and retention counters.
 - Retain 3,420 formal samples across four full-output groups: relation model calls 1.081×, model reduction 1.044×, unchanged-memory overall results and four passing P95 controls.
 
 # 0.4.5 — 2026-11-13
