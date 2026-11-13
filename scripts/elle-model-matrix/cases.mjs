@@ -17,11 +17,12 @@ function clients(source, together=false) {
 function families(list) {
   const read=list?(tx,key,version)=>lr(tx,key,version.endsWith('0')?[]:[version]):r;
   const write=list?(tx,key,version)=>app(tx,key,version):w;
-  const good=capture([b('A'),read('A','x','x0'),write('A','x','x1','x0'),read('A','x','x1'),...c('A')],list);
+  const own=capture([b('A'),read('A','x','x0'),write('A','x','x1','x0'),read('A','x','x1'),...c('A')],list);
+  const good=capture([...own.events.slice(1).map(({seq,time,...e})=>e),b('B'),read('B','x','x1'),write('B','x','x2','x1'),...(list?[lr('B','x',['x1','x2'])]:[r('B','x','x2')]),...c('B')],list);
   const g0=list?capture([b('A'),b('B'),app('A','x','ax'),app('A','y','ay'),app('B','x','bx'),app('B','y','by'),...c('A'),...c('B'),b('C'),lr('C','x',['ax','bx']),lr('C','y',['by','ay']),...c('C')],true):capture([b('A'),b('B'),w('A','x','x1','x0'),w('B','y','y1','y0'),w('A','y','y2','y1'),w('B','x','x2','x1'),...c('A'),...c('B')]);
   const missing=structuredClone(good);missing.events=missing.events.filter(e=>e.seq!==3);
   return {
-    clean:good, 'ww-cycle':g0, 'missing-event':missing,
+    clean:good, 'own-only':own, 'ww-cycle':g0, 'missing-event':missing,
     'wr-cycle':capture([b('A'),b('B'),write('A','y','y1','y0'),write('B','x','x1','x0'),read('A','x','x1'),read('B','y','y1'),...c('A'),...c('B')],list),
     'future-wr-cycle':capture([b('A'),b('B'),read('A','x','x1'),read('B','y','y1'),write('A','y','y1','y0'),write('B','x','x1','x0'),...c('A'),...c('B')],list),
     'write-skew':capture([b('A'),b('B'),read('A','x','x0'),read('B','y','y0'),write('A','y','y1','y0'),write('B','x','x1','x0'),...c('A'),...c('B')],list),
@@ -54,7 +55,7 @@ export function matrixCases() {
       }
     }
     // Additional families distinguish anomaly strength and order contexts.
-    for(const family of ['wr-cycle','future-wr-cycle','write-skew','single-anti','stale-order','nonadjacent','aborted-read','intermediate-read','own-read-mismatch']) {
+    for(const family of ['own-only','wr-cycle','future-wr-cycle','write-skew','single-anti','stale-order','nonadjacent','aborted-read','intermediate-read','own-read-mismatch']) {
       for(const model of MODELS) {
         if(cases.some(c=>c.id===`${dataModel}/${model}/${family}`))continue;
         const source=structuredClone(fs[family]);
