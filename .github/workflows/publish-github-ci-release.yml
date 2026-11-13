@@ -1,0 +1,100 @@
+name: Publish exact CI GitHub release assets
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Stable version without v
+        required: true
+        type: string
+      source_sha:
+        description: Exact full source commit tested by a successful PUSH ci.yml run
+        required: true
+        type: string
+      ci_run_id:
+        description: Successful exact-head PUSH CI run ID
+        required: true
+        type: string
+      release_notes:
+        description: Technical Markdown notes including MoonTxnWitness vVERSION heading
+        required: true
+        type: string
+      publish:
+        description: Explicitly create missing immutable tag/release/assets (false prepares a reviewable candidate)
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  actions: read
+jobs:
+  github-assets:
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'HhWw96/moontxnwitness'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    # This write token is available only to this explicitly dispatched job.
+    # The controller still performs no mutation without the publish input.
+    permissions:
+      contents: write
+      actions: read
+    env:
+      MTW_RELEASE_VERSION: ${{ inputs.version }}
+      MTW_RELEASE_SOURCE: ${{ inputs.source_sha }}
+      MTW_RELEASE_CI_RUN: ${{ inputs.ci_run_id }}
+      MTW_RELEASE_NOTES: ${{ inputs.release_notes }}
+      MTW_RELEASE_PUBLISH: ${{ inputs.publish }}
+    steps:
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Validate explicit inputs without executing release artifacts
+        run: |
+          python - <<'PY'
+          import os, re
+          assert re.fullmatch(r'(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)', os.environ['MTW_RELEASE_VERSION'])
+          assert re.fullmatch(r'[0-9a-f]{40}', os.environ['MTW_RELEASE_SOURCE'])
+          assert re.fullmatch(r'[1-9][0-9]*', os.environ['MTW_RELEASE_CI_RUN'])
+          assert os.environ['MTW_RELEASE_PUBLISH'] in ('true','false')
+          PY
+      - name: Check out only the trusted controller at the workflow's own commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/publish-github-ci-release.py
+            /scripts/test_publish_github_ci_release.py
+            /.github/workflows/publish-github-ci-release.yml
+      - name: Test release controller boundaries
+        run: python -B -m unittest discover -s scripts -p test_publish_github_ci_release.py -v
+      - name: Validate CI packet and prepare or explicitly publish GitHub assets
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import os, subprocess, sys
+          from pathlib import Path
+          notes = Path(os.environ['RUNNER_TEMP']) / 'release-notes.md'
+          notes.write_text(os.environ['MTW_RELEASE_NOTES'], encoding='utf8')
+          args = [sys.executable, '-B', 'scripts/publish-github-ci-release.py',
+                  '--version', os.environ['MTW_RELEASE_VERSION'],
+                  '--source-sha', os.environ['MTW_RELEASE_SOURCE'],
+                  '--ci-run-id', os.environ['MTW_RELEASE_CI_RUN'],
+                  '--notes', str(notes),
+                  '--output', str(Path(os.environ['RUNNER_TEMP']) / 'github-release-candidate')]
+          if os.environ['MTW_RELEASE_PUBLISH'] == 'true':
+              args.append('--publish')
+          subprocess.run(args, check=True)
+          PY
+      - name: Retain candidate assets and validation receipts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: github-release-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/github-release-candidate/release/
+            ${{ runner.temp }}/github-release-candidate/evidence/
+            ${{ runner.temp }}/github-release-candidate/candidate.json
+            ${{ runner.temp }}/github-release-candidate/published.json
+          if-no-files-found: warn
+          compression-level: 0

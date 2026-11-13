@@ -1,7 +1,29 @@
 import {frozenInputs} from './input-cache.mjs';
 import {createHash} from 'node:crypto';
-import {readdirSync,readFileSync,existsSync} from 'node:fs';
+import {readdirSync,readFileSync,existsSync,lstatSync} from 'node:fs';
 import {resolve} from 'node:path';
+
+// Moon may generate these two directories before the main verification run.
+// Limit their exclusion to this example's root; all other source paths retain
+// the existing bind-all inventory (including nested directories of these names).
+export function inferenceExampleSourceFiles(root) {
+  const example='examples/inference-modules-v4',names=[];
+  function visit(folder,exampleRoot=false) {
+    for(const entry of readdirSync(resolve(root,folder),{withFileTypes:true})) {
+      const name=folder+'/'+entry.name;
+      if(exampleRoot && (entry.name==='_build'||entry.name==='.mooncakes')) {
+        const info=lstatSync(resolve(root,name));
+        if(!entry.isDirectory()||entry.isSymbolicLink()||!info.isDirectory()||info.isSymbolicLink())throw Error('Generated example path must be a real directory: '+name);
+        continue;
+      }
+      if(entry.name==='__pycache__')continue;
+      if(entry.isDirectory())visit(name);
+      else names.push(name);
+    }
+  }
+  visit(example,true);
+  return names.sort();
+}
 
 // Bind the executed sources and shipped runtime, not just the MoonBit module.
 // Documentation edits do not require rerunning code; executable edits do.
@@ -31,7 +53,7 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
   if(existsSync(resolve(root,'verification/model-profile-v3/v027-initial')))visit('verification/model-profile-v3/v027-initial',true);
   for(const name of ['verification/v3/dislock-explicit-policy-preregistration-2026-10-21.json','verification/v3/dislock-sql-supplement-preregistration-2026-10-21.json'])if(existsSync(resolve(root,name)))names.push(name);
   visit('examples/configured-session',true);
-  visit('examples/inference-modules-v4',true);
+  names.push(...inferenceExampleSourceFiles(root));
   names.push('examples/postgres-requirements.txt');
   names.push('verification/formal-harness-fix/reproduction/original-full-capture-cost.yml.gz');
   names.push('examples/orm-requirements.txt');
