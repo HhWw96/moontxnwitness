@@ -1,12 +1,19 @@
 // Additional schema1 checks. The original 47-case/15-family suite is unchanged.
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,mkdirSync,mkdtempSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 const root=resolve(import.meta.dirname,'..'),args=process.argv.slice(2);
 assert(args.length===0||(args.length===2&&args[0]==='--runtime'),'Only current consumer --runtime is accepted');
 const runtime=resolve(args[1]||resolve(root,'dist')),hash=x=>createHash('sha256').update(x).digest('hex');
+// Keep private compatibility assemblies on the selected project volume, as in
+// the original 47-case runner. Cross-volume copies otherwise fsync the complete
+// fixed legacy tree repeatedly before any schema1 assertion is evaluated.
+const temporaryParent=resolve(root,'artifacts','public034-schema1-temporary');
+mkdirSync(temporaryParent,{recursive:true});
+const temporary=mkdtempSync(resolve(temporaryParent,'run-'));
+process.env.TEMP=temporary;process.env.TMP=temporary;process.env.TMPDIR=temporary;
 const {PUBLIC034:pin}=await import(pathToFileURL(resolve(runtime,'legacy-v034-binding.mjs')));
 const loader=await import(pathToFileURL(resolve(runtime,'legacy-v034.mjs')));
 const producerRoot=resolve(loader.verifyPublic034Runtime());assert.notEqual(producerRoot,runtime);
