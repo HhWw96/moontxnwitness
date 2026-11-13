@@ -1,5 +1,14 @@
 # Unreleased
 
+# 0.5.0 — 2026-11-13
+
+- Reuse one immutable original source/order index when composing inference and model checks.
+- Build the full relation scoped graph once per model call, preserving separate projections, sources, budgets and complete reports.
+- Add reproducible full-call performance measurements and exact-source CI release asset verification.
+- Retain 3,420 formal samples across four full-output groups: relation model calls 1.081×, model reduction 1.044×, unchanged-memory overall results and four passing P95 controls.
+
+# 0.4.5 — 2026-11-13
+
 - Reduce relation histories while preserving one independently selected model refutation, rechecking source closure and the complete final result.
 - Retain original events and a verified mapping to the derived analysis view; missing producers, unresolved candidates and incomplete budgets prevent a one-minimal claim.
 - Add model-reduction SDK, CLI and capsules with independent target, budget, client and real-time policy verification.

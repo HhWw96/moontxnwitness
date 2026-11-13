@@ -242,18 +242,10 @@ fn inference_output_ids_valid_v4(output : InferenceContributionV4) -> Bool {
 }
 
 ///|
-/// Every callback sees the same original index. No module output is fed into
-/// another callback. Output and invocation work is always charged by the core.
-pub fn infer_dependencies_v4(
-  facts : ModelFactsV4,
+fn inference_policy_v4(
   modules : Array[InferenceModuleV4],
-  options~ : ModelOptionsV4 = model_options_v4().unwrap(),
-  max_inference_checks~ : Int32 = 1000000,
-) -> Result[InferenceV4, String] {
-  // Bind the invocation's policy before running caller code. A callback may
-  // retain its caller's mutable registration array, but cannot change this
-  // invocation's selected modules or their order by changing that container.
-  let modules = modules.copy()
+  max_inference_checks : Int32,
+) -> Result[Unit, String] {
   if modules.length() > 16 ||
     max_inference_checks < 0 ||
     max_inference_checks > 1000000 {
@@ -268,11 +260,43 @@ pub fn infer_dependencies_v4(
     }
     identities[registered.id] = true
   }
-  let source = model_source_applicability_v4(
-    facts.history,
-    model_other_source_v4(facts.history, options),
+  Ok(())
+}
+
+///|
+/// Every callback sees the same original index. No module output is fed into
+/// another callback. Output and invocation work is always charged by the core.
+pub fn infer_dependencies_v4(
+  facts : ModelFactsV4,
+  modules : Array[InferenceModuleV4],
+  options~ : ModelOptionsV4 = model_options_v4().unwrap(),
+  max_inference_checks~ : Int32 = 1000000,
+) -> Result[InferenceV4, String] {
+  // Freeze caller policy before invoking any registered local code.
+  let modules = modules.copy()
+  match inference_policy_v4(modules, max_inference_checks) {
+    Err(reason) => return Err(reason)
+    Ok(_) => ()
+  }
+  infer_dependencies_from_index_v4(
+    facts,
+    modules,
+    options,
+    max_inference_checks,
+    model_original_index_v4(facts, options),
   )
-  let orders = model_orders_v4(facts, source, options.max_source_checks)
+}
+
+///|
+fn infer_dependencies_from_index_v4(
+  facts : ModelFactsV4,
+  modules : Array[InferenceModuleV4],
+  options : ModelOptionsV4,
+  max_inference_checks : Int32,
+  original : ModelOriginalIndexV4,
+) -> Result[InferenceV4, String] {
+  let source = original.source
+  let orders = original.orders
   let view : InferenceViewV4 = { history: facts.history, source, orders, }
   let known_data : Map[(String, String, String), Bool] = Map([])
   let original_data : Map[String, ScopedDataEdgeInputV4] = Map([])
@@ -647,12 +671,22 @@ pub fn classify_with_inference_v4(
   options~ : ModelOptionsV4 = model_options_v4().unwrap(),
   max_inference_checks~ : Int32 = 1000000,
 ) -> Result[InferenceClassificationV4, String] {
+  // Preserve independently validated original facts for the base completion.
+  // Module constraints only enter the separate extended graph below.
+  let modules = modules.copy()
+  match inference_policy_v4(modules, max_inference_checks) {
+    Err(reason) => return Err(reason)
+    Ok(_) => ()
+  }
+  let original = model_original_index_v4(facts, options)
   let inference = match
-    infer_dependencies_v4(facts, modules, options~, max_inference_checks~) {
+    infer_dependencies_from_index_v4(
+      facts, modules, options, max_inference_checks, original,
+    ) {
     Ok(value) => value
     Err(reason) => return Err(reason)
   }
-  let base = classify_models_v4(facts, options).record
+  let base = classify_models_from_index_v4(facts, options, original).record
   let base_models = capture_source_array_v4(
     object_fields_unchecked_v3(base).at("models"),
   )

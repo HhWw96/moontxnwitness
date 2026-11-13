@@ -2,6 +2,16 @@
 
 按能力而非历史版本查阅时，请先看[功能与互操作矩阵](feature-matrix-v4.md)：其中逐项区分依赖推断接口、三种数据模型、异常类别、十四模型所需条件与已经执行的参考对照。下文保留各历史入口的具体契约。
 
+## 当前推荐的推断与关系模型入口
+
+`classifyWithInferenceV4` / `classify_with_inference_v4` 接受同一份已核验原始历史和调用者注册的推断模块。模块身份、算法、参数、顺序及预算进入证据，验证重新运行调用者指定的本地代码；复现包不能加载模块代码。所有模块读取同一原始索引，输出不会成为下一模块的采集事实。新增约束只支持其前提下的反证；未有独立补全证书时不能扩大原有相容结论。见[模块契约](inference-modules-v4.md)。
+
+`classifyRelationModelsV4` / `classify_relation_models_v4` 为完整关系查询、空结果、行写入和谓词依赖提供独立的 `relation-predicate-models/v1` 契约。默认六个模型，`models: 'elle-core'` 选择十四个；RR 使用声明的 Adya 项目／谓词混合环规则，与旧固定 Elle 点模型投影分开。真实时间与逻辑客户端事实由调用者提供；`realtimeKnown: false` 保留数据检查，并使需要实时证据的结论保持无法判定。关系精确补全保持 6 个已提交事务、128 条原始动作上限，图入口的 128 事务、4,096 次读写及 50,000 条边不扩大精确枚举容量。见[关系模型契约](relation-models-v4.md)。
+
+`reduceRelationModelsV4` / `reduce_relation_models_v4` 显式保留一个模型反证，最多执行 256 次事务单删候选检查。每次删除重验原始来源闭包与目标模型，最后完整重验；来源不足、未知结果或预算未完成时不声明 `oneMinimal`。原始事件与派生分析视图分别保存，验证使用独立的目标、时钟策略及预算。见[模型缩减](relation-models-reduction-v4.md)。
+
+十四个定义均有入口和逐项报告，不表示所有历史均可判定，或已完成与 Elle 的全面等价证明。寄存器／列表对照和独立关系解释器各自保留其比较范围及 unknown 项。共享索引／关系图已完成三批完整调用测量与控制组检查，实际收益及未达到的目标均保留；不将历史入口的旧数字作为本轮结果。见[性能协议与状态](model-performance-v050.md)。
+
 ## v0.4.1：PostgreSQL 点窗口与基础库
 
 `analyzeConfiguredPointWindowV4` 将原始起止快照、已封存会话、实际读取与提交效果交给 MoonBit 核验，再检查关系模型 `serializable` 和 `G2-item`。`verifyConfiguredPointWindowV4` 使用三份原始输入和调用者独立提供的预算重算报告。支持受控 PostgreSQL 18、同步 psycopg 3.3.6、一张配置表、完整正向主键点读及读取前驱后的单行非主键更新；上限为 32 笔事务、128 条业务语句。使用方法及具体边界见[点窗口接入](configured-session-v4.md#analyze-a-captured-point-window)。

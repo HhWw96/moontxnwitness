@@ -1,6 +1,6 @@
 # Extending dependency inference
 
-MoonTxnWitness separates **observation interpretation**, **dependency construction**, **category search** and **model obligations**. The current extension boundary is a public MoonBit graph API. An adapter can interpret its own in-memory types and compose multiple inferencers without converting observations to the built-in capture JSON format.
+MoonTxnWitness separates **observation interpretation**, **dependency construction**, **category search** and **model obligations**. For inference over an existing validated history, use [registered modules](inference-modules-v4.md) and `classify_with_inference_v4`: the core shares one original immutable view and binds each module's policy and output. The lower-level public graph API described here also lets an adapter interpret caller-owned in-memory types and compose inferencers without converting observations to the built-in capture JSON format.
 
 Run the complete example:
 

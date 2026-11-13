@@ -519,13 +519,13 @@ fn rm_source_rules_v4(
 ///|
 fn rm_graph_rule_v4(
   predicate : RelationPredicateGraphV4,
+  original : ScopedDependencyGraphV4,
   source : ModelSourceV4,
   orders : ModelOrdersV4,
   projection : String,
   context : ScopedOrderContextV4,
   options : ModelOptionsV4,
 ) -> ModelRuleV4 {
-  let original = relation_predicate_scoped_graph_v4(predicate).unwrap()
   let data = if projection == "W" {
     source.edges.filter(edge => {
       edge.kind == ScopedWWItem || edge.kind == ScopedWWPredicate
@@ -645,6 +645,9 @@ pub fn classify_relation_models_v4(
     original_orders
   }
   let source_rules = rm_source_rules_v4(predicate, options.max_source_checks)
+  // Every model projection reads this same immutable full graph. Each rule
+  // still builds its own filtered graph and owns its search budget/counters.
+  let original_graph = relation_predicate_scoped_graph_v4(predicate).unwrap()
   let graph_rules : Map[String, ModelRuleV4] = Map([])
   let completions : Map[String, ModelRuleV4] = Map([])
   let reports : Array[Json] = []
@@ -658,7 +661,7 @@ pub fn classify_relation_models_v4(
     let key = model_graph_key_v4(projection, context)
     if !graph_rules.contains(key) {
       graph_rules[key] = rm_graph_rule_v4(
-        predicate, source, orders, projection, context, options,
+        predicate, original_graph, source, orders, projection, context, options,
       )
     }
     let rules : Array[ModelRuleV4] = [graph_rules.at(key)]
@@ -667,6 +670,7 @@ pub fn classify_relation_models_v4(
       if !graph_rules.contains(ikey) {
         graph_rules[ikey] = rm_graph_rule_v4(
           predicate,
+          original_graph,
           source,
           orders,
           "I",

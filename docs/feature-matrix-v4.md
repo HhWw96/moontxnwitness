@@ -1,6 +1,6 @@
 # Functional scope and reference comparison
 
-MoonTxnWitness is an embeddable MoonBit transaction-consistency analysis library. Its reusable layers are original-history validation, dependency inference, category search, model obligations, counterexample reduction and evidence verification. SQL/ORM collection is an optional input adapter. The declaration below concerns v4 interfaces present in public v0.4.1; newer point-reduction/replay helpers on `main` have their own contracts.
+MoonTxnWitness is an embeddable MoonBit transaction-consistency analysis library. Its reusable layers are original-history validation, dependency inference, category search, model obligations, counterexample reduction and evidence verification. SQL/ORM collection is an optional input adapter. This page describes the maintained v4 namespaces; each referenced receipt identifies the source/runtime version actually checked. Historical public-package results do not establish publication or equivalence for a later source tree.
 
 The reference is [Elle commit `4e359e5`](https://github.com/jepsen-io/elle/tree/4e359e597c52938b0afebb8bc42273914d68a424). A named interface, a passing example and a differential comparison are different evidence. Each table states which is available. Model compatibility always concerns supplied observations under the selected source profile and budgets.
 
@@ -19,6 +19,19 @@ The reference is [Elle commit `4e359e5`](https://github.com/jepsen-io/elle/tree/
 | Reduction / replay | Anomaly explanations remain the reference-tool output | Category- and model-preserving relation reduction, source-closure rechecks, original-event mapping and conditional transaction one-minimality; source-bound capsules | [Model reduction](relation-models-reduction-v4.md), [v4 API](v4-api.md), [point-window flow](configured-session-v4.md) |
 
 Graph provenance is not source authentication. A custom adapter can compose dependency categories immediately, but a new datatype must supply its validity and completion obligations before using full model compatibility. This is the distinction between the public graph extension API and the built-in original-history model adapters.
+
+## Recommended entry points
+
+| Input / operation | SDK | MoonBit | Independent verification |
+| --- | --- | --- | --- |
+| Existing register/list/atomic-row source profiles | `classifyModelsV4` | `classify_models_v4` | Original facts and separately selected `ModelOptionsV4` |
+| Registered inference over original history | `classifyWithInferenceV4` | `classify_with_inference_v4` | Actual caller-registered code, module order/parameters/algorithm and independent budgets |
+| Complete relation queries and predicate dependencies | `classifyRelationModelsV4` | `classify_relation_models_v4` | Original relation facts, selected model options and explicit real-time policy |
+| Preserve one relation model refutation | `reduceRelationModelsV4` | `reduce_relation_models_v4` | Original facts, target model, source policy and candidate/model budgets |
+
+The [registered-module example](../examples/inference-modules-v4), [relation model round trip](../examples/relation-models-v4-roundtrip.mjs) and [relation reduction round trip](../examples/relation-model-reduction-v4-roundtrip.mjs) exercise these boundaries. The older category, exact-interpreter and capsule APIs continue to use their original contracts. A model report is not interchangeable with a category report.
+
+Registered modules receive the same original immutable view, not preceding modules' outputs. Additional constraints are searched only for obligations forbidden by the selected model; a stronger auxiliary absence graph cannot independently refute a weaker model. Base compatibility is retained only for constraints already entailed by validated original facts. Genuinely new constraints without a forbidden witness remain `unknown` until an appropriate independent completion proof exists.
 
 ## Data-model and anomaly matrix
 
@@ -61,6 +74,8 @@ All entries below are **conditional model checks** for captured registers, expli
 
 W is the write-dependency projection; I includes write-read dependencies; D also includes anti-dependencies. These summaries are not the entire obligation list: each report enumerates the actual required source, graph, applicability and completion rules, including implication coverage. Missing necessary rules prevent compatibility; an independently valid forbidden witness remains a refutation when another check is unfinished. G0→G1c→G1 implication is separate from the most specific witness label.
 
+**Fourteen definitions are available; complete cross-tool equivalence is not established.** Applicable positive histories, source-bound refutations and explicit unknown cases are implemented and tested per namespace. The fixed Elle register/list comparison and the independent relation reference each cover their stated inputs and rules. Neither turns the selectable definition count into a completeness theorem for arbitrary histories, new datatypes or database product isolation levels.
+
 ## Executable declaration and interoperability evidence
 
 The [machine-readable declaration](feature-matrix-v4.json) enumerates profile IDs, required facts, categories, exact canonical model names and reference-comparison scope. Execute it after building:
@@ -77,5 +92,11 @@ The runner uses nine fixed original histories: compatible, WW-refuted and incomp
 The separate public-v0.4.1 [Elle comparison receipt](evidence/elle-common-v041.json) covers **2,000 original register/list histories for serializable**: 1,997 matched, zero differences, three upstream unknown cases not comparable, and zero execution failures. It recomputes and verifies MoonTxnWitness using the public package against retained results of the fixed Elle run. It does not reexecute Elle, compare all fourteen models, or include relations. List comparison uses `captured-list-original-serial/v1`; that evidence is not silently reassigned to every prefix-state model.
 
 The maintained [actual fourteen-model comparison](elle-model-matrix.md) now runs fixed Elle with this checkout's SDK. Its [receipt](evidence/elle-model-matrix-v042.json) records 342 actual requests over discriminating register/list fixtures: 289 matched, 53 unknown, zero determinate differences, timeouts or checker failures, with all 84 required actual pairs matched. Missing-event and logical-client cases remain separately not-comparable. Cross-client stale reads distinguish session order from real-time order; aborted/intermediate reads, internal inconsistency, WW/WR and adjacent/nonadjacent anti-dependencies retain their own families. This reference run and the 2,000-history serializable corpus are distinct evidence sets. Predicate relations require an independent multiversion/predicate interpreter because the selected register/list checkers do not provide that oracle.
+
+The [relation reference receipt](evidence/relation-models-v044.json) records 1,000 frozen histories and 14,000 model judgment positions: 10,800 determinate agreements, 800 conservative SDK unknowns, 1,800 reference-undecided positions and 600 positions undecided on both sides. Certificate replays and premise-only checks are separately recorded. Its reference supplies exact bounded serial decisions, direct aborted/intermediate-source findings and sufficient RC/SI certificates; nonserial RR/CV premise checks are not complete RR/CV parity. `fullFourteenModelParity` remains false, and that receipt does not claim public-package or formal performance verification.
+
+## Full-output performance status
+
+The current candidate shares the original source/order index between inference and base model analysis, and shares the full relation scoped graph before per-rule projection. It preserves original facts, source references, report fields, independent budgets and logical counters. Formal measurements have not yet been completed. [The performance protocol](model-performance-v050.md) specifies separate baselines for common models, inference composition and relation models, byte-equality preflight, fresh-process memory measurements and common control workloads. No speedup or RSS reduction is asserted by this matrix.
 
 Reference implementations: [core composition](https://github.com/jepsen-io/elle/blob/4e359e597c52938b0afebb8bc42273914d68a424/src/elle/core.clj), [transaction anomaly rules](https://github.com/jepsen-io/elle/blob/4e359e597c52938b0afebb8bc42273914d68a424/src/elle/txn.clj), [consistency model definitions](https://github.com/jepsen-io/elle/blob/4e359e597c52938b0afebb8bc42273914d68a424/src/elle/consistency_model.clj).

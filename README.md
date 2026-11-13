@@ -1,6 +1,6 @@
 # MoonTxnWitness
 
-MoonBit 通用事务异常分析基础库。以 Elle 的异常与模型定义为对照，提供可嵌入的分析、解释、缩减和证据回放。[功能与互操作矩阵](docs/feature-matrix-v4.md)按数据模型、异常类别、来源配置和模型义务列出实际范围；[依赖推断扩展](docs/dependency-inference-v4.md)提供可直接运行的 MoonBit 适配器组合示例。后续按[开发顺序](docs/roadmap-v0.4.0.md)推进。
+MoonBit 通用事务异常分析基础库。以 Elle 的异常与模型定义为对照，提供可嵌入的分析、解释、缩减和证据回放。[功能与互操作矩阵](docs/feature-matrix-v4.md)按数据模型、异常类别、来源配置和模型义务列出实际范围；[可组合推断模块](docs/inference-modules-v4.md)与[类型化图适配器](docs/dependency-inference-v4.md)提供可运行的扩展入口。
 
 当前源码与历史运行归档已分离；原始材料通过提交／标签恢复，规则和精简计数见[仓库布局](docs/repository-layout.md)。
 
@@ -20,7 +20,22 @@ MoonBit 程序可注册多个独立推断模块，共享原始历史索引，分
 
 固定 Elle 的[实际十四模型对照](docs/elle-model-matrix.md)覆盖寄存器与列表；关系扩展使用独立原程序解释器和[逐项证据](docs/evidence/relation-models-v044.json)。各组证据分别保留确定结论、无法判定和不适用项，完整功能边界见[矩阵](docs/feature-matrix-v4.md)。
 
+十四个可选定义表示各定义已有显式检查和报告入口；它不表示所有数据模型、所有历史都已证明与 Elle 完整等价。关系谓词使用独立的 Adya 范围规则与原程序证书；缺失事实、未完成义务和预算耗尽保持 `unknown`。
+
 `reduceRelationModelsV4` 可指定保留的模型反证，重新核验每次删除的来源闭包，并保留原始事件与分析视图的映射。运行 `node examples/relation-model-reduction-v4-roundtrip.mjs` 可将带噪声的案例缩成两个事务，再独立验证与重放。[缩减说明](docs/relation-models-reduction-v4.md)列出预算及单最小的完成条件。
+
+| 需求 | 推荐入口 | 配套验证与示例 |
+| --- | --- | --- |
+| 寄存器、显式列表配置和原子主键行的固定定义 | `classifyModelsV4` | `verifyModelsV4`；`examples/models-v4-roundtrip.mjs` |
+| 在已有原始历史上组合推断模块 | `classifyWithInferenceV4` | `verifyWithInferenceV4`；[独立 MoonBit 消费者](examples/inference-modules-v4) |
+| 完整关系查询、空结果和谓词依赖的逐模型检查 | `classifyRelationModelsV4` | `verifyRelationModelsV4`；`examples/relation-models-v4-roundtrip.mjs` |
+| 保留指定关系模型反证的事务缩减 | `reduceRelationModelsV4` | `verifyRelationModelReductionV4`；`examples/relation-model-reduction-v4-roundtrip.mjs` |
+
+关系模型默认选择六个基础定义，`models: 'elle-core'` 显式选择十四个。缩减必须指定 `model`；候选预算与模型检查预算分别记录。自定义推断代码由调用者本地注册，不能由复现包加载；新增约束可以提供条件反证，但不能自行授予模型相容结论。
+
+## v0.5.0 完整调用性能工作
+
+本轮复用组合分析中的不可变原始来源／事务顺序索引，并让关系模型投影共享一份完整 scoped graph。各投影仍保留完整边来源、独立预算和搜索计数，旧接口与报告含义保持。三批完整调用测量中关系模型组平均提速约 8.1%、模型缩减约 4.4%，控制组均通过回退检查；整体峰值内存基本持平。完整结果、独立基线和原始样本见[本轮性能文档](docs/model-performance-v050.md)。历史版本的性能数字继续仅适用于其原始入口和负载。
 
 ## v0.4.1：PostgreSQL 点窗口分析
 

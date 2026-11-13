@@ -428,16 +428,47 @@ fn model_literal_rule_v4(
 }
 
 ///|
+priv struct ModelOriginalIndexV4 {
+  source : ModelSourceV4
+  orders : ModelOrdersV4
+}
+
+///|
+// One validated original-history index can serve multiple read-only consumers.
+// Its execution records describe the same source validation work wherever the
+// shared certificate is embedded; they are not additive invocation totals.
+fn model_original_index_v4(
+  facts : ModelFactsV4,
+  options : ModelOptionsV4,
+) -> ModelOriginalIndexV4 {
+  let source = model_source_applicability_v4(
+    facts.history,
+    model_other_source_v4(facts.history, options),
+  )
+  { source, orders: model_orders_v4(facts, source, options.max_source_checks), }
+}
+
+///|
 /// The model composition always starts from HistoryV4, never trusted proof JSON.
 pub fn classify_models_v4(
   facts : ModelFactsV4,
   options : ModelOptionsV4,
 ) -> ModelClassificationV4 {
-  let source = model_source_applicability_v4(
-    facts.history,
-    model_other_source_v4(facts.history, options),
+  classify_models_from_index_v4(
+    facts,
+    options,
+    model_original_index_v4(facts, options),
   )
-  let orders = model_orders_v4(facts, source, options.max_source_checks)
+}
+
+///|
+fn classify_models_from_index_v4(
+  facts : ModelFactsV4,
+  options : ModelOptionsV4,
+  original : ModelOriginalIndexV4,
+) -> ModelClassificationV4 {
+  let source = original.source
+  let orders = original.orders
   let graph_rules : Map[String, ModelRuleV4] = Map([])
   let needed = model_needed_graph_rules_v4(options.models)
   let evaluated : Array[String] = []
