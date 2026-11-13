@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {matrixCases} from './cases.mjs';
+import {compare} from './compare.mjs';
+const sha=x=>createHash('sha256').update(x).digest('hex'),matrix=matrixCases();
+// Synthetic checker responses exercise only accounting and fault rejection.
+const moon=matrix.cases.map(c=>({id:c.id,inputSha256:sha(JSON.stringify(c.input)),optionsSha256:sha(JSON.stringify(c.options)),status:c.expected??'unknown',verified:true,changedVerdictRejected:true}));
+const upstream={fixedElleCommit:matrix.fixedElleCommit,results:matrix.cases.filter(c=>c.upstreamEligible).map(c=>({id:c.id,validity:c.expected==='refuted'?false:true,unknown:false,timeout:false}))};
+const run=(m=moon,u=upstream)=>compare(matrix,m,u);
+let checks=0;
+const test=(name,f)=>{try{f();checks++;}catch(e){throw Error(name+': '+e.message);}};
+test('required pairs and missing evidence use separate counters',()=>{const r=run();assert(r.passed);assert.equal(r.requiredComparable,56);assert.equal(r.totals.matched,56);assert.equal(r.totals.notComparable,28);assert(r.totals.unknown>0);});
+test('opposite upstream verdict fails the required expectation',()=>{const u=structuredClone(upstream);u.results[0].validity=false;const r=run(moon,u);assert(!r.passed);assert(r.failures.length);assert.equal(r.totals.difference,1);});
+test('unknown must not be counted as matching a required result',()=>{const u=structuredClone(upstream);Object.assign(u.results[0],{validity:null,unknown:true});const r=run(moon,u);assert(!r.passed);assert.equal(r.totals.matched,55);});
+test('timeout does not become an unknown model result',()=>{const u=structuredClone(upstream);Object.assign(u.results[0],{timeout:true,validity:null});assert.equal(run(moon,u).totals.timeout,1);});
+test('execution error never becomes no anomaly',()=>{const u=structuredClone(upstream);u.results[0].error='test execution failed';assert.equal(run(moon,u).totals.executionFailed,1);});
+test('duplicate upstream identity is refused',()=>{const u=structuredClone(upstream);u.results[1].id=u.results[0].id;assert.throws(()=>run(moon,u));});
+test('missing actual request is refused',()=>{const u=structuredClone(upstream);u.results.pop();assert.throws(()=>run(moon,u));});
+test('other reference commit is refused',()=>{const u=structuredClone(upstream);u.fixedElleCommit='other';assert.throws(()=>run(moon,u));});
+test('different original history bytes are refused',()=>{const m=structuredClone(moon);m[0].inputSha256='0'.repeat(64);assert.throws(()=>run(m));});
+test('different independent options are refused',()=>{const m=structuredClone(moon);m[0].optionsSha256='0'.repeat(64);assert.throws(()=>run(m));});
+test('invalid own model status is refused',()=>{const m=structuredClone(moon);m[0].status='passed';assert.throws(()=>run(m));});
+test('unverified reports are refused',()=>{const m=structuredClone(moon);m[0].verified=false;assert.throws(()=>run(m));});
+test('changed-verdict checks cannot be omitted',()=>{const m=structuredClone(moon);m[0].changedVerdictRejected=false;assert.throws(()=>run(m));});
+console.log(JSON.stringify({passed:true,checks,syntheticComparatorUnitTests:true,actualUpstreamExecution:false}));

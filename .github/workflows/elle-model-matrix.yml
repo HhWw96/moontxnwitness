@@ -1,0 +1,59 @@
+name: Compare actual fixed Elle model matrix
+on:
+  workflow_dispatch:
+  push:
+    branches: [development/elle-models-v042]
+  pull_request:
+    paths:
+      - .github/workflows/elle-model-matrix.yml
+      - scripts/elle-model-matrix/**
+      - src/model_*.mbt
+      - src/scoped_*.mbt
+      - cmd/models-v4.mjs
+permissions:
+  contents: read
+jobs:
+  actual-elle-models:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      MOONBIT_INSTALL_VERSION: 0.10.16+b1a0e846e
+      MTW_INPUT_CACHE: ${{ runner.temp }}/mtw-input-cache
+      MTW_MODEL_MATRIX_OUTPUT: ${{ runner.temp }}/mtw-elle-model-matrix
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.13.0'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install fixed official MoonBit
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$MOONBIT_INSTALL_VERSION"
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Validate actual compiler
+        run: node scripts/toolchain-policy.mjs
+      - name: Build the current SDK
+        run: node scripts/build.mjs
+      - name: Prepare frozen common inputs and current SDK results
+        run: node scripts/elle-model-matrix/prepare.mjs dist "$MTW_MODEL_MATRIX_OUTPUT"
+      - name: Execute the fixed actual upstream checkers
+        run: python -B scripts/elle-model-matrix/run_upstream.py --requests "$MTW_MODEL_MATRIX_OUTPUT/requests.edn" --output "$MTW_MODEL_MATRIX_OUTPUT/upstream"
+      - name: Compare model outcomes and preserve differences
+        if: always()
+        run: node scripts/elle-model-matrix/compare.mjs "$MTW_MODEL_MATRIX_OUTPUT"
+      - name: Retain actual sources, inputs, results and dependency bindings
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: actual-fixed-elle-model-matrix
+          path: ${{ runner.temp }}/mtw-elle-model-matrix/
+          if-no-files-found: error
+          compression-level: 6

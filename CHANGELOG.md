@@ -1,5 +1,8 @@
 # Unreleased
 
+- Add a maintained fixed-Elle model comparison workflow using the current SDK, original observations and independently declared logical clients.
+- Separate required positive/negative model pairs, incomplete captures, future-read boundaries, reference unknowns, timeouts and execution failures; retain raw upstream results and dependency bindings.
+
 - Publish a machine-readable source-profile, anomaly and canonical-model declaration with an executable 126-row model matrix, independent-option verification, tamper rejection and capsule checks.
 - Add a MoonBit example composing caller-owned read-source and predecessor inferencers through the public scoped dependency graph, with explicit provenance, rule selection and budget handling.
 - Document the functional comparison with fixed Elle, separating original-history model checks, relation predicate categories and the exact scope of the retained 2,000-history serializable comparison.
