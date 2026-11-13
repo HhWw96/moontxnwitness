@@ -2,14 +2,17 @@ name: Compare actual fixed Elle model matrix
 on:
   workflow_dispatch:
   push:
-    branches: [development/elle-models-v042]
+    branches: [main, development/elle-models-v042]
   pull_request:
     paths:
       - .github/workflows/elle-model-matrix.yml
       - scripts/elle-model-matrix/**
-      - src/model_*.mbt
-      - src/scoped_*.mbt
-      - cmd/models-v4.mjs
+      - src/**
+      - cmd/**
+      - scripts/build.mjs
+      - scripts/build-fingerprint.mjs
+      - scripts/toolchain-policy.mjs
+      - moon.mod
 permissions:
   contents: read
 jobs:
