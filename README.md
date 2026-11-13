@@ -1,6 +1,6 @@
 # MoonTxnWitness
 
-MoonBit 通用事务异常分析基础库。以 Elle 的异常与模型定义为对照，提供可嵌入的分析、解释、缩减和证据回放。当前覆盖与待补能力见[Elle 对齐表](docs/elle-alignment.md)，后续按[开发顺序](docs/roadmap-v0.4.0.md)推进；定位不表示已完整兼容 Elle。
+MoonBit 通用事务异常分析基础库。以 Elle 的异常与模型定义为对照，提供可嵌入的分析、解释、缩减和证据回放。[功能与互操作矩阵](docs/feature-matrix-v4.md)按数据模型、异常类别、来源配置和模型义务列出实际范围；[依赖推断扩展](docs/dependency-inference-v4.md)提供可直接运行的 MoonBit 适配器组合示例。后续按[开发顺序](docs/roadmap-v0.4.0.md)推进。
 
 当前源码与历史运行归档已分离；原始材料通过提交／标签恢复，规则和精简计数见[仓库布局](docs/repository-layout.md)。
 

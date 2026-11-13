@@ -1,0 +1,1081 @@
+{
+  "format": "moontxnwitness-feature-matrix-fixtures/v1",
+  "cases": [
+    {
+      "id": "register-original-program/compatible",
+      "profile": "register-original-program",
+      "expected": "checked-compatible",
+      "options": {
+        "clients": [
+          {
+            "id": "logical-A",
+            "transactions": [
+              "A"
+            ]
+          }
+        ],
+        "clientsComplete": true
+      },
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "feature-matrix-v1",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "gaps": [],
+        "events": [
+          {
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true,
+            "seq": 1,
+            "time": 0
+          },
+          {
+            "kind": "begin",
+            "tx": "A",
+            "connection": "physical-A",
+            "seq": 2,
+            "time": 1
+          },
+          {
+            "kind": "read",
+            "tx": "A",
+            "key": "x",
+            "version": "x0",
+            "seq": 3,
+            "time": 2
+          },
+          {
+            "kind": "write",
+            "tx": "A",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "seq": 4,
+            "time": 3
+          },
+          {
+            "kind": "read",
+            "tx": "A",
+            "key": "x",
+            "version": "x1",
+            "seq": 5,
+            "time": 4
+          },
+          {
+            "kind": "commit_request",
+            "tx": "A",
+            "seq": 6,
+            "time": 5
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "A",
+            "seq": 7,
+            "time": 6
+          }
+        ]
+      }
+    },
+    {
+      "id": "register-original-program/refuted",
+      "profile": "register-original-program",
+      "expected": "refuted",
+      "options": {
+        "clients": [
+          {
+            "id": "logical-A",
+            "transactions": [
+              "A"
+            ]
+          },
+          {
+            "id": "logical-B",
+            "transactions": [
+              "B"
+            ]
+          }
+        ],
+        "clientsComplete": true
+      },
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "feature-matrix-v1",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "gaps": [],
+        "events": [
+          {
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true,
+            "seq": 1,
+            "time": 0
+          },
+          {
+            "kind": "begin",
+            "tx": "A",
+            "connection": "physical-A",
+            "seq": 2,
+            "time": 1
+          },
+          {
+            "kind": "begin",
+            "tx": "B",
+            "connection": "physical-B",
+            "seq": 3,
+            "time": 2
+          },
+          {
+            "kind": "write",
+            "tx": "A",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "seq": 4,
+            "time": 3
+          },
+          {
+            "kind": "write",
+            "tx": "B",
+            "key": "y",
+            "version": "y1",
+            "predecessor": "y0",
+            "seq": 5,
+            "time": 4
+          },
+          {
+            "kind": "write",
+            "tx": "A",
+            "key": "y",
+            "version": "y2",
+            "predecessor": "y1",
+            "seq": 6,
+            "time": 5
+          },
+          {
+            "kind": "write",
+            "tx": "B",
+            "key": "x",
+            "version": "x2",
+            "predecessor": "x1",
+            "seq": 7,
+            "time": 6
+          },
+          {
+            "kind": "commit_request",
+            "tx": "A",
+            "seq": 8,
+            "time": 7
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "A",
+            "seq": 9,
+            "time": 8
+          },
+          {
+            "kind": "commit_request",
+            "tx": "B",
+            "seq": 10,
+            "time": 9
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "B",
+            "seq": 11,
+            "time": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "register-original-program/incomplete",
+      "profile": "register-original-program",
+      "expected": "unknown",
+      "options": {
+        "clients": [
+          {
+            "id": "logical-A",
+            "transactions": [
+              "A"
+            ]
+          }
+        ],
+        "clientsComplete": true
+      },
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "point-register-v1",
+        "clockDomain": "feature-matrix-v1",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "gaps": [],
+        "events": [
+          {
+            "kind": "snapshot",
+            "initial": {
+              "x": "x0",
+              "y": "y0"
+            },
+            "consistent": true,
+            "seq": 1,
+            "time": 0
+          },
+          {
+            "kind": "begin",
+            "tx": "A",
+            "connection": "physical-A",
+            "seq": 2,
+            "time": 1
+          },
+          {
+            "kind": "write",
+            "tx": "A",
+            "key": "x",
+            "version": "x1",
+            "predecessor": "x0",
+            "seq": 4,
+            "time": 3
+          },
+          {
+            "kind": "read",
+            "tx": "A",
+            "key": "x",
+            "version": "x1",
+            "seq": 5,
+            "time": 4
+          },
+          {
+            "kind": "commit_request",
+            "tx": "A",
+            "seq": 6,
+            "time": 5
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "A",
+            "seq": 7,
+            "time": 6
+          }
+        ]
+      }
+    },
+    {
+      "id": "list-prefix-program/compatible",
+      "profile": "list-prefix-program",
+      "expected": "checked-compatible",
+      "options": {
+        "clients": [
+          {
+            "id": "logical-A",
+            "transactions": [
+              "A"
+            ]
+          }
+        ],
+        "clientsComplete": true
+      },
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "append-list-v1",
+        "clockDomain": "feature-matrix-v1",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "gaps": [],
+        "events": [
+          {
+            "kind": "snapshot",
+            "initial": {
+              "x": [],
+              "y": []
+            },
+            "consistent": true,
+            "seq": 1,
+            "time": 0
+          },
+          {
+            "kind": "begin",
+            "tx": "A",
+            "connection": "physical-A",
+            "seq": 2,
+            "time": 1
+          },
+          {
+            "kind": "list_read",
+            "tx": "A",
+            "key": "x",
+            "items": [],
+            "seq": 3,
+            "time": 2
+          },
+          {
+            "kind": "append",
+            "tx": "A",
+            "key": "x",
+            "id": "a1",
+            "value": "same-business-value",
+            "seq": 4,
+            "time": 3
+          },
+          {
+            "kind": "list_read",
+            "tx": "A",
+            "key": "x",
+            "items": [
+              {
+                "id": "a1",
+                "value": "same-business-value"
+              }
+            ],
+            "seq": 5,
+            "time": 4
+          },
+          {
+            "kind": "append",
+            "tx": "A",
+            "key": "x",
+            "id": "a2",
+            "value": "same-business-value",
+            "seq": 6,
+            "time": 5
+          },
+          {
+            "kind": "list_read",
+            "tx": "A",
+            "key": "x",
+            "items": [
+              {
+                "id": "a1",
+                "value": "same-business-value"
+              },
+              {
+                "id": "a2",
+                "value": "same-business-value"
+              }
+            ],
+            "seq": 7,
+            "time": 6
+          },
+          {
+            "kind": "commit_request",
+            "tx": "A",
+            "seq": 8,
+            "time": 7
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "A",
+            "seq": 9,
+            "time": 8
+          }
+        ]
+      }
+    },
+    {
+      "id": "list-prefix-program/refuted",
+      "profile": "list-prefix-program",
+      "expected": "refuted",
+      "options": {
+        "clients": [
+          {
+            "id": "logical-A",
+            "transactions": [
+              "A"
+            ]
+          },
+          {
+            "id": "logical-B",
+            "transactions": [
+              "B"
+            ]
+          },
+          {
+            "id": "logical-C",
+            "transactions": [
+              "C"
+            ]
+          }
+        ],
+        "clientsComplete": true
+      },
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "append-list-v1",
+        "clockDomain": "feature-matrix-v1",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "gaps": [],
+        "events": [
+          {
+            "kind": "snapshot",
+            "initial": {
+              "x": [],
+              "y": []
+            },
+            "consistent": true,
+            "seq": 1,
+            "time": 0
+          },
+          {
+            "kind": "begin",
+            "tx": "A",
+            "connection": "physical-A",
+            "seq": 2,
+            "time": 1
+          },
+          {
+            "kind": "begin",
+            "tx": "B",
+            "connection": "physical-B",
+            "seq": 3,
+            "time": 2
+          },
+          {
+            "kind": "append",
+            "tx": "A",
+            "key": "x",
+            "id": "ax",
+            "value": "same-business-value",
+            "seq": 4,
+            "time": 3
+          },
+          {
+            "kind": "append",
+            "tx": "A",
+            "key": "y",
+            "id": "ay",
+            "value": "same-business-value",
+            "seq": 5,
+            "time": 4
+          },
+          {
+            "kind": "append",
+            "tx": "B",
+            "key": "x",
+            "id": "bx",
+            "value": "same-business-value",
+            "seq": 6,
+            "time": 5
+          },
+          {
+            "kind": "append",
+            "tx": "B",
+            "key": "y",
+            "id": "by",
+            "value": "same-business-value",
+            "seq": 7,
+            "time": 6
+          },
+          {
+            "kind": "commit_request",
+            "tx": "A",
+            "seq": 8,
+            "time": 7
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "A",
+            "seq": 9,
+            "time": 8
+          },
+          {
+            "kind": "commit_request",
+            "tx": "B",
+            "seq": 10,
+            "time": 9
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "B",
+            "seq": 11,
+            "time": 10
+          },
+          {
+            "kind": "begin",
+            "tx": "C",
+            "connection": "physical-C",
+            "seq": 12,
+            "time": 11
+          },
+          {
+            "kind": "list_read",
+            "tx": "C",
+            "key": "x",
+            "items": [
+              {
+                "id": "ax",
+                "value": "same-business-value"
+              },
+              {
+                "id": "bx",
+                "value": "same-business-value"
+              }
+            ],
+            "seq": 13,
+            "time": 12
+          },
+          {
+            "kind": "list_read",
+            "tx": "C",
+            "key": "y",
+            "items": [
+              {
+                "id": "by",
+                "value": "same-business-value"
+              },
+              {
+                "id": "ay",
+                "value": "same-business-value"
+              }
+            ],
+            "seq": 14,
+            "time": 13
+          },
+          {
+            "kind": "commit_request",
+            "tx": "C",
+            "seq": 15,
+            "time": 14
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "C",
+            "seq": 16,
+            "time": 15
+          }
+        ]
+      }
+    },
+    {
+      "id": "list-prefix-program/incomplete",
+      "profile": "list-prefix-program",
+      "expected": "unknown",
+      "options": {
+        "clients": [
+          {
+            "id": "logical-A",
+            "transactions": [
+              "A"
+            ]
+          }
+        ],
+        "clientsComplete": true
+      },
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "append-list-v1",
+        "clockDomain": "feature-matrix-v1",
+        "scope": {
+          "exclusiveWriters": true
+        },
+        "gaps": [],
+        "events": [
+          {
+            "kind": "snapshot",
+            "initial": {
+              "x": [],
+              "y": []
+            },
+            "consistent": true,
+            "seq": 1,
+            "time": 0
+          },
+          {
+            "kind": "begin",
+            "tx": "A",
+            "connection": "physical-A",
+            "seq": 2,
+            "time": 1
+          },
+          {
+            "kind": "append",
+            "tx": "A",
+            "key": "x",
+            "id": "a1",
+            "value": "same-business-value",
+            "seq": 4,
+            "time": 3
+          },
+          {
+            "kind": "list_read",
+            "tx": "A",
+            "key": "x",
+            "items": [
+              {
+                "id": "a1",
+                "value": "same-business-value"
+              }
+            ],
+            "seq": 5,
+            "time": 4
+          },
+          {
+            "kind": "append",
+            "tx": "A",
+            "key": "x",
+            "id": "a2",
+            "value": "same-business-value",
+            "seq": 6,
+            "time": 5
+          },
+          {
+            "kind": "list_read",
+            "tx": "A",
+            "key": "x",
+            "items": [
+              {
+                "id": "a1",
+                "value": "same-business-value"
+              },
+              {
+                "id": "a2",
+                "value": "same-business-value"
+              }
+            ],
+            "seq": 7,
+            "time": 6
+          },
+          {
+            "kind": "commit_request",
+            "tx": "A",
+            "seq": 8,
+            "time": 7
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "A",
+            "seq": 9,
+            "time": 8
+          }
+        ]
+      }
+    },
+    {
+      "id": "relation-atomic-row-program/compatible",
+      "profile": "relation-atomic-row-program",
+      "expected": "checked-compatible",
+      "options": {
+        "clients": [
+          {
+            "id": "logical-A",
+            "transactions": [
+              "A"
+            ]
+          }
+        ],
+        "clientsComplete": true
+      },
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "relation-set-v1",
+        "relationSchema": {
+          "items": {
+            "primaryKey": "id",
+            "columns": {
+              "id": "int64",
+              "value": "text"
+            }
+          }
+        },
+        "clockDomain": "atomic-row-example",
+        "scope": {
+          "exclusiveWriters": true,
+          "completeSnapshotTables": [
+            "items"
+          ]
+        },
+        "gaps": [],
+        "events": [
+          {
+            "kind": "snapshot",
+            "consistent": true,
+            "initial": {
+              "items": [
+                {
+                  "key": "1",
+                  "version": "v0",
+                  "values": {
+                    "value": "before"
+                  }
+                }
+              ]
+            },
+            "seq": 1,
+            "time": 0
+          },
+          {
+            "kind": "begin",
+            "tx": "A",
+            "connection": "physical-A",
+            "seq": 2,
+            "time": 1
+          },
+          {
+            "kind": "row_read",
+            "tx": "A",
+            "relation": "items",
+            "predicate": [
+              {
+                "column": "id",
+                "op": "eq",
+                "value": "1"
+              }
+            ],
+            "rows": [
+              {
+                "key": "1",
+                "version": "v0",
+                "values": {
+                  "value": "before"
+                }
+              }
+            ],
+            "complete": true,
+            "seq": 3,
+            "time": 2
+          },
+          {
+            "kind": "row_write",
+            "tx": "A",
+            "relation": "items",
+            "key": "1",
+            "action": "update",
+            "version": "v1",
+            "predecessor": "v0",
+            "values": {
+              "value": "after"
+            },
+            "seq": 4,
+            "time": 3
+          },
+          {
+            "kind": "row_read",
+            "tx": "A",
+            "relation": "items",
+            "predicate": [
+              {
+                "column": "id",
+                "op": "eq",
+                "value": "1"
+              }
+            ],
+            "rows": [
+              {
+                "key": "1",
+                "version": "v1",
+                "values": {
+                  "value": "after"
+                }
+              }
+            ],
+            "complete": true,
+            "seq": 5,
+            "time": 4
+          },
+          {
+            "kind": "commit_request",
+            "tx": "A",
+            "seq": 6,
+            "time": 5
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "A",
+            "seq": 7,
+            "time": 6
+          }
+        ]
+      }
+    },
+    {
+      "id": "relation-atomic-row-program/refuted",
+      "profile": "relation-atomic-row-program",
+      "expected": "refuted",
+      "options": {
+        "clients": [
+          {
+            "id": "logical-A",
+            "transactions": [
+              "A"
+            ]
+          },
+          {
+            "id": "logical-B",
+            "transactions": [
+              "B"
+            ]
+          }
+        ],
+        "clientsComplete": true
+      },
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "relation-set-v1",
+        "clockDomain": "feature-matrix-v1",
+        "scope": {
+          "exclusiveWriters": true,
+          "completeSnapshotTables": [
+            "items"
+          ]
+        },
+        "gaps": [],
+        "events": [
+          {
+            "kind": "snapshot",
+            "initial": {
+              "items": [
+                {
+                  "key": "1",
+                  "version": "x0",
+                  "values": {
+                    "value": "x0"
+                  }
+                },
+                {
+                  "key": "2",
+                  "version": "y0",
+                  "values": {
+                    "value": "y0"
+                  }
+                }
+              ]
+            },
+            "consistent": true,
+            "seq": 1,
+            "time": 0
+          },
+          {
+            "kind": "begin",
+            "tx": "A",
+            "connection": "physical-A",
+            "seq": 2,
+            "time": 1
+          },
+          {
+            "kind": "begin",
+            "tx": "B",
+            "connection": "physical-B",
+            "seq": 3,
+            "time": 2
+          },
+          {
+            "kind": "row_write",
+            "tx": "A",
+            "relation": "items",
+            "key": "1",
+            "action": "update",
+            "version": "x1",
+            "predecessor": "x0",
+            "values": {
+              "value": "x1"
+            },
+            "seq": 4,
+            "time": 3
+          },
+          {
+            "kind": "row_write",
+            "tx": "B",
+            "relation": "items",
+            "key": "2",
+            "action": "update",
+            "version": "y1",
+            "predecessor": "y0",
+            "values": {
+              "value": "y1"
+            },
+            "seq": 5,
+            "time": 4
+          },
+          {
+            "kind": "row_write",
+            "tx": "A",
+            "relation": "items",
+            "key": "2",
+            "action": "update",
+            "version": "y2",
+            "predecessor": "y1",
+            "values": {
+              "value": "y2"
+            },
+            "seq": 6,
+            "time": 5
+          },
+          {
+            "kind": "row_write",
+            "tx": "B",
+            "relation": "items",
+            "key": "1",
+            "action": "update",
+            "version": "x2",
+            "predecessor": "x1",
+            "values": {
+              "value": "x2"
+            },
+            "seq": 7,
+            "time": 6
+          },
+          {
+            "kind": "commit_request",
+            "tx": "A",
+            "seq": 8,
+            "time": 7
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "A",
+            "seq": 9,
+            "time": 8
+          },
+          {
+            "kind": "commit_request",
+            "tx": "B",
+            "seq": 10,
+            "time": 9
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "B",
+            "seq": 11,
+            "time": 10
+          }
+        ],
+        "relationSchema": {
+          "items": {
+            "primaryKey": "id",
+            "columns": {
+              "id": "int64",
+              "value": "text"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "relation-atomic-row-program/incomplete",
+      "profile": "relation-atomic-row-program",
+      "expected": "unknown",
+      "options": {
+        "clients": [
+          {
+            "id": "logical-A",
+            "transactions": [
+              "A"
+            ]
+          }
+        ],
+        "clientsComplete": true
+      },
+      "input": {
+        "traceSchema": 3,
+        "dataModel": "relation-set-v1",
+        "relationSchema": {
+          "items": {
+            "primaryKey": "id",
+            "columns": {
+              "id": "int64",
+              "value": "text"
+            }
+          }
+        },
+        "clockDomain": "atomic-row-example",
+        "scope": {
+          "exclusiveWriters": true,
+          "completeSnapshotTables": [
+            "items"
+          ]
+        },
+        "gaps": [],
+        "events": [
+          {
+            "kind": "snapshot",
+            "consistent": true,
+            "initial": {
+              "items": [
+                {
+                  "key": "1",
+                  "version": "v0",
+                  "values": {
+                    "value": "before"
+                  }
+                }
+              ]
+            },
+            "seq": 1,
+            "time": 0
+          },
+          {
+            "kind": "begin",
+            "tx": "A",
+            "connection": "physical-A",
+            "seq": 2,
+            "time": 1
+          },
+          {
+            "kind": "row_write",
+            "tx": "A",
+            "relation": "items",
+            "key": "1",
+            "action": "update",
+            "version": "v1",
+            "predecessor": "v0",
+            "values": {
+              "value": "after"
+            },
+            "seq": 4,
+            "time": 3
+          },
+          {
+            "kind": "row_read",
+            "tx": "A",
+            "relation": "items",
+            "predicate": [
+              {
+                "column": "id",
+                "op": "eq",
+                "value": "1"
+              }
+            ],
+            "rows": [
+              {
+                "key": "1",
+                "version": "v1",
+                "values": {
+                  "value": "after"
+                }
+              }
+            ],
+            "complete": true,
+            "seq": 5,
+            "time": 4
+          },
+          {
+            "kind": "commit_request",
+            "tx": "A",
+            "seq": 6,
+            "time": 5
+          },
+          {
+            "kind": "commit_ok",
+            "tx": "A",
+            "seq": 7,
+            "time": 6
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,5 +1,9 @@
 # Unreleased
 
+- Publish a machine-readable source-profile, anomaly and canonical-model declaration with an executable 126-row model matrix, independent-option verification, tamper rejection and capsule checks.
+- Add a MoonBit example composing caller-owned read-source and predecessor inferencers through the public scoped dependency graph, with explicit provenance, rule selection and budget handling.
+- Document the functional comparison with fixed Elle, separating original-history model checks, relation predicate categories and the exact scope of the retained 2,000-history serializable comparison.
+
 - Export and replay self-contained PostgreSQL point-reduction capsules with independent caller budgets and full recomputation.
 
 - Reduce verified PostgreSQL point windows under an explicit G2-item category, retaining the original window and source references and independently replaying candidate checks and budgets.

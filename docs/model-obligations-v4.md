@@ -33,7 +33,7 @@ Logical clients use `{id, transactions}` records tied to original identities. Th
 
 Complete captured point-register programs use `captured-register-full-program/v2`. Lists retain native behavior by default. Explicit `listProfile: 'captured-list-prefix-state/v2'` adds proved writer blocks, external-prefix components and original-program completion replay within its documented source scope. Incomplete windows, unproved prefixes or missing producers cannot be repaired by renumbering or inventing operations. The original capture is immutable; derived states and constraints are recorded separately.
 
-Relation point/source checks retain their current bounded applicability, and higher relation completion remains pending. `relationProfile: 'adya-2000-predicate-on-keyslots-v1'` does not silently turn Adya predicate edges into a completed fixed-Elle model graph.
+The default relation point/source interpretation retains bounded applicability and pending higher completion. The explicit `captured-relation-row-slots/v1` profile supplies checked original atomic-row completion within its documented premises. General predicates and `relationProfile: 'adya-2000-predicate-on-keyslots-v1'` do not silently become a completed fixed-Elle model graph. The [functional matrix](feature-matrix-v4.md) distinguishes each route.
 
 Verification always reanalyses the original history under independent caller options, clients, source profile and limits. The model-specific capsule binds exact source/options/report texts, SHA-256 digests and semantic/algorithm/counter identifiers. Embedded limits and statuses cannot grant authority. Producer version is descriptive metadata and does not select a verifier. Hashes and semantic replay do not authenticate the original observer.
 
