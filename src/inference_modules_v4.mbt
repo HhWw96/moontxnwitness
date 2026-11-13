@@ -612,8 +612,7 @@ fn inference_forbidden_graph_rules_v4(
         | "G1c-process"
         | "G1c-realtime"
         | "PL-2-cycle-exists" => mark("I", context)
-        "G2-item" | "PL-2.99-cycle-exists" =>
-          mark("I+Ai", ScopedDataOnly)
+        "G2-item" | "PL-2.99-cycle-exists" => mark("I+Ai", ScopedDataOnly)
         "G2" | "G2-process" | "G2-realtime" | "PL-3-cycle-exists" =>
           mark("D", context)
         "G-single" => mark("G-single", ScopedDataOnly)

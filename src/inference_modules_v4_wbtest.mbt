@@ -534,7 +534,11 @@ test "inference modules 22 duplicate edge identities within one module are rejec
 ///|
 test "inference modules 23 callback mutations cannot replace the caller module policy during an invocation" {
   let registrations : Array[InferenceModuleV4] = []
-  let mutate = inference_module_v4("mutator", "registry-mutation/v1", fn(_, _, _) {
+  let mutate = inference_module_v4("mutator", "registry-mutation/v1", fn(
+    _,
+    _,
+    _,
+  ) {
     registrations.clear()
     Ok({ data_edges: [], order_edges: [], gaps: [], })
   }).unwrap()
@@ -569,9 +573,7 @@ test "inference modules 23 callback mutations cannot replace the caller module p
 
 ///|
 test "inference modules 24 algorithm revisions are independent verifier policy" {
-  let run = fn(_, _, _) {
-    Ok({ data_edges: [], order_edges: [], gaps: [], })
-  }
+  let run = fn(_, _, _) { Ok({ data_edges: [], order_edges: [], gaps: [], }) }
   let first = inference_module_v4(
     "same-module",
     "same-contract/v1",
@@ -609,10 +611,11 @@ test "inference modules 26 added cycles respect independent model state and edge
     im_constraint("extra-A-B", "A", "B"),
     im_constraint("extra-B-A", "B", "A"),
   ]
-  for options in [
-    model_options_v4(models=[ElleSerializable], max_states=0).unwrap(),
-    model_options_v4(models=[ElleSerializable], max_edge_checks=0).unwrap(),
-  ] {
+  for
+    options in [
+      model_options_v4(models=[ElleSerializable], max_states=0).unwrap(),
+      model_options_v4(models=[ElleSerializable], max_edge_checks=0).unwrap(),
+    ] {
     let report = inference_classification_v4_json(
       classify_with_inference_v4(facts, modules, options~).unwrap(),
     )
@@ -672,7 +675,9 @@ test "inference modules 28 a stronger auxiliary graph cannot falsely refute SI o
     })
   }).unwrap()
   let options = model_options_v4(models=[
-    ElleSnapshotIsolation, ElleConsistentView, ElleRepeatableRead,
+    ElleSnapshotIsolation,
+    ElleConsistentView,
+    ElleRepeatableRead,
     ElleSerializable,
   ]).unwrap()
   let report = inference_classification_v4_json(
