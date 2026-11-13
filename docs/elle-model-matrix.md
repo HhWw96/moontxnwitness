@@ -14,13 +14,15 @@ Per-key linearizability, sequential consistency and writes-follow-reads inferenc
 
 Each of two datatypes has fourteen model targets with a required compatible case, a forbidden case and an incomplete-source case: 84 required positions and 56 required actual upstream comparisons. Forbidden families vary by target: WW, WR, write skew, single anti-dependency and explicit order violations. Additional families include nonadjacent anti-dependencies, aborted and intermediate sources, internal inconsistency and future WR cycles.
 
-The generator currently produces 342 source/model cases and 314 eligible upstream requests. Missing-event histories remain recorded as SDK `unknown` and upstream not-comparable; the converter never silently fills the missing event. Additional cases may be unknown or expose differences. Every difference and raw upstream result is retained, and an unexplained determinate difference fails the comparison.
+The generator currently produces 378 source/model cases and 342 eligible upstream requests. In addition to the original 84 positions, required cross-client stale reads distinguish real-time restrictions from logical-session restrictions, and required missing-client cases preserve unknown session coverage. In total there are 120 required positions and 84 required actual upstream comparisons. Missing-event and missing-client histories remain recorded as SDK `unknown` and upstream not-comparable; the converter never silently fills either gap. Additional cases may be unknown or expose differences. Every difference and raw upstream result is retained, and an unexplained determinate difference fails the comparison.
 
 The original single-transaction positive remains as `own-only`: the actual list checker returns `empty-transaction-graph` unknown for that input. Required positive cases include an observed dependency between two committed transactions, so reference unknowns cannot masquerade as completed positive comparisons.
 
 An early local fixture audit found list WR cycles with reads before the producers' appends returning unknown. Those exact source semantics remain a separate `future-wr-cycle` boundary family. The basic `wr-cycle` family puts both original writes before the reads and tests the intended dependency cycle without the additional future-source premise.
 
 `compare-test.mjs` uses synthetic responses only to test accounting and fault refusal. Its success is not actual Elle execution. The Linux workflow separately retains the actual JVM results; a successful SDK preparation alone cannot establish reference parity.
+
+Comparison binds the request digest and each result's identity, actual checker datatype and requested canonical model. A same-valued result routed to another checker or model is rejected rather than counted as a match.
 
 ## Reproduce
 

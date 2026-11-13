@@ -5,7 +5,7 @@ import {compare} from './compare.mjs';
 const sha=x=>createHash('sha256').update(x).digest('hex'),matrix=matrixCases();
 // Synthetic checker responses exercise only accounting and fault rejection.
 const moon=matrix.cases.map(c=>({id:c.id,inputSha256:sha(JSON.stringify(c.input)),optionsSha256:sha(JSON.stringify(c.options)),status:c.expected??'unknown',verified:true,changedVerdictRejected:true}));
-const upstream={fixedElleCommit:matrix.fixedElleCommit,results:matrix.cases.filter(c=>c.upstreamEligible).map(c=>({id:c.id,validity:c.expected==='refuted'?false:true,unknown:false,timeout:false}))};
+const upstream={fixedElleCommit:matrix.fixedElleCommit,results:matrix.cases.filter(c=>c.upstreamEligible).map(c=>({id:c.id,model:c.model,dataModel:c.dataModel==='point-register-v1'?'register':'list',validity:c.expected==='refuted'?false:true,unknown:false,timeout:false}))};
 const run=(m=moon,u=upstream)=>compare(matrix,m,u);
 let checks=0;
 const test=(name,f)=>{try{f();checks++;}catch(e){throw Error(name+': '+e.message);}};
@@ -16,6 +16,10 @@ test('timeout does not become an unknown model result',()=>{const u=structuredCl
 test('execution error never becomes no anomaly',()=>{const u=structuredClone(upstream);u.results[0].error='test execution failed';assert.equal(run(moon,u).totals.executionFailed,1);});
 test('duplicate upstream identity is refused',()=>{const u=structuredClone(upstream);u.results[1].id=u.results[0].id;assert.throws(()=>run(moon,u));});
 test('missing actual request is refused',()=>{const u=structuredClone(upstream);u.results.pop();assert.throws(()=>run(moon,u));});
+test('same-verdict results from another model are refused',()=>{const u=structuredClone(upstream);const a=u.results[0],b=u.results.find(r=>r.model!==a.model&&r.validity===a.validity);[a.model,b.model]=[b.model,a.model];assert.throws(()=>run(moon,u),/upstream model differs/);});
+test('same-verdict results from another datatype are refused',()=>{const u=structuredClone(upstream);const a=u.results[0],b=u.results.find(r=>r.dataModel!==a.dataModel&&r.validity===a.validity);[a.dataModel,b.dataModel]=[b.dataModel,a.dataModel];assert.throws(()=>run(moon,u),/upstream datatype differs/);});
+test('missing returned model identity is refused',()=>{const u=structuredClone(upstream);delete u.results[0].model;assert.throws(()=>run(moon,u),/upstream model differs/);});
+test('missing returned datatype identity is refused',()=>{const u=structuredClone(upstream);delete u.results[0].dataModel;assert.throws(()=>run(moon,u),/upstream datatype differs/);});
 test('other reference commit is refused',()=>{const u=structuredClone(upstream);u.fixedElleCommit='other';assert.throws(()=>run(moon,u));});
 test('different original history bytes are refused',()=>{const m=structuredClone(moon);m[0].inputSha256='0'.repeat(64);assert.throws(()=>run(m));});
 test('different independent options are refused',()=>{const m=structuredClone(moon);m[0].optionsSha256='0'.repeat(64);assert.throws(()=>run(m));});

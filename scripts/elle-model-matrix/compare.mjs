@@ -22,9 +22,15 @@ export function compare(matrix,moon,upstream){
     if(fixture.expected&&own.status!==fixture.expected)failures.push({id:fixture.id,kind:'sdk-semantic-expectation',expected:fixture.expected,actual:own.status});
     const other=u.get(fixture.id);
     let outcome,reason;
-    if(!fixture.upstreamEligible){assert(!other);outcome='notComparable';reason='original-capture-gap-not-represented-as-complete-upstream-history';}
+    if(!fixture.upstreamEligible){assert(!other);outcome='notComparable';reason=fixture.cohort==='incomplete-logical-context'?'missing-original-logical-clients-not-filled-from-physical-connections':'original-capture-gap-not-represented-as-complete-upstream-history';}
     else {
       assert(other,'Missing actual upstream execution');
+      if(!other.error){
+        const expectedDataModel={'point-register-v1':'register','append-list-v1':'list'}[fixture.dataModel];
+        assert(expectedDataModel,'Unsupported comparison datatype');
+        assert.equal(other.model,fixture.model,'Actual upstream model differs from the original request');
+        assert.equal(other.dataModel,expectedDataModel,'Actual upstream datatype differs from the original request');
+      }
       if(other.error)outcome='executionFailed';
       else if(other.timeout)outcome='timeout';
       else if(other.unknown||other.validity===null||['unknown','pending'].includes(own.status))outcome='unknown';

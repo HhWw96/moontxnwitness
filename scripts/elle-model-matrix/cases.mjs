@@ -64,6 +64,21 @@ export function matrixCases() {
           expected:null,upstreamEligible:true,cohort:'client-observations',required:false});
       }
     }
+    // The same delivered stale value distinguishes real-time from session order:
+    // W and R now belong to independently declared clients.
+    for(const model of MODELS){
+      const source=structuredClone(fs['stale-order']);
+      cases.push({id:`${dataModel}/${model}/stale-cross-client`,dataModel,model,family:'stale-cross-client',input:source,
+        options:{models:[model],...(list?{listProfile:'captured-list-prefix-state/v2'}:{}),clients:clients(source),clientsComplete:true},
+        expected:['strict-serializable','strong-snapshot-isolation'].includes(model)?'refuted':'checked-compatible',
+        upstreamEligible:true,cohort:'client-observations',required:true});
+    }
+    for(const model of MODELS.filter(name=>name.startsWith('strong-session-'))){
+      const source=structuredClone(fs.clean);
+      cases.push({id:`${dataModel}/${model}/missing-logical-clients`,dataModel,model,family:'missing-logical-clients',input:source,
+        options:{models:[model],...(list?{listProfile:'captured-list-prefix-state/v2'}:{})},expected:'unknown',
+        upstreamEligible:false,cohort:'incomplete-logical-context',required:true});
+    }
   }
   return {format:'moontxnwitness-shared-model-matrix/v1',fixedElleCommit:'4e359e597c52938b0afebb8bc42273914d68a424',models:MODELS,cases};
 }
