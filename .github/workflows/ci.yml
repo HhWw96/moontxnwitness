@@ -1,127 +1,100 @@
-name: Verify MoonTxnWitness
+name: Publish exact CI GitHub release assets
 on:
-  push:
-  pull_request:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Stable version without v
+        required: true
+        type: string
+      source_sha:
+        description: Exact full source commit tested by a successful PUSH ci.yml run
+        required: true
+        type: string
+      ci_run_id:
+        description: Successful exact-head PUSH CI run ID
+        required: true
+        type: string
+      release_notes:
+        description: Technical Markdown notes including MoonTxnWitness vVERSION heading
+        required: true
+        type: string
+      publish:
+        description: Explicitly create missing immutable tag/release/assets (false prepares a reviewable candidate)
+        required: true
+        type: boolean
+        default: false
 permissions:
   contents: read
   actions: read
 jobs:
-  verify:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, windows-2022]
-    runs-on: ${{ matrix.os }}
+  github-assets:
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'HhWw96/moontxnwitness'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    # This write token is available only to this explicitly dispatched job.
+    # The controller still performs no mutation without the publish input.
+    permissions:
+      contents: write
+      actions: read
     env:
-      PYTHONUTF8: "1"
-      PYTHONIOENCODING: utf-8
-      MOONBIT_INSTALL_VERSION: 0.10.16+b1a0e846e
-      MTW_INPUT_CACHE: ${{ github.workspace }}/artifacts/input-cache
+      MTW_RELEASE_VERSION: ${{ inputs.version }}
+      MTW_RELEASE_SOURCE: ${{ inputs.source_sha }}
+      MTW_RELEASE_CI_RUN: ${{ inputs.ci_run_id }}
+      MTW_RELEASE_NOTES: ${{ inputs.release_notes }}
+      MTW_RELEASE_PUBLISH: ${{ inputs.publish }}
     steps:
-      - name: Enable long paths for the Windows checkout
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: git config --global core.longpaths true
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '24'
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - name: Check repository size and source boundaries
-        run: python scripts/repository_hygiene.py
-      - name: Test repository index protections
-        run: python -B -m unittest discover -s scripts -p test_repository_hygiene.py -v
-      - name: Test bounded receipt storage
-        run: python -B -m unittest discover -s scripts -p test_evidence_json.py -v
-      - name: Test exact-source PostgreSQL CI import boundaries
-        run: python -B -m unittest discover -s scripts -p 'test_postgres_ci_*.py' -v
-      - name: Test optional writer checkpoint commit boundaries
-        run: python -B -m unittest discover -s scripts -p test_auto_writer_checkpoint.py -v
-      - name: Test frozen input cache faults
-        run: python -B -m unittest discover -s scripts -p test_input_cache.py -v
-      - name: Check package and publication contracts before compilation
-        run: python -B scripts/preflight_release.py
-      - name: Install official MoonBit (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
+      - name: Validate explicit inputs without executing release artifacts
         run: |
-          $ErrorActionPreference = 'Stop'
-          Invoke-RestMethod https://cli.moonbitlang.com/install/powershell.ps1 | Invoke-Expression
-          "$env:USERPROFILE\.moon\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      - name: Install official MoonBit (Ubuntu)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$MOONBIT_INSTALL_VERSION"
-          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
-      - name: Validate active compiler version
-        run: node scripts/toolchain-policy.mjs
-      - name: Test compiler version boundaries
-        run: node scripts/toolchain-policy-test.mjs
-      - name: Run the MoonBit library example
-        run: node scripts/moon.mjs run --target wasm-gc src/demo
-      - name: Run the dependency inference extension example
-        run: node scripts/moon.mjs run --target wasm-gc src/inference_demo
-      - name: Restore checksum-pinned public test inputs
-        run: python scripts/input_cache.py prepare --scope tests
-      - name: Check publication privacy including history
-        run: python scripts/publication_privacy.py --history
-      - name: Verify committed business and presence capture byte bindings
-        run: python scripts/verify_business_evidence.py --git
-      - name: Install frozen optional compiler and driver for fixture tests
-        # Fixed ORM compilation and protocol fixtures do not use a database.
-        run: python -m pip install --require-hashes -r examples/orm-requirements.txt
-      - name: Install checksum-pinned optional configured SQL parser
-        run: python -m pip install --require-hashes -r integrations/python/requirements-configured-sql.txt
-      - name: Verify configured parser CLI before core compilation
-        run: |
-          python -I -S -B -m unittest discover -s scripts -p test_configured_cross_cli.py -v
-          python -B scripts/configured-sql-cross-inputs.py
-      - name: Verify core, independent oracle, CLI and actual SQLite
-        run: npm test
-      - name: Verify declared source profiles and canonical model results
-        run: node scripts/feature-matrix-v4.mjs --output artifacts/feature-matrix-v4
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
+          python - <<'PY'
+          import os, re
+          assert re.fullmatch(r'(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)', os.environ['MTW_RELEASE_VERSION'])
+          assert re.fullmatch(r'[0-9a-f]{40}', os.environ['MTW_RELEASE_SOURCE'])
+          assert re.fullmatch(r'[1-9][0-9]*', os.environ['MTW_RELEASE_CI_RUN'])
+          assert os.environ['MTW_RELEASE_PUBLISH'] in ('true','false')
+          PY
+      - name: Check out only the trusted controller at the workflow's own commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          name: feature-matrix-${{ matrix.os }}
-          path: artifacts/feature-matrix-v4/
-          if-no-files-found: error
-          compression-level: 6
-      - name: Verify benchmark evidence under filesystem faults
-        run: node scripts/performance-evidence-test.mjs
-      - name: Execute Native core on Linux
-        if: runner.os == 'Linux'
-        run: |
-          node scripts/moon.mjs test --target native --deny-warn
-          node scripts/moon.mjs run --target native src/inference_demo --deny-warn
-      - name: Import same-source successful PostgreSQL CI packet
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/publish-github-ci-release.py
+            /scripts/test_publish_github_ci_release.py
+            /.github/workflows/publish-github-ci-release.yml
+      - name: Test release controller boundaries
+        run: python -B -m unittest discover -s scripts -p test_publish_github_ci_release.py -v
+      - name: Validate CI packet and prepare or explicitly publish GitHub assets
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: python -B scripts/import_postgres_ci_bundle.py
-      - name: Verify fresh source and portable consumers
-        run: npm run package
-      - name: Validate actual integration compatibility receipt
-        run: python scripts/release.py --check-compatibility-receipt
-      - name: Stage current-run evidence and exact current-version downloads
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import os, subprocess, sys
+          from pathlib import Path
+          notes = Path(os.environ['RUNNER_TEMP']) / 'release-notes.md'
+          notes.write_text(os.environ['MTW_RELEASE_NOTES'], encoding='utf8')
+          args = [sys.executable, '-B', 'scripts/publish-github-ci-release.py',
+                  '--version', os.environ['MTW_RELEASE_VERSION'],
+                  '--source-sha', os.environ['MTW_RELEASE_SOURCE'],
+                  '--ci-run-id', os.environ['MTW_RELEASE_CI_RUN'],
+                  '--notes', str(notes),
+                  '--output', str(Path(os.environ['RUNNER_TEMP']) / 'github-release-candidate')]
+          if os.environ['MTW_RELEASE_PUBLISH'] == 'true':
+              args.append('--publish')
+          subprocess.run(args, check=True)
+          PY
+      - name: Retain candidate assets and validation receipts
         if: always()
-        run: python scripts/stage_ci_evidence.py
-      - name: Verify receipt-bound CI unit log retention controller
-        if: always()
-        run: python .github/test_stage_unit_logs.py
-      - name: Retain direct receipt-bound current unit logs
-        if: always()
-        run: python .github/stage_unit_logs.py
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: evidence-${{ matrix.os }}
-          path: artifacts/ci-evidence/
-          if-no-files-found: error
-          compression-level: 6
+          name: github-release-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/github-release-candidate/release/
+            ${{ runner.temp }}/github-release-candidate/evidence/
+            ${{ runner.temp }}/github-release-candidate/candidate.json
+            ${{ runner.temp }}/github-release-candidate/published.json
+          if-no-files-found: warn
+          compression-level: 0
