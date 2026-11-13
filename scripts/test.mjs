@@ -15,6 +15,7 @@ import {PUBLIC034_GROUPS,collectPublic034Groups} from './public034-compatibility
 prepareInputs(root,'tests');
 await import('./evidence-reference-test.mjs');
 await import('./point-window-explanation-test.mjs');
+await import('./verification-fingerprint-test.mjs');
 
 // Default tests cover the shipped JS runtime and both bundled Wasm runtimes.
 // --all also executes native tests, requiring a supported system C compiler.
