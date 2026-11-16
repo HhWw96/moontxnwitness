@@ -72,11 +72,41 @@ Defaults are 65,536 SQL UTF-8 bytes, 8,192 tokens, 4,096 AST nodes, nesting 64 a
 
 Importing V2 does not import SQLGlot, a driver or an ORM. Only the first recognition needs the optional, exact-version SQLGlot parser. SQLAlchemy is used solely by one compiler test and is not an adapter runtime dependency. The existing hash-pinned SQLGlot requirements/license remain applicable; this change installs nothing.
 
+## Independent MoonBit candidate verification
+
+The additive `configured_sql_config_v2.mbt`, `configured_sql_grammar_v2.mbt` and `configured_sql_verify_v2.mbt` implement a separate V2 config reader and independent point-CRUD grammar. `SQLConfigV2`, `SQLVerificationOptionsV2` and `SQLCandidateCheckV2` are distinct public types. The optional `sql_projection_v2_bridge` exports only V2 JSON entry points; no V1 wire format or V1 descriptor builder is used to manufacture a V2 result.
+
+The core entry points are `parse_sql_config_v2`, `normalize_sql_candidate_v2`, `verify_sql_candidate_v2` and `sql_candidate_check_v2_json`. The JSON entry points are `normalize_sql_config_v2_json`, `normalize_configured_sql_v2_json` and `verify_configured_sql_v2_json`. Verification takes independent caller-supplied config text, original SQL, original parameter JSON, the raw Python `plan.to_dict()` descriptor, and caller verification options. It does not accept config, budgets or completeness claims from the candidate as authority.
+
+The verifier independently rebuilds the exact V2 descriptor and validates original parameter references/types. Status is `recognized` without a candidate, `matched` for an equal candidate, `mismatch` for differing descriptors or invalid bindings, `unknown` for unsupported grammar or exhausted budgets, and `invalid` for malformed configuration/input/options. A descriptor is structural and reusable: different well-typed runtime parameter values can match the same descriptor, while each invocation returns its own typed bindings and original-parameter hash. Matching does not authenticate the claimed observer or parameter provenance.
+
+`originalParameters` is a detached copy of the supplied JSON observation and `originalParametersSha256` hashes its canonical exact-number representation. Separate `bindings` normalize UUID identities to lowercase hyphenated text and int64 values to decimal text. For example, upper/lower/32-hex UUID spellings have the same typed identity but distinct original observation hashes. Python UUID objects must be represented by the observer's JSON serialization boundary; this wire verifier receives original JSON values, not driver objects. Neither path changes business call parameters.
+
+The implementation shares private identifier/relation/projection helpers and tokenizer state. The V1 tokenizer wrapper always passes an explicit false for the private UUID-cast token switch. V1's public interfaces, configuration scalar acceptance and descriptor/wire protocols remain unchanged. The V2 parser has its own scalar/binding and CRUD rules; UUID key identity does not widen V1 or business-column types.
+
+Caller options are independently bounded `maxChecks`, `maxTokens` and `maxSqlBytes`; zero is a valid exhausted budget and returns `unknown`. Configuration limits remain separate. JSON byte/depth limits apply before grammar work; the parser uses the documented conservative structure budget rather than claiming SQLGlot AST counter equivalence. Successful structural verification still returns all capture/source/model flags as false, including `moonbitProjectionVerified`, which remains reserved for the later source/model projection boundary.
+
+Targeted checks use an isolated build directory, without building the full SDK, running the whole test suite or contacting a database:
+
+```text
+moon test src/configured_sql_v2_wbtest.mbt --target js --deny-warn --jobs 1 --target-dir <isolated-build-dir>
+moon test src/configured_sql_v1_wbtest.mbt --target js --deny-warn --jobs 1 --target-dir <isolated-build-dir>
+moon build src/sql_projection_v2_bridge --target js --release --deny-warn --jobs 1 --target-dir <isolated-build-dir>
+python -B scripts/configured-sql-v2-cross-inputs.py --dependency-root <existing-pinned-deps> --output <isolated-log-dir>/cross-inputs.json
+node scripts/configured-sql-v2-cross-test.mjs --core <isolated-build-dir>/js/release/build/sql_projection_v2_bridge/sql_projection_v2_bridge.js --inputs <isolated-log-dir>/cross-inputs.json --output <isolated-log-dir>/cross-validation.json
+```
+
+The actual Python fixture producer generates three unrelated table/key layouts and real SQLAlchemy 2.0.55 mapper refresh SQL. The compiled MoonBit cross-check compares descriptor hashes, config hashes, typed bindings, preserved original UUID observations, int64 bounds, unenumerated dynamic keys, refused SQL, candidate self-authorization attempts and independent zero budgets. Receipts bind the real compiled core, inputs and source hashes; this is grammar/input consistency evidence, not a source-verified CRUD analysis.
+
 ## Required source work
+
+The separate [original native-result/delivery checker](configured-result-v2.md) verifies only bounded consistency of supplied observations, with distinct V2 formats and budgets. It does not authorize any source/model claims listed below or couple the candidate parser to a projected-SQL constructor.
+
+The separate [point-projection descriptor verifier](point-projection-verifier-v2.md) independently rebuilds deterministic SQL, typed parameter maps and result ordinals from caller config/options. Matching reproduces the frozen construction claim and preserves all execution/source/window/model flags as false.
 
 Every candidate explicitly records `databaseSyntaxValidated`, `sourceAuthenticated`, `captureFactsProduced`, `sourceFactsProduced`, `modelCoverageAccepted`, and `moonbitProjectionVerified` as false. Independent work must bind the V2 config, original SQL/event identity and original parameters to:
 
-1. An independent MoonBit V2 parse/projection with the same UUID identity, full-row and point-CRUD limits. V1 source formats must not be relabeled as V2.
+1. Bind the implemented independent MoonBit V2 grammar/input check to the actual observer and source event. Its success alone cannot authorize source/model projection. V1 source formats must not be relabeled as V2.
 2. Native catalog types, non-NULL constraints, primary-key identity, C / UTF-8 collation, physical star expansion, schema/encoding/session state and catalog/DDL epoch; unsupported RLS, rules, generated effects and additional writers need refusal or explicit proof.
 3. Actual execution success/error, native returned column positions, business-delivered rows and complete-fetch state. Empty delivery and RETURNING cannot substitute for a successful complete point SELECT.
 4. Same-statement or native-observed unique read-version identity. Equal business values or a later read do not establish which version was observed.

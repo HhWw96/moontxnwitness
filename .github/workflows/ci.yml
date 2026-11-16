@@ -92,6 +92,28 @@ jobs:
           python -B scripts/configured-sql-cross-inputs.py
       - name: Verify core, independent oracle, CLI and actual SQLite
         run: npm test
+      - name: Verify configured point candidates and projection constructors
+        env:
+          MTW_SOURCE_V2_TEST_ROOT: ${{ runner.temp }}/mtw-source-v2-unit
+        run: |
+          python -B -m unittest discover -s integrations/python/moontxnwitness_capture -p test_configured_sql_v2.py -t integrations/python -v
+          python -B -m unittest discover -s integrations/python/moontxnwitness_capture -p test_configured_point_projection_v2.py -t integrations/python -v
+          python -B -m unittest discover -s integrations/python -t integrations/python -p test_configured_source_v2.py -v
+          python -B scripts/configured-sql-v2-cross-inputs.py --output artifacts/point-v2/candidates.json
+          python -B scripts/point-projection-v2-cross-inputs.py --output artifacts/point-v2/projections.json
+          node scripts/moon.mjs build --target js --release src/sql_projection_v2_bridge --deny-warn
+          node scripts/configured-sql-v2-cross-test.mjs --core _build/js/release/build/sql_projection_v2_bridge/sql_projection_v2_bridge.js --inputs artifacts/point-v2/candidates.json --output artifacts/point-v2/candidate-validation.json
+          node scripts/point-projection-v2-cross-test.mjs --core _build/js/release/build/sql_projection_v2_bridge/sql_projection_v2_bridge.js --inputs artifacts/point-v2/projections.json --output artifacts/point-v2/projection-validation.json
+      - name: Retain independent point projection checks and compiled core
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: point-projection-${{ matrix.os }}
+          path: |
+            artifacts/point-v2/
+            _build/js/release/build/sql_projection_v2_bridge/
+          if-no-files-found: warn
+          compression-level: 6
       - name: Verify declared source profiles and canonical model results
         run: node scripts/feature-matrix-v4.mjs --output artifacts/feature-matrix-v4
       - name: Compare original relation programs with the independent interpreter

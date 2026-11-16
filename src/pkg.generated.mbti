@@ -100,6 +100,10 @@ pub fn compare_models_json(String) -> String
 
 pub fn configured_fetch_check_v1_json(ConfiguredFetchCheckV1) -> Json
 
+pub fn configured_result_check_v2_json(ConfiguredResultCheckV2) -> Json
+
+pub fn configured_result_options_v2(max_checks? : Int32, max_cell_bytes? : Int32, max_total_bytes? : Int32, max_delivery_records? : Int32, grammar_options? : SQLVerificationOptionsV2) -> ConfiguredResultOptionsV2
+
 pub fn configured_session_bundle_v4_json(String) -> String
 
 pub fn configured_session_diagnostic_v4_json(ConfiguredSessionDiagnosticV4) -> Json
@@ -180,6 +184,8 @@ pub fn normalize_capture_v3_options_json(String, String) -> String
 
 pub fn normalize_configured_sql_v1_json(String, String, String, String) -> String
 
+pub fn normalize_configured_sql_v2_json(String, String, String, String) -> String
+
 pub fn normalize_list_capture_v3_json(String) -> String
 
 pub fn normalize_presence_capture_json(String) -> String
@@ -188,7 +194,11 @@ pub fn normalize_relation_capture_v3_json(String) -> String
 
 pub fn normalize_sql_candidate_v1(SQLConfigV1, String, Json, options? : SQLVerificationOptionsV1) -> SQLCandidateCheckV1
 
+pub fn normalize_sql_candidate_v2(SQLConfigV2, String, Json, options? : SQLVerificationOptionsV2) -> SQLCandidateCheckV2
+
 pub fn normalize_sql_config_v1_json(String) -> String
+
+pub fn normalize_sql_config_v2_json(String) -> String
 
 pub fn options_v4_content_json(String) -> String
 
@@ -205,6 +215,14 @@ pub fn parse_history_optimized(String) -> Result[History, String]
 pub fn parse_history_v4(String) -> Result[HistoryV4, String]
 
 pub fn parse_sql_config_v1(String) -> Result[SQLConfigV1, String]
+
+pub fn parse_sql_config_v2(String) -> Result[SQLConfigV2, String]
+
+pub fn point_projection_check_v2_json(PointProjectionCheckV2) -> Json
+
+pub fn point_projection_options_v2(SQLConfigV2, version_column? : String, version_type? : String, star_contract? : String?, business_star_columns? : Array[String]?, max_projected_sql_bytes? : Int32, max_descriptor_bytes? : Int32) -> Result[PointProjectionOptionsV2, String]
+
+pub fn point_projection_verification_options_v2(max_checks? : Int32, grammar_options? : SQLVerificationOptionsV2) -> PointProjectionVerificationOptionsV2
 
 pub fn project_list_prefix_v4(HistoryV4, max_checks? : Int32) -> Result[ListPrefixProjectionV4, String]
 
@@ -322,9 +340,15 @@ pub fn source_rules_report_v4_content_json(String) -> String
 
 pub fn sql_candidate_check_v1_json(SQLCandidateCheckV1) -> Json
 
+pub fn sql_candidate_check_v2_json(SQLCandidateCheckV2) -> Json
+
 pub fn sql_config_v1_json(SQLConfigV1) -> Json
 
+pub fn sql_config_v2_json(SQLConfigV2) -> Json
+
 pub fn sql_verification_options_v1(max_checks? : Int32, max_tokens? : Int32, max_sql_bytes? : Int32) -> SQLVerificationOptionsV1
+
+pub fn sql_verification_options_v2(max_checks? : Int32, max_tokens? : Int32, max_sql_bytes? : Int32) -> SQLVerificationOptionsV2
 
 pub fn verify_anomalies_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
 
@@ -350,11 +374,17 @@ pub fn verify_configured_point_reduction_v4_json(String, String, String, String,
 
 pub fn verify_configured_point_window_v4_json(String, String, String, String, String) -> Bool
 
+pub fn verify_configured_result_v2(SQLConfigV2, Json, Json, Json, options? : ConfiguredResultOptionsV2) -> ConfiguredResultCheckV2
+
+pub fn verify_configured_result_v2_json(String, String, String, String, String) -> String
+
 pub fn verify_configured_session_diagnostic_v4(SQLConfigV1, String, String, Json, Json, expected_options? : ConfiguredSessionOptionsV4) -> Bool
 
 pub fn verify_configured_session_diagnostic_v4_json(String, String, String, String, String, String) -> Bool
 
 pub fn verify_configured_sql_v1_json(String, String, String, String, String) -> String
+
+pub fn verify_configured_sql_v2_json(String, String, String, String, String) -> String
 
 pub fn verify_configured_writer_bindings_v4_json(String, String, String) -> String
 
@@ -377,6 +407,10 @@ pub fn verify_lost_updates_v4_json(String, String, String) -> String
 pub fn verify_model_classification_v4_json(String, String, String) -> String
 
 pub fn verify_models_v4(ModelFactsV4, Json, ModelOptionsV4) -> Bool
+
+pub fn verify_point_projection_v2(SQLConfigV2, String, Json, PointProjectionOptionsV2, Json, budget? : PointProjectionVerificationOptionsV2) -> PointProjectionCheckV2
+
+pub fn verify_point_projection_v2_json(String, String, String, String, String, String) -> String
 
 pub fn verify_reduction_v4(HistoryV4, Json, preserve~ : Model, max_checks? : Int32, options? : AnalysisOptionsV4) -> Bool
 
@@ -425,6 +459,8 @@ pub fn verify_source_installation_v4(SQLConfigV1, Json, String, Json, max_checks
 pub fn verify_source_installation_v4_json(String, String, String, String, String) -> String
 
 pub fn verify_sql_candidate_v1(SQLConfigV1, String, Json, Json, options? : SQLVerificationOptionsV1) -> SQLCandidateCheckV1
+
+pub fn verify_sql_candidate_v2(SQLConfigV2, String, Json, Json, options? : SQLVerificationOptionsV2) -> SQLCandidateCheckV2
 
 pub fn verify_v3_json(String, String) -> String
 
@@ -492,6 +528,14 @@ pub struct ClassificationV4 {
 pub fn ClassificationV4::status(Self) -> String
 
 pub struct ConfiguredFetchCheckV1 {
+  // private fields
+}
+
+pub struct ConfiguredResultCheckV2 {
+  // private fields
+}
+
+pub struct ConfiguredResultOptionsV2 {
   // private fields
 }
 
@@ -724,6 +768,18 @@ pub(all) enum Outcome {
 pub fn Outcome::equal(Self, Self) -> Bool
 pub fn Outcome::not_equal(Self, Self) -> Bool
 
+pub struct PointProjectionCheckV2 {
+  // private fields
+}
+
+pub struct PointProjectionOptionsV2 {
+  // private fields
+}
+
+pub struct PointProjectionVerificationOptionsV2 {
+  // private fields
+}
+
 pub(all) struct Reduction {
   history : History
   report : Report
@@ -844,11 +900,23 @@ pub struct SQLCandidateCheckV1 {
   // private fields
 }
 
+pub struct SQLCandidateCheckV2 {
+  // private fields
+}
+
 pub struct SQLConfigV1 {
   // private fields
 }
 
+pub struct SQLConfigV2 {
+  // private fields
+}
+
 pub struct SQLVerificationOptionsV1 {
+  // private fields
+}
+
+pub struct SQLVerificationOptionsV2 {
   // private fields
 }
 

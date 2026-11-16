@@ -1,5 +1,12 @@
 # Unreleased
 
+- Recognize configurable point CRUD with dynamic int64, text and UUID primary keys under a separate v2 contract; independently reconstruct SQL candidates and same-statement OLD/NEW projections in MoonBit.
+- Check original native text buffers against actual typed result deliveries, including explicit fetch sizes, partial reads and independently selected verification budgets.
+- Add an opt-in synchronous connection-local projection producer with original business result shapes, automatic writer probes, confirmed commit observation and bounded retained logs.
+- Preserve hidden metadata across result helpers and failed replacements, and isolate observer query failures from application writes with private savepoints.
+- Install explicit V2 source components for non-NULL int64, text and UUID identities, checking native catalogs, initialization inventory, owner/writer scope and actual commit acknowledgement.
+- Add cross-language construction, tamper and real PostgreSQL driver checks. These producer components do not yet authorize a closed source window or model history.
+
 # 0.5.1 — 2026-11-16
 
 - Return complete JavaScript model and relation-model reports through bounded native objects, preserving source checks, evidence, counters and original capsule text.
