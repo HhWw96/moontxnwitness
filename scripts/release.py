@@ -258,6 +258,27 @@ def validate_native038_receipts(summary, package, version):
         assert kind + ' native full-report SDK original 39 boundary and feature-fallback checks' in package['checks']
 
 
+def validate_native051_receipts(summary, package, version):
+    if tuple(map(int, version.split('.'))) < (0, 5, 1):
+        return
+    current = summary['nativeModelReportTransport']
+    assert current['passed'] is True and current['tests'] >= 83
+    assert current['tests'] == len(current['results'])
+    assert len({row['name'] for row in current['results']}) == current['tests']
+    assert all(row['passed'] is True for row in current['results'])
+    for key, name in [('coreSha256', 'core.mjs'), ('modelSdkSha256', 'models-v4.mjs'), ('relationSdkSha256', 'relation-models-v4.mjs')]:
+        assert current[key] == summary['testedFileSha256']['dist/' + name]
+    assert current['coreSha256'] == summary['buildManifest']['coreSha256']
+    assert current['runtimeUnchanged'] is True and current['legacyCapsuleTextUnchanged'] is True
+    assert current['formalPerformanceMeasurement'] is False
+    for kind in ('source', 'portable'):
+        actual = package['native051Consumers'][kind]
+        for key in ('passed', 'tests', 'results', 'coreSha256', 'modelSdkSha256', 'relationSdkSha256',
+                    'runtimeUnchanged', 'legacyCapsuleTextUnchanged', 'formalPerformanceMeasurement'):
+            assert actual[key] == current[key]
+        assert kind + ' native model SDK full report and fallback checks' in package['checks']
+
+
 def validate_core_test_counts(summary):
     common = summary['coreTestsPerTarget']
     assert type(common) is int and common > 0
@@ -295,6 +316,7 @@ def validate_scoped_acceptance(acceptance, manifest):
     assert package['freshConsumerChecks'] == len(package['checks'])
     assert 'source fresh JS core tests: ' + str(validate_core_test_counts(summary)) + ' passed' in package['checks']
     validate_native038_receipts(summary, package, VERSION)
+    validate_native051_receipts(summary, package, VERSION)
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 3):
         assert summary['ormPlanUnitTests']['passed'] and summary['ormPlanUnitTests']['tests'] > 0
         for kind in ('source', 'portable'):

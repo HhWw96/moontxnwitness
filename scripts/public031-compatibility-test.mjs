@@ -1,7 +1,7 @@
 // Verify compatibility against the exact published 0.3.1 portable runtime.
 // No historical source tree or rebuilt historical core is created.
 import assert from 'node:assert/strict';
-import {readFileSync,writeFileSync,mkdirSync,mkdtempSync,linkSync,copyFileSync,unlinkSync,existsSync} from 'node:fs';
+import {constants,readFileSync,writeFileSync,mkdirSync,mkdtempSync,linkSync,copyFileSync,unlinkSync,existsSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
@@ -98,12 +98,20 @@ const work=resolve(output,'public031-corruption');mkdirSync(work,{recursive:true
 const isolatedRoot=mkdtempSync(resolve(work,'run-'));
 for(const name of ['legacy-v031.mjs','legacy-v031-binding.mjs','legacy-v028-policy.mjs','legacy-v028-binding.mjs'])
   copyFileSync(resolve(runtime,name),resolve(isolatedRoot,name));
-// Hardlinks avoid a second opaque runtime allocation. The mutated member below
-// is copied independently, so the immutable cache and installed dist stay intact.
+// Prefer links for immutable members, but a deduplicated cache can reach the
+// filesystem's link quota. An exclusive byte copy retains the same inventory
+// checks. The mutated core is always independent of the cache and installed dist.
 for(const name of Object.keys(PIN.files)){
   const source=resolve(cached,name),destination=resolve(isolatedRoot,'legacy/v031',name);
   mkdirSync(dirname(destination),{recursive:true});
-  if(name==='core.mjs')copyFileSync(source,destination);else linkSync(source,destination);
+  if(name==='core.mjs')copyFileSync(source,destination,constants.COPYFILE_EXCL);
+  else {
+    try{linkSync(source,destination);}
+    catch(error){
+      if(!['EMLINK','EXDEV','EPERM','UNKNOWN'].includes(error.code))throw error;
+      copyFileSync(source,destination,constants.COPYFILE_EXCL);
+    }
+  }
 }
 const isolated=await import(pathToFileURL(resolve(isolatedRoot,'legacy-v031.mjs')).href);
 check('isolated runtime initially matches published inventory',()=>isolated.verifyPublic031Runtime());

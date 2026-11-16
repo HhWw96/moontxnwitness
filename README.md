@@ -12,6 +12,8 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
+当前源码版本为 **v0.5.1**，提供原生 JavaScript 模型报告和能力查询。已发布构建见 [GitHub Releases](https://github.com/HhWw96/moontxnwitness/releases)，当前接口与后续工作见[开发路线](docs/ROADMAP.md)。各版本的构建、测试和下载状态由对应版本记录。
+
 ## 关系谓词模型与可组合推断
 
 关系谓词入口 `classifyRelationModelsV4` 检查完整查询集合、行版本、写入效果及事务顺序，提供六个默认模型和十四个显式可选定义。报告逐项保留来源检查、项目／谓词依赖和原程序执行证书；`verifyRelationModelsV4` 与复现包按调用者独立指定的模型、预算和时钟策略重新计算。运行 `node examples/relation-models-v4-roundtrip.mjs`，可看到同一谓词写偏斜在 Serializable、RR 和 SI 下的不同结果。详见[关系模型定义](docs/relation-models-v4.md)。
@@ -33,17 +35,37 @@ MoonBit 程序可注册多个独立推断模块，共享原始历史索引，分
 
 关系模型默认选择六个基础定义，`models: 'elle-core'` 显式选择十四个。缩减必须指定 `model`；候选预算与模型检查预算分别记录。自定义推断代码由调用者本地注册，不能由复现包加载；新增约束可以提供条件反证，但不能自行授予模型相容结论。
 
-## v0.5.0 完整调用性能工作
+## 当前基线 v0.5.0：完整模型调用
 
 本轮复用组合分析中的不可变原始来源／事务顺序索引，并让关系模型投影共享一份完整 scoped graph。各投影仍保留完整边来源、独立预算和搜索计数，旧接口与报告含义保持。三批完整调用测量中关系模型组平均提速约 8.1%、模型缩减约 4.4%，控制组均通过回退检查；整体峰值内存基本持平。完整结果、独立基线和原始样本见[本轮性能文档](docs/model-performance-v050.md)。历史版本的性能数字继续仅适用于其原始入口和负载。
 
-## v0.4.1：PostgreSQL 点窗口分析
+## v0.5.1：原生模型报告与能力查询
+
+JavaScript 模型入口使用原生对象报告路径：`classifyModelsV4` 和 `classifyRelationModelsV4` 在编译核心提供对应导出时直接取得完整对象，保留 JSON 回退及既有报告、证据和预算契约。证据封装继续保存原有报告文本，验证继续使用独立调用选项完整重算。正式测量中，共同模型调用平均提速 **2.688 倍**、峰值 RSS 下降 **26.7%**，关系谓词模型调用提速 **1.531 倍**；完整输出一致，两个控制负载通过回退检查。详见[本版性能记录与原始样本](docs/native-model-performance-v051.md)。
+
+构建后可离线查看实际核心版本、加载的 SDK 导出、原生报告导出及声明的模型／来源范围：
+
+```powershell
+node dist/moontxnwitness.mjs capabilities
+node dist/moontxnwitness.mjs capabilities --format json
+```
+
+该命令只发现能力，不分析历史，不连接数据库、访问网络、执行迁移或写入文件。通用 SQL／ORM 诊断与来源闭合的分析入口分别列出；十四个可选定义不等于任意 SQL 支持或完整 Elle 等价证明。详细输出与退出码见[能力查询](docs/capabilities.md)。
+
+## 历史版本说明
+
+以下记录保留各原始版本的接口与限制；当前选择入口请使用上方推荐表及[功能矩阵](docs/feature-matrix-v4.md)。历史记录中的“后续”指当时版本。
+
+<details>
+<summary>v0.2.8–v0.4.1 原始版本记录</summary>
+
+### v0.4.1：PostgreSQL 点窗口分析
 
 新增 `analyzeConfiguredPointWindowV4` / `verifyConfiguredPointWindowV4`：从原始起止快照、实际交付的点读写及已确认提交中核验关系历史，检查 `serializable` 和 `G2-item`。支持配置化表名、列名和主键，提供 SDK、CLI 及 PostgreSQL 18 真实执行示例。使用方法见[点窗口接入](docs/configured-session-v4.md#analyze-a-captured-point-window)。
 
 来源快照支持新增效果闭包核验和客户端写者绑定；默认 SDK 共享编译核心，轻量便携包可在全新目录运行当前示例。完整支持范围见[支持矩阵](docs/stable-scope.md)。
 
-## v0.4.0：可嵌入的事务异常分析基础库
+### v0.4.0：可嵌入的事务异常分析基础库
 
 提供 MoonBit 结构化核心、JavaScript SDK 与命令行，将事务观察转换为异常见证、逐模型结果、可缩减反例和可验证的复现包。核心支持唯一版本寄存器、追加列表与关系行集合；业务侧可使用启动插桩或配置化适配器提供原始观察。
 
@@ -55,19 +77,19 @@ MoonBit 程序可注册多个独立推断模块，共享原始历史索引，分
 
 运行 `node examples/relation-predicate-categories.mjs`、`node examples/relation-category-reduction.mjs`，或直接调用 MoonBit 库。目标、安装、接口、示例与技术证据见[基础库说明](docs/library-overview-v0.4.0.md)。支持矩阵区分已完成检查、反证与覆盖缺口；预算耗尽及来源不足会明确返回无法判定。
 
-## v0.3.3
+### v0.3.3
 
 新增有完整来源引用的 `G-single` 检查、寄存器丢失更新和读取来源诊断；列表图可显式选择 `effective-v1`，处理同一事务同键的多次追加与保存点撤销。报告、验证器、复现包及命令行共用明确的算法和预算。
 
 运行新例子：`node examples/v4-anomalies-roundtrip.mjs`。详细边界见 [v4 API](docs/v4-api.md)；后续关系分类、更多模型与配置化采集按支持矩阵推进。
 
-## v0.3.2
+### v0.3.2
 
 新增[三模型结构化 v4 接口](docs/v4-api.md)：MoonBit 的 `HistoryV4`、`analyze_v4`、`classify_v4`、`reduce_v4`、`verify_v4`，以及对应 SDK 和命令行入口。缩减显式指定保留的模型反证，验证使用调用者自己的预算；旧入口保持。
 
 源码包移出历史运行时和大语料，通过[按摘要校验的输入缓存](docs/input-cache.md)恢复。直接运行 MoonBit 核心无需下载这些材料；完整 SDK 构建与测试首次需要联网，之后可离线复用缓存。旧公开 v0.3.1 证据使用原运行时回放。
 
-## v0.3.1
+### v0.3.1
 
 需要 MoonBit moonc ≥0.10.16。当前构建与 CI 固定使用 0.10.16+b1a0e846e。JSON 转换已迁移至新标准库接口，并在构建前检查编译器版本。
 
@@ -79,7 +101,7 @@ moon run --target wasm-gc src/demo
 
 示例分析两事务写偏斜、核对环证据并验证缩减结果。JavaScript SDK 和 CLI 保留原入口；公开 v0.3.0 的原运行时通过固定下载摘要校验后用于旧证据回放。首次源码构建需要联网取得该兼容组件，已准备的缓存可离线复用，源码树不保存其副本。
 
-## v0.3.0
+### v0.3.0
 
 本版收敛自动采集、三种数据模型、逐类别诊断和证据重放，新增[原生 MLflow HTTP 排障案例](docs/mlflow-http-case.md)。真实 `log-batch` 路由的修复前后各运行 30 个固定种子；原生死锁通过 SQLSTATE `40P01` 确认。案例由 1000 个键缩减至 623 个，同一最终请求在修复前连续三次复现、修复后连续三次成功，保留 `oneMinimal=false`。
 
@@ -93,7 +115,7 @@ node examples/mlflow-http-roundtrip.mjs
 
 公开 v0.2.8 的原始报告与胶囊保留三个实际构建上下文，共 156 份原始案例；校验使用完整原运行时，不改证据、预算及历史预期。v0.3.0 的最终测试、独立验收与公开安装记录存于 `verification/releases/0.3.0/`，以相应收据为准。
 
-## v0.2.8 支持范围
+### v0.2.8 支持范围
 
 新增[统一诊断入口](docs/diagnosis-sdk.md)：`diagnoseV3` 与 `diagnose-v3` 同时保留串行分析、模型检查和证据缺口；`verifyDiagnosisV3` 可重新核对完整报告。事务读错自身写入会明确显示 INT，不会误标成 G2 或改写尚无法判定的其它模型。
 
@@ -108,6 +130,8 @@ node examples/mlflow-http-roundtrip.mjs
 可靠反证在其它检查预算耗尽时仍成立；缺少来源、完整读取、内部有效性或实时证据时，相关检查保持无法判定。关系六模型分类、模型保持缩减、任意 SQL 和完整认证系统接入仍未支持。重放成功说明证据可复现，不表示采集内容得到数据库真实性认证。
 
 本版的实际构建、回归和公开交付以 `verification/releases/0.2.8/` 收据及[发行记录](https://github.com/HhWw96/moontxnwitness/releases)为准。默认分析实现继续保留已验证的算法；新增检查的成本与旧版完整分析分别报告。此前未通过性能控制的优化候选及[完整采集成本差距](docs/performance-v0.2.5-candidate.md)继续公开保留，Unicode 流式 JSON 预检查的[固定工作负载成对实验](docs/performance-experiment-streaming-json-guard.md)保留全部原始样本；该实验不等于所有当前版本调用的统一提速或内存下降。
+
+</details>
 
 ## 运行演示
 
@@ -203,7 +227,7 @@ node examples/list-roundtrip.mjs
 node examples/relation-roundtrip.mjs
 ```
 
-合成示例将四个事务缩为三个，保留被异常事务读取的生产者。删除该生产者会丢失来源，不能为了得到更小反例而忽略。类型、完整性与精确搜索额度见[关系模型](docs/relation-v3.md)；任意 SQL 自动映射、混合模型和完整隔离分类仍不支持。
+合成示例将四个事务缩为三个，保留被异常事务读取的生产者。删除该生产者会丢失来源，不能为了得到更小反例而忽略。类型、完整性与精确搜索额度见[有界关系解释器](docs/relation-v3.md)。逐模型分类与保留模型反证的缩减使用独立的 v4 接口，见上方推荐表；任意 SQL 自动映射和混合数据模型仍超出声明范围。
 
 ## ORM 模板与来源诊断
 
@@ -219,7 +243,7 @@ node examples/relation-roundtrip.mjs
 
 ## 实验与后续
 
-[分段日志与来源窗口](docs/capture-journal-v3.md)按各自契约使用；更广普通表/ORM 路径、[dislock 完整生命周期](docs/dislock-v3.md)、关系六模型、模型保持缩减及 MLflow 原服务 HTTP 故障闭环继续开发。受控组件案例不是生产采用证明，不把这些工作作为已经交付的完整应用集成。未支持 SQL 和缺失来源始终可见。
+[分段日志与来源窗口](docs/capture-journal-v3.md)按各自契约使用。更广普通表／ORM 路径、[dislock 完整生命周期](docs/dislock-v3.md)、混合数据模型及扩大来源覆盖的工作见[当前路线](docs/ROADMAP.md)。受控组件案例的范围由各自原始输入和收据定义，未支持 SQL 和缺失来源保持可见。关系模型与模型保持缩减已有独立 v4 入口，见上方推荐表。
 
 ## 开发与验证
 
@@ -233,7 +257,7 @@ npm run package
 
 测试覆盖跨目标核心、独立串行重放、环证据、解析差分、缩减、CLI 及各 SDK；数量与执行目标取当前版本真实收据，发行包另在全新目录构建和运行。见[开发说明](docs/development.md)。
 
-性能优化保持完整报告、依赖来源及预算语义。测量和环境见[性能报告](docs/performance.md)，进一步提速与扩容按[后续路线](docs/remaining-execution-plan.md)推进。
+性能优化保持完整报告、依赖来源及预算语义。当前基线测量和环境见[v0.5.0 完整调用性能](docs/model-performance-v050.md)，早期测量见[历史性能报告](docs/performance.md)；进一步提速与扩容按[当前路线](docs/ROADMAP.md)推进。
 
 Apache-2.0。依赖和参考来源见 [THIRD_PARTY.md](THIRD_PARTY.md)；逐版测试与下载记录在 `verification/releases/`，详细证据见[开发记录](docs/development-status.md)。
 

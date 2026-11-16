@@ -1,4 +1,5 @@
 import {createHash} from 'node:crypto';
+import * as core from './core.mjs';
 import {
   classify_relation_models_v4_json,
   verify_relation_models_v4_json,
@@ -73,7 +74,15 @@ function run(sourceText, optionsText) {
 }
 
 export function classifyRelationModelsV4(source, options = {}) {
-  return run(bounded(source, RELATION_MODEL_V4_LIMITS.sourceUtf8Bytes, 'relation model source'), prepared(options).text).report;
+  const sourceText = bounded(source, RELATION_MODEL_V4_LIMITS.sourceUtf8Bytes, 'relation model source');
+  const optionsText = prepared(options).text;
+  if (typeof core.classify_relation_models_v4_native === 'function') {
+    try {
+      const report = core.classify_relation_models_v4_native(sourceText, optionsText);
+      if (report !== null) { identity(report); return report; }
+    } catch { /* Preserve the text path's existing errors and byte limits. */ }
+  }
+  return run(sourceText, optionsText).report;
 }
 
 export function verifyRelationModelsV4(source, report, expectedOptions = {}) {

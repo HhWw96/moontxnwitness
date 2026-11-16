@@ -3,6 +3,7 @@ import { openSync, readSync, closeSync, writeFileSync, existsSync, unlinkSync } 
 import { resolve } from 'node:path';
 import { run_json, run_options_json, verify_certificate_json, shrink_json, shrink_options_json, compare_models_json, version } from './core.mjs';
 import { makeCapsule, replayCapsule, makeCapsuleV3, replayCapsuleV3 } from './evidence.mjs';
+import { capabilities, formatCapabilitiesText } from './capabilities.mjs';
 import { normalizeCaptureV3, analyzeV3, reduceV3, verifyV3, inspectExecutionFailuresV3, inspectOrmSourceV3,
   verifyConfiguredEffectsSnapshotV4, verifyConfiguredWriterBindingsV4, verifyConfiguredWriterWindowV4,
   analyzeConfiguredPointWindowV4, verifyConfiguredPointWindowV4, explainConfiguredPointWindowV4,
@@ -43,6 +44,7 @@ import {diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,normalizeConfigure
 
 const help = `MoonTxnWitness v${version()}
 用法：
+  node dist/moontxnwitness.mjs capabilities [--format json|text]
   node dist/moontxnwitness.mjs diagnose-configured-session-v4 SESSION.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs verify-configured-effects-v4 SNAPSHOT.json [--options EXPECTED.json] [--output REPORT.json]
   node dist/moontxnwitness.mjs verify-configured-writer-bindings-v4 SNAPSHOT.json SESSION.json [--options EXPECTED.json] [--output REPORT.json]
@@ -226,6 +228,12 @@ try {
     console.log(version());
   } else if (!args.length || (args.length === 1 && args[0] === '--help')) {
     process.stdout.write(help);
+  } else if (args[0] === 'capabilities') {
+    const {options} = localArgs(args.slice(1), ['--format'], 0);
+    const format = options['--format'] || 'text';
+    if (!['json', 'text'].includes(format)) throw new Error('format 必须为 json 或 text');
+    const report = capabilities();
+    process.stdout.write(format === 'json' ? JSON.stringify(report, null, 2) + '\n' : formatCapabilitiesText(report));
   } else if (['capsule-configured-point-window-v4','replay-configured-point-window-v4',
     'capsule-configured-point-reduction-v4','replay-configured-point-reduction-v4'].includes(args[0])) {
     const replay=args[0].startsWith('replay-');

@@ -3,7 +3,7 @@
 // No historical source tree, arbitrary producer path or rebuilt old core is used.
 import assert from 'node:assert/strict';
 import {PUBLIC034_GROUPS,PUBLIC034_COMMON,validatePublic034Group} from './public034-compatibility-groups.mjs';
-import {readFileSync,writeFileSync,mkdirSync,mkdtempSync,linkSync,copyFileSync,unlinkSync,lstatSync,readdirSync,statfsSync} from 'node:fs';
+import {constants,readFileSync,writeFileSync,mkdirSync,mkdtempSync,linkSync,copyFileSync,unlinkSync,lstatSync,readdirSync,statfsSync} from 'node:fs';
 import {resolve,dirname,relative,isAbsolute} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
@@ -70,9 +70,10 @@ async function isolate(label){
  const coreSource=PIN.files['core.mjs'].source;
  for(const [name]of sources){
   const from=within(runtime,name),to=within(isolatedRoot,name);mkdirSync(dirname(to),{recursive:true});
-  // Only this independent copy is mutated. All other original bytes are linked.
+  // Only this independent core is mutated. Immutable members prefer links,
+  // falling back to exclusive copies when the filesystem link quota is reached.
   if(name===coreSource)copyFileSync(from,to);
-  else try{linkSync(from,to);}catch(error){if(error.code==='EXDEV'||error.code==='ENOTSUP'||error.code==='EPERM')copyFileSync(from,to);else throw error;}
+  else try{linkSync(from,to);}catch(error){if(['EXDEV','ENOTSUP','EPERM','EMLINK','UNKNOWN'].includes(error.code))copyFileSync(from,to,constants.COPYFILE_EXCL);else throw error;}
  }
  const module=await import(pathToFileURL(within(isolatedRoot,'legacy-v034.mjs')).href);
  return {root:isolatedRoot,module,coreSource:within(isolatedRoot,coreSource)};

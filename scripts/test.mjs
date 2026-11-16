@@ -29,7 +29,7 @@ if(pythonPreflight.error||pythonPreflight.status!==0)throw Error('Install the fi
 await import('./toolchain-policy-test.mjs');
 const testedSources=verificationFingerprint(root,{includeDist:false});
 await import('./core-test-counts-test.mjs');
-for(const pattern of ['test_core_test_counts.py','test_configured_cross_cli.py','test_native038_contract.py']){
+for(const pattern of ['test_core_test_counts.py','test_configured_cross_cli.py','test_native038_contract.py','test_native051_contract.py']){
  const check=spawnSync(process.env.MTW_PYTHON||process.env.PYTHON||(process.platform==='win32'?'python':'python3'),['-B','-m','unittest','discover','-s','scripts','-p',pattern,'-v'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:4*1024*1024,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
  if(check.error||check.status!==0)throw Error(pattern+' contract failed: '+check.stdout+check.stderr);
  if(check.stdout)process.stdout.write(check.stdout);if(check.stderr)process.stderr.write(check.stderr);
@@ -45,6 +45,7 @@ const commonCoreTestCount=Math.min(...Object.values(coreTestCountsByTarget));
 const jsOnlyCoreTests=(readFileSync(resolve(root,'src/native_report_js_wbtest.mbt'),'utf8').match(/^test\s+"/gm)||[]).length;
 jsCoreTestCount({coreTestsPerTarget:commonCoreTestCount,coreTestCountsByTarget,executedTargets:targets},{expectedJS:coreTestCount(),jsOnly:jsOnlyCoreTests});
 await import('./build.mjs');
+await import('./capabilities-test.mjs');
 assert.deepEqual(verificationFingerprint(root,{includeDist:false}),testedSources,'Executable sources changed during core verification');
 const testedFiles=verificationFingerprint(root);
 const public030Check=spawnSync(process.execPath,['scripts/public030-compatibility-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:4*1024*1024});
@@ -180,6 +181,11 @@ const native038Evidence=JSON.parse(readFileSync(native038Receipt,'utf8'));const 
 assert.equal(native038Evidence.coreSha256,native038Manifest.coreSha256);assert.equal(native038Evidence.runtimeUnchanged,true);assert.equal(native038Evidence.textAPIUnchanged,true);
 assert.equal(native038Evidence.results.length,39);assert(native038Evidence.results.every(r=>r.passed===true));
 const foundation038={passed:true,tests:39,results:native038Evidence.results,coreSha256:native038Evidence.coreSha256,sdkSha256:native038Evidence.sdkSha256,receipt:relativeEvidencePath(root,native038Receipt),formalPerformanceMeasurement:false};
+const nativeModelReceipt=resolve(mkdtempSync(resolve(root,'artifacts/native-model-report-')),'receipt.json');
+const nativeModelChild=spawnSync(process.execPath,['scripts/native-model-report-test.mjs',resolve(root,'dist'),nativeModelReceipt],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:4*1024*1024});
+if(nativeModelChild.error||nativeModelChild.status!==0)throw Error('Native model-report SDK checks failed: '+nativeModelChild.stdout+nativeModelChild.stderr);
+const nativeModelEvidence=JSON.parse(readFileSync(nativeModelReceipt,'utf8'));
+assert.equal(nativeModelEvidence.passed,true);assert.equal(nativeModelEvidence.coreSha256,native038Manifest.coreSha256);
 const sharedHost=spawnSync(process.execPath,['scripts/shared-core-host-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:4*1024*1024});
 if(sharedHost.error||sharedHost.status!==0)throw Error('Shared configured host checks failed: '+sharedHost.stdout+sharedHost.stderr);
 assert.equal(JSON.parse(sharedHost.stdout).checks,21);
@@ -553,6 +559,7 @@ receipt.experimentalV3.postCloseIndependentAudit={passed:closureAudit.passed,cas
 receipt.experimentalV3.fixedSqlDiagnostic=sqlDiagnostic;
 receipt.experimentalV3.explicitSqlPolicy=sqlPolicy;
 receipt.buildManifest = JSON.parse(readFileSync(resolve(root, 'dist/build-manifest.json'), 'utf8'));
+receipt.nativeModelReportTransport={...nativeModelEvidence,receipt:relativeEvidencePath(root,nativeModelReceipt)};
 assert.deepEqual(verificationFingerprint(root),testedFiles,'Executable sources or runtime changed during verification');
 receipt.testedFileSha256 = testedFiles;
 receipt.captureAdapterUnitTests = 'passed; driver-interface tests, not actual database execution';

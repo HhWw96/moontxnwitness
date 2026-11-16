@@ -8,6 +8,16 @@ pub fn classify_relation_models_v4_json(
 }
 
 ///|
+#cfg(target="js")
+#export_name("classify_relation_models_v4_native")
+pub fn classify_relation_models_v4_native(
+  text : String,
+  options : String,
+) -> @txn.NativeReportObject {
+  @txn.classify_relation_models_v4_native(text, options)
+}
+
+///|
 #export_name("verify_relation_models_v4_json")
 pub fn verify_relation_models_v4_json(
   text : String,

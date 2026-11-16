@@ -177,6 +177,12 @@ SHARED_CONFIGURED_CONSUMER_INPUTS = (
 
 
 NATIVE038_PORTABLE_INPUTS = ('scripts/native-report-sdk-test.mjs', 'docs/native-report-performance.md', 'docs/native-report-performance.json')
+NATIVE051_PORTABLE_INPUTS = (
+    'scripts/native-model-report-test.mjs', 'docs/native-model-performance-v051.md',
+    'docs/evidence/native-model-performance-v051.json',
+    'docs/evidence/native-model-performance-v051-samples.jsonl',
+    'docs/evidence/native-model-performance-v051-source.json',
+)
 
 
 def configured037_available(root,version):
@@ -250,6 +256,12 @@ def select_distribution_files(root, public_names, tested_files, version):
         require_tree(folder, reason)
     for name, reason in FIXED_VERIFICATION_FILES.items():
         require(name, reason)
+
+    if tuple(map(int, version.split('.'))) >= (0, 5, 1) or (root / 'cmd/capabilities.mjs').is_file():
+        for name in ('cmd/capabilities.mjs', 'scripts/capabilities-test.mjs',
+                     'docs/capabilities.md', 'docs/feature-matrix-v4.json',
+                     'dist/capabilities.mjs', 'dist/feature-matrix-v4.json'):
+            require(name, 'capability discovery module and adjacent digest-bound declaration')
 
     public024_compatibility = (tuple(map(int, version.split('.'))) >= (0, 2, 5)
                                or 'cmd/legacy/v024/manifest.json' in public_names)
@@ -467,6 +479,9 @@ def select_distribution_files(root, public_names, tested_files, version):
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         for name in NATIVE038_PORTABLE_INPUTS:
             require(name, 'native JS report current SDK and digest-bound performance scope')
+    if tuple(map(int, version.split('.'))) >= (0, 5, 1):
+        for name in NATIVE051_PORTABLE_INPUTS:
+            require(name, 'native model report parity, portable consumption and measured source bindings')
 
     source = set()
     for name in public_names:
@@ -578,6 +593,8 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.update(n for n in public_names if n.startswith('fixtures/source-components-v4/'))
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         portable.update(NATIVE038_PORTABLE_INPUTS)
+    if tuple(map(int, version.split('.'))) >= (0, 5, 1):
+        portable.update(NATIVE051_PORTABLE_INPUTS)
     portable.update(n for n in public_names if n.startswith('fixtures/orm-profile-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-v3/'))
     portable.update(n for n in public_names if n.startswith('fixtures/classification-models-v3/'))

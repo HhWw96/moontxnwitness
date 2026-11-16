@@ -1,5 +1,6 @@
 // Canonical isolation-model obligations; independent of graph-category APIs.
 import {createHash} from 'node:crypto';
+import * as core from './core.mjs';
 import {classify_models_v4_json,verify_model_classification_v4_json,
   model_options_v4_content_json,model_report_v4_content_json,model_capsule_v4_content_json,version} from './core.mjs';
 const MiB=1024*1024;
@@ -43,7 +44,15 @@ function run(sourceText,optionsText){
   identity(report);return {reportText,report};
 }
 export function classifyModelsV4(source,options={}){
-  return run(bounded(source,MODEL_V4_LIMITS.sourceUtf8Bytes,'model source'),prepared(options).optionsText).report;
+  const sourceText=bounded(source,MODEL_V4_LIMITS.sourceUtf8Bytes,'model source');
+  const optionsText=prepared(options).optionsText;
+  if(typeof core.classify_models_v4_native==='function'){
+    try{
+      const report=core.classify_models_v4_native(sourceText,optionsText);
+      if(report!==null){identity(report);return report;}
+    }catch{ /* Retain the original errors and limits through the text path. */ }
+  }
+  return run(sourceText,optionsText).report;
 }
 export function verifyModelsV4(source,report,expectedOptions={}){
   try{

@@ -44,6 +44,14 @@ for runtime, field in (('core.mjs', 'coreSha256'), ('capture-core.mjs', 'capture
 for runtime in ('moontxnwitness.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'v4.mjs', 'demo.mjs', 'postgres-demo.mjs'):
     assert (ROOT / 'cmd' / runtime).read_bytes() == (ROOT / 'dist' / runtime).read_bytes(), 'Runtime wrapper changed after build: ' + runtime
 
+CAPABILITIES = (ROOT / 'cmd/capabilities.mjs').is_file()
+if CAPABILITIES:
+    for runtime, source in (('capabilities.mjs', 'cmd/capabilities.mjs'),
+                            ('feature-matrix-v4.json', 'docs/feature-matrix-v4.json')):
+        payload = (ROOT / 'dist' / runtime).read_bytes()
+        assert payload == (ROOT / source).read_bytes(), 'Capability asset changed after build: ' + runtime
+        assert hashlib.sha256(payload).hexdigest() == MANIFEST['runtimeAssetSha256'][runtime], 'Capability asset digest differs: ' + runtime
+
 if CONFIGURED037:
     assert set(MANIFEST['configuredCoreSha256']) == {'configured-session-core.mjs','source-components-core.mjs','sql-projection-core.mjs','sql-fetch-core.mjs'}, 'Configured runtime inventory differs'
     for runtime, digest in MANIFEST['configuredCoreSha256'].items():
@@ -131,6 +139,7 @@ models036_consumers = {}
 configured037_consumers = {}
 shared_configured_consumers = {}
 native038_consumers = {}
+native051_consumers = {}
 public034_consumers = {}
 
 
@@ -163,6 +172,13 @@ for kind in ("portable", "source"):
         checks.append(f"source fresh JS core tests: {test_count} passed")
     assert run([NODE, "dist/moontxnwitness.mjs", "--version"], consumer).strip() == VERSION
     checks.append(kind + " version")
+    if CAPABILITIES:
+        capabilities = json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'capabilities', '--format', 'json'], consumer))
+        assert capabilities['format'] == 'moontxnwitness-capabilities/v1' and capabilities['version'] == VERSION
+        assert capabilities['analysisPerformed'] is False and capabilities['runtime']['declaredModelNamesMatchRuntime'] is True
+        assert capabilities['declaration']['sha256'] == sha256(consumer / 'dist/feature-matrix-v4.json')
+        assert run([NODE, 'dist/moontxnwitness.mjs', 'capabilities'], consumer).startswith('MoonTxnWitness v' + VERSION + ' capabilities\n')
+        checks.append(kind + ' local capability discovery and packaged declaration')
     if tuple(map(int, VERSION.split('.'))) >= (0, 3, 2):
         public031 = json.loads(run([NODE, 'scripts/public031-compatibility-test.mjs',
             '--runtime', str(consumer / 'dist'), '--producer-runtime', str(consumer / 'dist/legacy/v031'),
@@ -352,6 +368,20 @@ for kind in ("portable", "source"):
         assert len(native_receipt['results']) == 39 and all(r['passed'] is True for r in native_receipt['results'])
         native038_consumers[kind] = native_receipt
         checks.append(kind + ' native full-report SDK original 39 boundary and feature-fallback checks')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 5, 1):
+        native_path = work / ('native-model-report-' + kind + '.json')
+        result = json.loads(run([NODE, 'scripts/native-model-report-test.mjs', str(consumer / 'dist'), str(native_path)], consumer))
+        actual = load_receipt(native_path)
+        assert result['passed'] is True and actual['passed'] is True
+        assert actual['tests'] >= 83 and actual['tests'] == len(actual['results'])
+        assert all(row['passed'] is True for row in actual['results'])
+        for key, name in [('coreSha256', 'core.mjs'), ('modelSdkSha256', 'models-v4.mjs'), ('relationSdkSha256', 'relation-models-v4.mjs')]:
+            assert actual[key] == sha256(consumer / 'dist' / name) == SUMMARY['nativeModelReportTransport'][key]
+        assert actual['results'] == SUMMARY['nativeModelReportTransport']['results']
+        assert actual['runtimeUnchanged'] is True and actual['legacyCapsuleTextUnchanged'] is True
+        assert actual['formalPerformanceMeasurement'] is False
+        native051_consumers[kind] = actual
+        checks.append(kind + ' native model SDK full report and fallback checks')
     public024 = json.loads(run([NODE,'scripts/compat-v024-test.mjs',str(consumer/'dist'),str(consumer/'fixtures/compat-v024'),str(work/('public024-'+kind))],consumer))
     assert public024['passed'] and public024['currentRuntimeVersion'] == VERSION and public024['checks'] == 107
     checks.append(kind + ' actual public24 fifteen-family SDK/CLI and synchronous lazy ORM replay')
@@ -894,6 +924,8 @@ if CONFIGURED037:
     receipt['sharedConfiguredConsumers'] = shared_configured_consumers
 if tuple(map(int, VERSION.split('.'))) >= (0, 3, 8):
     receipt['native038Consumers'] = native038_consumers
+if tuple(map(int, VERSION.split('.'))) >= (0, 5, 1):
+    receipt['native051Consumers'] = native051_consumers
 (ROOT / "verification/package.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / "release-index.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (ARTIFACTS / (NAME + "-release.json")).write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

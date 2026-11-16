@@ -10,6 +10,157 @@ extern "js" fn native038_parsed_snapshot(text : String) -> String =
 
 ///|
 #cfg(target="js")
+extern "js" fn native051_is_null(value : NativeReportObject) -> Bool =
+  #| value => value === null
+
+///|
+#cfg(target="js")
+extern "js" fn native051_own_fields(value : NativeReportObject) -> Bool =
+  #| value => Object.getPrototypeOf(value) === Object.prototype && Object.hasOwn(value, '__proto__') && value.__proto__ === 'safe' && value.constructor === null
+
+///|
+#cfg(target="js")
+fn native051_check(value : Json) -> Unit raise {
+  let original = value.stringify(indent=2)
+  let bytes = @utf8.encode(original).length()
+  assert_eq(
+    native038_snapshot(native_model_record(value, limit=bytes)),
+    native038_parsed_snapshot(original),
+  )
+  assert_true(
+    (Some(native_model_record(value, limit=bytes - 1)) catch { _ => None })
+    is None,
+  )
+  assert_eq(value.stringify(indent=2), original)
+}
+
+///|
+#cfg(target="js")
+test "native051 01 bounded host conversion preserves JSON scalars and numeric lexemes" {
+  for
+    text in [
+      "null", "true", "false", "0", "-0", "1e20", "9007199254740993", "1.234567890123456789",
+      "[]", "{}", "[null,false,true,{},[]]",
+    ] {
+    native051_check(@json.parse(text))
+  }
+}
+
+///|
+#cfg(target="js")
+test "native051 02 escaped and Unicode strings use the original pretty UTF8 byte limit" {
+  for
+    text in [
+      "", "月", "🙂𐐷", "é", "é", "a\"\\b", "\n\r\t\b\f\u0000\u001f", "  ",
+    ] {
+    native051_check({ "label": text, "nested": [{ "value": text }] })
+  }
+}
+
+///|
+#cfg(target="js")
+test "native051 03 property names cannot alter host prototypes" {
+  let value : Json = {
+    "__proto__": "safe",
+    "constructor": Json::null(),
+    "prototype": ["unchanged"],
+    "0": "zero",
+    "2": "two",
+    "01": "leading",
+  }
+  native051_check(value)
+  assert_true(native051_own_fields(native_model_record(value)))
+}
+
+///|
+#cfg(target="js")
+test "native051 04 nested reports are fresh and caller mutation cannot alter later calls" {
+  let value : Json = {
+    "edges": [{ "from": "A" }],
+    "stats": { "dependencies": 1 },
+    "findings": [],
+  }
+  let first = native_model_record(value)
+  let second = native_model_record(value)
+  let original = native038_snapshot(second)
+  native038_mutate(first)
+  assert_eq(native038_snapshot(second), original)
+  native051_check(value)
+}
+
+///|
+#cfg(target="js")
+test "native051 05 report containers retain the original 64 level guard" {
+  let mut value : Json = Json::null()
+  for _ in 0..<64 {
+    value = [value]
+  }
+  native051_check(value)
+  value = [value]
+  assert_true((Some(native_model_record(value)) catch { _ => None }) is None)
+}
+
+///|
+#cfg(target="js")
+test "native051 06 register and list model reports exactly match all fourteen text results" {
+  for
+    (source, options) in [
+      (mraw_history(mraw_simple()).source_text, "{\"models\":\"elle-core\"}"),
+      (
+        mlp_history(mlp_multi()).source_text,
+        "{\"models\":\"elle-core\",\"listProfile\":\"captured-list-prefix-state/v2\"}",
+      ),
+      (mraw_history(mraw_simple()).source_text, "{\"maxSourceChecks\":0}"),
+    ] {
+    assert_eq(
+      native038_snapshot(classify_models_v4_native(source, options)),
+      native038_parsed_snapshot(classify_models_v4_json(source, options)),
+    )
+  }
+}
+
+///|
+#cfg(target="js")
+test "native051 07 relation predicate model report preserves budgets and complete evidence" {
+  for options in ["{}", "{\"models\":\"elle-core\"}", "{\"maxSourceChecks\":0}"] {
+    let source = rpred_history(rpred_empty_skew(), empty=true).source_text
+    assert_eq(
+      native038_snapshot(classify_relation_models_v4_native(source, options)),
+      native038_parsed_snapshot(
+        classify_relation_models_v4_json(source, options),
+      ),
+    )
+  }
+}
+
+///|
+#cfg(target="js")
+test "native051 08 invalid input requests existing text errors instead of fabricated reports" {
+  for text in ["{}", "{", "null"] {
+    assert_true(native051_is_null(classify_models_v4_native(text, "{}")))
+    assert_true(
+      native051_is_null(classify_relation_models_v4_native(text, "{}")),
+    )
+  }
+  for options in ["{", "{\"models\":[]}", "{\"maxStates\":100001}"] {
+    assert_true(
+      native051_is_null(
+        classify_models_v4_native(
+          mraw_history(mraw_simple()).source_text,
+          options,
+        ),
+      ),
+    )
+    assert_true(
+      native051_is_null(
+        classify_relation_models_v4_native(rmwire_source(), options),
+      ),
+    )
+  }
+}
+
+///|
+#cfg(target="js")
 extern "js" fn native038_mutate(value : NativeReportObject) -> Unit =
   #| value => { value.edges[0].from = 'changed'; value.edges.push({}); value.stats.dependencies = -1; value.findings.push({code:'changed'}); }
 

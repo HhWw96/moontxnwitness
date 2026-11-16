@@ -1,5 +1,13 @@
 # Unreleased
 
+# 0.5.1 — 2026-11-16
+
+- Return complete JavaScript model and relation-model reports through bounded native objects, preserving source checks, evidence, counters and original capsule text.
+- Discover loaded interfaces, model definitions, source profiles and limits with `capabilities`, including a JSON output for integrations.
+- Verify native/text equality, explicit text fallback, independent report rejection and portable capability assets.
+- Preserve historical-runtime corruption checks when a deduplicated filesystem cache reaches its hard-link quota.
+- Retain 1,800 formal full-call timing samples: common model calls improve 2.688× with 26.7% lower peak RSS, relation-predicate calls improve 1.531×, and both P95 controls pass.
+
 # 0.5.0 — 2026-11-13
 
 - Reuse one immutable original source/order index when composing inference and model checks.
