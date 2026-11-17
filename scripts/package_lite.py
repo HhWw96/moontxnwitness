@@ -92,7 +92,10 @@ def package_lite(output):
                 "const report=sdk.analyzeConfiguredWindowV4('{}',options);"
                 "assert.equal(report.status,'invalid');assert.equal(report.coverageComplete,false);"
                 "assert.deepEqual(standalone.analyzeConfiguredWindowV4('{}',options),report);"
-                "for(const api of [sdk,standalone])assert.equal(api.verifyConfiguredWindowV4('{}',report,options).valid,false);"])
+                "for(const api of [sdk,standalone]){assert.equal(api.verifyConfiguredWindowV4('{}',report,options).valid,false);"
+                "const target={...options,preserveModel:'serializable'},reduced=api.reduceConfiguredWindowV4('{}',target);"
+                "assert.equal(reduced.refutationPreserved,false);assert.equal(reduced.oneMinimal,false);"
+                "assert.equal(api.verifyConfiguredWindowReductionV4('{}',reduced,target).valid,false);}"])
     receipt.update(version=version, sourceFingerprint=manifest['sourceSha256'],
                    coreSha256=manifest['coreSha256'], legacyPayloadsIncluded=False,
                    cleanConsumerChecks=7 if configured_window_v2_available(ROOT) else 6)

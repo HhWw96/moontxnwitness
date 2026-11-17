@@ -506,4 +506,5 @@ export {diagnoseConfiguredSessionTextV4,diagnoseConfiguredSessionV4,verifyConfig
  CONFIGURED_SESSION_LIMITS} from './configured-shared-v4.mjs';
 
 export {analyzeConfiguredWindowV4, verifyConfiguredWindowV4,
-  CONFIGURED_WINDOW_V4_LIMITS} from './configured-window-v2.mjs';
+  reduceConfiguredWindowV4, verifyConfiguredWindowReductionV4, explainConfiguredWindowV4,
+  CONFIGURED_WINDOW_V4_LIMITS, CONFIGURED_WINDOW_REDUCTION_V4_LIMITS} from './configured-window-v2.mjs';

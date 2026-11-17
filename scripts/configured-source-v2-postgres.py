@@ -33,7 +33,7 @@ def eq(actual, expected):
     if actual != expected: raise AssertionError((actual, expected))
 
 
-def analysis_fixtures(control, connect_writer, config, policy, installation, output, key, fresh, other_key):
+def analysis_fixtures(control, connect_writer, config, policy, installation, output, key, fresh, other_key, *, with_reduction=False):
     """Run original SQL through wrappers; no model histories are constructed here."""
     import psycopg
     target=q(config.table.schema)+'.'+q(config.table.table)
@@ -66,6 +66,17 @@ def analysis_fixtures(control, connect_writer, config, policy, installation, out
     with ThreadPoolExecutor(max_workers=2) as pool:results=list(pool.map(participant,(key,other_key)))
     eq(control.execute('SELECT count(*) FROM '+target+' WHERE identity IN (%s,%s) AND enabled',(key,other_key)).fetchone()[0],0)
     path=w.seal();cases.append({'name':'rr-write-skew','bundle':str(path),'expected':'refuted','config':config.to_dict(),'policy':policy.to_dict(),'bundleSha256':sha(path),'participants':results})
+    if with_reduction:
+        reset();w=window('rr-write-skew-noise');barrier=threading.Barrier(2)
+        with ThreadPoolExecutor(max_workers=2) as pool:results=list(pool.map(participant,(key,other_key)))
+        c=w.wrap_connection(connect_writer())
+        try:
+            # These observed reads depend on a committed anomaly writer. A
+            # selection cannot silently replace their source with initial data.
+            for _ in range(3):
+                eq(c.execute(select,(key,)).fetchone()[2],False);c.commit()
+        finally:c.close()
+        path=w.seal();cases.append({'name':'rr-write-skew-noise','bundle':str(path),'expected':'refuted','config':config.to_dict(),'policy':policy.to_dict(),'bundleSha256':sha(path),'participants':results,'originalTransactions':5,'expectedReducedTransactions':2})
     reset();w=window('serializable-ordered')
     for identity in (key,other_key):
         raw=connect_writer();raw.isolation_level=psycopg.IsolationLevel.SERIALIZABLE;c=w.wrap_connection(raw)
@@ -95,7 +106,7 @@ def analysis_fixtures(control, connect_writer, config, policy, installation, out
     return cases
 
 
-def suite(admin, connect, work, *, with_window=False, with_analysis=False):
+def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_reduction=False):
     records = []
     for index, kind in enumerate(('int64', 'text', 'uuid')):
         owner, writer, schema = 'source_owner_'+str(index), 'source_writer_'+str(index), 'app_'+str(index)
@@ -194,7 +205,7 @@ def suite(admin, connect, work, *, with_window=False, with_analysis=False):
             analysis=[]
             if with_analysis:
                 if not with_window:raise ValueError('Analysis fixtures also require --with-window')
-                analysis=analysis_fixtures(control,lambda:connect(user=writer,password=password),config,policy,window.installation,work/('analysis-'+str(index)),key,fresh,slow_key)
+                analysis=analysis_fixtures(control,lambda:connect(user=writer,password=password),config,policy,window.installation,work/('analysis-'+str(index)),key,fresh,slow_key,with_reduction=with_reduction)
             records.append({'keyType':kind,'passed':True,'initialRows':1,'committedEffects':3,'analysisFixtures':analysis,
                 'sourceInstallationReceiptSha256':sha(work/('install-'+str(index))/'receipt-v2.json'),
                 'sourceInstallationLogSha256':sha(work/('install-'+str(index))/'source-install-v2.jsonl'),
@@ -213,8 +224,10 @@ def main():
     cli.add_argument('--output',type=Path,required=True)
     cli.add_argument('--with-window',action='store_true',help='Also seal raw window inputs and verify out-of-order commit visibility')
     cli.add_argument('--with-analysis',action='store_true',help='Also run committed CRUD, real RR write skew and ordered Serializable business windows')
+    cli.add_argument('--with-reduction',action='store_true',help='Also capture source-dependent noise transactions for model-preserving reduction')
     args=cli.parse_args()
     if args.with_analysis and not args.with_window:cli.error('--with-analysis requires --with-window')
+    if args.with_reduction and not args.with_analysis:cli.error('--with-reduction requires --with-analysis')
     if args.dsn_env and not args.owned_database:cli.error('--dsn-env requires --owned-database')
     if args.dsn_env and not os.environ.get(args.dsn_env):cli.error('the selected DSN environment variable is empty')
     work=args.output.resolve()
@@ -228,12 +241,12 @@ def main():
         def connect(**kwargs):return psycopg.connect(**dict(service,**kwargs))
         receipt={'format':'configured-source-v2-native-installation-validation/v1','passed':False,'actualDatabaseExecution':False,
             'actualV2InstallationExecuted':False,'formalPerformanceMeasurement':False,'windowProducerRequested':args.with_window,
-            'analysisFixturesRequested':args.with_analysis,'sourceSha256':{str(Path(__file__).resolve().relative_to(ROOT)):sha(Path(__file__))}}
+            'analysisFixturesRequested':args.with_analysis,'reductionFixturesRequested':args.with_reduction,'sourceSha256':{str(Path(__file__).resolve().relative_to(ROOT)):sha(Path(__file__))}}
         try:
             with connect(autocommit=True) as admin:
                 eq(int(admin.execute('SHOW server_version_num').fetchone()[0]),180006)
                 receipt['postgresVersion']='postgres (PostgreSQL) 18.6';receipt['actualDatabaseExecution']=True
-                receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis)
+                receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,with_reduction=args.with_reduction)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         (work/'receipt.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
@@ -247,7 +260,7 @@ def main():
     environment=dict(os.environ,TEMP=str(work),TMP=str(work));flags=getattr(subprocess,'CREATE_NO_WINDOW',0)
     receipt={'format':'configured-source-v2-native-installation-validation/v1','passed':False,'actualDatabaseExecution':False,
         'actualV2InstallationExecuted':False,'postgresVersion':version,'sourceFactsProduced':False,'completeWindow':False,
-        'modelCoverageAccepted':False,'formalPerformanceMeasurement':False,'windowProducerRequested':args.with_window,'analysisFixturesRequested':args.with_analysis,
+        'modelCoverageAccepted':False,'formalPerformanceMeasurement':False,'windowProducerRequested':args.with_window,'analysisFixturesRequested':args.with_analysis,'reductionFixturesRequested':args.with_reduction,
         'sourceSha256':{str(path.relative_to(ROOT)):sha(path) for path in [Path(__file__).resolve(),ROOT/'integrations/python/moontxnwitness_capture/configured_source_v2.py',ROOT/'integrations/python/moontxnwitness_capture/configured_point_capture_v2.py',ROOT/'integrations/python/moontxnwitness_capture/configured_window_v2.py']}}
     with (work/'control.log').open('xb') as log:
         def run(parts):subprocess.run([str(p) for p in parts],env=environment,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=120,creationflags=flags)
@@ -260,7 +273,7 @@ def main():
                 options=dict(host='127.0.0.1',port=port,dbname='postgres',user='mtw',password=password);options.update(kwargs)
                 return psycopg.connect(**options)
             with connect(autocommit=True) as admin:
-                receipt['actualDatabaseExecution']=True;receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis)
+                receipt['actualDatabaseExecution']=True;receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,with_reduction=args.with_reduction)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         finally:

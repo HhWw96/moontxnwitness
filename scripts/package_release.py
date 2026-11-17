@@ -364,9 +364,9 @@ for kind in ("portable", "source"):
         checks.append(kind + ' shared configured SDK parity and bounded source-mapping replay')
     if CONFIGURED_WINDOW_V2:
         host = json.loads(run([NODE, 'scripts/configured-window-v2-host-test.mjs'], consumer))
-        assert host['passed'] is True and host['checks'] == 15 and host['fakeCore'] is True
+        assert host['passed'] is True and host['checks'] == 26 and host['fakeCore'] is True
         runtime = json.loads(run([NODE, 'scripts/configured-window-v2-runtime-test.mjs'], consumer))
-        assert runtime['passed'] is True and runtime['checks'] == 4 and runtime['originalCases'] == 0
+        assert runtime['passed'] is True and runtime['checks'] == 5 and runtime['originalCases'] == 0
         assert runtime['actualDatabaseExecution'] is False and runtime['moonbitSemanticsExecuted'] is True
         for name, digest in MANIFEST['configuredWindowRuntimeSha256'].items():
             assert runtime['runtimeSha256'][name] == digest

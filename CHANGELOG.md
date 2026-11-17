@@ -1,5 +1,6 @@
 # Unreleased
 
+- Add a source-closed configured-window reduction adapter that preserves an independently selected Serializable refutation and keeps the original window evidence required for verification.
 - Independently admit original V2 installations and complete boundary snapshots, then align captured SQL, actual native/delivered results, confirmed transactions and every new retained effect into a source-bound relation history.
 - Analyze configured synchronous full-row point CRUD with caller-selected policies and budgets; retain graph witnesses and separate complete serial-replay certificates, with independent report recomputation.
 - Preserve zero-row conditional writes, uncovered results and uncertain outcomes as explicit unknown results; add original-SQL PostgreSQL write-skew and compatible control windows for int64, C-text and UUID identities.
