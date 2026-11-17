@@ -43,6 +43,19 @@ results describe the complete selected profile. Common controls use the default
 SDK. Measurements retain complete output and compare its canonical digest,
 including all evidence and counters; no source or edge output is trimmed.
 
+The subsequent explicit-profile run also retained 1,260 formal timing samples.
+Its five verification workloads improved 1.345× geometrically, with a peak RSS
+ratio of 0.800594 (19.94% lower). The model control's P95 increased from 41.705 ms
+to 48.068 ms and failed the same limit. The register control passed. Therefore
+the profile remains experimental and explicitly selected; it has not passed
+the performance acceptance gate and is not recommended as the default. Both
+failed runs remain recorded in the [measurement summary](evidence/window-verification-v054.json).
+
+The complete reports and independently selected arguments matched the frozen
+baseline in both runs. Performance acceptance and output correctness are
+separate results. Neither measurement establishes a speedup for asynchronous
+capture, ORM integration or persistence, which these workloads do not execute.
+
 Create inputs from an original successful PostgreSQL campaign:
 
 ```text
