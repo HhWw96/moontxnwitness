@@ -41,10 +41,14 @@ import {reduceRelationModelsV4,verifyRelationModelReductionV4,parseRelationModel
 
 import {diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,normalizeConfiguredSessionOptionsV4,
  makeConfiguredSessionCapsuleV4,replayConfiguredSessionCapsuleV4} from './configured-v4.mjs';
+import {analyzeConfiguredWindowTextV4, verifyConfiguredWindowTextV4,
+  CONFIGURED_WINDOW_V4_LIMITS} from './configured-window-v2.mjs';
 
 const help = `MoonTxnWitness v${version()}
 用法：
   node dist/moontxnwitness.mjs capabilities [--format json|text]
+  node dist/moontxnwitness.mjs analyze-configured-window-v4 BUNDLE.json --config CONFIG.json --policy POLICY.json [--options OPTIONS.json] [--output REPORT.json]
+  node dist/moontxnwitness.mjs verify-configured-window-v4 BUNDLE.json REPORT.json --config CONFIG.json --policy POLICY.json [--options EXPECTED.json] [--output VERIFIED.json]
   node dist/moontxnwitness.mjs diagnose-configured-session-v4 SESSION.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs verify-configured-effects-v4 SNAPSHOT.json [--options EXPECTED.json] [--output REPORT.json]
   node dist/moontxnwitness.mjs verify-configured-writer-bindings-v4 SNAPSHOT.json SESSION.json [--options EXPECTED.json] [--output REPORT.json]
@@ -150,7 +154,7 @@ classify-models-v3 显式检查六个冻结模型定义；只支持所声明点�
 结果只针对提供的唯一版本读写历史及版本顺序约束。不会连接数据库或上传数据。
 `;
 
-function readBounded(path, maximum) {
+function readBounded(path, maximum, preserveBOM = false) {
   const fd = path === '-' ? 0 : openSync(path, 'r');
   const chunks = [];
   let total = 0;
@@ -164,7 +168,9 @@ function readBounded(path, maximum) {
       chunks.push(buffer.subarray(0, count));
     }
   } finally { if (fd !== 0) closeSync(fd); }
-  return new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks));
+  // Existing commands retain their historical BOM handling. Evidence-bound
+  // original inputs request ignoreBOM so the decoder preserves that character.
+  return new TextDecoder('utf-8', { fatal: true, ignoreBOM: preserveBOM }).decode(Buffer.concat(chunks));
 }
 
 function checkOutput(path, inputPaths, otherOutputs) {
@@ -234,6 +240,23 @@ try {
     if (!['json', 'text'].includes(format)) throw new Error('format 必须为 json 或 text');
     const report = capabilities();
     process.stdout.write(format === 'json' ? JSON.stringify(report, null, 2) + '\n' : formatCapabilitiesText(report));
+  } else if (['analyze-configured-window-v4', 'verify-configured-window-v4'].includes(args[0])) {
+    const verify = args[0] === 'verify-configured-window-v4';
+    const {paths, options} = localArgs(args.slice(1), ['--config', '--policy', '--options', '--output'], verify ? 2 : 1);
+    if (!options['--config'] || !options['--policy']) {
+      throw new Error('Configured window analysis requires independent --config and --policy files');
+    }
+    const inputs = [...paths, options['--config'], options['--policy'], ...(options['--options'] ? [options['--options']] : [])];
+    if (inputs.filter(path => path === '-').length > 1) throw new Error('Only one configured window input may use standard input');
+    const config = readBounded(options['--config'], CONFIGURED_WINDOW_V4_LIMITS.configBytes, true);
+    const policy = readBounded(options['--policy'], CONFIGURED_WINDOW_V4_LIMITS.policyBytes, true);
+    const expected = options['--options'] ? readBounded(options['--options'], CONFIGURED_WINDOW_V4_LIMITS.optionsBytes, true) : '{}';
+    const bundle = readBounded(paths[0], CONFIGURED_WINDOW_V4_LIMITS.bundleBytes, true);
+    const result = verify ? verifyConfiguredWindowTextV4(bundle,
+      readBounded(paths[1], CONFIGURED_WINDOW_V4_LIMITS.reportBytes, true), config, policy, expected)
+      : analyzeConfiguredWindowTextV4(bundle, config, policy, expected);
+    emitJSON(result, options['--output'], inputs, []);
+    process.exitCode = verify ? (result.valid ? 0 : 2) : ({'checked-compatible': 0, refuted: 1, invalid: 2, unknown: 3}[result.status] ?? 3);
   } else if (['capsule-configured-point-window-v4','replay-configured-point-window-v4',
     'capsule-configured-point-reduction-v4','replay-configured-point-reduction-v4'].includes(args[0])) {
     const replay=args[0].startsWith('replay-');

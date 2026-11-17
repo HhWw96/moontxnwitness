@@ -59,16 +59,77 @@ pending file synchronizes. Pending files and `window-failure.json` are diagnosti
 failure evidence; consumers must require the formal receipt and reject a failure
 marker. A file whose name merely ends in `.pending.json` never grants success.
 
-## Analysis boundary
+## Independent analysis
+
+`analyzeConfiguredWindowV4(bundleText, {config, policy, ...limits})` replays the
+original installation, both boundary snapshots, lifecycle and native results in
+MoonBit. Supply `config` and `policy` independently; the bundle cannot select its
+own admission policy. The input must be the original UTF-8 bundle text. The
+result binds its exact bytes, derived history, operation references and selected
+budgets. `verifyConfiguredWindowV4(bundleText, report, options)` recomputes the
+complete result using the same caller-selected policy and budgets.
+See the [SDK and CLI reference](configured-window-v2-sdk.md) for text-preserving
+command-line input, exit codes and standalone loading.
+
+```js
+import {readFileSync} from 'node:fs';
+import {analyzeConfiguredWindowV4, verifyConfiguredWindowV4} from './dist/sdk.mjs';
+const bundleText = readFileSync('window/configured-window-input.json', 'utf8');
+const options = {
+  config: JSON.parse(readFileSync('config.json', 'utf8')),
+  policy: JSON.parse(readFileSync('source-policy.json', 'utf8')),
+  maxSourceChecks: 1_000_000,
+  maxPointChecks: 1_000_000,
+};
+const report = analyzeConfiguredWindowV4(bundleText, options);
+const verified = verifyConfiguredWindowV4(bundleText, report, options);
+console.log(report.status, verified.valid);
+```
+
+Each actual write must consume exactly one new retained effect belonging to the
+confirmed transaction/backend. The verifier matches key, predecessor, complete
+OLD/NEW values and original assignment. Every delivered read must resolve to a
+starting row or a verified write, with transaction and observation order checked.
+Native field identities are bound to the independently checked catalog. UUIDs
+retain canonical equality identity; complete typed business rows become opaque
+row bodies in the derived `relation-set-v1` history.
+
+The main formal target is `serializable` under atomic full-row point semantics.
+`model` retains the original row-graph report and `itemCategory` retains its
+`G2-item` check. `serialReplay` is a separate bounded complete-program serial
+certificate. A complete serial order can establish compatibility even when a
+graph absence source remains ambiguous; it never rewrites that graph result.
+`modelDecision` identifies the actual basis. A graph refutation and a valid
+serial certificate must not coexist; contradictory evidence is rejected.
+
+The initial full-window path covers confirmed commits, complete point SELECT,
+one-row INSERT/UPDATE/DELETE and transaction-local reads. Zero-row writes,
+rollback/unknown outcomes, savepoints, incomplete fetches and unsupported SQL
+remain `unknown`. A zero-row UPDATE is an observed conditional result, not an
+operation that may be silently omitted or fabricated as a SELECT. No connection
+pool identity or client BEGIN time creates a session/snapshot fact.
+
+## Limits and evidence boundary
 
 The input format is `moontxnwitness-configured-window-input/v2`, with the separate
 `postgres18-configured-point-window-observations/v2` contract. Python component
 checks and durable input seals establish observations for independent replay.
 They do not authenticate a collector or grant a model conclusion. The receipt's
 `completeWindow`, `moonbitSourceVerified` and `modelCoverageAccepted` remain false
-until a separate core admission path validates all source and lifecycle facts.
+in the producer receipt. The independent core sets `coverageComplete`,
+`sourceMappingVerified` and `writerWindowVerified` only after replaying those
+obligations. `sourceAuthenticated` remains false: hashes detect record changes
+but do not authenticate an observer or make fabricated observations genuine.
 Unknown SQL, incomplete reads and unresolved commits remain in the original
 journal. Existing V1 point windows and analysis APIs keep their original rules.
+
+The hard window limits are 32 transactions and 128 business statements. Source,
+point, model-source, edge and serial-operation checks each have independently
+selected limits of at most 1,000,000. Exact serial replay retains the existing
+6-committed-transaction/128-operation limit and at most 100,000 states; graph
+capacity does not raise exact-search capacity. Exhaustion cannot grant a
+certificate. Original boundary row/effect limits are separate. The report is
+bounded to 32 MiB.
 
 ## Validation
 
@@ -80,13 +141,24 @@ The real PostgreSQL 18.6 campaign runs int64, C-text and UUID primary keys. Each
 captures committed CRUD and then holds version **5** uncommitted while version
 **6** commits. An intermediate snapshot sees 6 but not 5; after 5 commits, the
 ending snapshot includes both. All three complete-ledger comparisons pass.
-These are raw-window correctness checks, with model admission tracked separately.
+These raw-window checks are separate from model admission. With `--with-analysis`,
+the harness additionally executes original SQL for full CRUD with negative reads
+and transaction-local reads, real RR write skew, ordered Serializable and a
+zero-row-write skew boundary. For each primary-key type, independent replay must
+produce a compatible serial certificate, `G2-item` refutation, compatible control
+and explicit unknown respectively. No model history is handwritten by the harness.
 
 Run the existing owned-cluster harness with `--with-window`:
 
 ```text
-python -B scripts/configured-source-v2-postgres.py --bin <postgres18.6-bin> --output D:\CodexScratch\new-window-run --with-window
+python -B scripts/configured-source-v2-postgres.py --bin <postgres18.6-bin> --output D:\CodexScratch\new-window-run --with-window --with-analysis
+node scripts/configured-window-v2-check.mjs --core dist/sql-projection-v2-core.mjs --receipt D:\CodexScratch\new-window-run\receipt.json --output D:\CodexScratch\new-window-run\analysis-checks.json
 ```
+
+Linux CI uses the same harness with `--dsn-env` and an explicit
+`--owned-database` acknowledgement for its disposable PostgreSQL 18.6 service.
+The original bundle, native logs, compiled core and rehashed-tamper results are
+retained as job artifacts.
 
 Supply a new output directory. Database files, native logs and original failures
 stay outside the repository. No performance comparison is inferred from this run.

@@ -11,6 +11,9 @@ from evidence_json import load_receipt
 from pathlib import Path, PurePosixPath
 from input_cache import public_cached_entries
 from import_postgres_ci_bundle import validated_ci_reproduction_files
+from configured_window_runtime import (CONFIGURED_WINDOW_V2_WRAPPERS,
+                                       CONFIGURED_WINDOW_V2_RUNTIME,
+                                       configured_window_v2_available)
 
 EXCLUDED_DIRS = {'.git', '_build', '.mooncakes', 'node_modules', 'artifacts',
                  'dist', '__pycache__', '.venv-pg'}
@@ -476,6 +479,17 @@ def select_distribution_files(root, public_names, tested_files, version):
         require('integrations/python/requirements-configured-sql.txt', 'optional parser version/hash and license closure')
         require('integrations/python/licenses/SQLGlot-30.26.0-MIT.txt', 'original optional parser license')
 
+    configured_window_v2 = configured_window_v2_available(root)
+    if configured_window_v2:
+        for name in CONFIGURED_WINDOW_V2_WRAPPERS:
+            require('cmd/' + name, 'configured window V2 shared and standalone host source')
+        for name in CONFIGURED_WINDOW_V2_RUNTIME:
+            require('dist/' + name, 'configured window V2 digest-bound runtime closure')
+        for name in ('scripts/configured_window_runtime.py', 'scripts/test_configured_window_runtime.py',
+                     'scripts/configured-window-v2-host-test.mjs', 'scripts/configured-window-v2-runtime-test.mjs',
+                     'docs/configured-window-v2-sdk.md'):
+            require(name, 'configured window V2 independent caller and package verification')
+
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         for name in NATIVE038_PORTABLE_INPUTS:
             require(name, 'native JS report current SDK and digest-bound performance scope')
@@ -591,6 +605,9 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.update(CONFIGURED037_PORTABLE_INPUTS)
         portable.update(SHARED_CONFIGURED_CONSUMER_INPUTS)
         portable.update(n for n in public_names if n.startswith('fixtures/source-components-v4/'))
+    if configured_window_v2:
+        portable.update(('scripts/configured-window-v2-host-test.mjs',
+                         'scripts/configured-window-v2-runtime-test.mjs'))
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         portable.update(NATIVE038_PORTABLE_INPUTS)
     if tuple(map(int, version.split('.'))) >= (0, 5, 1):

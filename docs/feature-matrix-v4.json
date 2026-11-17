@@ -96,6 +96,20 @@
     "canonicalModels": "not-composed-for-general-predicates",
     "requiredFacts": ["complete-query-result", "typed-predicate", "separate-write-effects", "membership-transitions", "source-closure"]
   },
+  "configuredWindows": {
+    "contract": "postgres18-source-bound-point-crud-row-slots/v2",
+    "analyze": "analyzeConfiguredWindowV4",
+    "verify": "verifyConfiguredWindowV4",
+    "adapter": "sync-psycopg-3.3.6-postgresql-18",
+    "dataModel": "relation-set-v1",
+    "primaryKeyTypes": ["int64", "C-text", "uuid"],
+    "models": ["serializable"],
+    "directCategories": ["G2-item"],
+    "requiredFacts": ["independent-config-and-policy", "original-installation", "complete-boundary-snapshots", "confirmed-commits", "actual-native-and-delivered-results", "complete-new-effect-coverage"],
+    "limits": {"transactions": 32, "businessStatements": 128, "exactCommittedTransactions": 6, "exactOperations": 128},
+    "unknown": ["zero-row-writes", "rollback-or-unknown-outcomes", "savepoints", "partial-fetch", "unsupported-sql", "missing-sources", "exhausted-budgets"],
+    "documentation": "docs/configured-window-v2.md"
+  },
   "models": [
     {"name": "read-uncommitted", "projection": "W", "context": "data-only"},
     {"name": "read-committed", "projection": "I", "context": "data-only"},

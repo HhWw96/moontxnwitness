@@ -16,6 +16,8 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 ## 关系谓词模型与可组合推断
 
+开发分支新增[完整 PostgreSQL 点 CRUD 窗口分析](docs/configured-window-v2.md)：业务保留原始 SQL，通过局部同步连接包装自动记录实际结果、写入来源与提交响应。MoonBit 独立核验后生成关系历史，提供串行化反证或完整串行重放证书；支持 int64、C-text 和 UUID 主键。调用 `analyzeConfiguredWindowV4` 分析，使用独立配置与预算调用 `verifyConfiguredWindowV4` 重算。公开稳定版本与分支集成状态分别记录，后续异步适配见[路线](docs/ROADMAP.md)。
+
 关系谓词入口 `classifyRelationModelsV4` 检查完整查询集合、行版本、写入效果及事务顺序，提供六个默认模型和十四个显式可选定义。报告逐项保留来源检查、项目／谓词依赖和原程序执行证书；`verifyRelationModelsV4` 与复现包按调用者独立指定的模型、预算和时钟策略重新计算。运行 `node examples/relation-models-v4-roundtrip.mjs`，可看到同一谓词写偏斜在 Serializable、RR 和 SI 下的不同结果。详见[关系模型定义](docs/relation-models-v4.md)。
 
 MoonBit 程序可注册多个独立推断模块，共享原始历史索引，分别产生带来源的约束；SDK 和 CLI 可选择已编译模块。模块参数、顺序、预算及完整结果进入可验证证据。[模块示例](examples/inference-modules-v4)展示两个调用者模块的组合、分类与策略变更拒绝。

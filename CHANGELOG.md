@@ -1,5 +1,10 @@
 # Unreleased
 
+- Independently admit original V2 installations and complete boundary snapshots, then align captured SQL, actual native/delivered results, confirmed transactions and every new retained effect into a source-bound relation history.
+- Analyze configured synchronous full-row point CRUD with caller-selected policies and budgets; retain graph witnesses and separate complete serial-replay certificates, with independent report recomputation.
+- Preserve zero-row conditional writes, uncovered results and uncertain outcomes as explicit unknown results; add original-SQL PostgreSQL write-skew and compatible control windows for int64, C-text and UUID identities.
+- Bind normalized operation sequences to original SQL/native records and expose the configured window contract and limits in capability discovery.
+- Support explicit physical build output directories and repeatable cross-volume installation of hash-pinned compatibility files without replacing mismatched existing data.
 - Independently verify projected PostgreSQL point results in MoonBit, checking OLD/NEW images, original assignments, native metadata and actual typed business deliveries under caller-selected budgets.
 - Recheck original snapshot/trace digests before packaging and publish successful window receipts only after synchronization; retain explicit failed/pending evidence.
 
@@ -11,7 +16,7 @@
 - Add an opt-in synchronous connection-local projection producer with original business result shapes, automatic writer probes, confirmed commit observation and bounded retained logs.
 - Preserve hidden metadata across result helpers and failed replacements, and isolate observer query failures from application writes with private savepoints.
 - Install explicit V2 source components for non-NULL int64, text and UUID identities, checking native catalogs, initialization inventory, owner/writer scope and actual commit acknowledgement.
-- Add cross-language construction, tamper and real PostgreSQL driver checks. These producer components do not yet authorize a closed source window or model history.
+- Add cross-language construction, tamper and real PostgreSQL driver checks. Producer component flags remain separate from independent closed-window and model admission.
 
 # 0.5.1 — 2026-11-16
 

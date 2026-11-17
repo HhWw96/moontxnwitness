@@ -14,6 +14,8 @@ pub fn analyze(History) -> Report
 
 pub fn analyze_configured_point_window_v4_json(String, String, String, String) -> String
 
+pub fn analyze_configured_window_v2_json(String, String, String, String) -> String
+
 pub fn analyze_json(String) -> String
 
 pub fn analyze_native_js_v1(String) -> NativeReportObject
@@ -334,6 +336,10 @@ pub fn shrink_json(String) -> String
 
 pub fn shrink_options_json(String, String) -> String
 
+pub fn snapshot_admission_v2_json(SnapshotAdmissionV2) -> Json
+
+pub fn source_admission_v2_json(SourceAdmissionV2) -> Json
+
 pub fn source_fetch_mapping_v4_json(SourceFetchMappingV4) -> Json
 
 pub fn source_installation_check_v4_json(SourceInstallationCheckV4) -> Json
@@ -389,6 +395,8 @@ pub fn verify_configured_session_diagnostic_v4_json(String, String, String, Stri
 pub fn verify_configured_sql_v1_json(String, String, String, String, String) -> String
 
 pub fn verify_configured_sql_v2_json(String, String, String, String, String) -> String
+
+pub fn verify_configured_window_v2_json(String, String, String, String, String) -> String
 
 pub fn verify_configured_writer_bindings_v4_json(String, String, String) -> String
 
@@ -453,6 +461,14 @@ pub fn verify_relation_row_projection_v4(HistoryV4, Json, max_checks? : Int32) -
 pub fn verify_scoped_category_v4(ScopedDependencyGraphV4, Json, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> Bool
 
 pub fn verify_si_extension_v4(ScopedDependencyGraphV4, Json, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> Bool
+
+pub fn verify_snapshot_admission_v2(SourceAdmissionV2, String, Json, max_checks? : Int32, max_rows? : Int32, max_effects? : Int32) -> SnapshotAdmissionV2
+
+pub fn verify_snapshot_admission_v2_json(String, String, String, String, String, String, String) -> String
+
+pub fn verify_source_admission_v2(SQLConfigV2, Json, String, Json, max_checks? : Int32) -> SourceAdmissionV2
+
+pub fn verify_source_admission_v2_json(String, String, String, String, String) -> String
 
 pub fn verify_source_fetch_mapping_report_v4_json(String, String, String, String, String, String, String, String, String, String) -> Bool
 
@@ -1023,6 +1039,14 @@ pub(all) struct SearchInfo {
 } derive(Eq)
 pub fn SearchInfo::equal(Self, Self) -> Bool
 pub fn SearchInfo::not_equal(Self, Self) -> Bool
+
+pub struct SnapshotAdmissionV2 {
+  // private fields
+}
+
+pub struct SourceAdmissionV2 {
+  // private fields
+}
 
 pub struct SourceFetchMappingV4 {
   // private fields

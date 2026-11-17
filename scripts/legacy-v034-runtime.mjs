@@ -72,7 +72,12 @@ export async function copyPublic034(root,output){
   directories(dirname(from));verify(from,spec);directories(dirname(to),true);
   try{linkSync(from,to);}catch(error){
    if(error.code==='EEXIST')verify(to,spec);
-   else copyFileSync(from,to,constants.COPYFILE_EXCL);
+   else {
+    try{copyFileSync(from,to,constants.COPYFILE_EXCL);}catch(copyError){
+     if(copyError.code!=='EEXIST')throw copyError;
+     verify(to,spec);
+    }
+   }
   }
   verify(to,spec);
  }

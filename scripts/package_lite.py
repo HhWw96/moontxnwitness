@@ -10,6 +10,7 @@ import zipfile
 
 from package_archive import sha256, write_archive
 from publication_privacy import private_home_paths
+from configured_window_runtime import configured_window_v2_available, verify_configured_window_v2_runtime
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -41,6 +42,9 @@ def package_lite(output):
         raise ValueError('Built core does not match current source')
     cores = {'core.mjs': manifest['coreSha256'], 'capture-core.mjs': manifest['captureCoreSha256'],
              **manifest['configuredCoreSha256']}
+    if configured_window_v2_available(ROOT):
+        window_runtime = verify_configured_window_v2_runtime(ROOT, manifest)
+        cores.update({name: digest for name, digest in window_runtime.items() if name.endswith('-core.mjs')})
     for name, digest in cores.items():
         if sha256(dist / name) != digest:
             raise ValueError(f'Runtime digest mismatch: {name}')
@@ -80,9 +84,18 @@ def package_lite(output):
         run_node(root, [*cli, 'reduce-relation-category-v4', 'examples/relation-predicate-categories.json',
                         *selector, '--capsule', 'case.json'], 1)
         run_node(root, [*cli, 'replay-relation-category-reduction-v4', 'case.json', *selector])
+        if configured_window_v2_available(ROOT):
+            run_node(root, ['--input-type=module', '-e',
+                "import assert from 'node:assert/strict';import * as sdk from './dist/sdk.mjs';"
+                "import * as standalone from './dist/configured-window-v2-standalone.mjs';"
+                "const options={config:'{}',policy:'{}'};"
+                "const report=sdk.analyzeConfiguredWindowV4('{}',options);"
+                "assert.equal(report.status,'invalid');assert.equal(report.coverageComplete,false);"
+                "assert.deepEqual(standalone.analyzeConfiguredWindowV4('{}',options),report);"
+                "for(const api of [sdk,standalone])assert.equal(api.verifyConfiguredWindowV4('{}',report,options).valid,false);"])
     receipt.update(version=version, sourceFingerprint=manifest['sourceSha256'],
                    coreSha256=manifest['coreSha256'], legacyPayloadsIncluded=False,
-                   cleanConsumerChecks=6)
+                   cleanConsumerChecks=7 if configured_window_v2_available(ROOT) else 6)
     (output / 'lite-package.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
     return receipt
 

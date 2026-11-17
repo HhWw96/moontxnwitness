@@ -504,3 +504,6 @@ export {diagnoseConfiguredSessionTextV4,diagnoseConfiguredSessionV4,verifyConfig
  makeConfiguredPointReductionCapsuleV4,replayConfiguredPointReductionCapsuleV4,
  makeConfiguredPointWindowCapsuleV4,replayConfiguredPointWindowCapsuleV4,
  CONFIGURED_SESSION_LIMITS} from './configured-shared-v4.mjs';
+
+export {analyzeConfiguredWindowV4, verifyConfiguredWindowV4,
+  CONFIGURED_WINDOW_V4_LIMITS} from './configured-window-v2.mjs';
