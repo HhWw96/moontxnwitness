@@ -71,7 +71,7 @@ pub fn projected_result(
   options : String,
 ) -> String {
   @txn.verify_projected_result_v2_json(
-    config, sql, typed_parameters, projection_options, descriptor,
-    native_frame, deliveries, options,
+    config, sql, typed_parameters, projection_options, descriptor, native_frame,
+    deliveries, options,
   )
 }
