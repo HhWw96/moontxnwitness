@@ -42,13 +42,17 @@ import {reduceRelationModelsV4,verifyRelationModelReductionV4,parseRelationModel
 import {diagnoseConfiguredSessionV4,verifyConfiguredSessionV4,normalizeConfiguredSessionOptionsV4,
  makeConfiguredSessionCapsuleV4,replayConfiguredSessionCapsuleV4} from './configured-v4.mjs';
 import {analyzeConfiguredWindowTextV4, verifyConfiguredWindowTextV4,
-  CONFIGURED_WINDOW_V4_LIMITS} from './configured-window-v2.mjs';
+  reduceConfiguredWindowTextV4, verifyConfiguredWindowReductionTextV4, explainConfiguredWindowTextV4,
+  CONFIGURED_WINDOW_V4_LIMITS, CONFIGURED_WINDOW_REDUCTION_V4_LIMITS} from './configured-window-v2.mjs';
 
 const help = `MoonTxnWitness v${version()}
 用法：
   node dist/moontxnwitness.mjs capabilities [--format json|text]
   node dist/moontxnwitness.mjs analyze-configured-window-v4 BUNDLE.json --config CONFIG.json --policy POLICY.json [--options OPTIONS.json] [--output REPORT.json]
   node dist/moontxnwitness.mjs verify-configured-window-v4 BUNDLE.json REPORT.json --config CONFIG.json --policy POLICY.json [--options EXPECTED.json] [--output VERIFIED.json]
+  node dist/moontxnwitness.mjs reduce-configured-window-v4 BUNDLE.json --config CONFIG.json --policy POLICY.json --options TARGET.json [--output REDUCTION.json]
+  node dist/moontxnwitness.mjs verify-configured-window-reduction-v4 BUNDLE.json REDUCTION.json --config CONFIG.json --policy POLICY.json --options EXPECTED.json [--output VERIFIED.json]
+  node dist/moontxnwitness.mjs explain-configured-window-v4 BUNDLE.json REPORT.json --config CONFIG.json --policy POLICY.json [--options WINDOW.json] [--reduction REDUCTION.json --reduction-options TARGET.json] [--output REPORT.html]
   node dist/moontxnwitness.mjs diagnose-configured-session-v4 SESSION.json [--options OPTIONS.json] [--output REPORT.json] [--capsule CAPSULE.json]
   node dist/moontxnwitness.mjs verify-configured-effects-v4 SNAPSHOT.json [--options EXPECTED.json] [--output REPORT.json]
   node dist/moontxnwitness.mjs verify-configured-writer-bindings-v4 SNAPSHOT.json SESSION.json [--options EXPECTED.json] [--output REPORT.json]
@@ -240,6 +244,41 @@ try {
     if (!['json', 'text'].includes(format)) throw new Error('format 必须为 json 或 text');
     const report = capabilities();
     process.stdout.write(format === 'json' ? JSON.stringify(report, null, 2) + '\n' : formatCapabilitiesText(report));
+  } else if (args[0] === 'explain-configured-window-v4') {
+    const {paths, options} = localArgs(args.slice(1), ['--config', '--policy', '--options', '--reduction', '--reduction-options', '--output'], 2);
+    if (!options['--config'] || !options['--policy']) throw new Error('Configured window explanation requires independent --config and --policy files');
+    if (Boolean(options['--reduction']) !== Boolean(options['--reduction-options'])) throw new Error('Optional reduction requires both --reduction and independent --reduction-options');
+    const inputs = [...paths, options['--config'], options['--policy'], ...['--options', '--reduction', '--reduction-options'].flatMap(name => options[name] ? [options[name]] : [])];
+    if (inputs.filter(path => path === '-').length > 1) throw new Error('Only one explanation input may use standard input');
+    if (options['--output']) checkOutput(options['--output'], inputs, []);
+    const extra = options['--reduction'] ? {
+      reduction: readBounded(options['--reduction'], CONFIGURED_WINDOW_REDUCTION_V4_LIMITS.reportBytes, true),
+      reductionOptionsText: readBounded(options['--reduction-options'], CONFIGURED_WINDOW_REDUCTION_V4_LIMITS.optionsBytes, true),
+    } : {};
+    const html = explainConfiguredWindowTextV4(readBounded(paths[0], CONFIGURED_WINDOW_V4_LIMITS.bundleBytes, true),
+      readBounded(paths[1], CONFIGURED_WINDOW_V4_LIMITS.reportBytes, true),
+      readBounded(options['--config'], CONFIGURED_WINDOW_V4_LIMITS.configBytes, true),
+      readBounded(options['--policy'], CONFIGURED_WINDOW_V4_LIMITS.policyBytes, true),
+      options['--options'] ? readBounded(options['--options'], CONFIGURED_WINDOW_V4_LIMITS.optionsBytes, true) : '{}', extra);
+    if (options['--output']) saveArtifacts([[options['--output'], html]]);
+    else process.stdout.write(html);
+  } else if (['reduce-configured-window-v4', 'verify-configured-window-reduction-v4'].includes(args[0])) {
+    const verify = args[0] === 'verify-configured-window-reduction-v4';
+    const {paths, options} = localArgs(args.slice(1), ['--config', '--policy', '--options', '--output'], verify ? 2 : 1);
+    if (!options['--config'] || !options['--policy'] || !options['--options']) {
+      throw new Error('Configured window reduction requires independent --config, --policy and --options files');
+    }
+    const inputs = [...paths, options['--config'], options['--policy'], options['--options']];
+    if (inputs.filter(path => path === '-').length > 1) throw new Error('Only one reduction input may use standard input');
+    const config = readBounded(options['--config'], CONFIGURED_WINDOW_REDUCTION_V4_LIMITS.configBytes, true);
+    const policy = readBounded(options['--policy'], CONFIGURED_WINDOW_REDUCTION_V4_LIMITS.policyBytes, true);
+    const expected = readBounded(options['--options'], CONFIGURED_WINDOW_REDUCTION_V4_LIMITS.optionsBytes, true);
+    const bundle = readBounded(paths[0], CONFIGURED_WINDOW_REDUCTION_V4_LIMITS.bundleBytes, true);
+    const result = verify ? verifyConfiguredWindowReductionTextV4(bundle,
+      readBounded(paths[1], CONFIGURED_WINDOW_REDUCTION_V4_LIMITS.reportBytes, true), config, policy, expected)
+      : reduceConfiguredWindowTextV4(bundle, config, policy, expected);
+    emitJSON(result, options['--output'], inputs, []);
+    process.exitCode = verify ? (result.valid ? 0 : 2) : ({reduced: 1, unchanged: 1, 'not-refuted': 0, invalid: 2}[result.status] ?? 3);
   } else if (['analyze-configured-window-v4', 'verify-configured-window-v4'].includes(args[0])) {
     const verify = args[0] === 'verify-configured-window-v4';
     const {paths, options} = localArgs(args.slice(1), ['--config', '--policy', '--options', '--output'], verify ? 2 : 1);

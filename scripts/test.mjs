@@ -193,7 +193,7 @@ const configuredWindowHost=spawnSync(process.execPath,['scripts/configured-windo
 if(configuredWindowHost.error||configuredWindowHost.status!==0)throw Error('Configured CRUD window host checks failed: '+configuredWindowHost.stdout+configuredWindowHost.stderr);
 const configuredWindowHostReceipt=JSON.parse(configuredWindowHost.stdout);
 assert.equal(configuredWindowHostReceipt.passed,true);
-assert.equal(configuredWindowHostReceipt.checks,15);
+assert.equal(configuredWindowHostReceipt.checks,26);
 const configuredWindowRuntime=spawnSync(process.execPath,['scripts/configured-window-v2-runtime-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:4*1024*1024});
 if(configuredWindowRuntime.error||configuredWindowRuntime.status!==0)throw Error('Configured CRUD window runtime checks failed: '+configuredWindowRuntime.stdout+configuredWindowRuntime.stderr);
 const configuredWindowRuntimeReceipt=JSON.parse(configuredWindowRuntime.stdout);

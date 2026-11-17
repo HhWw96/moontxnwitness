@@ -19,7 +19,8 @@ export function capabilities() {
     declaration.relationPredicateModels.verify,
     declaration.relationPredicateModels.reduction.entry,
     declaration.relationPredicateModels.reduction.verify,
-    ...(declaration.configuredWindows ? [declaration.configuredWindows.analyze, declaration.configuredWindows.verify] : []),
+    ...(declaration.configuredWindows ? [declaration.configuredWindows.analyze, declaration.configuredWindows.verify,
+      declaration.configuredWindows.reduce, declaration.configuredWindows.verifyReduction, declaration.configuredWindows.explain].filter(Boolean) : []),
   ])].sort();
   const runtimeModels = Array.isArray(sdk.ELLE_CORE_MODELS_V4) ? [...sdk.ELLE_CORE_MODELS_V4] : [];
   return {

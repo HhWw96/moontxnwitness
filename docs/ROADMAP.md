@@ -65,6 +65,13 @@ description until the core verifies execution, source closure and model mapping.
 Stable subsets retain explicit capabilities and do not promote unexecuted
 database or performance work to completed results.
 
+The next integration also includes model-preserving source-closed reduction and
+offline explanations over verified synchronous windows. Original bundles remain
+required; selections carry checked original-event mappings. The real PostgreSQL
+campaign includes three source-dependent read-only noise transactions around a
+two-transaction RR anomaly, rather than claiming a reduction from an already
+minimal pair. Async/ORM expansion and formal optimization remain separate work.
+
 ## Historical records
 
 The records below retain their original version-specific plans and measurements.
