@@ -1,5 +1,8 @@
 # Unreleased
 
+- Add an explicitly imported structured verification profile that reuses reconstructed records and canonical bytes while preserving external strict parsing, semantic budgets and the original 64-container verification boundary.
+- Keep the default verification implementation; retain both formal performance runs, their failed common-model P95 controls and the exact default-candidate runtime snapshot. The explicit profile remains experimental.
+- Bound oversized malformed-input failures in the explicit profile to its report-byte contract.
 - Add a source-closed configured-window reduction adapter that preserves an independently selected Serializable refutation and keeps the original window evidence required for verification.
 - Independently admit original V2 installations and complete boundary snapshots, then align captured SQL, actual native/delivered results, confirmed transactions and every new retained effect into a source-bound relation history.
 - Analyze configured synchronous full-row point CRUD with caller-selected policies and budgets; retain graph witnesses and separate complete serial-replay certificates, with independent report recomputation.
