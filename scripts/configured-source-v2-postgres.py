@@ -20,6 +20,8 @@ from moontxnwitness_capture.configured_sql_v2 import (
     SQLCaptureConfigV2, TableConfigV2, PrimaryKeyConfigV2, ColumnConfig, TEXT_COMPARISON)
 from moontxnwitness_capture.configured_point_capture_v2 import PointCaptureV2
 from moontxnwitness_capture.configured_point_projection_v2 import PointProjectionOptionsV2
+from moontxnwitness_capture.configured_window_v2 import (
+    ConfiguredCaptureWindowV2, SourceInputsV2, observe_source_snapshot_v2)
 
 
 def q(name): return '"' + name.replace('"', '""') + '"'
@@ -29,7 +31,7 @@ def eq(actual, expected):
     if actual != expected: raise AssertionError((actual, expected))
 
 
-def suite(admin, connect, work):
+def suite(admin, connect, work, *, with_window=False):
     records = []
     for index, kind in enumerate(('int64', 'text', 'uuid')):
         owner, writer, schema = 'source_owner_'+str(index), 'source_writer_'+str(index), 'app_'+str(index)
@@ -59,10 +61,16 @@ def suite(admin, connect, work):
             for field in ('sourceFactsProduced','sourceAuthenticated','moonbitCatalogVerified','completeWindow','modelCoverageAccepted'):
                 eq(installation[field],False)
             eq(installation['initialRows'],1)
-            capture = PointCaptureV2(work/('capture-'+str(index)),config,opt_in=True)
+            capture_path=work/('capture-'+str(index))
+            window=None
+            if with_window:
+                window=ConfiguredCaptureWindowV2(work/('window-'+str(index)),config,control,policy,
+                    SourceInputsV2.from_directory(work/('install-'+str(index))),opt_in=True)
+                capture=window.observer;capture_path=window.output/'capture'
+            else:capture = PointCaptureV2(capture_path,config,opt_in=True)
             raw = connect(user=writer,password=password)
             backend_pid = raw.info.backend_pid
-            connection = capture.wrap(raw)
+            connection = window.wrap_connection(raw) if window else capture.wrap(raw)
             cursor = connection.execute('INSERT INTO '+target+'(identity,balance,enabled) VALUES(%s,%s,%s) RETURNING identity,balance,enabled',(fresh,10,True))
             eq(cursor.fetchone(),(fresh,10,True)); connection.commit()
             cursor = connection.execute('UPDATE '+target+' SET balance=%s WHERE identity=%s RETURNING identity,balance,enabled',(11,fresh))
@@ -74,7 +82,7 @@ def suite(admin, connect, work):
             try: connection.execute('UPDATE '+target+' SET identity=%s WHERE identity=%s',(fresh,key))
             except psycopg.errors.CheckViolation as error: eq(error.sqlstate,'23514')
             else: raise AssertionError('Installed V2 key guard did not reject a changed key')
-            connection.rollback(); connection.close(); capture.close()
+            connection.rollback(); connection.close()
             ledger = control.execute('SELECT version,base_version,operation,writer_login,writer_pid,row_key::text,row_values::text FROM '+q(policy.namespace)+'.effects ORDER BY version').fetchall()
             eq([r[2] for r in ledger],['INITIAL','INSERT','UPDATE','DELETE'])
             eq(len({r[0] for r in ledger}),4)
@@ -84,21 +92,54 @@ def suite(admin, connect, work):
             eq(json.loads(ledger[3][5]),str(fresh) if kind=='uuid' else fresh)
             eq(ledger[3][6],None)
             eq(control.execute('SELECT balance,enabled,identity FROM '+target).fetchall(),[(17,True,key)])
-            retained = [json.loads(line) for line in (work/('capture-'+str(index))/'lifecycle.jsonl').read_text('utf8').splitlines()]
+            window_check=None
+            if window:
+                slow_key=101 if kind=='int64' else '慢提交🙂' if kind=='text' else uuid.UUID(int=101)
+                fast_key=102 if kind=='int64' else '快提交🙂' if kind=='text' else uuid.UUID(int=102)
+                slow=window.wrap_connection(connect(user=writer,password=password))
+                fast=window.wrap_connection(connect(user=writer,password=password))
+                statement='INSERT INTO '+target+'(identity,balance,enabled) VALUES(%s,%s,%s) RETURNING identity,balance,enabled'
+                eq(slow.execute(statement,(slow_key,20,True)).fetchone(),(slow_key,20,True))
+                eq(fast.execute(statement,(fast_key,21,True)).fetchone(),(fast_key,21,True))
+                fast.commit();fast.close()
+                middle_path=observe_source_snapshot_v2(control,work/('middle-'+str(index)),config,policy,
+                    window.installation,opt_in=True)
+                middle=json.loads(middle_path.read_text('utf8'))
+                slow.commit();slow.close()
+                bundle_path=window.seal();bundle=json.loads(bundle_path.read_text('utf8'))
+                start=json.loads(json.loads(bundle['startInputText'])['receiptText'])
+                end=json.loads(json.loads(bundle['endInputText'])['receiptText'])
+                missed=set(end['effectVersions'])-set(middle['effectVersions'])
+                eq(len(missed),1)
+                late=next(iter(missed));eq(int(late)<max(map(int,middle['effectVersions'])),True)
+                eq(set(start['effectVersions']).issubset(end['effectVersions']),True)
+                eq(len(set(end['effectVersions'])-set(start['effectVersions'])),5)
+                eq(end['rowsObserved'],3)
+                # All three inputs are raw retained observations; no model
+                # coverage flag is inferred from successful durability checks.
+                eq(json.loads((window.output/'window-receipt.json').read_text('utf8'))['completeWindow'],False)
+                window_check={'passed':True,'bundleSha256':sha(bundle_path),'startEffects':len(start['effectVersions']),
+                    'endEffects':len(end['effectVersions']),'lateCommittedLowVersion':late,
+                    'middleMaximumVersion':str(max(map(int,middle['effectVersions']))),
+                    'fullLedgerDifferenceIncludesLateVersion':True,'completeWindow':False,'modelCoverageAccepted':False}
+            else:capture.close()
+            retained = [json.loads(line) for line in (capture_path/'lifecycle.jsonl').read_text('utf8').splitlines()]
             probes = [json.loads(event['frameText']) for event in retained if event['kind']=='configured-point-writer']
-            eq(len(probes),3)
+            eq(len(probes),5 if window else 3)
             eq(all(json.loads(p['deliveredText'])['login']==writer for p in probes),True)
             records.append({'keyType':kind,'passed':True,'initialRows':1,'committedEffects':3,
                 'sourceInstallationReceiptSha256':sha(work/('install-'+str(index))/'receipt-v2.json'),
                 'sourceInstallationLogSha256':sha(work/('install-'+str(index))/'source-install-v2.jsonl'),
-                'captureLogSha256':sha(work/('capture-'+str(index))/'lifecycle.jsonl'),
-                'ledger':ledger,'writerCheckpoints':3,'sourceFactsProduced':False,'completeWindow':False,'modelCoverageAccepted':False})
+                'captureLogSha256':sha(capture_path/'lifecycle.jsonl'),
+                'ledger':ledger,'writerCheckpoints':len(probes),'windowCheck':window_check,
+                'sourceFactsProduced':False,'completeWindow':False,'modelCoverageAccepted':False})
     return records
 
 
 def main():
     cli=argparse.ArgumentParser(description=__doc__)
     cli.add_argument('--bin',type=Path,required=True);cli.add_argument('--output',type=Path,required=True)
+    cli.add_argument('--with-window',action='store_true',help='Also seal raw window inputs and verify out-of-order commit visibility')
     args=cli.parse_args();binaries,work=args.bin.resolve(),args.output.resolve()
     assert work.is_relative_to(Path(r'D:\CodexScratch').resolve())
     work.mkdir(parents=True,exist_ok=False)
@@ -109,8 +150,8 @@ def main():
     environment=dict(os.environ,TEMP=str(work),TMP=str(work));flags=getattr(subprocess,'CREATE_NO_WINDOW',0)
     receipt={'format':'configured-source-v2-native-installation-validation/v1','passed':False,'actualDatabaseExecution':False,
         'actualV2InstallationExecuted':False,'postgresVersion':version,'sourceFactsProduced':False,'completeWindow':False,
-        'modelCoverageAccepted':False,'formalPerformanceMeasurement':False,
-        'sourceSha256':{str(path.relative_to(ROOT)):sha(path) for path in [Path(__file__).resolve(),ROOT/'integrations/python/moontxnwitness_capture/configured_source_v2.py',ROOT/'integrations/python/moontxnwitness_capture/configured_point_capture_v2.py']}}
+        'modelCoverageAccepted':False,'formalPerformanceMeasurement':False,'windowProducerRequested':args.with_window,
+        'sourceSha256':{str(path.relative_to(ROOT)):sha(path) for path in [Path(__file__).resolve(),ROOT/'integrations/python/moontxnwitness_capture/configured_source_v2.py',ROOT/'integrations/python/moontxnwitness_capture/configured_point_capture_v2.py',ROOT/'integrations/python/moontxnwitness_capture/configured_window_v2.py']}}
     with (work/'control.log').open('xb') as log:
         def run(parts):subprocess.run([str(p) for p in parts],env=environment,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=120,creationflags=flags)
         try:
@@ -122,7 +163,7 @@ def main():
                 options=dict(host='127.0.0.1',port=port,dbname='postgres',user='mtw',password=password);options.update(kwargs)
                 return psycopg.connect(**options)
             with connect(autocommit=True) as admin:
-                receipt['actualDatabaseExecution']=True;receipt['records']=suite(admin,connect,work)
+                receipt['actualDatabaseExecution']=True;receipt['records']=suite(admin,connect,work,with_window=args.with_window)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         finally:

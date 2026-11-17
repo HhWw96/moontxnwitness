@@ -57,3 +57,21 @@ pub fn projection(
     config, sql, typed_parameters, options, descriptor, budget,
   )
 }
+
+///|
+#export_name("verify_projected_result_v2_json")
+pub fn projected_result(
+  config : String,
+  sql : String,
+  typed_parameters : String,
+  projection_options : String,
+  descriptor : String,
+  native_frame : String,
+  deliveries : String,
+  options : String,
+) -> String {
+  @txn.verify_projected_result_v2_json(
+    config, sql, typed_parameters, projection_options, descriptor,
+    native_frame, deliveries, options,
+  )
+}

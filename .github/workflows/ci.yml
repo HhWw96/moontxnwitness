@@ -95,10 +95,12 @@ jobs:
       - name: Verify configured point candidates and projection constructors
         env:
           MTW_SOURCE_V2_TEST_ROOT: ${{ runner.temp }}/mtw-source-v2-unit
+          MTW_WINDOW_V2_TEST_ROOT: ${{ runner.temp }}/mtw-window-v2-unit
         run: |
           python -B -m unittest discover -s integrations/python/moontxnwitness_capture -p test_configured_sql_v2.py -t integrations/python -v
           python -B -m unittest discover -s integrations/python/moontxnwitness_capture -p test_configured_point_projection_v2.py -t integrations/python -v
           python -B -m unittest discover -s integrations/python -t integrations/python -p test_configured_source_v2.py -v
+          python -B -m unittest discover -s integrations/python -t integrations/python -p test_configured_window_v2.py -v
           python -B scripts/configured-sql-v2-cross-inputs.py --output artifacts/point-v2/candidates.json
           python -B scripts/point-projection-v2-cross-inputs.py --output artifacts/point-v2/projections.json
           node scripts/moon.mjs build --target js --release src/sql_projection_v2_bridge --deny-warn

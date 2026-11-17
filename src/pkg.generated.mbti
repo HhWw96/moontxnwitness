@@ -228,6 +228,10 @@ pub fn project_list_prefix_v4(HistoryV4, max_checks? : Int32) -> Result[ListPref
 
 pub fn project_relation_rows_v4(HistoryV4, max_checks? : Int32) -> Result[RelationRowProjectionV4, String]
 
+pub fn projected_result_check_v2_json(ProjectedResultCheckV2) -> Json
+
+pub fn projected_result_options_v2(max_checks? : Int32, max_cell_bytes? : Int32, max_total_bytes? : Int32, max_delivery_records? : Int32, projection_budget? : PointProjectionVerificationOptionsV2) -> ProjectedResultOptionsV2
+
 pub fn reduce_classification_v3_json(String, String) -> String
 
 pub fn reduce_configured_point_window_v4_json(String, String, String, String) -> String
@@ -411,6 +415,10 @@ pub fn verify_models_v4(ModelFactsV4, Json, ModelOptionsV4) -> Bool
 pub fn verify_point_projection_v2(SQLConfigV2, String, Json, PointProjectionOptionsV2, Json, budget? : PointProjectionVerificationOptionsV2) -> PointProjectionCheckV2
 
 pub fn verify_point_projection_v2_json(String, String, String, String, String, String) -> String
+
+pub fn verify_projected_result_v2(SQLConfigV2, String, Json, PointProjectionOptionsV2, Json, Json, Json, options? : ProjectedResultOptionsV2) -> ProjectedResultCheckV2
+
+pub fn verify_projected_result_v2_json(String, String, String, String, String, String, String, String) -> String
 
 pub fn verify_reduction_v4(HistoryV4, Json, preserve~ : Model, max_checks? : Int32, options? : AnalysisOptionsV4) -> Bool
 
@@ -777,6 +785,14 @@ pub struct PointProjectionOptionsV2 {
 }
 
 pub struct PointProjectionVerificationOptionsV2 {
+  // private fields
+}
+
+pub struct ProjectedResultCheckV2 {
+  // private fields
+}
+
+pub struct ProjectedResultOptionsV2 {
   // private fields
 }
 

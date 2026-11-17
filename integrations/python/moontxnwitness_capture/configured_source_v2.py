@@ -195,10 +195,11 @@ def compare_installation_catalogs_v2(table, policy, owner, before, after):
 
 
 class _LogV2:
-    def __init__(self, path, maximum):
+    def __init__(self, path, maximum, *, log_format=LOG_FORMAT, contract=CONTRACT):
         self.file = Path(path).open('xb'); self.maximum = maximum
+        self.log_format, self.contract = log_format, contract
         self.count = self.size = 0; self.failed = self.closed = False; self.digest = hashlib.sha256()
-        try:self.append({'kind':'header','format':LOG_FORMAT,'contract':CONTRACT,'sourceFactsProduced':False})
+        try:self.append({'kind':'header','format':log_format,'contract':contract,'sourceFactsProduced':False})
         except BaseException:self.file.close();self.closed=True;raise
     def append(self, value):
         if self.failed or self.closed: raise SourceInstallError('V2 installation log is not writable')
@@ -215,7 +216,7 @@ class _LogV2:
             self.file.flush(); os.fsync(self.file.fileno())
         except BaseException: self.failed=True; raise
         finally: self.closed=True; self.file.close()
-        return {'format':LOG_FORMAT,'sealed':not self.failed,'records':self.count,'bytes':self.size,'sha256':self.digest.hexdigest()}
+        return {'format':self.log_format,'sealed':not self.failed,'records':self.count,'bytes':self.size,'sha256':self.digest.hexdigest()}
 
 
 def _python_type(value): return type(value).__module__+'.'+type(value).__qualname__
@@ -233,7 +234,8 @@ def _json(text):
 
 
 class _ControlV2:
-    def __init__(self, connection, log): self.connection,self.log=connection,log
+    def __init__(self, connection, log, *, terminal_queries=('installation-commit','installation-rollback')):
+        self.connection,self.log,self.terminal_queries=connection,log,terminal_queries
     def command(self, query_id, sql, params=None, *, max_rows=1):
         request=self.log.count+1; phase='execute'; native={'rawComplete':False,'rows':[]}
         self.log.append({'kind':'control-request','format':'moontxnwitness-source-control-request/v2','queryId':query_id,
@@ -262,7 +264,7 @@ class _ControlV2:
             native['rawComplete']=True
             self.log.append({'kind':'control-native','format':'moontxnwitness-source-control-native/v2','requestSeq':request,'queryId':query_id,
                              'native':native,'transactionStatusAfter':int(self.connection.info.transaction_status)})
-            if query_id not in ('installation-commit','installation-rollback') and int(self.connection.info.transaction_status)!=2:
+            if query_id not in self.terminal_queries and int(self.connection.info.transaction_status)!=2:
                 raise SourceInstallError('Control transaction is no longer active')
             phase='delivery'; decoded=cursor.fetchall() if fields else None
             observation={'method':'fetchall' if fields else None,'fetchExecuted':bool(fields),'pythonType':_python_type(decoded),'rows':[]}

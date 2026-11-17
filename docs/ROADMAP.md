@@ -41,6 +41,15 @@ Source/profile gaps and exhausted budgets continue to produce `unknown`.
 
 ## Next stable increments
 
+The v0.5.2 development branch now includes independently reconstructed point SQL
+and native/delivery consistency checks, explicit source-installation components,
+and bounded original window-input sealing. The three-key PostgreSQL campaign
+checks a lower version that commits after a higher version, and preserves both
+through complete ledger scans. See [window inputs](configured-window-v2.md) and
+[projected result verification](projected-result-v2.md). Complete independent
+source-window admission and automatic model-history mapping remain the next
+integration step; these component checks do not grant those conclusions.
+
 | Version | Scope | Evidence before promotion |
 | --- | --- | --- |
 | v0.5.2 | Configurable synchronous full-row point CRUD, including dynamic int64, text and UUID primary keys, with an independent source-window contract | One parser across three table layouts; original SQL, bindings, delivered results, writer identities and committed effects independently aligned; missing facts remain explicit |

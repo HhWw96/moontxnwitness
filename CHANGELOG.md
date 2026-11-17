@@ -1,5 +1,11 @@
 # Unreleased
 
+- Independently verify projected PostgreSQL point results in MoonBit, checking OLD/NEW images, original assignments, native metadata and actual typed business deliveries under caller-selected budgets.
+- Recheck original snapshot/trace digests before packaging and publish successful window receipts only after synchronization; retain explicit failed/pending evidence.
+
+- Seal configured V2 window inputs with independent read-only boundary snapshots, full retained-ledger scans, original journal bindings and bounded row/effect/log storage.
+- Preserve late-committed lower version identities across snapshots; allocation order is not used as commit order or a cross-snapshot visibility watermark.
+
 - Recognize configurable point CRUD with dynamic int64, text and UUID primary keys under a separate v2 contract; independently reconstruct SQL candidates and same-statement OLD/NEW projections in MoonBit.
 - Check original native text buffers against actual typed result deliveries, including explicit fetch sizes, partial reads and independently selected verification budgets.
 - Add an opt-in synchronous connection-local projection producer with original business result shapes, automatic writer probes, confirmed commit observation and bounded retained logs.
