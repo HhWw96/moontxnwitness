@@ -63,6 +63,7 @@ export function formatCapabilitiesText(report) {
     `Declared model names match runtime: ${report.runtime.declaredModelNamesMatchRuntime}`,
     'Declared SDK entry points:', ...availability(report.runtime.declaredSdkApis),
     'JavaScript native model-report exports:', ...availability(report.runtime.nativeModelReportExports),
+    ...(report.declaration.configuredWindows?.optionalProfiles ?? []).map(profile => `Optional explicit profile: ${profile.id} (${profile.entry})`),
     ...Object.values(report.boundaries),
     'Use --format json for complete declaration requirements, limits and loaded SDK function exports.',
     '',

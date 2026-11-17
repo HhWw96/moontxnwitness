@@ -13,7 +13,7 @@ test "window54 optimized verification keeps the original self-report depth gate"
   let config = fixture.at("config").stringify()
   let policy = fixture.at("policy").stringify()
   let bundle = sql_string_v1(fixture.at("bundleText"))
-  let text = reduce_configured_window_v2_json(
+  let text = reduce_configured_window_structured_v2_json(
     config,
     policy,
     bundle,
@@ -27,7 +27,7 @@ test "window54 optimized verification keeps the original self-report depth gate"
   }
   assert_true(!old_reason.is_empty())
   let checked = sql_json_v1(
-    verify_configured_window_reduction_v2_json(
+    verify_configured_window_reduction_structured_v2_json(
       config,
       policy,
       bundle,

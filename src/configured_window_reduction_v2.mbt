@@ -270,10 +270,43 @@ pub fn reduce_configured_window_v2_json(
   bundle_text : String,
   options_text : String,
 ) -> String {
-  let (_, text) = configured_window_reduction_record_v2(
-    config_text, policy_text, bundle_text, options_text, false,
-  )
-  text
+  try {
+    let config = match parse_sql_config_v2(config_text) {
+      Ok(value) => value
+      Err(reason) => fail(reason)
+    }
+    let policy = sql_json_v1(policy_text, 8192)
+    let bundle = sql_json_v1(bundle_text, 33554432)
+    let options = configured_window_reduction_options_v2(options_text)
+    let result = configured_window_reduction_body_v2(
+      config,
+      policy,
+      bundle,
+      v3_dislock_sha256(bundle_text),
+      options,
+    ).stringify()
+    if orm_utf8_size(result) > 67108864 {
+      fail("budget:configured-window-reduction-report-bytes")
+    }
+    result
+  } catch {
+    error =>
+      (
+        {
+          "format": "moontxnwitness-configured-window-reduction/v1",
+          "semanticContract": "verified-configured-window-model-selection/v1",
+          "status": Json(
+            configured_window_reduction_error_status_v2(error.to_string()),
+          ),
+          "preserveModel": "serializable",
+          "windowVerified": false,
+          "refutationPreserved": false,
+          "oneMinimal": false,
+          "originalWindowRetained": true,
+          "sourceAuthenticated": false,
+          "reason": Json(error.to_string()),
+        } : Json).stringify()
+  }
 }
 
 ///|
@@ -285,12 +318,14 @@ pub fn verify_configured_window_reduction_v2_json(
   options_text : String,
 ) -> String {
   try {
-    let (actual, actual_canonical) = configured_window_reduction_record_v2(
-      config_text, policy_text, bundle_text, options_text, true,
+    let actual = sql_json_v1(
+      reduce_configured_window_v2_json(
+        config_text, policy_text, bundle_text, options_text,
+      ),
+      67108864,
     )
-    window_report_depth_v2(actual, 64)
     let expected = sql_json_v1(report_text, 67108864)
-    let equal = actual_canonical == sql_canonical_v1(expected)
+    let equal = sql_canonical_v1(actual) == sql_canonical_v1(expected)
     let result = window_object_v2(actual)
     let valid = equal &&
       result.at("windowVerified") == Json(true) &&
@@ -311,7 +346,7 @@ pub fn verify_configured_window_reduction_v2_json(
           result.at("oneMinimal") == Json(true),
         ),
         "sourceAuthenticated": false,
-        "recomputedSha256": Json(v3_dislock_sha256(actual_canonical)),
+        "recomputedSha256": Json(v3_dislock_sha256(sql_canonical_v1(actual))),
       } : Json).stringify()
   } catch {
     error =>
@@ -326,52 +361,4 @@ pub fn verify_configured_window_reduction_v2_json(
           "reason": Json(error.to_string()),
         } : Json).stringify()
   }
-}
-
-///|
-fn configured_window_reduction_failure_v2(reason : String) -> Json {
-  {
-    "format": "moontxnwitness-configured-window-reduction/v1",
-    "semanticContract": "verified-configured-window-model-selection/v1",
-    "status": Json(configured_window_reduction_error_status_v2(reason)),
-    "preserveModel": "serializable",
-    "windowVerified": false,
-    "refutationPreserved": false,
-    "oneMinimal": false,
-    "originalWindowRetained": true,
-    "sourceAuthenticated": false,
-    "reason": Json(reason),
-  }
-}
-
-///|
-fn configured_window_reduction_record_v2(
-  config_text : String,
-  policy_text : String,
-  bundle_text : String,
-  options_text : String,
-  canonical : Bool,
-) -> (Json, String) {
-  let record = try {
-    let config = match parse_sql_config_v2(config_text) {
-      Ok(value) => value
-      Err(reason) => fail(reason)
-    }
-    let policy = sql_json_v1(policy_text, 8192)
-    let bundle = sql_json_v1(bundle_text, 33554432)
-    let options = configured_window_reduction_options_v2(options_text)
-    configured_window_reduction_body_v2(
-      config,
-      policy,
-      bundle,
-      v3_dislock_sha256(bundle_text),
-      options,
-    )
-  } catch {
-    error => configured_window_reduction_failure_v2(error.to_string())
-  }
-  window_bounded_record_v2(
-    record, canonical, 67108864, "budget:configured-window-reduction-report-bytes",
-    configured_window_reduction_failure_v2,
-  )
 }

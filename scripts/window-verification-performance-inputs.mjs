@@ -5,7 +5,7 @@ import {resolve,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),args={};
-const pending=process.argv.slice(2);while(pending.length){const key=pending.shift();assert(['--baseline','--candidate','--receipt','--output','--baseline-commit','--candidate-commit'].includes(key)&&!Object.hasOwn(args,key));args[key]=pending.shift();}
+const pending=process.argv.slice(2);while(pending.length){const key=pending.shift();assert(['--baseline','--candidate','--candidate-structured','--receipt','--output','--baseline-commit','--candidate-commit'].includes(key)&&!Object.hasOwn(args,key));args[key]=pending.shift();}
 for(const key of ['--baseline','--candidate','--receipt','--output','--baseline-commit','--candidate-commit'])assert(args[key],'Missing '+key);
 const output=resolve(args['--output']);mkdirSync(output);const sdkPath=resolve(args['--baseline']),sdk=await import(pathToFileURL(sdkPath).href);
 const receipt=readFileSync(args['--receipt']),campaign=JSON.parse(receipt);assert.equal(campaign.passed,true);assert.equal(campaign.actualDatabaseExecution,true);
@@ -13,7 +13,8 @@ const canonical=value=>value===null||typeof value!=='object'?JSON.stringify(valu
 const sha=value=>createHash('sha256').update(value).digest('hex'),cases=[];
 function add(id,api,parameters,control=false){
   const result=sdk[api](...parameters),data={api,arguments:parameters,expectedCanonicalSha256:sha(canonical(result)),outputBytes:Buffer.byteLength(JSON.stringify(result))};
-  const input=resolve(output,id+'.json');writeFileSync(input,JSON.stringify(data)+'\n',{flag:'wx'});cases.push({id,input,control});
+  const input=resolve(output,id+'.json');writeFileSync(input,JSON.stringify(data)+'\n',{flag:'wx'});
+  cases.push({id,input,control,...(!control&&args['--candidate-structured']?{candidateSdk:resolve(args['--candidate-structured'])}:{})});
 }
 for(const [type,name] of [['int64','crud'],['text','rr-write-skew'],['uuid','rr-write-skew-noise']]){
   const fixture=campaign.records.find(row=>row.keyType===type)?.analysisFixtures.find(row=>row.name===name);assert(fixture,'Missing original case '+type+'/'+name);

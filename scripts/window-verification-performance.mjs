@@ -53,21 +53,27 @@ async function controller(argv){
     totalMemoryBytes:totalmem(),freeMemoryBytesBefore:freemem(),protocol,formal,
     scope:'complete synchronous SDK call plus full JSON output serialization; fresh-process import/cold and independent memory workers',
     baselineSource:config.baseline.sourceCommit,candidateSource:config.candidate.sourceCommit,harnessSha256:sha(harnessBytes),before});
-  const inputs=[];
+  const inputs=[],profiles={};
   for(const item of config.cases){
     assert(/^[a-z0-9-]+$/.test(item.id)&&!inputs.some(input=>input.id===item.id));
     const bytes=readFileSync(resolve(base,item.input)),parsed=JSON.parse(bytes);
     assert(['verifyConfiguredWindowV4','verifyConfiguredWindowReductionV4','analyze','classifyModelsV4'].includes(parsed.api));
     assert(Array.isArray(parsed.arguments)&&typeof parsed.expectedCanonicalSha256==='string');
-    const input=resolve(output,'inputs',item.id+'.json');writeFileSync(input,bytes,{flag:'wx'});inputs.push({...item,input,inputSha256:sha(bytes)});
+    const input=resolve(output,'inputs',item.id+'.json');writeFileSync(input,bytes,{flag:'wx'});
+    const sdks={};for(const side of ['baseline','candidate']){
+      sdks[side]=item[side+'Sdk']?resolve(base,item[side+'Sdk']):before[side].sdk;
+      if(!profiles[sdks[side]])profiles[sdks[side]]=runtime(sdks[side]);
+    }
+    inputs.push({...item,input,inputSha256:sha(bytes),sdks});
   }
+  save(resolve(output,'profiles.json'),profiles);
   assert(inputs.some(input=>input.control===true),'Explicit common controls are required');
   const jobs=[];let index=0;
   for(let batch=0;batch<protocol.batches;batch++)for(const item of inputs)for(const mode of ['timing','memory','cold']){
     for(const side of batch%2?['candidate','baseline']:['baseline','candidate']){
       const prefix=String(index++).padStart(4,'0')+'-'+item.id+'-'+side+'-'+batch+'-'+mode;
       const result=resolve(output,'workers',prefix+'.result.json'),path=resolve(output,'workers',prefix+'.job.json');
-      const job={sdk:before[side].sdk,input:item.input,inputSha256:item.inputSha256,result,mode,...protocol};save(path,job);
+      const job={sdk:item.sdks[side],input:item.input,inputSha256:item.inputSha256,result,mode,...protocol};save(path,job);
       const run=spawnSync(process.execPath,[frozenHarness,'--worker',path],{encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:1024*1024});
       if(run.error||run.status!==0){save(resolve(output,'failure.json'),{job:prefix,status:run.status,error:run.error?.message??null,stderr:run.stderr});throw Error('Worker failed: '+prefix);}
       const data=JSON.parse(readFileSync(result));assert.equal(data.passed,true);jobs.push({id:item.id,side,batch,mode,data});
@@ -75,6 +81,7 @@ async function controller(argv){
     console.log(JSON.stringify({phase:'measured',case:item.id,batch,mode}));
   }
   assert.deepEqual(runtime(before.baseline.sdk),before.baseline,'Baseline runtime mutated');assert.deepEqual(runtime(before.candidate.sdk),before.candidate,'Candidate runtime mutated');
+  for(const [sdk,snapshot] of Object.entries(profiles))assert.deepEqual(runtime(sdk),snapshot,'Selected profile mutated');
   assert.equal(sha(readFileSync(frozenHarness)),sha(harnessBytes),'Frozen harness mutated');assert.equal(sha(readFileSync(configPath)),sha(configBytes),'Original config mutated');
   for(const item of inputs)assert.equal(sha(readFileSync(item.input)),item.inputSha256,'Frozen workload mutated');
   const rows=inputs.map(item=>{
@@ -85,7 +92,8 @@ async function controller(argv){
         outputBytes:selected[0].data.fullOutputBytes,canonicalOutputSha256:selected[0].data.canonicalOutputSha256};
     }
     const speedup=metrics.baseline.median/metrics.candidate.median,rssRatio=metrics.candidate.peakRssKiB/metrics.baseline.peakRssKiB;
-    return {id:item.id,control:item.control===true,api:jobs.find(job=>job.id===item.id).data.api,...metrics,speedup,rssRatio,
+    return {id:item.id,control:item.control===true,api:jobs.find(job=>job.id===item.id).data.api,
+      baselineEntry:item.sdks.baseline,candidateEntry:item.sdks.candidate,...metrics,speedup,rssRatio,
       p95ControlPassed:!item.control||metrics.candidate.p95-metrics.baseline.p95<=Math.max(2,metrics.baseline.p95*.1)};
   });
   const targets=rows.filter(row=>!row.control),result={format:'moontxnwitness-window-verification-performance/v1',formal,passed:rows.every(row=>row.p95ControlPassed),protocol,

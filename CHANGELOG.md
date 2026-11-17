@@ -1,7 +1,8 @@
 # Unreleased
 
-- Verify independently reconstructed window/reduction records directly, removing the self-generated JSON parse and reusing canonical bytes for reduction comparison and hashing; preserve external strict parsing, semantic budgets and the original 64-container verification boundary.
-- Apply report byte limits to oversized malformed-input failures as well as successful results; old out-of-contract oversized failures now return bounded budget diagnostics.
+- Add an explicitly imported structured verification profile that reuses reconstructed records and canonical bytes while preserving external strict parsing, semantic budgets and the original 64-container verification boundary.
+- Keep the default verification implementation; retain the first performance run's failed control result and its exact runtime snapshot separately.
+- Bound oversized malformed-input failures in the explicit profile to its report-byte contract.
 - Add a source-closed configured-window reduction adapter that preserves an independently selected Serializable refutation and keeps the original window evidence required for verification.
 - Independently admit original V2 installations and complete boundary snapshots, then align captured SQL, actual native/delivered results, confirmed transactions and every new retained effect into a source-bound relation history.
 - Analyze configured synchronous full-row point CRUD with caller-selected policies and budgets; retain graph witnesses and separate complete serial-replay certificates, with independent report recomputation.
