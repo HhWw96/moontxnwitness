@@ -17,6 +17,8 @@ from .instrumentation import Instrumentation, DiagnosticConnection, DiagnosticCu
 from .configured_fetch import ConfiguredInstrumentation
 from .configured_sql_v2 import SQLCaptureConfigV2, ConfiguredSQLParserV2
 from .configured_point_projection_v2 import PointProjectionOptionsV2, build_point_projection
+from .configured_factory_v2 import (require_sync_factory_v2, require_sync_result_v2,
+    close_rejected_sync_result_v2, record_factory_gap_v2)
 
 
 def _typed(value):
@@ -137,14 +139,18 @@ class PointCaptureV2(Instrumentation):
         raise ValueError('V2 point projection currently requires a synchronous local connection factory')
 
     def psycopg_factory(self, factory, *, asynchronous=False):
-        if not callable(factory) or asynchronous:
-            raise ValueError('A synchronous connection factory is required')
+        require_sync_factory_v2(factory, asynchronous=asynchronous)
         def connect(*args, **kwargs):
-            raw = factory(*args, **kwargs)
+            raw = None
             try:
+                raw = factory(*args, **kwargs)
+                require_sync_result_v2(raw)
                 return self.wrap(raw)
             except BaseException:
-                raw.close()
+                # A foreign diagnostic wrapper is not a new owned connection.
+                protected = (raw,) if isinstance(raw, DiagnosticConnection) else ()
+                close_rejected_sync_result_v2(raw, protected=protected)
+                record_factory_gap_v2(self)
                 raise
         return connect
 

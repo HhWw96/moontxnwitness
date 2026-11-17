@@ -41,7 +41,20 @@ def analysis_fixtures(control, connect_writer, config, policy, installation, out
     insert='INSERT INTO '+target+'(identity,balance,enabled) VALUES(%s,%s,%s) RETURNING identity,balance,enabled'
     cases=[]
     def window(name):return ConfiguredCaptureWindowV2(output/name,config,control,policy,installation,opt_in=True)
-    w=window('crud');c=w.wrap_connection(connect_writer())
+    def enrolled(isolation=None):
+        # Exercise the public owned-factory path, including its in-flight seal
+        # guard. Application SQL and actual result consumption remain unchanged.
+        def factory():
+            raw=connect_writer()
+            try:
+                if isolation is not None:raw.isolation_level=isolation
+                return raw
+            except BaseException:
+                try:raw.close()
+                except BaseException:pass
+                raise
+        return w.psycopg_factory(factory)()
+    w=window('crud');c=enrolled()
     eq(c.execute(select,(fresh,)).fetchall(),[])
     eq(c.execute(insert,(fresh,30,True)).fetchone(),(fresh,30,True))
     c.execute('UPDATE '+target+' SET balance=%s WHERE identity=%s',(31,fresh))
@@ -56,7 +69,7 @@ def analysis_fixtures(control, connect_writer, config, policy, installation, out
             for identity in (key,other_key):c.execute('UPDATE '+target+' SET enabled=%s WHERE identity=%s',(True,identity))
     reset();w=window('rr-write-skew');barrier=threading.Barrier(2)
     def participant(identity):
-        raw=connect_writer();raw.isolation_level=psycopg.IsolationLevel.REPEATABLE_READ;c=w.wrap_connection(raw)
+        c=enrolled(psycopg.IsolationLevel.REPEATABLE_READ)
         try:
             before=[c.execute(select,(v,)).fetchone() for v in (key,other_key)]
             eq(all(r[2] for r in before),True);barrier.wait(timeout=20)
@@ -69,7 +82,7 @@ def analysis_fixtures(control, connect_writer, config, policy, installation, out
     if with_reduction:
         reset();w=window('rr-write-skew-noise');barrier=threading.Barrier(2)
         with ThreadPoolExecutor(max_workers=2) as pool:results=list(pool.map(participant,(key,other_key)))
-        c=w.wrap_connection(connect_writer())
+        c=enrolled()
         try:
             # These observed reads depend on a committed anomaly writer. A
             # selection cannot silently replace their source with initial data.
@@ -79,7 +92,7 @@ def analysis_fixtures(control, connect_writer, config, policy, installation, out
         path=w.seal();cases.append({'name':'rr-write-skew-noise','bundle':str(path),'expected':'refuted','config':config.to_dict(),'policy':policy.to_dict(),'bundleSha256':sha(path),'participants':results,'originalTransactions':5,'expectedReducedTransactions':2})
     reset();w=window('serializable-ordered')
     for identity in (key,other_key):
-        raw=connect_writer();raw.isolation_level=psycopg.IsolationLevel.SERIALIZABLE;c=w.wrap_connection(raw)
+        c=enrolled(psycopg.IsolationLevel.SERIALIZABLE)
         try:
             before=[c.execute(select,(v,)).fetchone() for v in (key,other_key)]
             if all(r[2] for r in before):c.execute('UPDATE '+target+' SET enabled=%s WHERE identity=%s',(False,identity))
@@ -94,7 +107,7 @@ def analysis_fixtures(control, connect_writer, config, policy, installation, out
     w=window('zero-write-skew');barrier=threading.Barrier(2)
     def no_op_participant(pair):
         own,other=pair
-        raw=connect_writer();raw.isolation_level=psycopg.IsolationLevel.REPEATABLE_READ;c=w.wrap_connection(raw)
+        c=enrolled(psycopg.IsolationLevel.REPEATABLE_READ)
         try:
             eq(c.execute('UPDATE '+target+' SET balance=%s WHERE identity=%s RETURNING identity,balance,enabled',(40,own)).fetchall(),[])
             barrier.wait(timeout=20)

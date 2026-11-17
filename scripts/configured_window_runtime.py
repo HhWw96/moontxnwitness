@@ -10,6 +10,7 @@ CONFIGURED_WINDOW_V2_WRAPPERS = (
 CONFIGURED_WINDOW_V2_RUNTIME = ('sql-projection-v2-core.mjs', *CONFIGURED_WINDOW_V2_WRAPPERS)
 STRUCTURED_WINDOW_WRAPPERS = ('configured-window-v2-structured.mjs',)
 STRUCTURED_WINDOW_RUNTIME = ('structured-window-verification-core.mjs', *STRUCTURED_WINDOW_WRAPPERS)
+CONFIGURED_WINDOW_CAPSULE_RUNTIME = ('configured-window-v2-capsule.mjs',)
 
 
 def configured_window_v2_available(root):
@@ -19,6 +20,13 @@ def configured_window_v2_available(root):
 def structured_window_available(root):
     """The explicit profile is separate from default SDK capability availability."""
     return (Path(root) / 'cmd/configured-window-v2-structured.mjs').is_file()
+
+
+def configured_window_capsule_available(root):
+    root = Path(root)
+    # A missing source must not hide an already built transport dependency.
+    return any((root / folder / name).exists()
+               for folder in ('cmd', 'dist') for name in CONFIGURED_WINDOW_CAPSULE_RUNTIME)
 
 
 def verify_configured_window_v2_runtime(root, manifest):
@@ -57,4 +65,21 @@ def verify_structured_window_runtime(root, manifest):
             source = root / 'cmd' / name
             if not source.is_file() or source.is_symlink() or source.read_bytes() != path.read_bytes():
                 raise ValueError('Structured window wrapper changed after build: ' + name)
+    return dict(slots)
+
+
+def verify_configured_window_capsule_runtime(root, manifest):
+    """Check the standalone capsule transport and its existing window closure."""
+    root = Path(root)
+    verify_configured_window_v2_runtime(root, manifest)
+    slots = manifest.get('configuredWindowCapsuleRuntimeSha256')
+    if not isinstance(slots, dict) or set(slots) != set(CONFIGURED_WINDOW_CAPSULE_RUNTIME):
+        raise ValueError('Configured window capsule runtime inventory differs; rebuild current source')
+    for name, digest in slots.items():
+        path = root / 'dist' / name
+        if not path.is_file() or path.is_symlink() or sha256(path.read_bytes()).hexdigest() != digest:
+            raise ValueError('Configured window capsule runtime digest differs: ' + name)
+        source = root / 'cmd' / name
+        if not source.is_file() or source.is_symlink() or source.read_bytes() != path.read_bytes():
+            raise ValueError('Configured window capsule wrapper changed after build: ' + name)
     return dict(slots)

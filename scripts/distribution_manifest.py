@@ -16,7 +16,9 @@ from configured_window_runtime import (CONFIGURED_WINDOW_V2_WRAPPERS,
                                        configured_window_v2_available,
                                        STRUCTURED_WINDOW_WRAPPERS,
                                        STRUCTURED_WINDOW_RUNTIME,
-                                       structured_window_available)
+                                       structured_window_available,
+                                       CONFIGURED_WINDOW_CAPSULE_RUNTIME,
+                                       configured_window_capsule_available)
 
 EXCLUDED_DIRS = {'.git', '_build', '.mooncakes', 'node_modules', 'artifacts',
                  'dist', '__pycache__', '.venv-pg'}
@@ -501,6 +503,18 @@ def select_distribution_files(root, public_names, tested_files, version):
             require('dist/' + name, 'separate structured window digest-bound runtime closure')
         require('scripts/configured-window-structured-test.mjs', 'explicit profile consumer parity and independent replay')
 
+    configured_window_capsule = configured_window_capsule_available(root)
+    if configured_window_capsule:
+        for name in CONFIGURED_WINDOW_V2_WRAPPERS:
+            require('cmd/' + name, 'configured window capsule standalone host dependency source')
+        for name in CONFIGURED_WINDOW_V2_RUNTIME:
+            require('dist/' + name, 'configured window capsule standalone runtime dependency')
+        for name in CONFIGURED_WINDOW_CAPSULE_RUNTIME:
+            require('cmd/' + name, 'standalone configured window capsule source')
+            require('dist/' + name, 'independently digest-bound configured window capsule runtime')
+        for name in ('scripts/configured-window-v2-capsule-test.mjs', 'docs/configured-window-v2-capsule.md'):
+            require(name, 'source-window capsule consumer and original-input replay contract')
+
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         for name in NATIVE038_PORTABLE_INPUTS:
             require(name, 'native JS report current SDK and digest-bound performance scope')
@@ -621,6 +635,8 @@ def select_distribution_files(root, public_names, tested_files, version):
                          'scripts/configured-window-v2-runtime-test.mjs'))
     if structured_window:
         portable.add('scripts/configured-window-structured-test.mjs')
+    if configured_window_capsule:
+        portable.update(('scripts/configured-window-v2-capsule-test.mjs', 'docs/configured-window-v2-capsule.md'))
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         portable.update(NATIVE038_PORTABLE_INPUTS)
     if tuple(map(int, version.split('.'))) >= (0, 5, 1):

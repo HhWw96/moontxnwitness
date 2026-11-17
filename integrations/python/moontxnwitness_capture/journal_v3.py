@@ -502,6 +502,14 @@ class SegmentedJournal:
             return {**self._stats, "queueBytes": self._queued_bytes + self._reserved_bytes, "durableSeq": self._durable_seq,
                     "lastAcceptedSeq": self._last_seq}
 
+    def _check_open(self, message):
+        # Call with _cv held. A worker failure stays the primary error both
+        # before and after its finally block marks the writer closed.
+        if self._error is not None:
+            raise JournalIOError("Journal persistence failed: " + type(self._error).__name__) from self._error
+        if self._closing or self._closed:
+            raise JournalError(message)
+
     def set_references(self, *, active_transactions=(), unread_results=(), version_sources=()):
         values = {"activeTransactions": active_transactions, "unreadResults": unread_results, "versionSources": version_sources}
         result, remaining = {}, 256 * 1024
@@ -517,8 +525,7 @@ class SegmentedJournal:
                 copied.append(value)
             result[name] = sorted(set(copied))
         with self._cv:
-            if self._closing or self._closed:
-                raise JournalError("References cannot change after close")
+            self._check_open("References cannot change after close")
             self._refs = result
             self._revision += 1
             self._metadata_dirty = True
@@ -540,8 +547,8 @@ class SegmentedJournal:
 
     def checkpoint(self, *, source_closed=False):
         with self._append_lock:
-            if self._closing or self._closed:
-                raise JournalError("A closed journal cannot be checkpointed")
+            with self._cv:
+                self._check_open("A closed journal cannot be checkpointed")
             self.flush()
             with self._cv:
                 if source_closed and (self._active or self._refs["activeTransactions"] or self._refs["unreadResults"]):

@@ -197,6 +197,9 @@ supplied evidence does not authenticate the database server or collector.
 
 The [reduction contract](configured-window-reduction-v2.md) describes independent
 source closure, selection mappings and the three separate verification flags.
+The separate [offline capsule module](configured-window-v2-capsule.md) retains
+the original window and report for data-only replay with independent caller
+configuration, policy and budgets.
 
 ```sh
 node scripts/configured-window-v2-host-test.mjs

@@ -20,7 +20,9 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 `reduceConfiguredWindowV4` 在完整原始窗口上选择事务，保留指定的 Serializable 反证并重新检查来源闭包；真实 PostgreSQL 案例可将五事务窗口缩成两事务。`explainConfiguredWindowV4` 在独立验证后生成离线说明页，关联 SQL、实际交付、行版本、依赖及缩减见证。[缩减契约与复现](docs/configured-window-reduction-v2.md)说明预算、原事件映射与单最小验证。
 
-需要独立加载配置窗口功能时，可显式使用[结构化验证入口](docs/window-structured-verification.md)。它复用相同分析与缩减核心，在验证阶段保留结构化报告；默认 SDK 保持原实现。
+需要独立加载配置窗口功能时，可显式使用实验性的[结构化验证入口](docs/window-structured-verification.md)。它复用相同分析与缩减核心，在验证阶段保留结构化报告；默认 SDK 保持原实现，正式测量的控制项结果在文档中单列。
+
+配置窗口及其缩减报告可通过[离线胶囊模块](docs/configured-window-v2-capsule.md)封装原始输入，在独立目录使用调用者提供的配置、来源策略和预算重算。同步接入的[局部连接工厂](docs/configured-factory-v2.md)保留原异常与连接归属，并在建连尚未结束时阻止过早封存。
 
 关系谓词入口 `classifyRelationModelsV4` 检查完整查询集合、行版本、写入效果及事务顺序，提供六个默认模型和十四个显式可选定义。报告逐项保留来源检查、项目／谓词依赖和原程序执行证书；`verifyRelationModelsV4` 与复现包按调用者独立指定的模型、预算和时钟策略重新计算。运行 `node examples/relation-models-v4-roundtrip.mjs`，可看到同一谓词写偏斜在 Serializable、RR 和 SI 下的不同结果。详见[关系模型定义](docs/relation-models-v4.md)。
 

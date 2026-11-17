@@ -11,6 +11,9 @@ from configured_window_runtime import (CONFIGURED_WINDOW_V2_RUNTIME,
                                        STRUCTURED_WINDOW_WRAPPERS,
                                        structured_window_available,
                                        verify_structured_window_runtime,
+                                       CONFIGURED_WINDOW_CAPSULE_RUNTIME,
+                                       configured_window_capsule_available,
+                                       verify_configured_window_capsule_runtime,
                                        verify_configured_window_v2_runtime)
 
 
@@ -114,6 +117,65 @@ class StructuredWindowRuntimeTests(ConfiguredWindowRuntimeTests):
         (self.root / 'dist' / STRUCTURED_WINDOW_RUNTIME[0]).unlink()
         with self.assertRaisesRegex(ValueError, 'Structured window runtime digest differs'):
             verify_structured_window_runtime(self.root, self.manifest)
+
+
+class ConfiguredWindowCapsuleRuntimeTests(unittest.TestCase):
+    def setUp(self):
+        ConfiguredWindowRuntimeTests.setUp(self)
+        name = CONFIGURED_WINDOW_CAPSULE_RUNTIME[0]
+        value = b'// independently distributed window capsule transport\n'
+        (self.root / 'dist' / name).write_bytes(value)
+        (self.root / 'cmd' / name).write_bytes(value)
+        self.manifest['configuredWindowCapsuleRuntimeSha256'] = {name: sha256(value).hexdigest()}
+
+    def test_single_capsule_slot_preserves_default_inventory(self):
+        self.assertTrue(configured_window_capsule_available(self.root))
+        self.assertEqual(set(self.manifest['configuredWindowRuntimeSha256']), set(CONFIGURED_WINDOW_V2_RUNTIME))
+        self.assertEqual(verify_configured_window_capsule_runtime(self.root, self.manifest),
+                         self.manifest['configuredWindowCapsuleRuntimeSha256'])
+
+    def test_missing_or_additional_capsule_slots_are_rejected(self):
+        for change in ('missing-field', 'empty', 'extra-slot', 'merged-default'):
+            manifest = copy.deepcopy(self.manifest)
+            if change == 'missing-field':
+                manifest.pop('configuredWindowCapsuleRuntimeSha256')
+            elif change == 'empty':
+                manifest['configuredWindowCapsuleRuntimeSha256'].clear()
+            elif change == 'extra-slot':
+                manifest['configuredWindowCapsuleRuntimeSha256']['other.mjs'] = '0' * 64
+            else:
+                manifest['configuredWindowCapsuleRuntimeSha256'].update(manifest['configuredWindowRuntimeSha256'])
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, 'capsule runtime inventory differs'):
+                verify_configured_window_capsule_runtime(self.root, manifest)
+
+    def test_corrupt_capsule_file_is_rejected(self):
+        (self.root / 'dist' / CONFIGURED_WINDOW_CAPSULE_RUNTIME[0]).write_bytes(b'// corrupt')
+        with self.assertRaisesRegex(ValueError, 'capsule runtime digest differs'):
+            verify_configured_window_capsule_runtime(self.root, self.manifest)
+
+    def test_source_mismatch_cannot_be_authorized_by_a_rehashed_runtime(self):
+        name = CONFIGURED_WINDOW_CAPSULE_RUNTIME[0]
+        changed = b'// changed after the source build'
+        (self.root / 'dist' / name).write_bytes(changed)
+        self.manifest['configuredWindowCapsuleRuntimeSha256'][name] = sha256(changed).hexdigest()
+        with self.assertRaisesRegex(ValueError, 'capsule wrapper changed'):
+            verify_configured_window_capsule_runtime(self.root, self.manifest)
+
+    def test_missing_capsule_file_is_rejected(self):
+        (self.root / 'dist' / CONFIGURED_WINDOW_CAPSULE_RUNTIME[0]).unlink()
+        with self.assertRaisesRegex(ValueError, 'capsule runtime digest differs'):
+            verify_configured_window_capsule_runtime(self.root, self.manifest)
+
+    def test_missing_standalone_dependency_is_rejected(self):
+        (self.root / 'dist/configured-window-v2-standalone.mjs').unlink()
+        with self.assertRaisesRegex(ValueError, 'Configured window V2 runtime digest differs'):
+            verify_configured_window_capsule_runtime(self.root, self.manifest)
+
+    def test_missing_source_remains_an_active_rejected_dependency(self):
+        (self.root / 'cmd' / CONFIGURED_WINDOW_CAPSULE_RUNTIME[0]).unlink()
+        self.assertTrue(configured_window_capsule_available(self.root))
+        with self.assertRaisesRegex(ValueError, 'capsule wrapper changed'):
+            verify_configured_window_capsule_runtime(self.root, self.manifest)
 
 
 if __name__ == '__main__':

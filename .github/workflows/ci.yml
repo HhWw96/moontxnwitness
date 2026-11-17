@@ -101,6 +101,7 @@ jobs:
           python -B -m unittest discover -s integrations/python/moontxnwitness_capture -p test_configured_point_projection_v2.py -t integrations/python -v
           python -B -m unittest discover -s integrations/python -t integrations/python -p test_configured_source_v2.py -v
           python -B -m unittest discover -s integrations/python -t integrations/python -p test_configured_window_v2.py -v
+          python -B -m unittest discover -s integrations/python -t integrations/python -p test_configured_factory_v2.py -v
           python -B scripts/configured-sql-v2-cross-inputs.py --output artifacts/point-v2/candidates.json
           python -B scripts/point-projection-v2-cross-inputs.py --output artifacts/point-v2/projections.json
           node scripts/moon.mjs build --target js --release src/sql_projection_v2_bridge --deny-warn
@@ -114,6 +115,9 @@ jobs:
           path: |
             artifacts/point-v2/
             _build/js/release/build/sql_projection_v2_bridge/
+            dist/sql-projection-v2-core.mjs
+            dist/structured-window-verification-core.mjs
+            dist/build-manifest.json
           if-no-files-found: warn
           compression-level: 6
       - name: Verify declared source profiles and canonical model results

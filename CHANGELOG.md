@@ -1,5 +1,9 @@
 # Unreleased
 
+- Package original configured-window observations and analysis/reduction reports in separate offline capsule formats, with independent caller-selected configuration, source policy and budgets on replay.
+- Preserve synchronous factory exceptions and controller ownership, reject unsupported async results, and prevent sealing while bounded local acquisition calls are in flight.
+- Preserve the original journal IO cause before and after worker shutdown, including repeated capture close; keep healthy reference-validation failures retryable.
+- Exercise the owned-factory path on real PostgreSQL CRUD and concurrent windows; run producer lifecycle and capsule/fault checks in the standard test and database workflows.
 - Add an explicitly imported structured verification profile that reuses reconstructed records and canonical bytes while preserving external strict parsing, semantic budgets and the original 64-container verification boundary.
 - Keep the default verification implementation; retain both formal performance runs, their failed common-model P95 controls and the exact default-candidate runtime snapshot. The explicit profile remains experimental.
 - Bound oversized malformed-input failures in the explicit profile to its report-byte contract.

@@ -38,10 +38,15 @@ const configuredCores={
 };
 for(const [name,folder]of Object.entries(configuredCores))copyFileSync(resolve(root,'_build/js/release/build',folder,folder+'.js'),resolve(output,name));
 const configuredWindowWrappers = ['configured-window-v2.mjs', 'configured-window-v2-host.mjs', 'configured-window-v2-standalone.mjs'];
-copyFileSync(resolve(root, '_build/js/release/build/sql_projection_v2_bridge/sql_projection_v2_bridge.js'), resolve(output, 'sql-projection-v2-core.mjs'));
+const configuredWindowCompiledCores = {
+ 'sql-projection-v2-core.mjs': 'sql_projection_v2_bridge',
+ 'structured-window-verification-core.mjs': 'structured_window_verification_bridge',
+};
+for(const [name,folder]of Object.entries(configuredWindowCompiledCores))copyFileSync(resolve(root,'_build/js/release/build',folder,folder+'.js'),resolve(output,name));
 for (const name of configuredWindowWrappers) copyFileSync(resolve(root, 'cmd', name), resolve(output, name));
+const configuredWindowCapsuleRuntime = ['configured-window-v2-capsule.mjs'];
+for (const name of configuredWindowCapsuleRuntime) copyFileSync(resolve(root, 'cmd', name), resolve(output, name));
 const structuredWindowRuntime = ['structured-window-verification-core.mjs', 'configured-window-v2-structured.mjs'];
-copyFileSync(resolve(root, '_build/js/release/build/structured_window_verification_bridge/structured_window_verification_bridge.js'), resolve(output, structuredWindowRuntime[0]));
 copyFileSync(resolve(root, 'cmd', structuredWindowRuntime[1]), resolve(output, structuredWindowRuntime[1]));
 for(const name of ['configured-v4.mjs','configured-session-v4.mjs','source-components-v4.mjs','sql-candidate-v1.mjs','sql-fetch-v1.mjs','sql-candidate-host-v1.mjs','sql-fetch-host-v1.mjs','configured-shared-v4.mjs','point-window-explanation-v4.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
 for (const file of ['moontxnwitness.mjs', 'capabilities.mjs', 'sdk.mjs', 'evidence.mjs', 'orm-profile.mjs', 'model-profile.mjs', 'classification.mjs', 'classification-models.mjs', 'diagnosis.mjs', 'v4.mjs', 'relation-v4.mjs', 'relation-reduction-v4.mjs', 'models-v4.mjs', 'inference-v4.mjs', 'relation-models-v4.mjs', 'relation-models-reduction-v4.mjs', 'demo.mjs', 'postgres-demo.mjs']) copyFileSync(resolve(root, 'cmd', file), resolve(output, file));
@@ -72,5 +77,6 @@ function componentVersion(binary,args,pattern){const result=spawnSync(binary,arg
 const suffix=process.platform==='win32'?'.exe':'';
 const toolchain={compiler:componentVersion(home?resolve(home,'bin/moonc'+suffix):'moonc',['-v'],/v?[0-9][A-Za-z0-9+._()-]*/),moon:componentVersion(home?resolve(home,'bin/moon'+suffix):'moon',['--version'],/moon\s+[0-9][A-Za-z0-9+._()-]*/)};
 const structuredWindowRuntimeSha256 = Object.fromEntries(structuredWindowRuntime.map(name => [name, createHash('sha256').update(readFileSync(resolve(output, name))).digest('hex')]));
-writeFileSync(resolve(output,'build-manifest.json'),JSON.stringify({structuredWindowRuntimeSha256,runtimeAssetSha256:Object.fromEntries(['capabilities.mjs','feature-matrix-v4.json'].map(name=>[name,createHash('sha256').update(readFileSync(resolve(output,name))).digest('hex')])),configuredCoreSha256:Object.fromEntries(Object.keys(configuredCores).map(name=>[name,createHash('sha256').update(readFileSync(resolve(output,name))).digest('hex')])),configuredWindowRuntimeSha256:Object.fromEntries(['sql-projection-v2-core.mjs',...configuredWindowWrappers].map(name=>[name,createHash('sha256').update(readFileSync(resolve(output,name))).digest('hex')])),version:packageVersion,toolchain,sourceSha256:sourceFingerprint(root),coreSha256:createHash('sha256').update(readFileSync(resolve(output,'core.mjs'))).digest('hex'),captureCoreSha256:createHash('sha256').update(readFileSync(resolve(output,'capture-core.mjs'))).digest('hex')},null,2)+'\n');
+const configuredWindowCapsuleRuntimeSha256 = Object.fromEntries(configuredWindowCapsuleRuntime.map(name => [name, createHash('sha256').update(readFileSync(resolve(output, name))).digest('hex')]));
+writeFileSync(resolve(output,'build-manifest.json'),JSON.stringify({configuredWindowCapsuleRuntimeSha256,structuredWindowRuntimeSha256,runtimeAssetSha256:Object.fromEntries(['capabilities.mjs','feature-matrix-v4.json'].map(name=>[name,createHash('sha256').update(readFileSync(resolve(output,name))).digest('hex')])),configuredCoreSha256:Object.fromEntries(Object.keys(configuredCores).map(name=>[name,createHash('sha256').update(readFileSync(resolve(output,name))).digest('hex')])),configuredWindowRuntimeSha256:Object.fromEntries(['sql-projection-v2-core.mjs',...configuredWindowWrappers].map(name=>[name,createHash('sha256').update(readFileSync(resolve(output,name))).digest('hex')])),version:packageVersion,toolchain,sourceSha256:sourceFingerprint(root),coreSha256:createHash('sha256').update(readFileSync(resolve(output,'core.mjs'))).digest('hex'),captureCoreSha256:createHash('sha256').update(readFileSync(resolve(output,'capture-core.mjs'))).digest('hex')},null,2)+'\n');
 console.log(`Built MoonTxnWitness v${core.version()}: portable MoonBit core + local Node.js CLI.`);

@@ -1034,5 +1034,52 @@ class StructuredWindowInventoryTests(unittest.TestCase):
             inventory.assert_complete(selected)
 
 
+class ConfiguredWindowCapsuleInventoryTests(unittest.TestCase):
+    run_git = classmethod(DistributionTests.run_git.__func__)
+
+    @classmethod
+    def setUpClass(cls):
+        StructuredWindowInventoryTests.setUpClass.__func__(cls)
+        cls.public = set(cls.public)
+        for name in ('cmd/configured-window-v2-capsule.mjs', 'dist/configured-window-v2-capsule.mjs',
+                     'scripts/configured-window-v2-capsule-test.mjs', 'docs/configured-window-v2-capsule.md'):
+            path = cls.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('// capsule inventory fixture\n', encoding='utf8')
+            if not name.startswith('dist/'):
+                cls.public.add(name)
+
+    def test_capsule_source_runtime_test_and_documentation_are_distributed(self):
+        selected = inventory.select_distribution_files(self.root, self.public, self.tested, '0.1.2')
+        inventory.assert_complete(selected)
+        self.assertIn('cmd/configured-window-v2-capsule.mjs', selected['source'])
+        for name in ('dist/configured-window-v2-capsule.mjs', 'dist/configured-window-v2-standalone.mjs',
+                     'scripts/configured-window-v2-capsule-test.mjs', 'docs/configured-window-v2-capsule.md'):
+            self.assertIn(name, selected['portable'])
+
+    def test_missing_capsule_runtime_source_or_consumer_blocks_distribution(self):
+        for name in ('cmd/configured-window-v2-capsule.mjs', 'dist/configured-window-v2-capsule.mjs',
+                     'scripts/configured-window-v2-capsule-test.mjs', 'cmd/configured-window-v2.mjs',
+                     'dist/configured-window-v2-standalone.mjs'):
+            target = self.root / name
+            original = target.read_bytes()
+            try:
+                target.unlink()
+                selected = inventory.select_distribution_files(self.root, self.public, self.tested, '0.1.2')
+                self.assertTrue(any(item['file'] == name for item in selected['missingInputs']))
+                with self.assertRaises(AssertionError):
+                    inventory.assert_complete(selected)
+            finally:
+                target.write_bytes(original)
+
+    def test_unlisted_capsule_source_or_consumer_cannot_enter_public_packages(self):
+        for name in ('cmd/configured-window-v2-capsule.mjs', 'scripts/configured-window-v2-capsule-test.mjs'):
+            selected = inventory.select_distribution_files(self.root, self.public - {name}, self.tested, '0.1.2')
+            self.assertTrue(any(item['file'] == name and 'not in public inventory' in item['problem']
+                                for item in selected['missingInputs']))
+            with self.assertRaises(AssertionError):
+                inventory.assert_complete(selected)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

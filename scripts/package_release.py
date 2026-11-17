@@ -15,7 +15,8 @@ from publication_privacy import private_home_paths
 from distribution_manifest import select_distribution_files, assert_complete, relation034_available, predicate035_available, models036_available, configured037_available
 from distribution_manifest import SHARED_CONFIGURED_WRAPPERS
 from configured_window_runtime import (configured_window_v2_available, verify_configured_window_v2_runtime,
-                                       structured_window_available, verify_structured_window_runtime)
+                                       structured_window_available, verify_structured_window_runtime,
+                                       configured_window_capsule_available, verify_configured_window_capsule_runtime)
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -27,6 +28,7 @@ MODELS036 = models036_available(ROOT, VERSION)
 CONFIGURED037 = configured037_available(ROOT, VERSION)
 CONFIGURED_WINDOW_V2 = configured_window_v2_available(ROOT)
 STRUCTURED_WINDOW = structured_window_available(ROOT)
+CONFIGURED_WINDOW_CAPSULE = configured_window_capsule_available(ROOT)
 NAME = "MoonTxnWitness-v" + VERSION
 ARTIFACTS = ROOT / "artifacts"
 NODE = os.environ.get("MTW_NODE", "node")
@@ -67,6 +69,8 @@ if CONFIGURED_WINDOW_V2:
     verify_configured_window_v2_runtime(ROOT, MANIFEST)
 if STRUCTURED_WINDOW:
     verify_structured_window_runtime(ROOT, MANIFEST)
+if CONFIGURED_WINDOW_CAPSULE:
+    verify_configured_window_capsule_runtime(ROOT, MANIFEST)
 
 if RELATION034:
     for runtime in ('relation-v4.mjs', 'relation-reduction-v4.mjs'):
@@ -149,6 +153,7 @@ configured037_consumers = {}
 shared_configured_consumers = {}
 configured_window_v2_consumers = {}
 structured_window_consumers = {}
+configured_window_capsule_consumers = {}
 native038_consumers = {}
 native051_consumers = {}
 public034_consumers = {}
@@ -385,6 +390,14 @@ for kind in ("portable", "source"):
             assert structured['runtimeSha256'][name] == digest
         structured_window_consumers[kind] = structured
         checks.append(kind + ' separate structured window runtime and independent consumer verification')
+    if CONFIGURED_WINDOW_CAPSULE:
+        capsule = json.loads(run([NODE, 'scripts/configured-window-v2-capsule-test.mjs'], consumer))
+        assert capsule['passed'] is True and capsule['checks'] == 7 and capsule['originalCases'] == 0
+        assert capsule['actualDatabaseExecution'] is False and capsule['moonbitSemanticsExecuted'] is True
+        for name, digest in MANIFEST['configuredWindowCapsuleRuntimeSha256'].items():
+            assert capsule['runtimeSha256'][name] == digest
+        configured_window_capsule_consumers[kind] = capsule
+        checks.append(kind + ' independently bound configured window capsule transport and standalone replay')
     if tuple(map(int, VERSION.split('.'))) >= (0, 3, 8):
         native_receipt_path = work / ('native-report-' + kind + '.json')
         result = json.loads(run([NODE, 'scripts/native-report-sdk-test.mjs', str(consumer / 'dist'), str(native_receipt_path)], consumer))
@@ -955,6 +968,8 @@ if CONFIGURED_WINDOW_V2:
     receipt['configuredWindowV2Consumers'] = configured_window_v2_consumers
 if STRUCTURED_WINDOW:
     receipt['structuredWindowConsumers'] = structured_window_consumers
+if CONFIGURED_WINDOW_CAPSULE:
+    receipt['configuredWindowCapsuleConsumers'] = configured_window_capsule_consumers
 if tuple(map(int, VERSION.split('.'))) >= (0, 3, 8):
     receipt['native038Consumers'] = native038_consumers
 if tuple(map(int, VERSION.split('.'))) >= (0, 5, 1):

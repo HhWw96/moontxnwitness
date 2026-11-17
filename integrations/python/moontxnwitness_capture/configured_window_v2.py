@@ -16,10 +16,13 @@ from .capture_v3 import _pinned_connection
 from .journal_v3 import _sync_directory
 from .configured_session import read_text, write_new
 from .configured_point_capture_v2 import PointCaptureV2
+from .instrumentation import DiagnosticConnection
 from .configured_point_projection_v2 import PointProjectionOptionsV2
 from .configured_sql_v2 import SQLCaptureConfigV2, _input_value
 from . import configured_source_v2 as source
 from .configured_effects import PEER_SQL, SNAPSHOT_SQL
+from .configured_factory_v2 import (require_sync_factory_v2, require_sync_result_v2,
+    close_rejected_sync_result_v2, record_factory_gap_v2)
 
 CONTRACT = 'postgres18-configured-point-window-observations/v2'
 SNAPSHOT_FORMAT = 'moontxnwitness-configured-source-snapshot/v2'
@@ -227,6 +230,7 @@ class ConfiguredCaptureWindowV2:
         self.config,self.policy,self.installation,self.control=config,policy,installation,control
         self._max_rows,self._max_effects=max_rows,max_effects
         self._lock=threading.RLock();self._participants=[];self._state='opening'
+        self._pending_factories=0;self._factory_observation_failed=False
         self._snapshot('start')
         if projection_options is not None and projection_options.star_contract is not None:
             actual=original['starCatalogComparison']
@@ -268,10 +272,35 @@ class ConfiguredCaptureWindowV2:
             return wrapped
 
     def psycopg_factory(self,factory):
+        require_sync_factory_v2(factory)
         def connect(*args,**kwargs):
-            raw=factory(*args,**kwargs)
-            try:return self.wrap_connection(raw)
-            except BaseException:raw.close();raise
+            with self._lock:
+                if self._state!='open':
+                    raise ValueError('Window must be open before invoking a local factory')
+                pending=getattr(self,'_pending_factories',0)
+                if pending>=32:raise ValueError('Concurrent window factory budget exceeded')
+                self._pending_factories=pending+1
+            raw=None
+            try:
+                raw=factory(*args,**kwargs)
+                require_sync_result_v2(raw)
+                return self.wrap_connection(raw)
+            except BaseException:
+                # Never close the dedicated controller or an existing wrapper.
+                protected=(self.control,)
+                if isinstance(raw,DiagnosticConnection):
+                    protected+=(raw,)
+                # Enrolled raw/managed identities are already caller-owned.
+                with self._lock:
+                    for participant in self._participants:
+                        if raw is participant or raw is getattr(participant,'_raw',None):
+                            protected+=(raw,);break
+                close_rejected_sync_result_v2(raw,protected=protected)
+                if not record_factory_gap_v2(self.observer):
+                    with self._lock:self._factory_observation_failed=True
+                raise
+            finally:
+                with self._lock:self._pending_factories-=1
         return connect
 
     def _publish_receipt(self,value):
@@ -292,6 +321,10 @@ class ConfiguredCaptureWindowV2:
 
     def seal(self):
         with self._lock:
+            if getattr(self,'_pending_factories',0):
+                raise ValueError('Wait for all local factory calls before sealing the window')
+            if getattr(self,'_factory_observation_failed',False):
+                raise ValueError('Factory failure observation was not retained; window cannot be sealed')
             if self._state!='open' or not self._participants or any(not p._raw.closed for p in self._participants):
                 raise ValueError('Close all enrolled connections before sealing an open nonempty window')
             self._state='sealing'

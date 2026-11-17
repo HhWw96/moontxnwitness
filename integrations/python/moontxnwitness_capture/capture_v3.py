@@ -20,7 +20,7 @@ import uuid
 import weakref
 
 from .capture import CaptureSession, _Budget, _CaptureBudgetError, _status
-from .journal_v3 import (SegmentedJournal, JournalReader, JournalError, SAFE_INTEGER,
+from .journal_v3 import (SegmentedJournal, JournalReader, JournalError, JournalIOError, SAFE_INTEGER,
                          _bounded_copy, _json, _sync_directory)
 
 
@@ -233,7 +233,14 @@ class CaptureV3Session:
                                 unread.append(cursor._identity)
                             else:
                                 self.gap("unread_reference_budget", "Unread cursor references exceeded the bounded closure tracker.")
-                self.journal.set_references(active_transactions=active, unread_results=unread)
+                try:
+                    self.journal.set_references(active_transactions=active, unread_results=unread)
+                except JournalIOError as error:
+                    # Reference publication is part of close. Retain its
+                    # original storage error just like journal.close failures.
+                    self._closed = True
+                    self._close_error = error
+                    raise
                 self._closed = True
             try:
                 return self._apply_invalidation(self.journal.close(source_closed=source_closed))

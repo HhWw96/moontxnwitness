@@ -84,6 +84,7 @@ jobs:
           node scripts/configured-window-v2-check.mjs --core dist/sql-projection-v2-core.mjs --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/analysis-checks.json
           node scripts/configured-window-reduction-v2-check.mjs --core dist/sql-projection-v2-core.mjs --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/reduction/checks.json
           node scripts/configured-window-structured-test.mjs --runtime dist --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/structured-checks.json
+          node scripts/configured-window-v2-capsule-test.mjs --runtime dist --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/capsule-checks.json
       - name: Capture all ten configured model scenarios and verify the current build
         shell: bash
         env:
