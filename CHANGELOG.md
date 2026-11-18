@@ -3,6 +3,7 @@
 - Capture configured point CRUD through native async psycopg connections with independent source verification. Exercise write skew, a confirmed `40001` and retry, and cancellation in the PostgreSQL workflow.
 - Recognize SQLAlchemy-style unbounded `::VARCHAR` assignment binds for configured non-key text columns in both the Python parser and the independent MoonBit verifier.
 - Reuse recognized SQL shape for repeated point-capture statements while validating each set of parameters and retaining complete evidence.
+- Verify committed SQLAlchemy ORM point CRUD and refresh through a scoped synchronous `NullPool` recipe with paired business results and independent source replay.
 
 # 0.5.5
 
