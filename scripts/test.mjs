@@ -40,7 +40,8 @@ mkdirSync(configuredV2UnitParent, {recursive: true});
 const configuredV2UnitRoot = mkdtempSync(resolve(configuredV2UnitParent, 'configured-v2-'));
 const configuredV2ProducerUnits = {passed: true, actualDatabaseExecution: false, suites: {}};
 for (const pattern of ['test_configured_sql_v2.py', 'test_configured_point_projection_v2.py',
-  'test_configured_source_v2.py', 'test_configured_window_v2.py', 'test_configured_factory_v2.py']) {
+  'test_configured_source_v2.py', 'test_configured_window_v2.py', 'test_configured_factory_v2.py',
+  'test_configured_async_window_v2.py']) {
   const child = spawnSync(process.env.MTW_PYTHON || process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'),
     ['-B', '-m', 'unittest', 'discover', '-s', 'integrations/python/moontxnwitness_capture',
       '-t', 'integrations/python', '-p', pattern, '-v'], {

@@ -318,6 +318,13 @@ for (const record of campaign.records) {
       const event = events.find((event) => event.kind === 'commit-response');
       assert(event); event.commandTag = 'ROLLBACK';
     }));
+    if (fixture.asynchronous === true) {
+      await tamper('async-connection-mode-mismatch', (altered) => changeLifecycle(altered, (events) => {
+        const event = events.find((entry) => entry.kind === 'connect');
+        assert.equal(event?.asynchronous, true);
+        event.asynchronous = false;
+      }), 'window-connection');
+    }
     await tamper('diagnostic-rows-impossible-statement', (altered) => {
       const trace = JSON.parse(altered.diagnosticTraceText);
       const rows = trace.events.find((event) => event.kind === 'rows');

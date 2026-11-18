@@ -18,6 +18,8 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [PostgreSQL 点 CRUD 窗口分析](docs/configured-window-v2.md)保留业务的原始 SQL，通过局部同步连接包装记录实际结果、写入来源与提交响应。MoonBit 独立核验后生成关系历史，提供串行化反证或完整串行重放证书。支持 int64、C-text 和 UUID 主键。调用 `analyzeConfiguredWindowV4` 分析，使用独立配置与预算调用 `verifyConfiguredWindowV4` 重算。
 
+当前开发源码还提供[原生异步连接包装](docs/configured-async-window-v2.md)。业务连接使用 psycopg 的事件循环，控制连接在原线程记录边界快照。
+
 `reduceConfiguredWindowV4` 在完整原始窗口上选择事务，保留指定的 Serializable 反证并重新检查来源闭包；真实 PostgreSQL 案例可将五事务窗口缩成两事务。`explainConfiguredWindowV4` 在独立验证后生成离线说明页，关联 SQL、实际交付、行版本、依赖及缩减见证。[缩减契约与复现](docs/configured-window-reduction-v2.md)说明预算、原事件映射与单最小验证。
 
 需要独立加载配置窗口功能时，可显式使用实验性的[结构化验证入口](docs/window-structured-verification.md)。它复用相同分析与缩减核心，在验证阶段保留结构化报告；默认 SDK 保持原实现，正式测量的控制项结果在文档中单列。

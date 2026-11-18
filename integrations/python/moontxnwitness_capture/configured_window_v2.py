@@ -220,6 +220,13 @@ def observe_source_snapshot_v2(connection,output,config,policy,installation,*,op
 
 class ConfiguredCaptureWindowV2:
     """Owned window producer; independent core admission is a separate step."""
+
+    def _make_observer(self, path, config, **options):
+        return PointCaptureV2(path, config, **options)
+
+    def _wrap_participant(self, raw):
+        return self.observer.wrap(raw)
+
     def __init__(self,output,config,control,policy,installation,*,opt_in=False,projection_options=None,
                  max_rows=4096,max_effects=4096,**capture_options):
         if opt_in is not True or type(installation) is not SourceInputsV2:
@@ -238,7 +245,7 @@ class ConfiguredCaptureWindowV2:
                     or actual.get('declaredBusinessViewMatchesBeforeOrder') is not True
                     or list(projection_options.business_star_columns)!=actual['beforePhysicalColumns']):
                 raise ValueError('Declared business star view differs from actual installation catalogs')
-        self.observer=PointCaptureV2(self.output/'capture',config,projection_options=projection_options,opt_in=True,**capture_options)
+        self.observer=self._make_observer(self.output/'capture',config,projection_options=projection_options,opt_in=True,**capture_options)
         if self.observer.frame('configured-window-start',{'format':INPUT_FORMAT,'snapshotInputSha256':self._start_digest,
                 'installationLogSha256':digest(installation.installation_log_text),'sourceFactsProduced':False}) is None:
             self.observer.close();raise ValueError('Window start boundary was not retained')
@@ -267,7 +274,7 @@ class ConfiguredCaptureWindowV2:
             for participant in self._participants:
                 if participant is raw or participant._raw is raw:return participant
             if len(self._participants)>=32:raise ValueError('Window participant budget exceeded')
-            wrapped=self.observer.wrap(raw)
+            wrapped=self._wrap_participant(raw)
             self._participants.append(wrapped)
             return wrapped
 

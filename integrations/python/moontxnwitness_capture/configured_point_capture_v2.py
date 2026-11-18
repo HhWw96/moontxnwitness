@@ -7,8 +7,6 @@ verify the configured version column separately before enabling projection.
 from __future__ import annotations
 
 import base64
-import hashlib
-import json
 import weakref
 import uuid
 from contextlib import contextmanager
@@ -75,6 +73,7 @@ class PointCaptureV2(Instrumentation):
     construction. Call close only after stopping/closing enrolled connections.
     """
     frame = ConfiguredInstrumentation.frame
+    _producer_format = 'moontxnwitness-point-producer/v2'
 
     def __init__(self, path, config, *, projection_options=None, opt_in=False,
                  automatic_writer_checkpoints=True, **options):
@@ -93,7 +92,7 @@ class PointCaptureV2(Instrumentation):
         self._automatic_writer_checkpoints = automatic_writer_checkpoints
         super().__init__(path, **options)
         self.frame('configured-point-producer', {
-            'format': 'moontxnwitness-point-producer/v2', 'config': config.to_dict(),
+            'format': self._producer_format, 'config': config.to_dict(),
             'projectionOptions': projection_options.to_dict(),
             'sourceFactsProduced': False, 'completeWindow': False, 'modelCoverageAccepted': False})
         self.gap('point_source_window_unverified', 'Projection observations require independent installation, writer and window verification.')
@@ -115,6 +114,9 @@ class PointCaptureV2(Instrumentation):
                 or raw.closed or int(raw.info.transaction_status) != 0
                 or raw._pipeline or raw._tpc or not _tuple_factory(raw)):
             raise ValueError('New idle synchronous psycopg 3.3.6 tuple connection required')
+        return self._enroll_connection(raw, PointConnectionV2, asynchronous=False)
+
+    def _enroll_connection(self, raw, wrapper_type, *, asynchronous):
         with self._lock:
             key = id(raw)
             entry = self._registry.get(key)
@@ -124,7 +126,7 @@ class PointCaptureV2(Instrumentation):
                     return existing
             if len(self._connections) >= self._max_connections:
                 raise ValueError('Connection observation budget exceeded')
-            connection = PointConnectionV2(self, raw)
+            connection = wrapper_type(self, raw)
             def remove(reference):
                 with self._lock:
                     current = self._registry.get(key)
@@ -132,7 +134,7 @@ class PointCaptureV2(Instrumentation):
                         self._registry.pop(key, None)
             self._registry[key] = weakref.ref(raw, remove), weakref.ref(connection, remove)
             self._connections.add(connection)
-            self.note('connect', connection=connection._identity, asynchronous=False)
+            self.note('connect', connection=connection._identity, asynchronous=asynchronous)
             return connection
 
     def attach_engine(self, engine):
@@ -206,20 +208,27 @@ class PointConnectionV2(DiagnosticConnection):
                 raise
             else:
                 cursor.execute('RELEASE SAVEPOINT "' + savepoint + '"', prepare=False)
-        if (native['status'] != 2 or native['commandStatusBase64'] != 'U0VMRUNUIDE='
-                or len(rows) != 1 or type(rows[0]) is not tuple or len(rows[0]) != 1
-                or type(rows[0][0]) is not str or len(rows[0][0].encode('utf8')) > 4096
-                or native['rows'] != [[base64.b64encode(rows[0][0].encode('utf8')).decode('ascii')]]
-                or raw.info.backend_pid != pid or int(raw.info.transaction_status) != 2):
-            raise ValueError('Writer checkpoint native/result mismatch')
-        if self._session.frame('configured-point-writer', {
-                'format': 'moontxnwitness-point-writer-checkpoint/v2',
-                'connection': self._identity, 'tx': self._tx, 'sql': WRITER_PROBE_SQL,
-                'native': native, 'deliveredText': rows[0][0], 'sourceFactsProduced': False}) is None:
-            raise ValueError('Writer checkpoint not retained')
+        _retain_writer_checkpoint(self, pid, native, rows)
 
 
-class PointCursorV2(DiagnosticCursor):
+def _retain_writer_checkpoint(connection, pid, native, rows):
+    from .configured_effects import WRITER_PROBE_SQL
+
+    raw = connection._raw
+    if (native['status'] != 2 or native['commandStatusBase64'] != 'U0VMRUNUIDE='
+            or len(rows) != 1 or type(rows[0]) is not tuple or len(rows[0]) != 1
+            or type(rows[0][0]) is not str or len(rows[0][0].encode('utf8')) > 4096
+            or native['rows'] != [[base64.b64encode(rows[0][0].encode('utf8')).decode('ascii')]]
+            or raw.info.backend_pid != pid or int(raw.info.transaction_status) != 2):
+        raise ValueError('Writer checkpoint native/result mismatch')
+    if connection._session.frame('configured-point-writer', {
+            'format': 'moontxnwitness-point-writer-checkpoint/v2',
+            'connection': connection._identity, 'tx': connection._tx, 'sql': WRITER_PROBE_SQL,
+            'native': native, 'deliveredText': rows[0][0], 'sourceFactsProduced': False}) is None:
+        raise ValueError('Writer checkpoint not retained')
+
+
+class _PointProjectionState:
     def __init__(self, connection, raw):
         super().__init__(connection, raw)
         self._projection = None
@@ -232,11 +241,12 @@ class PointCursorV2(DiagnosticCursor):
         self._projection, self._result_id, self._delivery_position = None, None, 0
         self._point_statement, self._point_tx = None, None
 
+    _replacement_fields = ('_projection', '_result_id', '_delivery_position', '_point_statement', '_point_tx')
+
     @contextmanager
     def _replacement(self):
         previous = self._raw.pgresult
-        names = ('_projection', '_result_id', '_delivery_position', '_point_statement', '_point_tx',
-                 '_pending', '_statement', '_mapping', '_result_complete', '_server_rows_seen', '_batch_start')
+        names = self._replacement_fields
         saved = {name: getattr(self, name) for name in names}
         try:
             yield
@@ -260,92 +270,113 @@ class PointCursorV2(DiagnosticCursor):
         business = self._projection['businessResult']
         return None if business['mode'] == 'no-result' else actual[:len(business['columns'])]
 
+    def _build_projection(self, query, params, kwargs):
+        projected = None
+        if self._session._enabled:
+            try:
+                if (not self._mode_supported or not _tuple_factory(self._raw)
+                        or self._connection._raw.autocommit or self._connection._raw._pipeline
+                        or self._connection._raw._tpc or kwargs.get('binary')
+                        or not set(kwargs).issubset({'prepare', 'binary'})):
+                    raise ValueError('Unsupported cursor/execute mode')
+                projected = build_point_projection(self._session.parser.recognize(query), params, self._session.options)
+            except Exception:
+                self._session.gap('point_projection_unrecognized', 'Original SQL executes unchanged and supplies no projection fact.')
+        return projected
+
+    def _record_projection(self, projected):
+        descriptor = projected.to_dict()
+        note = self._session.frame('configured-point-projection', {
+            'format': 'moontxnwitness-projected-execution/v2',
+            'connection': self._connection._identity, 'cursor': self._identity,
+            'descriptor': descriptor, 'sourceFactsProduced': False})
+        return descriptor, note
+
+    def _record_native(self, descriptor, note):
+        self._projection = descriptor
+        self._result_id = 'point-result-' + uuid.uuid4().hex
+        self._delivery_position = 0
+        self._point_statement, self._point_tx = self._statement, self._connection._tx
+        try:
+            native = _native(self._raw)
+            self._session.frame('configured-point-native', {
+                'resultId': self._result_id, 'projectionNoteSeq': note,
+                'connection': self._connection._identity, 'cursor': self._identity,
+                'tx': self._connection._tx, 'statementSeq': self._statement,
+                'native': native, 'sourceFactsProduced': False})
+        except Exception:
+            self._session.gap('point_native_observation_missing', 'Original native buffer could not be retained within bounds.')
+        if descriptor['businessResult']['mode'] == 'no-result':
+            # Hidden RETURNING is inspected as an immutable native buffer;
+            # it is never claimed as a fetched business result.
+            self._pending = False
+
+    def _fetch_observation(self, method, args):
+        from psycopg import ProgrammingError
+        business = self._projection['businessResult']
+        if business['mode'] == 'no-result':
+            raise ProgrammingError("the last operation didn't produce records (command status: " + self._raw.statusmessage + ')')
+        if not _tuple_factory(self._raw):
+            self._session.gap('point_decoder_changed', 'Changing a projected result row factory is unsupported.')
+            raise ProgrammingError('Projected point results require the original tuple row factory')
+        effective = (self._raw.arraysize if not args or not args[0] else args[0]) if method == 'fetchmany' else None
+        actual_start = self._raw.rownumber
+        if type(actual_start) is not int or actual_start < 0:
+            actual_start = self._delivery_position
+        return business, effective, actual_start
+
+    def _record_delivery(self, method, args, raw, business, effective, actual_start):
+        rows = [] if raw is None else [raw] if method == 'fetchone' else raw
+        width = len(business['columns'])
+        result = None if raw is None else rows[0][:width] if method == 'fetchone' else [row[:width] for row in rows]
+        # Preserve original business delivery separately from hidden values.
+        delivered = [] if result is None else [result] if method == 'fetchone' else result
+        try:
+            self._session.frame('configured-point-delivery', {
+                'format': 'moontxnwitness-projected-delivery/v2', 'resultId': self._result_id,
+                'connection': self._connection._identity, 'cursor': self._identity,
+                'tx': self._point_tx, 'statementSeq': self._point_statement,
+                'method': method, 'resultPythonType': type(result).__module__ + '.' + type(result).__qualname__,
+                'requestedSize': args[0] if method == 'fetchmany' and args else None,
+                'effectiveSize': effective, 'start': actual_start,
+                'rows': [{'pythonType': type(row).__module__ + '.' + type(row).__qualname__,
+                          'cells': [_typed(cell) for cell in row]} for row in delivered],
+                'exhaustedObserved': method == 'fetchall' or (method == 'fetchone' and raw is None),
+                'sourceFactsProduced': False})
+        except Exception:
+            self._session.gap('point_delivery_missing', 'Business result returned unchanged; delivery evidence is incomplete.')
+        self._delivery_position = actual_start + len(rows)
+        return result, rows
+
+class PointCursorV2(_PointProjectionState, DiagnosticCursor):
+    _replacement_fields = _PointProjectionState._replacement_fields + (
+        '_pending', '_statement', '_mapping', '_result_complete', '_server_rows_seen', '_batch_start')
+
     def execute(self, query, params=None, **kwargs):
         with self._connection._operation_lock:
-            projected = None
-            if self._session._enabled:
-                try:
-                    if (not self._mode_supported or not _tuple_factory(self._raw)
-                            or self._connection._raw.autocommit or self._connection._raw._pipeline
-                            or self._connection._raw._tpc or kwargs.get('binary')
-                            or not set(kwargs).issubset({'prepare', 'binary'})):
-                        raise ValueError('Unsupported cursor/execute mode')
-                    projected = build_point_projection(self._session.parser.recognize(query), params, self._session.options)
-                except Exception:
-                    self._session.gap('point_projection_unrecognized', 'Original SQL executes unchanged and supplies no projection fact.')
+            projected = self._build_projection(query, params, kwargs)
             if projected is None:
                 with self._replacement():
                     result = super().execute(query, params, **kwargs)
                 self._forget_projection()
                 return result
-            descriptor = projected.to_dict()
-            note = self._session.frame('configured-point-projection', {
-                'format': 'moontxnwitness-projected-execution/v2',
-                'connection': self._connection._identity, 'cursor': self._identity,
-                'descriptor': descriptor, 'sourceFactsProduced': False})
-            # Retain construction before execution. Journal failure must not
-            # silently turn an executed rewrite into complete captured coverage.
+            descriptor, note = self._record_projection(projected)
             with self._replacement():
                 result = super().execute(projected.sql, projected.parameters, **kwargs)
-            self._projection = descriptor
-            self._result_id = 'point-result-' + uuid.uuid4().hex
-            self._delivery_position = 0
-            self._point_statement, self._point_tx = self._statement, self._connection._tx
-            try:
-                native = _native(self._raw)
-                self._session.frame('configured-point-native', {
-                    'resultId': self._result_id, 'projectionNoteSeq': note,
-                    'connection': self._connection._identity, 'cursor': self._identity,
-                    'tx': self._connection._tx, 'statementSeq': self._statement,
-                    'native': native, 'sourceFactsProduced': False})
-            except Exception:
-                self._session.gap('point_native_observation_missing', 'Original native buffer could not be retained within bounds.')
-            if descriptor['businessResult']['mode'] == 'no-result':
-                # Hidden RETURNING is inspected as an immutable native buffer;
-                # it is never claimed as a fetched business result.
-                self._pending = False
+            self._record_native(descriptor, note)
             return result
 
     def _fetch(self, method, *args):
         if self._projection is None:
             return super()._fetch(method, *args)
-        from psycopg import ProgrammingError
         with self._connection._operation_lock:
+            fetch = getattr(self._raw, method)
+            actual_args = args if args and args[0] is not None else ()
             if self._raw.closed:
-                # Delegate the native closed-cursor error before synthesizing a
-                # no-result error; the failed fetch consumes no records.
-                return getattr(self._raw, method)(*args) if args and args[0] is not None else getattr(self._raw, method)()
-            business = self._projection['businessResult']
-            if business['mode'] == 'no-result':
-                raise ProgrammingError("the last operation didn't produce records (command status: " + self._raw.statusmessage + ')')
-            if not _tuple_factory(self._raw):
-                self._session.gap('point_decoder_changed', 'Changing a projected result row factory is unsupported.')
-                raise ProgrammingError('Projected point results require the original tuple row factory')
-            effective = (self._raw.arraysize if not args or not args[0] else args[0]) if method == 'fetchmany' else None
-            actual_start = self._raw.rownumber
-            if type(actual_start) is not int or actual_start < 0:
-                actual_start = self._delivery_position
-            raw = getattr(self._raw, method)(*args) if args and args[0] is not None else getattr(self._raw, method)()
-            rows = [] if raw is None else [raw] if method == 'fetchone' else raw
-            width = len(business['columns'])
-            result = None if raw is None else rows[0][:width] if method == 'fetchone' else [row[:width] for row in rows]
-            # Preserve original business delivery separately from hidden values.
-            delivered = [] if result is None else [result] if method == 'fetchone' else result
-            try:
-                self._session.frame('configured-point-delivery', {
-                    'format': 'moontxnwitness-projected-delivery/v2', 'resultId': self._result_id,
-                    'connection': self._connection._identity, 'cursor': self._identity,
-                    'tx': self._point_tx, 'statementSeq': self._point_statement,
-                    'method': method, 'resultPythonType': type(result).__module__ + '.' + type(result).__qualname__,
-                    'requestedSize': args[0] if method == 'fetchmany' and args else None,
-                    'effectiveSize': effective, 'start': actual_start,
-                    'rows': [{'pythonType': type(row).__module__ + '.' + type(row).__qualname__,
-                              'cells': [_typed(cell) for cell in row]} for row in delivered],
-                    'exhaustedObserved': method == 'fetchall' or (method == 'fetchone' and raw is None),
-                    'sourceFactsProduced': False})
-            except Exception:
-                self._session.gap('point_delivery_missing', 'Business result returned unchanged; delivery evidence is incomplete.')
-            self._delivery_position = actual_start + len(rows)
+                return fetch(*actual_args)
+            observation = self._fetch_observation(method, args)
+            raw = fetch(*actual_args)
+            result, rows = self._record_delivery(method, args, raw, *observation)
             self._rows(rows, self._exhausted(rows, eof=method == 'fetchall' or method == 'fetchone' and raw is None))
             return result
 

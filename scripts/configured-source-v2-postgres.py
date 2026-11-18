@@ -1,6 +1,7 @@
 """Check explicit V2 source installation in a new owned PostgreSQL 18.6 cluster."""
 from __future__ import annotations
 import argparse
+import asyncio
 import hashlib
 import importlib.metadata
 import json
@@ -21,6 +22,7 @@ from moontxnwitness_capture.configured_source_v2 import install_configured_sourc
 from moontxnwitness_capture.configured_sql_v2 import (
     SQLCaptureConfigV2, TableConfigV2, PrimaryKeyConfigV2, ColumnConfig, TEXT_COMPARISON)
 from moontxnwitness_capture.configured_point_capture_v2 import PointCaptureV2
+from moontxnwitness_capture.configured_async_window_v2 import ConfiguredAsyncCaptureWindowV2
 from moontxnwitness_capture.configured_point_projection_v2 import PointProjectionOptionsV2
 from moontxnwitness_capture.configured_window_v2 import (
     ConfiguredCaptureWindowV2, SourceInputsV2, observe_source_snapshot_v2)
@@ -119,7 +121,166 @@ def analysis_fixtures(control, connect_writer, config, policy, installation, out
     return cases
 
 
-def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_reduction=False):
+def async_analysis_fixtures(control, connect_writer, connect_async_writer, config, policy, installation, output, key, fresh, other):
+    import psycopg
+
+    target = q(config.table.schema) + '.' + q(config.table.table)
+    select = 'SELECT identity,balance,enabled FROM ' + target + ' WHERE identity=%s'
+    update = 'UPDATE ' + target + ' SET enabled=%s WHERE identity=%s'
+    insert = 'INSERT INTO ' + target + '(identity,balance,enabled) VALUES(%s,%s,%s) RETURNING identity,balance,enabled'
+    delete = 'DELETE FROM ' + target + ' WHERE identity=%s RETURNING balance'
+
+    async def row(connection, identity):
+        cursor = await connection.execute(select, (identity,))
+        eq([column.name for column in cursor.description], ['identity', 'balance', 'enabled'])
+        return await cursor.fetchone()
+
+    async def crud(window, connect):
+        async with await connect() as connection:
+            cursor = await connection.execute(select, (fresh,))
+            eq(await cursor.fetchall(), [])
+        async with await connect() as connection:
+            eq((await row(connection, key))[0], key)
+            cursor = await connection.execute(insert, (fresh, 50, True))
+            eq(await cursor.fetchmany(1), [(fresh, 50, True)])
+            cursor = await connection.execute(update, (False, fresh))
+            eq((cursor.description, cursor.rowcount), (None, 1))
+            eq(await row(connection, fresh), (fresh, 50, False))
+            cursor = await connection.execute(delete, (fresh,))
+            eq(await cursor.fetchone(), (50,))
+            cursor = await connection.execute(select, (fresh,))
+            eq(await cursor.fetchall(), [])
+
+    async def skew(window, connect, isolation):
+        connections = [await connect(isolation), await connect(isolation)]
+        try:
+            for connection in connections:
+                eq((await row(connection, key))[2] and (await row(connection, other))[2], True)
+            for connection, identity in zip(connections, (key, other)):
+                await connection.execute(update, (False, identity))
+            await connections[0].commit()
+            if isolation == psycopg.IsolationLevel.REPEATABLE_READ:
+                await connections[1].commit()
+                return {'committed': 2}
+            try:
+                await connections[1].commit()
+            except psycopg.errors.SerializationFailure as error:
+                eq((error.sqlstate, error.diag.sqlstate), ('40001', '40001'))
+                await connections[1].rollback()
+            else:
+                raise AssertionError('Expected PostgreSQL to abort the second Serializable writer')
+            eq((await row(connections[1], key))[2], False)
+            eq((await row(connections[1], other))[2], True)
+            await connections[1].commit()
+            return {'committed': 2, 'rollbackSqlstate': '40001', 'retryCommitted': True}
+        finally:
+            for connection in connections:
+                await connection.close()
+
+    async def cancelled_acquisition(window, connect):
+        started = asyncio.Event()
+
+        async def pending_factory():
+            started.set()
+            await asyncio.Future()
+
+        pending = asyncio.create_task(window.psycopg_factory(pending_factory)())
+        await started.wait()
+        try:
+            try:
+                window.seal()
+            except ValueError as error:
+                assert 'factory' in str(error)
+            else:
+                raise AssertionError('In-flight acquisition unexpectedly sealed')
+        finally:
+            pending.cancel()
+            try:
+                await pending
+            except asyncio.CancelledError:
+                pass
+        async with await connect() as connection:
+            await row(connection, key)
+        return {'originalCancellationObserved': pending.cancelled(), 'acquisitionGuardObserved': True}
+
+    async def cancelled_execute(window, connect):
+        raw = await connect_async_writer()
+        connection = await connect()
+        try:
+            # The blocker rolls back and publishes no ledger effect. Observe
+            # actual server lock wait before cancelling the business statement.
+            await raw.execute(update, (True, key))
+            pid = connection.info.backend_pid
+            pending = asyncio.create_task(connection.execute(update, (False, key)))
+            try:
+                async with asyncio.timeout(10):
+                    while True:
+                        cursor = await raw.execute(
+                            "SELECT NOT pg_catalog.pg_stat_clear_snapshot() IS NULL")
+                        await cursor.fetchone()
+                        cursor = await raw.execute("SELECT wait_event_type FROM pg_catalog.pg_stat_activity WHERE pid=%s", (pid,))
+                        if await cursor.fetchone() == ('Lock',):
+                            break
+                        await asyncio.sleep(0.01)
+            finally:
+                pending.cancel()
+                try:
+                    await pending
+                except asyncio.CancelledError:
+                    pass
+            eq(pending.cancelled(), True)
+            await connection.rollback()
+            await raw.rollback()
+            eq((await row(connection, key))[2], False)
+            await connection.commit()
+            return {'originalCancellationObserved': True, 'serverLockWaitObserved': True, 'retryCommitted': True}
+        finally:
+            await connection.close()
+            await raw.close()
+
+    def run(name, scenario, expected, *, expected_reason=None, remaining=None):
+        window = ConfiguredAsyncCaptureWindowV2(output/name, config, control, policy, installation, opt_in=True)
+
+        async def factory(isolation=None):
+            raw = await connect_async_writer()
+            if isolation is not None:
+                await raw.set_isolation_level(isolation)
+            return raw
+
+        with asyncio.Runner(loop_factory=asyncio.SelectorEventLoop if os.name == 'nt' else None) as runner:
+            observations = runner.run(scenario(window, window.psycopg_factory(factory)))
+        path = window.seal()
+        result = {'name': name, 'bundle': str(path), 'config': config.to_dict(), 'policy': policy.to_dict(),
+                  'bundleSha256': sha(path), 'expected': expected, 'asynchronous': True, 'observations': observations}
+        if expected_reason is not None:
+            result['expectedReason'] = expected_reason
+        if remaining is not None:
+            eq(control.execute('SELECT count(*) FROM ' + target + ' WHERE identity IN (%s,%s) AND enabled', (key, other)).fetchone()[0], remaining)
+        return result
+
+    def reset():
+        with connect_writer() as connection:
+            for identity in (key, other):
+                connection.execute(update, (True, identity))
+
+    reset()
+    results = [run('async-crud', crud, 'compatible')]
+    results.append(run('async-rr-write-skew', lambda w, c: skew(w, c, psycopg.IsolationLevel.REPEATABLE_READ), 'refuted', remaining=0))
+    reset()
+    aborted = run('async-serializable-retry', lambda w, c: skew(w, c, psycopg.IsolationLevel.SERIALIZABLE), 'unknown', remaining=1)
+    events = json.loads(json.loads(Path(aborted['bundle']).read_text('utf8'))['diagnosticTraceText'])['events']
+    rollback, = [event for event in events if event['kind'] == 'rollback_ok']
+    eq(rollback['commitResponse']['sqlstate'], '40001')
+    txs = [event['tx'] for event in events if event['kind'] == 'begin']
+    eq(len(set(txs)), 3)
+    assert rollback['tx'] != txs[-1]
+    results.append(aborted)
+    results.append(run('async-cancelled-acquisition', cancelled_acquisition, 'unknown', expected_reason='configured_factory_unobserved'))
+    results.append(run('async-cancelled-execute', cancelled_execute, 'unknown', expected_reason='orm_statement_failed'))
+    return results
+
+
+def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_reduction=False, connect_async=None):
     records = []
     for index, kind in enumerate(('int64', 'text', 'uuid')):
         owner, writer, schema = 'source_owner_'+str(index), 'source_writer_'+str(index), 'app_'+str(index)
@@ -219,6 +380,11 @@ def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_
             if with_analysis:
                 if not with_window:raise ValueError('Analysis fixtures also require --with-window')
                 analysis=analysis_fixtures(control,lambda:connect(user=writer,password=password),config,policy,window.installation,work/('analysis-'+str(index)),key,fresh,slow_key,with_reduction=with_reduction)
+                if connect_async is not None:
+                    async_key = 903 if kind == 'int64' else '异步新键🙂' if kind == 'text' else uuid.UUID(int=903)
+                    analysis.extend(async_analysis_fixtures(control, lambda: connect(user=writer,password=password),
+                        lambda: connect_async(user=writer,password=password),config,policy,window.installation,
+                        work/('async-analysis-'+str(index)),key,async_key,slow_key))
             records.append({'keyType':kind,'passed':True,'initialRows':1,'committedEffects':3,'analysisFixtures':analysis,
                 'sourceInstallationReceiptSha256':sha(work/('install-'+str(index))/'receipt-v2.json'),
                 'sourceInstallationLogSha256':sha(work/('install-'+str(index))/'source-install-v2.jsonl'),
@@ -238,9 +404,11 @@ def main():
     cli.add_argument('--with-window',action='store_true',help='Also seal raw window inputs and verify out-of-order commit visibility')
     cli.add_argument('--with-analysis',action='store_true',help='Also run committed CRUD, real RR write skew and ordered Serializable business windows')
     cli.add_argument('--with-reduction',action='store_true',help='Also capture source-dependent noise transactions for model-preserving reduction')
+    cli.add_argument('--with-async',action='store_true',help='Exercise native async business connections in the same source-window scope')
     args=cli.parse_args()
     if args.with_analysis and not args.with_window:cli.error('--with-analysis requires --with-window')
     if args.with_reduction and not args.with_analysis:cli.error('--with-reduction requires --with-analysis')
+    if args.with_async and not args.with_analysis:cli.error('--with-async requires --with-analysis')
     if args.dsn_env and not args.owned_database:cli.error('--dsn-env requires --owned-database')
     if args.dsn_env and not os.environ.get(args.dsn_env):cli.error('the selected DSN environment variable is empty')
     work=args.output.resolve()
@@ -252,6 +420,7 @@ def main():
         from psycopg.conninfo import conninfo_to_dict
         service=conninfo_to_dict(os.environ[args.dsn_env])
         def connect(**kwargs):return psycopg.connect(**dict(service,**kwargs))
+        def connect_async(**kwargs):return psycopg.AsyncConnection.connect(**dict(service,**kwargs))
         receipt={'format':'configured-source-v2-native-installation-validation/v1','passed':False,'actualDatabaseExecution':False,
             'actualV2InstallationExecuted':False,'formalPerformanceMeasurement':False,'windowProducerRequested':args.with_window,
             'analysisFixturesRequested':args.with_analysis,'reductionFixturesRequested':args.with_reduction,'sourceSha256':{str(Path(__file__).resolve().relative_to(ROOT)):sha(Path(__file__))}}
@@ -259,7 +428,7 @@ def main():
             with connect(autocommit=True) as admin:
                 eq(int(admin.execute('SHOW server_version_num').fetchone()[0]),180006)
                 receipt['postgresVersion']='postgres (PostgreSQL) 18.6';receipt['actualDatabaseExecution']=True
-                receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,with_reduction=args.with_reduction)
+                receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         (work/'receipt.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
@@ -285,8 +454,11 @@ def main():
             def connect(**kwargs):
                 options=dict(host='127.0.0.1',port=port,dbname='postgres',user='mtw',password=password);options.update(kwargs)
                 return psycopg.connect(**options)
+            def connect_async(**kwargs):
+                options=dict(host='127.0.0.1',port=port,dbname='postgres',user='mtw',password=password);options.update(kwargs)
+                return psycopg.AsyncConnection.connect(**options)
             with connect(autocommit=True) as admin:
-                receipt['actualDatabaseExecution']=True;receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,with_reduction=args.with_reduction)
+                receipt['actualDatabaseExecution']=True;receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         finally:

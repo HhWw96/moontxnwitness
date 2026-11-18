@@ -77,10 +77,10 @@ minimal pair. Async/ORM expansion remains separate work. The
 [structured-profile measurements](window-structured-verification.md) retain both
 failed P95 controls and do not qualify the profile for default promotion.
 
-The lifecycle increment does not turn rejected asynchronous factories or pool
-leases into supported capture. The planned asynchronous/ORM integration must
-produce and independently verify its own native observations, source closure
-and business-behavior comparisons.
+The [native asynchronous adapter](configured-async-window-v2.md) captures owned
+psycopg connections on a single business event loop. The controller takes
+snapshots on its owner thread. SQLAlchemy and pool leases still require their
+own enrollment and result-delivery checks.
 
 ## Historical records
 

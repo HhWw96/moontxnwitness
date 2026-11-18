@@ -150,6 +150,7 @@ fn window_lifecycle_v2(
   let used_projections : Map[Int32, Bool] = Map([])
   let prefix = StringBuilder()
   let mut domain : Json = Json::null()
+  let mut asynchronous = false
   let mut started = false
   let mut ended = false
   for index in 0..<(lines.length() - 1) {
@@ -190,6 +191,11 @@ fn window_lifecycle_v2(
         let frame = window_object_v2(window_frame_v2(event))
         if seq != 2 {
           fail("mismatch:window-producer-position")
+        }
+        match sql_string_v1(frame.at("format")) {
+          "moontxnwitness-point-producer/v2" => ()
+          "moontxnwitness-async-point-producer/v2" => asynchronous = true
+          _ => fail("unsupported:window-point-producer-format")
         }
         source_equal_v4(
           frame.at("config"),
@@ -241,7 +247,7 @@ fn window_lifecycle_v2(
         if kind == "connect" {
           let connection = sql_string_v1(event.at("connection"))
           if opened.contains(connection) ||
-            event.at("asynchronous") != Json(false) {
+            event.at("asynchronous") != Json(asynchronous) {
             fail("mismatch:window-connection")
           }
           opened[connection] = true
