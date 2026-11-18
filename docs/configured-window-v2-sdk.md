@@ -167,6 +167,10 @@ transaction, predecessor and commit response. UPDATE effects are not invented
 SELECT observations. Partial fetches, unobserved operations, incomplete sources,
 unknown SQL and unconfirmed transactions preserve a coverage gap.
 
+The [native async psycopg adapter](configured-async-window-v2.md) feeds this
+same verification API. Its business connections run on one async event loop
+and the dedicated controller takes boundary snapshots synchronously.
+
 The initial window limits are 32 transactions and 128 business statements.
 Limits are independently selected for analysis and verification:
 

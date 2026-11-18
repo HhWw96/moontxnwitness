@@ -62,7 +62,12 @@ PYTHONPATH=integrations/python python -B -m unittest \
 The existing source and window unit tests must continue to run alongside these
 checks. A real PostgreSQL capture regression is a separate integration check.
 
-## Next asynchronous implementation
+## Asynchronous capture
+
+Use the [native async adapter](configured-async-window-v2.md) for owned
+psycopg business connections. It retains synchronous control snapshots.
+The items below describe the remaining requirements for a fully asynchronous
+controller and connection pool support.
 
 An asynchronous adapter needs its own explicit interface and lifecycle proof:
 
