@@ -1,6 +1,6 @@
 # Roadmap and delivery history
 
-## Current source — v0.5.1 (2026-11-16)
+## Current source — v0.5.5
 
 The current source base provides `classifyModelsV4`, registered inference modules,
 `classifyRelationModelsV4` and `reduceRelationModelsV4`, with independent verification
@@ -39,9 +39,9 @@ require explicit source, validity and completion contracts. General execution
 diagnosis alone does not supply a closed source window or a model conclusion.
 Source/profile gaps and exhausted budgets continue to produce `unknown`.
 
-## Next stable increments
+## Configured-window delivery and subsequent increments
 
-The v0.5.2 development branch now includes independently reconstructed point SQL
+The v0.5.5 source includes independently reconstructed point SQL
 and native/delivery consistency checks, explicit source-installation components,
 bounded original window-input sealing, independent source/snapshot admission and
 source-bound automatic relation-history analysis. The three-key PostgreSQL
@@ -49,8 +49,7 @@ campaign preserves out-of-order commits through complete ledger scans and runs
 normal CRUD, RR write skew, ordered Serializable and zero-row-write boundaries.
 See [window analysis](configured-window-v2.md), [source admission](source-admission-v2.md),
 [snapshot admission](snapshot-admission-v2.md) and [projected result verification](projected-result-v2.md).
-The branch is under integration; public promotion requires its applicable
-regression, CI and consumer checks.
+The v0.5.5 package consolidates the synchronous v0.5.2–v0.5.5 development increments.
 
 | Version | Scope | Evidence before promotion |
 | --- | --- | --- |
