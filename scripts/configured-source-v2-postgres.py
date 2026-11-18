@@ -35,6 +35,36 @@ def eq(actual, expected):
     if actual != expected: raise AssertionError((actual, expected))
 
 
+def varchar_binding_fixture(control, connect_writer, schema, writer, output):
+    table = TableConfigV2(schema, 'varchar_rows', PrimaryKeyConfigV2('id', 'uuid'),
+        (ColumnConfig('email', 'text', TEXT_COMPARISON),))
+    config = SQLCaptureConfigV2(table)
+    policy = SourceInstallPolicy('mtw_source_v2_varchar', (writer,))
+    target = q(schema) + '.varchar_rows'
+    control.execute('CREATE TABLE ' + target + ' (id uuid PRIMARY KEY, email varchar(320) COLLATE pg_catalog."C" NOT NULL)')
+    control.execute('GRANT SELECT, INSERT, UPDATE, DELETE ON ' + target + ' TO ' + q(writer))
+    install_dir = output / 'varchar-install'
+    install_configured_source_v2(control, install_dir, config, policy, opt_in=True)
+    window = ConfiguredCaptureWindowV2(output / 'varchar-window', config, control, policy,
+        SourceInputsV2.from_directory(install_dir), opt_in=True)
+    enroll = window.psycopg_factory(connect_writer)
+    key = uuid.UUID(int=1057)
+    params = {'id': key, 'email': '首个🙂 '}
+    select = 'SELECT id, email FROM ' + target + ' WHERE id=%(id)s::UUID'
+    with enroll() as connection:
+        insert = 'INSERT INTO ' + target + ' (id,email) VALUES (%(id)s::UUID,%(email)s::VARCHAR) RETURNING id'
+        eq(connection.execute(insert, params).fetchall(), [(key,)])
+        eq(connection.execute(select, {'id': key}).fetchall(), [(key, params['email'])])
+    with enroll() as connection:
+        update = 'UPDATE ' + target + ' SET email=%(email)s::VARCHAR WHERE id=%(id)s::UUID RETURNING id,email'
+        changed = {**params, 'email': '修改后🙂 '}
+        eq(connection.execute(update, changed).fetchall(), [(key, changed['email'])])
+    eq(control.execute(select, {'id': key}).fetchall(), [(key, changed['email'])])
+    bundle = window.seal()
+    return {'name': 'varchar-assignment', 'bundle': str(bundle), 'expected': 'compatible',
+        'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(bundle)}
+
+
 def analysis_fixtures(control, connect_writer, config, policy, installation, output, key, fresh, other_key, *, with_reduction=False):
     """Run original SQL through wrappers; no model histories are constructed here."""
     import psycopg
@@ -380,6 +410,9 @@ def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_
             if with_analysis:
                 if not with_window:raise ValueError('Analysis fixtures also require --with-window')
                 analysis=analysis_fixtures(control,lambda:connect(user=writer,password=password),config,policy,window.installation,work/('analysis-'+str(index)),key,fresh,slow_key,with_reduction=with_reduction)
+                if kind == 'uuid':
+                    analysis.append(varchar_binding_fixture(control,
+                        lambda: connect(user=writer,password=password),schema,writer,work))
                 if connect_async is not None:
                     async_key = 903 if kind == 'int64' else '异步新键🙂' if kind == 'text' else uuid.UUID(int=903)
                     analysis.extend(async_analysis_fixtures(control, lambda: connect(user=writer,password=password),

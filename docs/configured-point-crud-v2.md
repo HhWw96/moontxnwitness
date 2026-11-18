@@ -54,7 +54,7 @@ All operations use one configured base table. SELECT, UPDATE and DELETE require 
 - DELETE has the same single primary-key equality boundary.
 - Write RETURNING may contain direct configured columns, aliases or a configured star. It remains a write-result projection, never a predicate read or proof that any row changed.
 
-Int64/text key equality accepts a typed literal or bind. UUID identity requires a direct original bind, optionally wrapped in `::UUID` or `CAST(... AS UUID)`. The only cast exemption is that scalar UUID key bind. A UUID literal cast, nested cast, UUID array cast, business-field cast or arbitrary function remains unsupported.
+Int64/text key equality accepts a typed literal or bind. UUID identity requires a direct original bind, optionally wrapped in `::UUID` or `CAST(... AS UUID)`. INSERT and UPDATE also accept the unquoted `::VARCHAR` spelling on a direct bind for a non-key text column, including the form emitted by SQLAlchemy's psycopg dialect. PostgreSQL treats unbounded `VARCHAR` as a variable-length string. Length-limited, schema-qualified, quoted, nested and array text casts remain coverage gaps. [PostgreSQL character types](https://www.postgresql.org/docs/18/datatype-character.html)
 
 SQLGlot parsing is not PostgreSQL syntax validation. JOIN, unknown tables/columns, extra predicates, OR, ranges, IN, subqueries, functions, NULL, ordering, limits, locks and unsupported clauses are rejected with `RecognitionError.code`. Refusal does not call, rewrite, retry or alter the business operation; this module has no execution/cursor integration.
 
@@ -96,7 +96,7 @@ python -B scripts/configured-sql-v2-cross-inputs.py --dependency-root <existing-
 node scripts/configured-sql-v2-cross-test.mjs --core <isolated-build-dir>/js/release/build/sql_projection_v2_bridge/sql_projection_v2_bridge.js --inputs <isolated-log-dir>/cross-inputs.json --output <isolated-log-dir>/cross-validation.json
 ```
 
-The actual Python fixture producer generates three unrelated table/key layouts and real SQLAlchemy 2.0.55 mapper refresh SQL. The compiled MoonBit cross-check compares descriptor hashes, config hashes, typed bindings, preserved original UUID observations, int64 bounds, unenumerated dynamic keys, refused SQL, candidate self-authorization attempts and independent zero budgets. Receipts bind the real compiled core, inputs and source hashes; this is grammar/input consistency evidence, not a source-verified CRUD analysis.
+The Python fixture producer generates three unrelated table/key layouts and compiles mapper refresh and INSERT SQL with SQLAlchemy 2.0.55. The compiled MoonBit cross-check compares descriptor hashes, config hashes, typed bindings, preserved original UUID observations, int64 bounds, unenumerated dynamic keys, refused SQL, candidate self-authorization attempts and independent zero budgets. Receipts bind the compiled core, inputs and source hashes for the grammar and input consistency checks.
 
 ## Required source work
 

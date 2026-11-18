@@ -78,6 +78,14 @@ for(const sql of [
  'INSERT INTO ledger.accounts(account_no,balance,active,label) VALUES(%s,%s,%s,%s) ON CONFLICT DO NOTHING',
  'SELECT * FROM ledger.accounts a JOIN ledger.accounts b ON a.account_no=b.account_no WHERE a.account_no=%s',
 ])check('unsupported-'+sql,()=>{const report=normalize({...base,sql});assert.equal(report.valid,false);noFacts(report);});
+for(const expression of ['%s::varchar(3)','%s::varchar2','%s::"varchar"','%s::aux.varchar','CAST(%s AS VARCHAR)',
+ '%s::character varying','%s::varchar[]',"'x'::varchar"]){
+ const sql=`UPDATE ledger.accounts SET label=${expression} WHERE account_no=%s`;
+ check('unsupported-varchar-'+expression,()=>{
+  const report=normalize({...base,sql},JSON.stringify(['value',7]));
+  assert.equal(report.status,'unknown');noFacts(report);
+ });
+}
 check('v2-config-normalization',()=>{
  for(const c of fixture.cases){const report=JSON.parse(api.normalize_sql_config_v2_json(c.configText));assert.equal(report.valid,true);assert.equal(report.configSha256,c.configSha256);assert.deepEqual(report.config,JSON.parse(c.configText));}
 });

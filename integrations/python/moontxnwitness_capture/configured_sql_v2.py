@@ -255,14 +255,17 @@ class _PointBuilderV2(_Builder):
         if type(node) is e.Cast:
             _args(node, {'this', 'to'})
             target = node.args.get('to')
-            if column.type != 'uuid' or type(target) is not e.DataType:
-                raise RecognitionError('uuid-bind-cast', 'Only a UUID primary-key bind may be cast')
+            if type(target) is not e.DataType:
+                raise RecognitionError('bind-cast', 'A supported built-in scalar cast is required')
             _args(target, {'this', 'nested'})
-            if target.this != e.DataType.Type.UUID or target.args.get('nested'):
-                raise RecognitionError('uuid-bind-cast', 'Only a direct scalar UUID bind cast is supported')
+            uuid_key = column.type == 'uuid' and target.this == e.DataType.Type.UUID
+            varchar_value = (column.type == 'text' and column.name != self.table.primary_key
+                             and target.this == e.DataType.Type.VARCHAR)
+            if target.args.get('nested') or not (uuid_key or varchar_value):
+                raise RecognitionError('bind-cast', 'Use a UUID key cast or an unbounded VARCHAR cast on a text assignment')
             node = node.this
             if type(node) is not e.Placeholder:
-                raise RecognitionError('uuid-bind-cast', 'UUID casts require a direct original bind slot')
+                raise RecognitionError('bind-cast', 'Casts require a direct original bind slot')
         if column.type == 'uuid' and type(node) is not e.Placeholder:
             raise RecognitionError('uuid-identity', 'UUID identity requires an original parameter binding')
         return super().scalar(node, column)
@@ -326,6 +329,15 @@ def _recognize_v2(config, sql):
         if len(statements) != 1 or statements[0] is None:
             raise RecognitionError('statement-count', 'Exactly one statement required')
         ast = statements[0]
+        # SQLGlot also normalizes quoted type names and VARCHAR2 to VARCHAR.
+        # Count only the original unquoted PostgreSQL ::VARCHAR spelling.
+        original_varchar = sum(
+            previous.token_type.name == 'DCOLON'
+            and token.token_type.name == 'VARCHAR'
+            and sql[token.start:token.end + 1].lower() == 'varchar'
+            for previous, token in zip(tokens, tokens[1:])
+        )
+        ast_varchar = 0
         for index, node in enumerate(ast.walk(), 1):
             if index > config.max_ast_nodes:
                 raise RecognitionError('ast-budget', 'AST node budget exhausted')
@@ -335,6 +347,10 @@ def _recognize_v2(config, sql):
                 raise RecognitionError('sql-function', 'Functions are outside V2 point CRUD')
             if isinstance(node, (exp.Join, exp.Subquery, exp.CTE, exp.Union, exp.Intersect, exp.Except)):
                 raise RecognitionError('multi-relation', 'Only one configured base table is supported')
+            if type(node) is exp.Cast and type(node.to) is exp.DataType and node.to.this == exp.DataType.Type.VARCHAR:
+                ast_varchar += 1
+        if ast_varchar != original_varchar:
+            raise RecognitionError('bind-cast', 'Text assignments support only the original unquoted ::VARCHAR spelling')
         return _PointBuilderV2(config, sql, exp, slots).build(ast, stray_percent)
     except RecognitionError:
         raise
