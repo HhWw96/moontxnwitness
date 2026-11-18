@@ -1,6 +1,9 @@
 # Unreleased
 
 - Capture configured point CRUD through native async psycopg connections with independent source verification. Exercise write skew, a confirmed `40001` and retry, and cancellation in the PostgreSQL workflow.
+
+# 0.5.5
+
 - Package original configured-window observations and analysis/reduction reports in separate offline capsule formats, with independent caller-selected configuration, source policy and budgets on replay.
 - Preserve synchronous factory exceptions and controller ownership, reject unsupported async results, and prevent sealing while bounded local acquisition calls are in flight.
 - Preserve the original journal IO cause before and after worker shutdown, including repeated capture close; keep healthy reference-validation failures retryable.

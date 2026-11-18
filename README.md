@@ -12,11 +12,13 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-当前源码版本为 **v0.5.1**，提供原生 JavaScript 模型报告和能力查询。已发布构建见 [GitHub Releases](https://github.com/HhWw96/moontxnwitness/releases)，当前接口与后续工作见[开发路线](docs/ROADMAP.md)。各版本的构建、测试和下载状态由对应版本记录。
+当前源码版本为 **v0.5.5**，提供同步 PostgreSQL 点 CRUD 来源核验、异常缩减和离线复现。各版本的构建与下载记录见 [GitHub Releases](https://github.com/HhWw96/moontxnwitness/releases)，当前接口与后续工作见[开发路线](docs/ROADMAP.md)。
 
 ## 关系谓词模型与可组合推断
 
-开发分支新增[完整 PostgreSQL 点 CRUD 窗口分析](docs/configured-window-v2.md)。业务保留原始 SQL，通过局部同步或[原生异步连接包装](docs/configured-async-window-v2.md)自动记录实际结果、写入来源与提交响应。MoonBit 独立核验后生成关系历史，提供串行化反证或完整串行重放证书。支持 int64、C-text 和 UUID 主键。调用 `analyzeConfiguredWindowV4` 分析，使用独立配置与预算调用 `verifyConfiguredWindowV4` 重算。
+[PostgreSQL 点 CRUD 窗口分析](docs/configured-window-v2.md)保留业务的原始 SQL，通过局部同步连接包装记录实际结果、写入来源与提交响应。MoonBit 独立核验后生成关系历史，提供串行化反证或完整串行重放证书。支持 int64、C-text 和 UUID 主键。调用 `analyzeConfiguredWindowV4` 分析，使用独立配置与预算调用 `verifyConfiguredWindowV4` 重算。
+
+当前开发源码还提供[原生异步连接包装](docs/configured-async-window-v2.md)。业务连接使用 psycopg 的事件循环，控制连接在原线程记录边界快照。
 
 `reduceConfiguredWindowV4` 在完整原始窗口上选择事务，保留指定的 Serializable 反证并重新检查来源闭包；真实 PostgreSQL 案例可将五事务窗口缩成两事务。`explainConfiguredWindowV4` 在独立验证后生成离线说明页，关联 SQL、实际交付、行版本、依赖及缩减见证。[缩减契约与复现](docs/configured-window-reduction-v2.md)说明预算、原事件映射与单最小验证。
 
