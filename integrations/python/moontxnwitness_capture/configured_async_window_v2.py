@@ -139,12 +139,23 @@ class _AsyncPointConnectionV2(DiagnosticAsyncConnection):
                 await cursor.execute(WRITER_PROBE_SQL, prepare=False)
                 native = _native(cursor)
                 rows = await cursor.fetchall()
-            except BaseException:
-                await cursor.execute('ROLLBACK TO SAVEPOINT ' + savepoint, prepare=False)
-                await cursor.execute('RELEASE SAVEPOINT ' + savepoint, prepare=False)
+            except asyncio.CancelledError:
+                try:
+                    await self._recover_checkpoint(cursor, savepoint)
+                except BaseException:
+                    self._session.gap('async_point_checkpoint_cleanup_failed', 'Cleanup after a cancelled writer probe did not complete.')
                 raise
-            await cursor.execute('RELEASE SAVEPOINT ' + savepoint, prepare=False)
+            except Exception:
+                await self._recover_checkpoint(cursor, savepoint)
+                raise
+            else:
+                await cursor.execute('RELEASE SAVEPOINT ' + savepoint, prepare=False)
         _retain_writer_checkpoint(self, pid, native, rows)
+
+    @staticmethod
+    async def _recover_checkpoint(cursor, savepoint):
+        await cursor.execute('ROLLBACK TO SAVEPOINT ' + savepoint, prepare=False)
+        await cursor.execute('RELEASE SAVEPOINT ' + savepoint, prepare=False)
 
     async def commit(self):
         async with self._point_lock:
