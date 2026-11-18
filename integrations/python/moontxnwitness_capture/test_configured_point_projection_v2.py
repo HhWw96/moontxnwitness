@@ -10,7 +10,7 @@ import uuid
 from .configured_sql import ColumnConfig, RecognitionError, TEXT_COMPARISON
 from .configured_sql_v2 import ConfiguredSQLParserV2, SQLCaptureConfigV2, TableConfigV2, PrimaryKeyConfigV2
 from .configured_point_projection_v2 import (
-    PointProjectionOptionsV2, build_point_projection, verify_point_projection,
+    PointProjectionOptionsV2, _build_captured_projection, build_point_projection, verify_point_projection,
 )
 
 
@@ -50,6 +50,24 @@ def row(table):
 
 
 class PointProjectionTests(unittest.TestCase):
+    def test_capture_cache_reuses_shape_and_validates_every_parameter_set(self):
+        parser, options = setup()
+        select = 'SELECT a.* FROM ledger.accounts AS a WHERE account_no=%s'
+        update = 'UPDATE ledger.accounts SET label=%(label)s::VARCHAR WHERE account_no=%(key)s RETURNING label'
+        for sql, param_sets in [(select, [[7], [9]]),
+                                (update, [{'label': '首个🙂 ', 'key': 7}, {'label': '改动', 'key': 9}])]:
+            for params in param_sets:
+                fresh = ConfiguredSQLParserV2(options.config, cache_entries=0)
+                expected = build_point_projection(fresh.recognize(sql), params, options)
+                actual = _build_captured_projection(parser, sql, params, options)
+                self.assertEqual(actual, expected)
+        self.assertEqual(parser.cache_info().misses, 2)
+        self.assertEqual(parser.cache_info().hits, 2)
+        with self.assertRaises(RecognitionError):
+            _build_captured_projection(parser, update, {'label': False, 'key': 9}, options)
+        with self.assertRaises(RecognitionError):
+            _build_captured_projection(parser, select, [7], PointProjectionOptionsV2(options.config))
+
     def test_three_layouts_and_all_four_operations_have_explicit_image_maps(self):
         for table in layouts():
             parser, options = setup(table)

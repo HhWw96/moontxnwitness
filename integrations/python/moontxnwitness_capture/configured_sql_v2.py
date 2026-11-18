@@ -351,7 +351,12 @@ def _recognize_v2(config, sql):
                 ast_varchar += 1
         if ast_varchar != original_varchar:
             raise RecognitionError('bind-cast', 'Text assignments support only the original unquoted ::VARCHAR spelling')
-        return _PointBuilderV2(config, sql, exp, slots).build(ast, stray_percent)
+        plan = _PointBuilderV2(config, sql, exp, slots).build(ast, stray_percent)
+        result = ast if plan.operation == 'select' else ast.args.get('returning')
+        # A quoted identifier containing '*' is not a wildcard node.
+        star = result is not None and any(type(node) is exp.Star
+            for expression in result.expressions for node in expression.walk())
+        return plan, star
     except RecognitionError:
         raise
     except (sqlglot.errors.SqlglotError, RecursionError, ValueError, TypeError, AttributeError) as error:
@@ -374,6 +379,9 @@ class ConfiguredSQLParserV2:
         return self._config
 
     def recognize(self, sql):
+        return self._recognize_with_shape(sql)[0]
+
+    def _recognize_with_shape(self, sql):
         if type(sql) is not str:
             raise RecognitionError('sql-type', 'Original plain SQL text is required')
         try:
@@ -387,7 +395,8 @@ class ConfiguredSQLParserV2:
                 self._hits += 1
                 return cached[0]
             self._misses += 1
-        plan = _recognize_v2(self._config, sql)
+        recognized = _recognize_v2(self._config, sql)
+        plan, _ = recognized
         size = len(_canonical(plan.to_dict()).encode('utf-8')) + len(sql.encode('utf-8'))
         with self._lock:
             if self._entries and size <= self._maximum:
@@ -397,9 +406,9 @@ class ConfiguredSQLParserV2:
                 while self._cache and (len(self._cache) >= self._entries or self._bytes + size > self._maximum):
                     _, (_, removed) = self._cache.popitem(last=False)
                     self._bytes -= removed
-                self._cache[sql] = (plan, size)
+                self._cache[sql] = (recognized, size)
                 self._bytes += size
-        return plan
+        return recognized
 
     def cache_info(self):
         with self._lock:
