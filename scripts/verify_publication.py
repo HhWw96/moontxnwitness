@@ -244,16 +244,18 @@ test "published typed v4 explicit model reduction" {{
     print(f'Registry-only JS and Wasm GC consumers: {expected_tests} tests each passed.', flush=True)
 
     tag_sha = run(['git', 'rev-list', '-n', '1', 'v' + VERSION]).strip()
-    runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', tag_sha, '--workflow', 'ci.yml', '--json', 'databaseId,conclusion,headSha', '--limit', '10']))
+    # A pull request can advertise the branch head while running the synthetic
+    # merge commit. Default release evidence must come from an exact push.
+    runs = json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', tag_sha, '--event', 'push', '--workflow', 'ci.yml', '--json', 'databaseId,conclusion,headSha', '--limit', '10']))
     successful = [item for item in runs if item['headSha'] == tag_sha and item['conclusion'] == 'success']
     assert successful, 'No successful CI run for the exact release commit'
-    ci = json.loads(run(['gh', 'run', 'view', str(successful[0]['databaseId']), '--repo', MODULE, '--json', 'conclusion,headSha,url,jobs']))
-    assert ci['conclusion'] == 'success'
+    ci = json.loads(run(['gh', 'run', 'view', str(successful[0]['databaseId']), '--repo', MODULE, '--json', 'conclusion,headSha,event,url,jobs']))
+    assert ci['conclusion'] == 'success' and ci['headSha'] == tag_sha and ci['event'] == 'push'
     RECEIPT['github']['ci'] = {'url': ci['url'], 'headSha': ci['headSha'], 'conclusion': ci['conclusion'], 'jobs': [{'name': job['name'], 'conclusion': job['conclusion']} for job in ci['jobs']], 'linuxNativeExecuted': any(step['name'] == 'Execute Native core on Linux' and step['conclusion'] == 'success' for job in ci['jobs'] for step in job['steps'])}
     assert RECEIPT['github']['ci']['linuxNativeExecuted'], 'Native execution must actually pass'
     if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
         successful = wait_for_successful_run_list(
-            lambda remaining: json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', tag_sha, '--workflow', 'postgres.yml', '--json', 'databaseId,status,conclusion,headSha', '--limit', '10'], timeout=min(240, remaining))),
+            lambda remaining: json.loads(run(['gh', 'run', 'list', '--repo', MODULE, '--commit', tag_sha, '--event', 'push', '--workflow', 'postgres.yml', '--json', 'databaseId,status,conclusion,headSha', '--limit', '10'], timeout=min(240, remaining))),
             tag_sha)
         repaired = False
         repair_path = ROOT / 'verification/releases' / VERSION / 'postgres-ci-repair.json'
@@ -265,7 +267,10 @@ test "published typed v4 explicit model reduction" {{
             successful = [{'databaseId': repair['runId']}]
             repaired = True
         assert successful, 'No successful independent PostgreSQL CI for this release source'
-        pg_ci = json.loads(run(['gh', 'run', 'view', str(successful[0]['databaseId']), '--repo', MODULE, '--json', 'conclusion,headSha,url']))
+        pg_ci = json.loads(run(['gh', 'run', 'view', str(successful[0]['databaseId']), '--repo', MODULE, '--json', 'conclusion,headSha,event,url']))
+        assert pg_ci['conclusion'] == 'success'
+        if not repaired:
+            assert pg_ci['headSha'] == tag_sha and pg_ci['event'] == 'push'
         pg_dir = WORK / 'postgres-ci'
         run(['gh', 'run', 'download', str(successful[0]['databaseId']), '--repo', MODULE, '--name', 'actual-postgresql-evidence', '--dir', str(pg_dir)])
         candidates = list(pg_dir.rglob('postgres.json'))

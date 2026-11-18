@@ -252,7 +252,13 @@ class PublisherIntegrationTests(unittest.TestCase):
             self.assertEqual(args[args.index('--commit')+1], SHA)
             self.assertEqual(args[args.index('--json')+1], 'databaseId,status,conclusion,headSha')
             reads.append(options['timeout'])
-            return json.dumps([] if len(reads)==1 else [row(sha=OTHER), row()])
+            available = [dict(row(event='pull_request'), databaseId=19)]
+            if len(reads) > 1:
+                available.extend([row(sha=OTHER), row()])
+            if '--event' in args:
+                event = args[args.index('--event')+1]
+                available = [item for item in available if item['event'] == event]
+            return json.dumps(available)
         namespace = {'run':read,'json':json,'MODULE':'HhWw96/moontxnwitness',
                      'tag_sha':SHA,'wait_for_successful_run_list':observed.wait_for_successful_run_list}
         with patch.object(observed.time,'monotonic',clock.monotonic), patch.object(observed.time,'sleep',clock.sleep):
