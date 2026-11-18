@@ -23,6 +23,17 @@ CONFIGURED_SLOTS = {
     'sql-projection-core.mjs':'sql_projection_bridge',
     'sql-fetch-core.mjs':'sql_fetch_bridge',
 }
+WINDOW_COMPILED_PROFILE = 'moontxnwitness-window-compiled-slots/v1'
+WINDOW_COMPILED_ALGORITHM = 'exact-source-window-bridges-and-observed-output-sha256/v1'
+WINDOW_COMPILED_SLOTS = {
+    'sql-projection-v2-core.mjs': 'sql_projection_v2_bridge',
+    'structured-window-verification-core.mjs': 'structured_window_verification_bridge',
+}
+WINDOW_COMPILED_INVENTORIES = {
+    'configuredWindowRuntimeSha256': ['sql-projection-v2-core.mjs', 'configured-window-v2.mjs',
+        'configured-window-v2-host.mjs', 'configured-window-v2-standalone.mjs'],
+    'structuredWindowRuntimeSha256': ['structured-window-verification-core.mjs', 'configured-window-v2-structured.mjs'],
+}
 ATTEMPT = re.compile(r'attempt-(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)\.json\Z')
 IMPLEMENTATION = {'moontxnwitness_capture/'+name for name in ('__init__.py','capture.py','_provenance.py','_column_profile.py','_initialization_guard.py','_source_inventory.py','presence.py')}
 PRESENCE_BINDINGS = {'trace','coverage','audit','history','report','capsule','tamperChecks','reduction','protocol'}
@@ -127,6 +138,79 @@ def configured_runtime_binding(payload, expected, pg, tested):
         observed[name] = {'bytes':len(payload[path]),'sha256':digest(payload[path])}
     return {'format':CONFIGURED_PROFILE,'algorithm':CONFIGURED_ALGORITHM,'slots':dict(CONFIGURED_SLOTS),'sourceFiles':rows,'consumerFiles':current_files,'postgresFiles':observed,'postgresManifestFile':{'bytes':len(manifest_raw),'sha256':digest(manifest_raw)},'actualPostgresBytesVerified':True,'compiledBytesEqual':{name:observed[name]['sha256'] == current_files[name]['sha256'] for name in CONFIGURED_SLOTS}}
 
+
+def window_compiled_present(manifest, tested):
+    """Historical inventories stay unchanged; either new slot requires this proof."""
+    return (any(field in manifest for field in WINDOW_COMPILED_INVENTORIES) or
+            any('dist/'+name in tested for name in WINDOW_COMPILED_SLOTS))
+
+
+def window_compiled_source_binding(root, tested):
+    name = 'scripts/build.mjs'; raw = no_links(root, name).read_bytes()
+    require(0 < len(raw) <= 1024*1024 and tested.get(name) == digest(raw), 'Actual window build declaration differs from executed inputs')
+    text = raw.decode('utf8')
+    matches = list(re.finditer(r'\bconst\s+configuredWindowCompiledCores\s*=\s*\{([^{}]*)\}\s*;', text))
+    require(len(matches) == 1, 'Exactly one literal window compiled build declaration is required')
+    body = matches[0][1]; pairs = list(re.finditer(r"(['\"])([^'\"]+)\1\s*:\s*(['\"])([^'\"]+)\3", body))
+    mapping = {match[2]: match[4] for match in pairs}; remaining = body
+    for match in reversed(pairs): remaining = remaining[:match.start()]+remaining[match.end():]
+    require(len(pairs) == 2 and mapping == WINDOW_COMPILED_SLOTS and re.fullmatch(r'[\s,]*', remaining), 'Window compiled build slots/bridge mapping differs from the exact two declarations')
+    loop = r'''for\s*\(\s*const\s*\[\s*name\s*,\s*folder\s*\]\s*of\s*Object\.entries\(configuredWindowCompiledCores\)\s*\)\s*copyFileSync\(\s*resolve\(root,\s*(['"])_build/js/release/build\1,\s*folder,\s*folder\s*\+\s*(['"])\.js\2\),\s*resolve\(output,\s*name\)\s*\)\s*;'''
+    require(len(list(re.finditer(loop, text))) == 1, 'Window compiled mapping must drive the exact source-to-runtime copy loop')
+    files = {name: {'bytes': len(raw), 'sha256': digest(raw)}}
+    for bridge in WINDOW_COMPILED_SLOTS.values():
+        for leaf in ('moon.pkg', 'bridge.mbt'):
+            name = 'src/'+bridge+'/'+leaf; raw = no_links(root, name).read_bytes()
+            require(0 < len(raw) <= 1024*1024 and tested.get(name) == digest(raw), 'Actual window bridge differs from executed inputs: '+name)
+            files[name] = {'bytes': len(raw), 'sha256': digest(raw)}
+    return {'format': WINDOW_COMPILED_PROFILE, 'algorithm': WINDOW_COMPILED_ALGORITHM,
+            'slots': dict(WINDOW_COMPILED_SLOTS), 'manifestInventories': {key:list(value) for key,value in WINDOW_COMPILED_INVENTORIES.items()}, 'sourceFiles': files}
+
+
+def window_compiled_runtime_binding(payload, expected, pg, tested):
+    """Only independently bound raw outputs may differ between build platforms."""
+    current = expected['buildManifest']; current_tested = expected['testedFileSha256']
+    source = expected.get('windowCompiledRuntimeSource'); current_files = expected.get('windowCompiledRuntimeFiles')
+    require(isinstance(source, dict) and source.get('format') == WINDOW_COMPILED_PROFILE and
+            source.get('algorithm') == WINDOW_COMPILED_ALGORITHM and source.get('slots') == WINDOW_COMPILED_SLOTS and
+            source.get('manifestInventories') == WINDOW_COMPILED_INVENTORIES, 'Missing/unknown actual window compiled source binding')
+    names = {'scripts/build.mjs'} | {'src/'+bridge+'/'+leaf for bridge in WINDOW_COMPILED_SLOTS.values() for leaf in ('moon.pkg', 'bridge.mbt')}
+    rows = source.get('sourceFiles')
+    require(isinstance(rows, dict) and set(rows) == names, 'Incomplete/extra window compiled source bridge inventory')
+    for name, row in rows.items():
+        require(isinstance(row, dict) and type(row.get('bytes')) is int and 0 < row['bytes'] <= 1024*1024 and
+                isinstance(row.get('sha256'), str) and SHA.fullmatch(row['sha256']) and
+                row['sha256'] == current_tested.get(name) == tested.get(name), 'Window compiled source bridge/build input differs: '+name)
+    require(isinstance(current_files, dict) and set(current_files) == set(WINDOW_COMPILED_SLOTS), 'Actual current window compiled runtime inventory is incomplete/extra')
+    manifest_raw = payload.get('dist/build-manifest.json')
+    require(isinstance(manifest_raw, bytes) and len(manifest_raw) <= 1024*1024 and
+            digest(manifest_raw) == tested.get('dist/build-manifest.json') and json_bytes(manifest_raw) == pg,
+            'Actual PostgreSQL window build manifest differs from executed inputs')
+    observed = {}
+    for field, names in WINDOW_COMPILED_INVENTORIES.items():
+        current_hashes = current.get(field); pg_hashes = pg.get(field)
+        require(isinstance(current_hashes, dict) and isinstance(pg_hashes, dict) and
+                set(current_hashes) == set(pg_hashes) == set(names), 'Window compiled manifest inventory differs: '+field)
+        for name in names:
+            path = 'dist/'+name; current_hash = current_hashes[name]; pg_hash = pg_hashes[name]
+            require(isinstance(current_hash, str) and SHA.fullmatch(current_hash) and current_hash == current_tested.get(path), 'Current window manifest/execution digest differs: '+name)
+            require(isinstance(pg_hash, str) and SHA.fullmatch(pg_hash) and pg_hash == tested.get(path), 'PostgreSQL window manifest/execution digest differs: '+name)
+            if name not in WINDOW_COMPILED_SLOTS:
+                require(current_hash == pg_hash, 'Window wrapper is not a platform runtime exception: '+name)
+                continue
+            row = current_files[name]
+            require(isinstance(row, dict) and type(row.get('bytes')) is int and 0 < row['bytes'] <= MAX_MEMBER and
+                    row.get('sha256') == current_hash, 'Actual current window runtime/manifest digest differs: '+name)
+            require(path in payload and isinstance(payload[path], bytes) and 0 < len(payload[path]) <= MAX_MEMBER and
+                    digest(payload[path]) == pg_hash, 'Actual PostgreSQL window runtime bytes differ: '+name)
+            observed[name] = {'bytes': len(payload[path]), 'sha256': digest(payload[path])}
+    return {'format': WINDOW_COMPILED_PROFILE, 'algorithm': WINDOW_COMPILED_ALGORITHM,
+            'slots': dict(WINDOW_COMPILED_SLOTS), 'manifestInventories': {key:list(value) for key,value in WINDOW_COMPILED_INVENTORIES.items()},
+            'sourceFiles': rows, 'consumerFiles': current_files, 'postgresFiles': observed,
+            'postgresManifestFile': {'bytes': len(manifest_raw), 'sha256': digest(manifest_raw)},
+            'actualPostgresBytesVerified': True,
+            'compiledBytesEqual': {name: observed[name]['sha256'] == current_files[name]['sha256'] for name in WINDOW_COMPILED_SLOTS}}
+
 def checkout_identity(root):
     root = Path(root).resolve()
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
@@ -153,6 +237,15 @@ def checkout_identity(root):
             raw = no_links(root,'dist/'+name).read_bytes(); files[name] = {'bytes':len(raw),'sha256':digest(raw)}
         identity['configuredRuntimeFiles'] = files
         configured_runtime_binding({**{'dist/'+name:no_links(root,'dist/'+name).read_bytes() for name in CONFIGURED_SLOTS},'dist/build-manifest.json':manifest_raw},identity,manifest,tested)
+    if window_compiled_present(manifest, tested):
+        require(tested.get('dist/build-manifest.json') == digest(manifest_raw), 'Actual current window build manifest differs from executed inputs')
+        identity['windowCompiledRuntimeSource'] = window_compiled_source_binding(root, tested)
+        identity['windowCompiledRuntimeFiles'] = {}
+        for name in WINDOW_COMPILED_SLOTS:
+            raw = no_links(root, 'dist/'+name).read_bytes()
+            identity['windowCompiledRuntimeFiles'][name] = {'bytes':len(raw), 'sha256':digest(raw)}
+        window_compiled_runtime_binding({**{'dist/'+name:no_links(root,'dist/'+name).read_bytes() for name in WINDOW_COMPILED_SLOTS},
+            'dist/build-manifest.json':manifest_raw}, identity, manifest, tested)
     return identity
 
 def run_matches_checkout(run, expected, pr_head=None):
@@ -189,10 +282,13 @@ def validate_payload(payload, run, artifact, expected, *, require_runtime_bytes=
     current_tested = expected.get('testedFileSha256')
     require(isinstance(current_tested,dict) and current_tested, 'Missing current executable fingerprint')
     platform_members = {'dist/core.mjs','dist/capture-core.mjs','dist/build-manifest.json'}
-    configured = None
+    configured = None; window_compiled = None
     if configured_required(version):
         configured = configured_runtime_binding(payload,expected,pg,tested)
         platform_members.update('dist/'+name for name in CONFIGURED_SLOTS)
+    if window_compiled_present(current, current_tested) or window_compiled_present(pg, tested):
+        window_compiled = window_compiled_runtime_binding(payload, expected, pg, tested)
+        platform_members.update('dist/'+name for name in WINDOW_COMPILED_SLOTS)
     shared = {k:v for k,v in tested.items() if k not in platform_members}
     current_shared = {k:v for k,v in current_tested.items() if k not in platform_members}
     require(shared == current_shared, 'PostgreSQL SQL/adapter/fixture executable fingerprints differ')
@@ -236,6 +332,10 @@ def validate_payload(payload, run, artifact, expected, *, require_runtime_bytes=
         for name in CONFIGURED_SLOTS:
             selected[f'verification/releases/{version}/postgres-ci-import/bound-runtimes/'+name] = payload['dist/'+name]
         selected[f'verification/releases/{version}/postgres-ci-import/bound-runtimes/build-manifest.json'] = payload['dist/build-manifest.json']
+    if window_compiled is not None:
+        for name in WINDOW_COMPILED_SLOTS:
+            selected[f'verification/releases/{version}/postgres-ci-import/bound-runtimes/'+name] = payload['dist/'+name]
+        selected[f'verification/releases/{version}/postgres-ci-import/bound-runtimes/build-manifest.json'] = payload['dist/build-manifest.json']
     require(sum(map(len,selected.values())) <= MAX_PACKET, 'Imported packet budget exceeded')
     comparison = {'sourceVersionCompilerMatch':True,
                   'sharedExecutableInputsSha256':digest(json.dumps(shared,sort_keys=True,separators=(',',':')).encode()),
@@ -247,6 +347,7 @@ def validate_payload(payload, run, artifact, expected, *, require_runtime_bytes=
                   'toolchainsEqual':pg.get('toolchain') == current.get('toolchain')}
     if attempts: comparison['attempts'] = attempts
     if configured is not None: comparison['configuredRuntimeBinding'] = configured
+    if window_compiled is not None: comparison['windowCompiledRuntimeBinding'] = window_compiled
     return selected, comparison
 
 def validate_artifact_metadata(run, artifact):
@@ -283,6 +384,7 @@ def validate_archive(path, run, artifact, expected, repository, pr_head=None, *,
             if member.is_dir():continue
             keep=name.startswith(prefix) or name in ['verification/postgres-ci-source.json',binding+'postgres-ci-runtime-before.json',binding+'postgres-ci-runtime-after.json','dist/core.mjs','dist/capture-core.mjs']
             if configured_required(expected['version']) and name in {'dist/'+x for x in CONFIGURED_SLOTS}|{'dist/build-manifest.json'}: keep = True
+            if name in {'dist/'+x for x in WINDOW_COMPILED_SLOTS}: keep = True
             if reproduction:
                 keep = keep or name.startswith(f"verification/provenance-presence/ci-{run['id']}-{run['run_attempt']}/") or name.startswith(f"verification/releases/{expected['version']}/capture/") or name in ('verification/postgres.json','verification/capture-postgres.json')
             raw=bytearray() if keep else None;read=0
@@ -484,6 +586,17 @@ def install_reproduction(root, files, record):
             key = f'verification/releases/{version}/postgres-ci-import/bound-runtimes/'+name
             spec = binding.get('postgresManifestFile') if name == 'build-manifest.json' else binding.get('postgresFiles',{}).get(name)
             require(key in files and isinstance(spec,dict) and {'bytes':len(files[key]),'sha256':digest(files[key])} == spec, 'Configured installation lost a verified raw runtime/manifest')
+    comparison = record.get('comparison', {})
+    if window_compiled_present(comparison.get('consumerBuildManifest', {}), {}) or window_compiled_present(comparison.get('postgresBuildManifest', {}), {}) or 'windowCompiledRuntimeBinding' in comparison:
+        binding = comparison.get('windowCompiledRuntimeBinding', {})
+        require(binding.get('format') == WINDOW_COMPILED_PROFILE and binding.get('algorithm') == WINDOW_COMPILED_ALGORITHM and
+                binding.get('slots') == WINDOW_COMPILED_SLOTS and binding.get('actualPostgresBytesVerified') is True,
+                'Window installation requires the actual-byte compiled runtime binding')
+        for name in [*WINDOW_COMPILED_SLOTS, 'build-manifest.json']:
+            key = f'verification/releases/{version}/postgres-ci-import/bound-runtimes/'+name
+            spec = binding.get('postgresManifestFile') if name == 'build-manifest.json' else binding.get('postgresFiles', {}).get(name)
+            require(key in files and isinstance(spec, dict) and {'bytes':len(files[key]), 'sha256':digest(files[key])} == spec,
+                    'Window installation lost a verified raw runtime/manifest')
     for name in files: require(_reproduction_scope(name,version,record['run'],record['comparison']), 'Reproduction destination outside verified scope')
     # Only producer-owned rolling pointers may differ from checkout bytes. Retain
     # their exact tracked originals before atomically installing current-run data.
@@ -499,6 +612,7 @@ def install_reproduction(root, files, record):
     origins = {name:{'sourcePath':'verification/'+name.split('/')[-1],'sourceCommit':record['sourceCommit'],'bytes':len(files[name]),'sha256':digest(files[name])} for name in previous}
     record = {**record,'format':full_format(version),'previousPointerFiles':previous,'previousPointerOrigins':origins,'files':{n:{'bytes':len(v),'sha256':digest(v)} for n,v in sorted(files.items())}}
     if configured_required(version): record['runtimeBindingAlgorithm'] = CONFIGURED_ALGORITHM
+    if 'windowCompiledRuntimeBinding' in comparison: record['windowCompiledRuntimeBindingAlgorithm'] = WINDOW_COMPILED_ALGORITHM
     encoded = (json.dumps(record,sort_keys=True,indent=2)+'\n').encode(); all_files = {**files,index:encoded}
     for name, raw in all_files.items():
         path = no_links(root,name)
@@ -550,6 +664,13 @@ def validated_ci_reproduction_files(root, version):
         for member in CONFIGURED_SLOTS: translated['dist/'+member] = payload[base+'bound-runtimes/'+member]
         translated['dist/build-manifest.json'] = payload[base+'bound-runtimes/build-manifest.json']
         require(record.get('runtimeBindingAlgorithm') == CONFIGURED_ALGORITHM, 'Configured import algorithm is unknown')
+    if window_compiled_present(expected['buildManifest'], expected['testedFileSha256']):
+        for member in WINDOW_COMPILED_SLOTS:
+            require(base+'bound-runtimes/'+member in payload, 'Missing retained window compiled runtime: '+member)
+            translated['dist/'+member] = payload[base+'bound-runtimes/'+member]
+        translated['dist/build-manifest.json'] = payload[base+'bound-runtimes/build-manifest.json']
+        require(record.get('windowCompiledRuntimeBindingAlgorithm') == WINDOW_COMPILED_ALGORITHM,
+                'Window compiled import algorithm is unknown')
     rebuilt, comparison = validate_reproduction_payload(translated,run,artifact,expected,require_runtime_bytes=False)
     previous = record.get('previousPointerFiles',[]); require(isinstance(previous,list) and len(previous) <= 2 and len(set(previous)) == len(previous), 'Invalid previous-pointer inventory')
     for member in previous:

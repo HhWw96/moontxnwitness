@@ -1,5 +1,31 @@
 # Unreleased
 
+- Package original configured-window observations and analysis/reduction reports in separate offline capsule formats, with independent caller-selected configuration, source policy and budgets on replay.
+- Preserve synchronous factory exceptions and controller ownership, reject unsupported async results, and prevent sealing while bounded local acquisition calls are in flight.
+- Preserve the original journal IO cause before and after worker shutdown, including repeated capture close; keep healthy reference-validation failures retryable.
+- Exercise the owned-factory path on real PostgreSQL CRUD and concurrent windows; run producer lifecycle and capsule/fault checks in the standard test and database workflows.
+- Add an explicitly imported structured verification profile that reuses reconstructed records and canonical bytes while preserving external strict parsing, semantic budgets and the original 64-container verification boundary.
+- Keep the default verification implementation; retain both formal performance runs, their failed common-model P95 controls and the exact default-candidate runtime snapshot. The explicit profile remains experimental.
+- Bound oversized malformed-input failures in the explicit profile to its report-byte contract.
+- Add a source-closed configured-window reduction adapter that preserves an independently selected Serializable refutation and keeps the original window evidence required for verification.
+- Independently admit original V2 installations and complete boundary snapshots, then align captured SQL, actual native/delivered results, confirmed transactions and every new retained effect into a source-bound relation history.
+- Analyze configured synchronous full-row point CRUD with caller-selected policies and budgets; retain graph witnesses and separate complete serial-replay certificates, with independent report recomputation.
+- Preserve zero-row conditional writes, uncovered results and uncertain outcomes as explicit unknown results; add original-SQL PostgreSQL write-skew and compatible control windows for int64, C-text and UUID identities.
+- Bind normalized operation sequences to original SQL/native records and expose the configured window contract and limits in capability discovery.
+- Support explicit physical build output directories and repeatable cross-volume installation of hash-pinned compatibility files without replacing mismatched existing data.
+- Independently verify projected PostgreSQL point results in MoonBit, checking OLD/NEW images, original assignments, native metadata and actual typed business deliveries under caller-selected budgets.
+- Recheck original snapshot/trace digests before packaging and publish successful window receipts only after synchronization; retain explicit failed/pending evidence.
+
+- Seal configured V2 window inputs with independent read-only boundary snapshots, full retained-ledger scans, original journal bindings and bounded row/effect/log storage.
+- Preserve late-committed lower version identities across snapshots; allocation order is not used as commit order or a cross-snapshot visibility watermark.
+
+- Recognize configurable point CRUD with dynamic int64, text and UUID primary keys under a separate v2 contract; independently reconstruct SQL candidates and same-statement OLD/NEW projections in MoonBit.
+- Check original native text buffers against actual typed result deliveries, including explicit fetch sizes, partial reads and independently selected verification budgets.
+- Add an opt-in synchronous connection-local projection producer with original business result shapes, automatic writer probes, confirmed commit observation and bounded retained logs.
+- Preserve hidden metadata across result helpers and failed replacements, and isolate observer query failures from application writes with private savepoints.
+- Install explicit V2 source components for non-NULL int64, text and UUID identities, checking native catalogs, initialization inventory, owner/writer scope and actual commit acknowledgement.
+- Add cross-language construction, tamper and real PostgreSQL driver checks. Producer component flags remain separate from independent closed-window and model admission.
+
 # 0.5.1 — 2026-11-16
 
 - Return complete JavaScript model and relation-model reports through bounded native objects, preserving source checks, evidence, counters and original capsule text.

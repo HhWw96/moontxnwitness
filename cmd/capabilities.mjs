@@ -19,6 +19,8 @@ export function capabilities() {
     declaration.relationPredicateModels.verify,
     declaration.relationPredicateModels.reduction.entry,
     declaration.relationPredicateModels.reduction.verify,
+    ...(declaration.configuredWindows ? [declaration.configuredWindows.analyze, declaration.configuredWindows.verify,
+      declaration.configuredWindows.reduce, declaration.configuredWindows.verifyReduction, declaration.configuredWindows.explain].filter(Boolean) : []),
   ])].sort();
   const runtimeModels = Array.isArray(sdk.ELLE_CORE_MODELS_V4) ? [...sdk.ELLE_CORE_MODELS_V4] : [];
   return {
@@ -61,6 +63,7 @@ export function formatCapabilitiesText(report) {
     `Declared model names match runtime: ${report.runtime.declaredModelNamesMatchRuntime}`,
     'Declared SDK entry points:', ...availability(report.runtime.declaredSdkApis),
     'JavaScript native model-report exports:', ...availability(report.runtime.nativeModelReportExports),
+    ...(report.declaration.configuredWindows?.optionalProfiles ?? []).map(profile => `Optional explicit profile: ${profile.id} (${profile.entry})`),
     ...Object.values(report.boundaries),
     'Use --format json for complete declaration requirements, limits and loaded SDK function exports.',
     '',

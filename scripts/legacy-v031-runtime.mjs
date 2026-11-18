@@ -12,7 +12,14 @@ export async function copyPublic031(root,output){
   mkdirSync(dirname(to),{recursive:true});
   try{linkSync(from,to);}catch(e){
    if(e.code==='EEXIST'){if(lstatSync(to).isSymbolicLink()||hash(readFileSync(to))!==expected.sha256)throw Error('Existing public031 destination differs');}
-   else copyFileSync(from,to,constants.COPYFILE_EXCL);
+   else {
+    // Windows can report EXDEV before noticing an existing destination. Keep
+    // exclusive creation and verify that entry rather than overwriting it.
+    try{copyFileSync(from,to,constants.COPYFILE_EXCL);}catch(copyError){
+     if(copyError.code!=='EEXIST')throw copyError;
+     if(lstatSync(to).isSymbolicLink()||hash(readFileSync(to))!==expected.sha256)throw Error('Existing public031 destination differs');
+    }
+   }
   }
  }
  for(const name of ['legacy-v031.mjs','legacy-v031-binding.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));

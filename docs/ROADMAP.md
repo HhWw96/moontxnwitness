@@ -41,11 +41,26 @@ Source/profile gaps and exhausted budgets continue to produce `unknown`.
 
 ## Next stable increments
 
+The v0.5.2 development branch now includes independently reconstructed point SQL
+and native/delivery consistency checks, explicit source-installation components,
+bounded original window-input sealing, independent source/snapshot admission and
+source-bound automatic relation-history analysis. The three-key PostgreSQL
+campaign preserves out-of-order commits through complete ledger scans and runs
+normal CRUD, RR write skew, ordered Serializable and zero-row-write boundaries.
+See [window analysis](configured-window-v2.md), [source admission](source-admission-v2.md),
+[snapshot admission](snapshot-admission-v2.md) and [projected result verification](projected-result-v2.md).
+The branch is under integration; public promotion requires its applicable
+regression, CI and consumer checks.
+
 | Version | Scope | Evidence before promotion |
 | --- | --- | --- |
 | v0.5.2 | Configurable synchronous full-row point CRUD, including dynamic int64, text and UUID primary keys, with an independent source-window contract | One parser across three table layouts; original SQL, bindings, delivered results, writer identities and committed effects independently aligned; missing facts remain explicit |
-| v0.5.3 | Asynchronous psycopg and SQLAlchemy integration, original base-user CRUD and refresh, source-closed reduction and explanations | Paired original-business runs, actual isolation retries, independent reduction replay and unchanged business behavior |
-| v0.5.4 | Extend structured report transport, share source indexes and reduce allocation and persistence overhead | Full-output baseline comparison, common P95 controls and raw measurement records; capture-cost execution depends on verified storage capacity |
+| v0.5.3 | Source-closed model-preserving reduction and offline explanations | Actual five-to-two-transaction PostgreSQL reduction, independent replay, source mappings and retained original windows |
+| v0.5.4 | Explicit structured verification profile, with the original default retained | Full-output comparison and cross-profile verification; both formal measurement runs failed a common P95 control, so this profile remains experimental |
+| v0.5.5 | Synchronous factory lifecycle and offline window transport | Factory failures preserve the original exception and controller ownership; in-flight factories prevent premature sealing; capsules require independent configuration, policy and budgets |
+| v0.5.6 | Asynchronous psycopg, SQLAlchemy and original base-user CRUD/refresh integration | The same source semantics on actual connections; paired original-business runs, commit/rollback and retry identity checks; no substitution of older diagnostic-only results |
+| v0.5.7 | Capture-cost profiling and source-window performance | Separately measure transactions, checkpoints, complete snapshots and sealed tails before optimization; complete A/B/C measurements and raw failed results |
+| v0.5.8 | Integrated regression and consumer reproduction | Applicable reference checks, independent interpreters, source-closed replay and fresh package consumers over one frozen candidate |
 | v0.6.0 | Freeze recommended APIs, source contracts, budgets, support matrix and reproducible examples | Cross-target regression, reference comparisons, clean public installation and source-bound replay |
 
 The synchronous CRUD work has its own contract; it does not relabel the earlier
@@ -53,6 +68,20 @@ point-window or diagnostic formats. Candidate SQL recognition is only an input
 description until the core verifies execution, source closure and model mapping.
 Stable subsets retain explicit capabilities and do not promote unexecuted
 database or performance work to completed results.
+
+The next integration also includes model-preserving source-closed reduction and
+offline explanations over verified synchronous windows. Original bundles remain
+required; selections carry checked original-event mappings. The real PostgreSQL
+campaign includes three source-dependent read-only noise transactions around a
+two-transaction RR anomaly, rather than claiming a reduction from an already
+minimal pair. Async/ORM expansion remains separate work. The
+[structured-profile measurements](window-structured-verification.md) retain both
+failed P95 controls and do not qualify the profile for default promotion.
+
+The lifecycle increment does not turn rejected asynchronous factories or pool
+leases into supported capture. The planned asynchronous/ORM integration must
+produce and independently verify its own native observations, source closure
+and business-behavior comparisons.
 
 ## Historical records
 

@@ -10,6 +10,9 @@ import zipfile
 
 from package_archive import sha256, write_archive
 from publication_privacy import private_home_paths
+from configured_window_runtime import (configured_window_v2_available, verify_configured_window_v2_runtime,
+                                       structured_window_available, verify_structured_window_runtime,
+                                       configured_window_capsule_available, verify_configured_window_capsule_runtime)
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -41,6 +44,16 @@ def package_lite(output):
         raise ValueError('Built core does not match current source')
     cores = {'core.mjs': manifest['coreSha256'], 'capture-core.mjs': manifest['captureCoreSha256'],
              **manifest['configuredCoreSha256']}
+    if configured_window_v2_available(ROOT):
+        window_runtime = verify_configured_window_v2_runtime(ROOT, manifest)
+        cores.update({name: digest for name, digest in window_runtime.items() if name.endswith('-core.mjs')})
+    structured_window = structured_window_available(ROOT)
+    if structured_window:
+        structured_runtime = verify_structured_window_runtime(ROOT, manifest)
+        cores.update({name: digest for name, digest in structured_runtime.items() if name.endswith('-core.mjs')})
+    window_capsule = configured_window_capsule_available(ROOT)
+    if window_capsule:
+        capsule_runtime = verify_configured_window_capsule_runtime(ROOT, manifest)
     for name, digest in cores.items():
         if sha256(dist / name) != digest:
             raise ValueError(f'Runtime digest mismatch: {name}')
@@ -57,6 +70,10 @@ def package_lite(output):
         'examples/models-v4-list.json', 'examples/relation-predicate-categories.mjs',
         'examples/relation-predicate-categories.json',
     }
+    if structured_window:
+        files.add('scripts/configured-window-structured-test.mjs')
+    if window_capsule:
+        files.update(('scripts/configured-window-v2-capsule-test.mjs', 'docs/configured-window-v2-capsule.md'))
     output = output.resolve()
     output.mkdir()
     archive = output / f'{prefix}.zip'
@@ -80,9 +97,39 @@ def package_lite(output):
         run_node(root, [*cli, 'reduce-relation-category-v4', 'examples/relation-predicate-categories.json',
                         *selector, '--capsule', 'case.json'], 1)
         run_node(root, [*cli, 'replay-relation-category-reduction-v4', 'case.json', *selector])
+        if configured_window_v2_available(ROOT):
+            run_node(root, ['--input-type=module', '-e',
+                "import assert from 'node:assert/strict';import * as sdk from './dist/sdk.mjs';"
+                "import * as standalone from './dist/configured-window-v2-standalone.mjs';"
+                "const options={config:'{}',policy:'{}'};"
+                "const report=sdk.analyzeConfiguredWindowV4('{}',options);"
+                "assert.equal(report.status,'invalid');assert.equal(report.coverageComplete,false);"
+                "assert.deepEqual(standalone.analyzeConfiguredWindowV4('{}',options),report);"
+                "for(const api of [sdk,standalone]){assert.equal(api.verifyConfiguredWindowV4('{}',report,options).valid,false);"
+                "const target={...options,preserveModel:'serializable'},reduced=api.reduceConfiguredWindowV4('{}',target);"
+                "assert.equal(reduced.refutationPreserved,false);assert.equal(reduced.oneMinimal,false);"
+                "assert.equal(api.verifyConfiguredWindowReductionV4('{}',reduced,target).valid,false);}"])
+        if structured_window:
+            structured_consumer = json.loads(run_node(root, ['scripts/configured-window-structured-test.mjs']))
+            if not structured_consumer['passed'] or structured_consumer['originalCases'] != 0:
+                raise ValueError('Explicit structured profile consumer checks failed')
+            for name, digest in manifest['structuredWindowRuntimeSha256'].items():
+                if structured_consumer['runtimeSha256'].get(name) != digest:
+                    raise ValueError('Structured profile consumer runtime differs: ' + name)
+        if window_capsule:
+            capsule_consumer = json.loads(run_node(root, ['scripts/configured-window-v2-capsule-test.mjs']))
+            if not capsule_consumer['passed'] or capsule_consumer['checks'] != 7 or capsule_consumer['originalCases'] != 0:
+                raise ValueError('Configured window capsule consumer checks failed')
+            for name, digest in capsule_runtime.items():
+                if capsule_consumer['runtimeSha256'].get(name) != digest:
+                    raise ValueError('Capsule consumer runtime differs: ' + name)
     receipt.update(version=version, sourceFingerprint=manifest['sourceSha256'],
                    coreSha256=manifest['coreSha256'], legacyPayloadsIncluded=False,
-                   cleanConsumerChecks=6)
+                   cleanConsumerChecks=(7 if configured_window_v2_available(ROOT) else 6) + int(structured_window) + int(window_capsule))
+    if structured_window:
+        receipt['structuredWindowConsumer'] = structured_consumer
+    if window_capsule:
+        receipt['configuredWindowCapsuleConsumer'] = capsule_consumer
     (output / 'lite-package.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
     return receipt
 

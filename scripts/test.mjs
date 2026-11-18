@@ -34,6 +34,31 @@ for(const pattern of ['test_core_test_counts.py','test_configured_cross_cli.py',
  if(check.error||check.status!==0)throw Error(pattern+' contract failed: '+check.stdout+check.stderr);
  if(check.stdout)process.stdout.write(check.stdout);if(check.stderr)process.stderr.write(check.stderr);
 }
+// BEGIN CONFIGURED V2 PRODUCER UNITS: bounded fake-driver checks, without a database.
+const configuredV2UnitParent = resolve(process.env.MTW_CONFIGURED_V2_UNIT_ROOT || tmpdir());
+mkdirSync(configuredV2UnitParent, {recursive: true});
+const configuredV2UnitRoot = mkdtempSync(resolve(configuredV2UnitParent, 'configured-v2-'));
+const configuredV2ProducerUnits = {passed: true, actualDatabaseExecution: false, suites: {}};
+for (const pattern of ['test_configured_sql_v2.py', 'test_configured_point_projection_v2.py',
+  'test_configured_source_v2.py', 'test_configured_window_v2.py', 'test_configured_factory_v2.py']) {
+  const child = spawnSync(process.env.MTW_PYTHON || process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'),
+    ['-B', '-m', 'unittest', 'discover', '-s', 'integrations/python/moontxnwitness_capture',
+      '-t', 'integrations/python', '-p', pattern, '-v'], {
+      cwd: root, encoding: 'utf8', windowsHide: true, timeout: 120000, maxBuffer: 4 * 1024 * 1024,
+      env: {...process.env, PYTHONDONTWRITEBYTECODE: '1',
+        MTW_SOURCE_V2_TEST_ROOT: resolve(configuredV2UnitRoot, 'source'),
+        MTW_WINDOW_V2_TEST_ROOT: resolve(configuredV2UnitRoot, 'window')},
+    });
+  const output = (child.stdout || '') + (child.stderr || '');
+  if (child.error || child.status !== 0) throw Error(pattern + ' producer checks failed: ' + output);
+  const count = Number(output.match(/^Ran (\d+) tests? in /m)?.[1]);
+  assert(Number.isSafeInteger(count) && count > 0, pattern + ' did not execute any tests');
+  assert.match(output, /^OK\s*$/m, pattern + ' must complete without skips');
+  configuredV2ProducerUnits.suites[pattern] = {passed: true, tests: count};
+  if (child.stdout) process.stdout.write(child.stdout);
+  if (child.stderr) process.stderr.write(child.stderr);
+}
+// END CONFIGURED V2 PRODUCER UNITS.
 runMoon(['fmt', '--check']);
 runMoon(['check', '--target', 'all', '--deny-warn', '--jobs', '1']);
 const coreTestCountsByTarget={};
@@ -189,6 +214,25 @@ assert.equal(nativeModelEvidence.passed,true);assert.equal(nativeModelEvidence.c
 const sharedHost=spawnSync(process.execPath,['scripts/shared-core-host-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:4*1024*1024});
 if(sharedHost.error||sharedHost.status!==0)throw Error('Shared configured host checks failed: '+sharedHost.stdout+sharedHost.stderr);
 assert.equal(JSON.parse(sharedHost.stdout).checks,21);
+const configuredWindowHost=spawnSync(process.execPath,['scripts/configured-window-v2-host-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:4*1024*1024});
+if(configuredWindowHost.error||configuredWindowHost.status!==0)throw Error('Configured CRUD window host checks failed: '+configuredWindowHost.stdout+configuredWindowHost.stderr);
+const configuredWindowHostReceipt=JSON.parse(configuredWindowHost.stdout);
+assert.equal(configuredWindowHostReceipt.passed,true);
+assert.equal(configuredWindowHostReceipt.checks,26);
+const configuredWindowRuntime=spawnSync(process.execPath,['scripts/configured-window-v2-runtime-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:4*1024*1024});
+if(configuredWindowRuntime.error||configuredWindowRuntime.status!==0)throw Error('Configured CRUD window runtime checks failed: '+configuredWindowRuntime.stdout+configuredWindowRuntime.stderr);
+const configuredWindowRuntimeReceipt=JSON.parse(configuredWindowRuntime.stdout);
+assert.equal(configuredWindowRuntimeReceipt.passed,true);
+const structuredWindow=spawnSync(process.execPath,['scripts/configured-window-structured-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:4*1024*1024});
+if(structuredWindow.error||structuredWindow.status!==0)throw Error('Explicit structured window checks failed: '+structuredWindow.stdout+structuredWindow.stderr);
+const structuredWindowReceipt=JSON.parse(structuredWindow.stdout);
+assert.equal(structuredWindowReceipt.passed,true);
+assert.equal(structuredWindowReceipt.checks,6);
+const configuredWindowCapsules=spawnSync(process.execPath,['scripts/configured-window-v2-capsule-test.mjs'],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:4*1024*1024});
+if(configuredWindowCapsules.error||configuredWindowCapsules.status!==0)throw Error('Configured window capsules failed: '+configuredWindowCapsules.stdout+configuredWindowCapsules.stderr);
+const configuredWindowCapsuleReceipt=JSON.parse(configuredWindowCapsules.stdout);
+assert.equal(configuredWindowCapsuleReceipt.passed,true);
+assert.equal(configuredWindowCapsuleReceipt.checks,7);
 const sharedPath=resolve(mkdtempSync(resolve(root,'artifacts/shared-configured-')),'receipt.json');
 const sharedRun=spawnSync(process.execPath,['scripts/shared-core-runtime-test.mjs',sharedPath],{cwd:root,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:8*1024*1024});
 if(sharedRun.error||sharedRun.status!==0)throw Error('Shared configured runtime parity failed: '+sharedRun.stdout+sharedRun.stderr);
@@ -486,6 +530,7 @@ assert.equal(executionFailureAudit.passed,true);
 assert.equal(executionFailureAudit.complete,true);
 pythonJSON(['-B','scripts/test_package_archive.py'],'Bounded archive and cross-chunk privacy checks');
 pythonJSON(['-B','scripts/test_distribution.py'],'Distribution input closure and CI private-file checks');
+pythonJSON(['-B','scripts/test_configured_window_runtime.py'],'Configured CRUD window runtime closure checks');
 pythonJSON(['-B','scripts/test_hosted_publication.py'],'Hosted public download controller fault checks');
 pythonJSON(['-B','scripts/test_publication_download.py'],'Bounded public downloads and safe fresh ZIP extraction');
 pythonJSON(['-B','scripts/test_publication_ci.py'],'Bounded read-only CI observation and terminal-state checks');
@@ -533,6 +578,11 @@ receipt.foundation036 = foundation036;
 receipt.foundation037 = foundation037;
 receipt.foundation038 = foundation038;
 receipt.sharedConfiguredSdk = sharedConfiguredSdk;
+receipt.configuredWindowV2Host = configuredWindowHostReceipt;
+receipt.configuredWindowV2Runtime = configuredWindowRuntimeReceipt;
+receipt.structuredWindowProfile = structuredWindowReceipt;
+receipt.configuredWindowCapsules = configuredWindowCapsuleReceipt;
+receipt.configuredV2ProducerUnitTests = configuredV2ProducerUnits;
 receipt.public032CompatibilityTests = public032Compatibility;
 receipt.public033CompatibilityTests = public033Compatibility;
 receipt.public034CompatibilityTests = public034Compatibility;

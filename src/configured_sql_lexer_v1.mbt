@@ -39,6 +39,16 @@ fn sql_ascii_tail_v1(c : Char) -> Bool {
 
 ///|
 fn sql_lex_v1(work : SQLParseWorkV1, source : String) -> Unit raise {
+  sql_lex_shared_v1(work, source, false)
+}
+
+///|
+// The original V1 entry always disables the V2-only UUID cast token.
+fn sql_lex_shared_v1(
+  work : SQLParseWorkV1,
+  source : String,
+  allow_uuid_cast : Bool,
+) -> Unit raise {
   let chars = source.to_array()
   let mut pos = 0
   let mut depth = 0
@@ -197,7 +207,15 @@ fn sql_lex_v1(work : SQLParseWorkV1, source : String) -> Unit raise {
         value += "="
         pos += 1
       }
-      if !["=", "<", ">", "<=", ">=", ".", ",", "(", ")", "*", "-", ";"].contains(
+      if allow_uuid_cast &&
+        c == ':' &&
+        pos < chars.length() &&
+        chars[pos] == ':' {
+        value = "::"
+        pos += 1
+      }
+      if !(allow_uuid_cast && value == "::") &&
+        !["=", "<", ">", "<=", ">=", ".", ",", "(", ")", "*", "-", ";"].contains(
           value,
         ) {
         fail("unsupported:token")
