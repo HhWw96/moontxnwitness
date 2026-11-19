@@ -65,6 +65,55 @@ def varchar_binding_fixture(control, connect_writer, schema, writer, output):
         'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(bundle)}
 
 
+def paged_snapshot_fixture(control, connect_writer, schema, writer, output):
+    """Compare the two readers over the same 260 initialized row versions."""
+    table = TableConfigV2(schema, 'page_rows', PrimaryKeyConfigV2('id', 'int64'),
+        (ColumnConfig('label', 'text', TEXT_COMPARISON),))
+    config = SQLCaptureConfigV2(table)
+    policy = SourceInstallPolicy('mtw_source_v2_page', (writer,))
+    target = q(schema) + '.page_rows'
+    control.execute('CREATE TABLE ' + target + ' (id bigint PRIMARY KEY, label text COLLATE pg_catalog."C" NOT NULL)')
+    control.execute('INSERT INTO ' + target + " SELECT n,'row-'||n FROM pg_catalog.generate_series(1,260) n")
+    control.execute('GRANT SELECT, INSERT, UPDATE, DELETE ON ' + target + ' TO ' + q(writer))
+    install = output / 'page-install'
+    install_configured_source_v2(control, install, config, policy, opt_in=True)
+    installation = SourceInputsV2.from_directory(install)
+    fixtures = []
+    for profile in ('row-v2', 'paged-v1'):
+        out = output / ('snapshot-' + profile)
+        window = ConfiguredCaptureWindowV2(out, config, control, policy, installation,
+            opt_in=True, snapshot_profile=profile)
+        for keys in ((1, 128, 129), (256, 257, 260)):
+            with window.psycopg_factory(connect_writer)() as connection:
+                for key in keys:
+                    eq(connection.execute('SELECT id,label FROM ' + target + ' WHERE id=%s', (key,)).fetchall(),
+                        [(key, 'row-' + str(key))])
+        path = window.seal()
+        fixtures.append({'name': 'snapshot-' + profile, 'bundle': str(path), 'expected': 'compatible',
+            'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(path)})
+    window = ConfiguredCaptureWindowV2(output / 'snapshot-paged-late-commit', config, control, policy,
+        installation, opt_in=True, snapshot_profile='paged-v1')
+    connect = window.psycopg_factory(connect_writer)
+    update = 'UPDATE ' + target + ' SET label=%s WHERE id=%s RETURNING id,label'
+    with connect() as slow:
+        eq(slow.execute(update, ('late', 1)).fetchall(), [(1, 'late')])
+        with connect() as fast:
+            eq(fast.execute(update, ('early', 260)).fetchall(), [(260, 'early')])
+        middle = observe_source_snapshot_v2(control, output / 'paged-mid-commit', config, policy,
+            installation, opt_in=True, snapshot_profile='paged-v1')
+    path = window.seal()
+    before_late = json.loads(middle.read_text('utf8'))['effectVersions']
+    finished = json.loads((window.output / 'end' / 'snapshot-receipt.json').read_text('utf8'))['effectVersions']
+    late = set(finished) - set(before_late)
+    eq(len(late), 1)
+    late_version = next(iter(late))
+    eq(int(late_version) < max(map(int, before_late)), True)
+    fixtures.append({'name': 'snapshot-paged-late-commit', 'bundle': str(path), 'expected': 'compatible',
+        'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(path),
+        'lateVersion': late_version, 'earlierVisibleMaximum': str(max(map(int, before_late)))})
+    return fixtures
+
+
 def sqlalchemy_fixture(control, connect_writer, schema, writer, output):
     import sqlalchemy as sa
     from sqlalchemy.orm import DeclarativeBase, Session, mapped_column
@@ -538,7 +587,7 @@ def async_analysis_fixtures(control, connect_writer, connect_async_writer, confi
 
 
 def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_reduction=False, connect_async=None,
-          with_sqlalchemy=False, fastapi_users_checkout=None):
+          with_sqlalchemy=False, fastapi_users_checkout=None, with_paged=False):
     records = []
     for index, kind in enumerate(('int64', 'text', 'uuid')):
         owner, writer, schema = 'source_owner_'+str(index), 'source_writer_'+str(index), 'app_'+str(index)
@@ -641,6 +690,9 @@ def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_
                 if kind == 'uuid':
                     analysis.append(varchar_binding_fixture(control,
                         lambda: connect(user=writer,password=password),schema,writer,work))
+                    if with_paged:
+                        analysis.extend(paged_snapshot_fixture(control,
+                            lambda: connect(user=writer,password=password),schema,writer,work))
                     if with_sqlalchemy:
                         analysis.append(sqlalchemy_fixture(control,
                             lambda: connect(user=writer,password=password),schema,writer,work))
@@ -675,6 +727,7 @@ def main():
     cli.add_argument('--with-async',action='store_true',help='Exercise native async business connections in the same source-window scope')
     cli.add_argument('--with-sqlalchemy',action='store_true',help='Exercise paired SQLAlchemy ORM CRUD and refresh using the scoped NullPool recipe')
     cli.add_argument('--fastapi-users-checkout',type=Path,help='Compare the original pinned FastAPI Users SQLAlchemy base-user CRUD')
+    cli.add_argument('--with-paged',action='store_true',help='Compare full and paged snapshots over 260 rows')
     args=cli.parse_args()
     if args.with_analysis and not args.with_window:cli.error('--with-analysis requires --with-window')
     if args.with_reduction and not args.with_analysis:cli.error('--with-reduction requires --with-analysis')
@@ -682,6 +735,7 @@ def main():
     if args.with_sqlalchemy and not args.with_analysis:cli.error('--with-sqlalchemy requires --with-analysis')
     if args.fastapi_users_checkout and not (args.with_async and args.with_sqlalchemy):
         cli.error('--fastapi-users-checkout requires --with-async and --with-sqlalchemy')
+    if args.with_paged and not args.with_analysis:cli.error('--with-paged requires --with-analysis')
     if args.dsn_env and not args.owned_database:cli.error('--dsn-env requires --owned-database')
     if args.dsn_env and not os.environ.get(args.dsn_env):cli.error('the selected DSN environment variable is empty')
     work=args.output.resolve()
@@ -703,7 +757,8 @@ def main():
                 receipt['postgresVersion']='postgres (PostgreSQL) 18.6';receipt['actualDatabaseExecution']=True
                 receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,
                     with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None,
-                    with_sqlalchemy=args.with_sqlalchemy,fastapi_users_checkout=args.fastapi_users_checkout)
+                    with_sqlalchemy=args.with_sqlalchemy,fastapi_users_checkout=args.fastapi_users_checkout,
+                    with_paged=args.with_paged)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         (work/'receipt.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
@@ -736,7 +791,8 @@ def main():
                 receipt['actualDatabaseExecution']=True
                 receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,
                     with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None,
-                    with_sqlalchemy=args.with_sqlalchemy,fastapi_users_checkout=args.fastapi_users_checkout)
+                    with_sqlalchemy=args.with_sqlalchemy,fastapi_users_checkout=args.fastapi_users_checkout,
+                    with_paged=args.with_paged)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         finally:

@@ -1,3 +1,7 @@
+# Unreleased
+
+- Add an opt-in paged snapshot reader for point windows and check complete native page deliveries and cursor boundaries. Restrict model state to verified point keys after admitting the full source inventory.
+
 # 0.5.7
 
 - Capture committed async SQLAlchemy point CRUD through an owned `NullPool` engine. Keep native prefetch distinct from actual delivery and retain a coverage gap for unread results.

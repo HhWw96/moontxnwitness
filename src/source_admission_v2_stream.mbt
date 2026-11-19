@@ -79,6 +79,7 @@ fn source_parse_control_v2(
   expected_contract : String,
   work : SourceWorkV4,
   allow_commit_request~ : Bool = false,
+  allow_snapshot_pages~ : Bool = false,
 ) -> SourceControlStreamV2 raise {
   if orm_utf8_size(text) > 67108864 || !text.has_suffix("\n") {
     fail("unsupported:admission-log-size-or-tail")
@@ -175,7 +176,13 @@ fn source_parse_control_v2(
       }
       let fields = fetch_number_v1(native.at("fieldCount"), 1)
       let rows = orm_array(native.at("rows"))
-      if rows.length() > 1 || native.at("rowCount") != Json(rows.length()) {
+      let paged = allow_snapshot_pages &&
+        [Json("visible-row-page"), Json("retained-effect-page")].contains(
+          request.at("queryId"),
+        )
+      let max_rows = if paged { 128 } else { 1 }
+      if rows.length() > max_rows ||
+        native.at("rowCount") != Json(rows.length()) {
         fail("mismatch:admission-native-row-count")
       }
       let delivery = orm_exact(record.at("observation"), [
@@ -202,6 +209,7 @@ fn source_parse_control_v2(
           delivered.length() != rows.length() {
           fail("mismatch:admission-text-result-observation")
         }
+        let mut page_bytes = 0
         for row_index, value in rows {
           work.charge()
           let cells = orm_array(value)
@@ -216,6 +224,12 @@ fn source_parse_control_v2(
           }
           let actual = orm_exact(delivered_cells[0], ["pythonType", "value"])
           let cell = admission_bytes_v2(cells[0], 131072)
+          if paged {
+            page_bytes += orm_utf8_size(cell)
+            if page_bytes > 131072 {
+              fail("budget:snapshot-native-page-bytes")
+            }
+          }
           if actual.at("pythonType") != Json("builtins.str") ||
             actual.at("value") != Json(cell) {
             fail("mismatch:admission-control-native-delivery")

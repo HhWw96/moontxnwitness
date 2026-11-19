@@ -162,3 +162,17 @@ retained as job artifacts.
 
 Supply a new output directory. Database files, native logs and original failures
 stay outside the repository. No performance comparison is inferred from this run.
+## Paged source snapshots
+
+Pass `snapshot_profile="paged-v1"` when creating a configured window to read
+visible rows and retained effects in ordered pages of up to 128 observations.
+The verifier checks the original native delivery, cursor progression and final
+empty page inside the same repeatable read transaction. Every page uses the
+existing raw byte budget. Page-budget exhaustion is a source coverage gap.
+
+Paged analysis verifies the complete source inventories and restricts the
+model's initial row state to keys referenced by independently verified point
+statements. The `pointFootprintOnly` analysis option selects this projection
+explicitly for measurements with either snapshot reader. Replay requires the
+same independently selected options. The source logs retain every row and
+effect. Use the original row reader for existing v2 replay and historical reports.

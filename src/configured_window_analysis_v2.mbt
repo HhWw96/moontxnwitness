@@ -150,13 +150,16 @@ fn window_catalog_result_v2(
 ///|
 fn window_snapshot_input_v2(input : Json) -> (String, Json) raise {
   let f = orm_exact(input, ["format", "logText", "receiptText"])
-  if f.at("format") != Json("moontxnwitness-configured-source-snapshot/v2") {
+  let format = f.at("format")
+  let receipt = sql_json_v1(sql_string_v1(f.at("receiptText")), 2097152)
+  if ![
+      Json("moontxnwitness-configured-source-snapshot/v2"),
+      Json("moontxnwitness-configured-source-snapshot-paged/v1"),
+    ].contains(format) ||
+    window_object_v2(receipt).at("format") != format {
     fail("invalid:window-snapshot-input-format")
   }
-  (
-    sql_string_v1(f.at("logText")),
-    sql_json_v1(sql_string_v1(f.at("receiptText")), 2097152),
-  )
+  (sql_string_v1(f.at("logText")), receipt)
 }
 
 ///|
@@ -183,6 +186,7 @@ fn window_analysis_body_v2(
     [
       "maxSourceChecks", "maxPointChecks", "maxRows", "maxEffects", "maxStates",
       "maxEdgeChecks", "maxModelSourceChecks", "maxSerialOperationChecks", "projectionOptions",
+      "pointFootprintOnly",
     ],
     "configured-window-v2 options",
   )
@@ -254,6 +258,11 @@ fn window_analysis_body_v2(
   window_charge_component_v2(work, before.record)
   let (end_log, end_receipt) = window_snapshot_input_v2(
     sql_json_v1(end_text, 16777216),
+  )
+  source_equal_v4(
+    window_object_v2(start_receipt).at("format"),
+    window_object_v2(end_receipt).at("format"),
+    "window-snapshot-profile",
   )
   let after = verify_snapshot_admission_v2(
     installation,
@@ -510,12 +519,35 @@ fn window_analysis_body_v2(
   }
   let row_relation = "configured_row"
   let primary_kind = config.parser_config.tables[0].columns[0].kind
+  let paged = window_object_v2(start_receipt).at("format") ==
+    Json("moontxnwitness-configured-source-snapshot-paged/v1")
+  let point_only = match opts.get("pointFootprintOnly") {
+    None => paged
+    Some(True) => true
+    Some(False) => false
+    _ => fail("invalid:window-point-footprint-option")
+  }
+  let used_keys : Map[String, Bool] = Map([])
+  if point_only {
+    // Complete source admission still covers every observed row and effect.
+    // Only verified point keys participate in the paged window's model input.
+    for _, report in reports {
+      work.charge()
+      let checked = window_object_v2(report)
+      let identity = window_object_v2(checked.at("pointKeyIdentity"))
+      used_keys[sql_canonical_v1(identity.at("value"))] = true
+    }
+  }
   let initial : Array[Json] = []
   for version, raw in before.rows {
     work.charge()
     let row = window_typed_row_v2(config, window_object_v2(raw).at("row"))
+    let key = window_key_v2(config, row)
+    if point_only && !used_keys.contains(sql_canonical_v1(key)) {
+      continue
+    }
     initial.push({
-      "key": window_key_v2(config, row),
+      "key": key,
       "version": Json("row:" + version),
       "values": window_image_v2(config, row),
     })
@@ -747,7 +779,13 @@ fn window_analysis_body_v2(
   }
   {
     "format": "moontxnwitness-configured-window-analysis/v2",
-    "semanticContract": "postgres18-source-bound-point-crud-row-slots/v2",
+    "semanticContract": Json(
+      if point_only {
+        "postgres18-source-bound-point-crud-touched-keys/v1"
+      } else {
+        "postgres18-source-bound-point-crud-row-slots/v2"
+      },
+    ),
     "status": window_object_v2(decision).at("status"),
     "coverageComplete": true,
     "sourceMappingVerified": true,
