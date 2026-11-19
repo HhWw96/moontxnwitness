@@ -1,3 +1,7 @@
+# Unreleased
+
+- Add opt-in asynchronous SQLAlchemy connection reuse for a scoped point window. Verify lease order, idle return, PostgreSQL backend identity and independent committed transactions. Invalidated leases retain a coverage gap.
+
 # 0.5.8
 
 - Add an opt-in paged snapshot reader for point windows and check complete native page deliveries and cursor boundaries. Restrict model state to verified point keys after admitting the full source inventory.

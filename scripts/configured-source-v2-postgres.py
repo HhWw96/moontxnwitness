@@ -263,8 +263,8 @@ def async_sqlalchemy_fixtures(control, connect_writer, schema, writer, output, u
         finally:
             await engine.dispose()
 
-    def new_window(name):
-        return ConfiguredAsyncCaptureWindowV2(output / name, config, control, policy, installation, opt_in=True)
+    def new_window(name, **options):
+        return ConfiguredAsyncCaptureWindowV2(output / name, config, control, policy, installation, opt_in=True, **options)
 
     def fixture(window, name, expected):
         bundle = window.seal()
@@ -286,6 +286,58 @@ def async_sqlalchemy_fixtures(control, connect_writer, schema, writer, output, u
         verified = fixture(window, 'async-sqlalchemy-crud-refresh', 'compatible')
         verified['businessParityVerified'] = True
 
+        window = new_window('async-orm-pool-window', sqlalchemy_pool_size=1)
+        async with window.sqlalchemy_engine(connect_writer) as engine:
+            eq(await run(engine), expected)
+        pooled = fixture(window, 'async-sqlalchemy-pooled-crud', 'compatible')
+        life = json.loads(Path(pooled['bundle']).read_text('utf8'))['lifecycleText']
+        events = [json.loads(line) for line in life.splitlines()]
+        enrollments = [event for event in events if event['kind'] == 'configured-point-pool-enroll']
+        leases = [json.loads(event['frameText']) for event in events if event['kind'] == 'configured-point-pool-checkout']
+        eq(len(enrollments), 1)
+        eq([lease['lease'] for lease in leases], list(range(1, len(leases) + 1)))
+        eq(len({lease['backendPid'] for lease in leases}), 1)
+        if len(leases) < 3:
+            raise AssertionError('Expected actual physical connection reuse across SQLAlchemy sessions')
+        pooled.update(businessParityVerified=True, physicalConnections=1, actualLeases=len(leases))
+
+        window = new_window('async-orm-pool-invalidation', sqlalchemy_pool_size=1)
+        async with window.sqlalchemy_engine(connect_writer) as engine:
+            statement = sa.select(Member.id, Member.email).where(Member.id == key)
+            async with engine.connect() as connection:
+                eq((await connection.execute(statement)).fetchone(), None)
+                await connection.commit()
+                await connection.invalidate()
+            async with engine.connect() as replacement:
+                eq((await replacement.execute(statement)).fetchone(), None)
+                await replacement.commit()
+        invalidated = fixture(window, 'async-sqlalchemy-pool-invalidated', 'unknown')
+        invalidated['expectedReason'] = 'configured_factory_unobserved'
+
+        keys = (uuid.UUID(int=1063), uuid.UUID(int=1064))
+        # Load reference rows before the window so both anomaly transactions
+        # have the captured starting snapshot as their source.
+        async with await connect_writer() as seed:
+            for identity in keys:
+                await seed.execute('INSERT INTO ' + target + ' (id,email) VALUES (%s,%s)', (identity, 'enabled'))
+        window = new_window('async-orm-pool-write-skew', sqlalchemy_pool_size=2)
+        async with window.sqlalchemy_engine(connect_writer) as engine:
+            barrier = asyncio.Barrier(2)
+
+            async def write_skew(key):
+                async with engine.connect() as connection:
+                    await connection.execution_options(isolation_level='REPEATABLE READ')
+                    for identity in keys:
+                        statement = sa.select(Member.id, Member.email).where(Member.id == identity)
+                        eq((await connection.execute(statement)).fetchone(), (identity, 'enabled'))
+                    await asyncio.wait_for(barrier.wait(), timeout=20)
+                    await connection.execute(sa.update(Member).where(Member.id == key).values(email='disabled'))
+                    await connection.commit()
+
+            await asyncio.gather(*(write_skew(identity) for identity in keys))
+        eq(control.execute('SELECT count(*) FROM ' + target + ' WHERE email=%s', ('disabled',)).fetchone()[0], 2)
+        skew = fixture(window, 'async-sqlalchemy-pooled-write-skew', 'refuted')
+
         window = new_window('async-orm-unread-window')
         async with window.sqlalchemy_engine(connect_writer) as engine:
             async with engine.connect() as connection:
@@ -296,7 +348,7 @@ def async_sqlalchemy_fixtures(control, connect_writer, schema, writer, output, u
                 await connection.commit()
         unread = fixture(window, 'async-sqlalchemy-prefetched-unread', 'unknown')
         unread['expectedReason'] = 'orm_unconsumed_result'
-        fixtures = [verified, unread]
+        fixtures = [verified, unread, pooled, invalidated, skew]
         if upstream is not None:
             fixtures.append(await fastapi_users_fixture(control, connect_writer, schema, writer, output, upstream, baseline))
         return fixtures

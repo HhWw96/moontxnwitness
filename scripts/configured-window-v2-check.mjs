@@ -211,6 +211,34 @@ for (const record of campaign.records) {
         assert(!events.some((event) => event.kind === 'configured-point-delivery' && frame(event).resultId === resultId));
       });
     }
+    if (fixture.name === 'async-sqlalchemy-pooled-crud') {
+      await check(`${id}/physical-connection-reused-with-fresh-transactions`, () => {
+        const events = jsonl(bundle.lifecycleText);
+        assert.equal(events.filter(event => event.kind === 'connect').length, 1);
+        const transactions = report.history.events.filter(event => event.kind === 'begin');
+        assert.equal(new Set(transactions.map(event => event.tx)).size, transactions.length);
+        assert.equal(events.filter(event => event.kind === 'configured-point-pool-checkin').length, fixture.actualLeases);
+      });
+      for (const [kind, field, reason] of [
+        ['checkout', 'lease', 'invalid-pool-checkout'],
+        ['checkin', 'lease', 'invalid-pool-checkin'],
+        ['checkin', 'backendPid', 'pool-backend-or-transaction'],
+      ]) {
+        await check(`${id}/tampered-${kind}-${field}-rejected`, () => {
+          const changed = clone(bundle);
+          changeLifecycle(changed, events => {
+            const event = events.find(event => event.kind === `configured-point-pool-${kind}`);
+            assert(event);
+            const value = frame(event);
+            value[field]++;
+            setFrame(event, value);
+          });
+          const invalid = analyze(stringify(changed));
+          incomplete(invalid);
+          assert(invalid.reason.includes(reason), invalid.reason);
+        });
+      }
+    }
     if (fixture.name === 'snapshot-paged-late-commit') {
       await check(`${id}/late-lower-version-admitted`, () => {
         assert(BigInt(fixture.lateVersion) < BigInt(fixture.earlierVisibleMaximum));

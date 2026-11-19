@@ -20,6 +20,78 @@ priv struct WindowLifecycleV2 {
 }
 
 ///|
+priv struct WindowPoolLeaseV2 {
+  pid : Json
+  mut ordinal : Int32
+  mut borrowed : Bool
+  mut transaction : String?
+}
+
+///|
+fn window_pool_event_v2(
+  leases : Map[String, WindowPoolLeaseV2],
+  opened : Map[String, Bool],
+  event : Map[String, Json],
+  kind : String,
+) -> Unit raise {
+  let frame = orm_exact(window_frame_v2(event), [
+    "format", "connection", "backendPid", "lease", "transactionStatus",
+  ])
+  let connection = sql_string_v1(frame.at("connection"))
+  let pid = fetch_number_v1(frame.at("backendPid"), 2147483647)
+  let ordinal = fetch_number_v1(frame.at("lease"), 65536)
+  if !opened.contains(connection) ||
+    frame.at("format") != Json("moontxnwitness-configured-point-pool/v1") ||
+    frame.at("transactionStatus") != Json(0) ||
+    pid == 0 {
+    fail("mismatch:window-invalid-pool-boundary")
+  }
+  if kind == "configured-point-pool-enroll" {
+    if ordinal != 0 || leases.contains(connection) {
+      fail("mismatch:window-invalid-pool-enrollment")
+    }
+    leases[connection] = {
+      pid: Json(pid),
+      ordinal: 0,
+      borrowed: false,
+      transaction: None,
+    }
+    return
+  }
+  let lease = match leases.get(connection) {
+    Some(value) => value
+    None => fail("mismatch:window-pool-enrollment-missing")
+  }
+  if lease.pid != Json(pid) || lease.transaction is Some(_) {
+    fail("mismatch:window-pool-backend-or-transaction")
+  }
+  if kind == "configured-point-pool-checkout" {
+    if lease.borrowed || ordinal != lease.ordinal + 1 {
+      fail("mismatch:window-invalid-pool-checkout")
+    }
+    lease.ordinal = ordinal
+    lease.borrowed = true
+  } else {
+    if !lease.borrowed || ordinal != lease.ordinal {
+      fail("mismatch:window-invalid-pool-checkin")
+    }
+    lease.borrowed = false
+  }
+}
+
+///|
+fn window_pool_lease_v2(
+  leases : Map[String, WindowPoolLeaseV2],
+  connection : String,
+  borrowed : Bool,
+) -> WindowPoolLeaseV2 raise {
+  match leases.get(connection) {
+    Some(lease) if lease.borrowed == borrowed => lease
+    _ => fail("mismatch:window-pool-lease-state")
+  }
+}
+
+///|
 fn window_object_v2(raw : Json) -> Map[String, Json] raise {
   object_fields(raw, "configured V2 window")
 }
@@ -139,6 +211,7 @@ fn window_lifecycle_v2(
     fail("unsupported:window-unclosed-transactions")
   }
   let opened : Map[String, Bool] = Map([])
+  let leases : Map[String, WindowPoolLeaseV2] = Map([])
   let active : Map[String, Json] = Map([])
   let execute_calls : Map[Int32, (Int32, Int32, Json)] = Map([])
   let commit_calls : Map[String, Json] = Map([])
@@ -151,6 +224,7 @@ fn window_lifecycle_v2(
   let prefix = StringBuilder()
   let mut domain : Json = Json::null()
   let mut asynchronous = false
+  let mut pooled = false
   let mut started = false
   let mut ended = false
   for index in 0..<(lines.length() - 1) {
@@ -195,6 +269,10 @@ fn window_lifecycle_v2(
         match sql_string_v1(frame.at("format")) {
           "moontxnwitness-point-producer/v2" => ()
           "moontxnwitness-async-point-producer/v2" => asynchronous = true
+          "moontxnwitness-async-point-pool-producer/v1" => {
+            asynchronous = true
+            pooled = true
+          }
           _ => fail("unsupported:window-point-producer-format")
         }
         source_equal_v4(
@@ -251,10 +329,18 @@ fn window_lifecycle_v2(
             fail("mismatch:window-connection")
           }
           opened[connection] = true
+        } else if pooled &&
+          [
+            "configured-point-pool-enroll", "configured-point-pool-checkout", "configured-point-pool-checkin",
+          ].contains(kind) {
+          window_pool_event_v2(leases, opened, event, kind)
         } else if kind == "connection-close" {
           let connection = sql_string_v1(event.at("connection"))
           if !opened.contains(connection) || active.contains(connection) {
             fail("mismatch:window-close")
+          }
+          if pooled {
+            ignore(window_pool_lease_v2(leases, connection, false))
           }
           opened.remove(connection)
         } else if kind == "call-start" || kind == "call-end" {
@@ -267,6 +353,17 @@ fn window_lifecycle_v2(
           if kind == "call-start" {
             if active.contains(connection) {
               fail("unsupported:window-overlapping-calls")
+            }
+            if pooled {
+              let lease = window_pool_lease_v2(leases, connection, true)
+              let tx = sql_string_v1(event.at("tx"))
+              match lease.transaction {
+                Some(previous) if previous != tx =>
+                  fail("mismatch:window-pool-transaction-switch")
+                None if call_method == "commit" =>
+                  fail("mismatch:window-pool-commit-without-execute")
+                _ => lease.transaction = Some(tx)
+              }
             }
             active[connection] = raw
           } else {
@@ -324,6 +421,9 @@ fn window_lifecycle_v2(
                 "endSeq": Json(seq),
                 "connection": Json(connection),
               }
+              if pooled {
+                window_pool_lease_v2(leases, connection, true).transaction = None
+              }
             }
           }
         } else if kind == "commit-response" {
@@ -346,8 +446,17 @@ fn window_lifecycle_v2(
         } else if kind == "configured-point-native" {
           let frame = window_frame_v2(event)
           let n = window_object_v2(frame)
-          if !opened.contains(sql_string_v1(n.at("connection"))) {
+          let connection = sql_string_v1(n.at("connection"))
+          if !opened.contains(connection) {
             fail("mismatch:window-native-closed-connection")
+          }
+          if pooled {
+            let lease = window_pool_lease_v2(leases, connection, true)
+            source_equal_v4(
+              window_object_v2(n.at("native")).at("backendPid"),
+              lease.pid,
+              "window-pool-native-backend",
+            )
           }
           let note = fetch_number_v1(n.at("projectionNoteSeq"), 65536)
           let execution = match projections.get(note) {
@@ -396,10 +505,14 @@ fn window_lifecycle_v2(
           })
         } else if kind == "configured-point-delivery" {
           let frame = window_frame_v2(event)
-          if !opened.contains(
-              sql_string_v1(window_object_v2(frame).at("connection")),
-            ) {
+          let connection = sql_string_v1(
+            window_object_v2(frame).at("connection"),
+          )
+          if !opened.contains(connection) {
             fail("mismatch:window-delivery-closed-connection")
+          }
+          if pooled {
+            ignore(window_pool_lease_v2(leases, connection, true))
           }
           let result = sql_string_v1(window_object_v2(frame).at("resultId"))
           let i = match result_indices.get(result) {
@@ -412,6 +525,21 @@ fn window_lifecycle_v2(
           let frame = window_frame_v2(event)
           let f = window_object_v2(frame)
           let tx = sql_string_v1(f.at("tx"))
+          if pooled {
+            let lease = window_pool_lease_v2(
+              leases,
+              sql_string_v1(f.at("connection")),
+              true,
+            )
+            if lease.transaction != Some(tx) {
+              fail("mismatch:window-pool-writer-transaction")
+            }
+            source_equal_v4(
+              window_object_v2(f.at("native")).at("backendPid"),
+              lease.pid,
+              "window-pool-writer-backend",
+            )
+          }
           if checkpoints.contains(tx) {
             fail("mismatch:window-duplicate-writer-checkpoint")
           }
