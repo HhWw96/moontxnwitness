@@ -1,3 +1,8 @@
+# 0.5.7
+
+- Capture committed async SQLAlchemy point CRUD through an owned `NullPool` engine. Keep native prefetch distinct from actual delivery and retain a coverage gap for unread results.
+- Compare and replay the original FastAPI Users v7.0.0 base-user operations on PostgreSQL with the configured point-window producer.
+
 # 0.5.6
 
 - Pin MoonBit `0.10.21+06da1ed44` and its official standard library archives across build and publication workflows. The source uses the new derivation syntax and requires MoonBit 0.10.21 or newer.

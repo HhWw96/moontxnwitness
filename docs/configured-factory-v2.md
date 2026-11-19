@@ -36,9 +36,10 @@ def enroll(raw_connection, record):
 Use the engine for full-row point operations, explicitly finish each
 transaction, dispose the engine and seal the window. The PostgreSQL workflow
 runs the same ORM routine with and without this listener and compares create,
-refresh, update, query, delete and the final data. Reused physical pool
-connections and SQLAlchemy's async adapter require separate lifecycle and
-delivery validation. [SQLAlchemy pool events](https://docs.sqlalchemy.org/en/20/core/events.html)
+refresh, update, query, delete and the final data. Use the separately verified
+[scoped async engine](configured-async-window-v2.md#scoped-asynchronous-sqlalchemy)
+for async sessions. Physical pool reuse requires separate lifecycle proof.
+[SQLAlchemy pool events](https://docs.sqlalchemy.org/en/20/core/events.html)
 
 The wrapper now checks known async functions, async callable objects and async
 generators before invoking the factory. A synchronous callable that returns an

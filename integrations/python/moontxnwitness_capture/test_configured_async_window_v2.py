@@ -5,11 +5,23 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import AsyncMock, Mock
 
-from .configured_async_window_v2 import _AsyncPointConnectionV2
+from .configured_async_window_v2 import _AsyncPointConnectionV2, _PointAdapterCursor
 from .configured_effects import WRITER_PROBE_SQL
+from .configured_point_capture_v2 import _PointProjectionState
 
 
 class AsyncPointWindowTests(unittest.IsolatedAsyncioTestCase):
+    def test_buffered_row_does_not_expose_source_columns_after_observer_detaches(self):
+        raw = SimpleNamespace(fetchone=lambda: ('original', 'hidden'))
+        observed = SimpleNamespace(
+            _session=SimpleNamespace(_enabled=False),
+            _projection={'businessResult': {'mode': 'rows', 'columns': ['label']}},
+            _business_delivery=_PointProjectionState._business_delivery,
+            _record_delivery=Mock(),
+        )
+        self.assertEqual(_PointAdapterCursor(raw, observed).fetchone(), ('original',))
+        observed._record_delivery.assert_not_called()
+
     async def test_probe_cancellation_survives_failed_savepoint_cleanup(self):
         started = asyncio.Event()
 

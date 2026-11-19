@@ -325,10 +325,15 @@ class _PointProjectionState:
             actual_start = self._delivery_position
         return business, effective, actual_start
 
-    def _record_delivery(self, method, args, raw, business, effective, actual_start):
+    @staticmethod
+    def _business_delivery(method, raw, business):
         rows = [] if raw is None else [raw] if method == 'fetchone' else raw
         width = len(business['columns'])
         result = None if raw is None else rows[0][:width] if method == 'fetchone' else [row[:width] for row in rows]
+        return result, rows
+
+    def _record_delivery(self, method, args, raw, business, effective, actual_start):
+        result, rows = self._business_delivery(method, raw, business)
         # Preserve original business delivery separately from hidden values.
         delivered = [] if result is None else [result] if method == 'fetchone' else result
         try:

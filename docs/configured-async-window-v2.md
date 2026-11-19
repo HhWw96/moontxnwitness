@@ -41,11 +41,50 @@ fact. Async connections use the same configured SQL, scalar types and limits as
 the synchronous adapter.
 
 The adapter supports one business loop, default tuple cursors and owned
-connections. The control connection stays on its caller's thread. Pool leases,
-SQLAlchemy DBAPI adapters, binary/custom decoders and pipeline mode require
+connections. The control connection stays on its caller's thread. Reused pool
+leases, streaming cursors, binary/custom decoders and pipeline mode require
 additional evidence. Explicit rollbacks, failed or cancelled statements and
 unconfirmed COMMITs remain visible and make a window inconclusive. Retrying on
 the same connection creates a new transaction identity.
+
+## Scoped asynchronous SQLAlchemy
+
+Use `window.sqlalchemy_engine(factory)` to create an owned SQLAlchemy 2.0.55
+async engine. The factory opens a fresh idle psycopg 3.3.6 connection on each
+call. Each `NullPool` checkout uses a distinct physical connection, which
+closes on return. Pass the scoped engine to your existing session factory.
+
+```python
+from sqlalchemy.ext.asyncio import async_sessionmaker
+
+async def run_orm():
+    async def connect():
+        return await psycopg.AsyncConnection.connect(writer_dsn)
+
+    async with window.sqlalchemy_engine(connect) as engine:
+        sessions = async_sessionmaker(engine, expire_on_commit=False)
+        async with sessions() as session:
+            user = await session.get(User, user_id)
+            # Finish the transaction explicitly in a committed-window analysis.
+            await session.commit()
+            return user
+```
+
+Finish sessions before leaving the engine scope and seal the window afterward.
+The PostgreSQL adapter's internal libpq prefetch supplies a native buffer.
+The scoped cursor records delivery when SQLAlchemy fetches from that buffer,
+and strips source metadata before returning the business result. Closing a
+pending result leaves a coverage gap. [SQLAlchemy asyncio events](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html#using-events-with-the-asyncio-extension)
+
+The real database fixture compares ORM CRUD and refresh with capture enabled
+and disabled. An optional `--fastapi-users-checkout` argument also runs the
+unchanged FastAPI Users v7.0.0 base-user adapter from a verified source checkout.
+It exercises by-ID lookup, create, update, delete and the adapter's own refresh
+calls. The fixture commits its final read-only transaction and independently
+replays the report. Email search and OAuth joins remain outside the point SQL
+grammar. The fixture requires `--with-window --with-analysis --with-async
+--with-sqlalchemy`, the [business dependency list](../experiments/business/fastapi_users/requirements-lock.txt),
+and the pinned upstream commit `6397ace506d829a2ee12786da5d724c3f4c6b634`.
 
 The PostgreSQL workflow runs the original SQL for all three key types with
 `scripts/configured-source-v2-postgres.py --with-window --with-analysis --with-async`.
