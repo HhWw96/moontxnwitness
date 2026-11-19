@@ -120,6 +120,7 @@ assert.equal(typeof core.verify_configured_window_v2_json, 'function');
 
 const checks = [];
 const fixtures = [];
+const snapshotReaders = new Map();
 async function check(id, run) {
   try {
     const details = await run();
@@ -157,8 +158,10 @@ for (const record of campaign.records) {
     assert.equal(bundle.format, 'moontxnwitness-configured-window-input/v2');
     const configText = stringify(fixture.config);
     const policyText = stringify(fixture.policy);
-    const analyze = (text = raw, options = {}) => JSON.parse(core.analyze_configured_window_v2_json(configText, policyText, text, stringify(options)));
-    const verify = (report, text = raw, options = {}) => JSON.parse(core.verify_configured_window_v2_json(configText, policyText, text, stringify(report), stringify(options)));
+    const snapshotComparison = ['snapshot-row-v2', 'snapshot-paged-v1'].includes(fixture.name);
+    const optionsText = (options) => stringify({ ...fixture.analysisOptions, ...options });
+    const analyze = (text = raw, options = {}) => JSON.parse(core.analyze_configured_window_v2_json(configText, policyText, text, optionsText(options)));
+    const verify = (report, text = raw, options = {}) => JSON.parse(core.verify_configured_window_v2_json(configText, policyText, text, stringify(report), optionsText(options)));
     const report = analyze();
     const reportPath = path.join(directory, `${record.keyType}-${fixture.name}-report.json`);
     await writeFile(reportPath, JSON.stringify(report, null, 2) + '\n');
@@ -208,6 +211,76 @@ for (const record of campaign.records) {
         assert(!events.some((event) => event.kind === 'configured-point-delivery' && frame(event).resultId === resultId));
       });
     }
+    if (fixture.name === 'snapshot-paged-late-commit') {
+      await check(`${id}/late-lower-version-admitted`, () => {
+        assert(BigInt(fixture.lateVersion) < BigInt(fixture.earlierVisibleMaximum));
+        assert(!Object.hasOwn(report.startSnapshot.effects, fixture.lateVersion));
+        assert(Object.hasOwn(report.endSnapshot.effects, fixture.lateVersion));
+        assert.equal(report.endSnapshot.effectsObserved - report.startSnapshot.effectsObserved, 2);
+      });
+      continue;
+    }
+    if (snapshotComparison) {
+      await check(`${id}/point-footprint-retains-full-snapshot`, () => {
+        assert.equal(report.semanticContract, 'postgres18-source-bound-point-crud-touched-keys/v1');
+        const rows = report.history.events[0].initial.configured_row;
+        assert.deepEqual(rows.map(r => r.key).sort((a,b) => Number(a)-Number(b)), ['1','128','129','256','257','260']);
+        assert.equal(report.startSnapshot.rowsObserved, 260);
+        assert.equal(report.endSnapshot.effectsObserved, 260);
+      });
+      snapshotReaders.set(fixture.name, {
+        decision: summarize(report),
+        inventories: ['startInputText', 'endInputText'].map((key) => {
+          const original = JSON.parse(JSON.parse(bundle[key]).receiptText);
+          return [original.visibleRowVersions, original.effectVersions];
+        }),
+      });
+      if (fixture.name === 'snapshot-paged-v1') {
+        for (const queryId of ['visible-row-page', 'retained-effect-page']) {
+          await check(`${id}/${queryId}-full-short-empty`, () => {
+            for (const key of ['startInputText', 'endInputText']) {
+              const rows = jsonl(JSON.parse(bundle[key]).logText);
+              assert.deepEqual(rows.filter((r) => r.kind === 'control-native' && r.queryId === queryId)
+                .map((r) => r.native.rowCount), [128, 128, 4, 0]);
+            }
+          });
+          for (const index of [1, 3]) {
+            await check(`${id}/${queryId}-removed-page-${index}`, () => {
+              const altered = clone(bundle);
+              changeSnapshot(altered, 'end', (events) => {
+                const request = events.filter((r) => r.kind === 'control-request' && r.queryId === queryId)[index];
+                assert(request);
+                for (let i = events.length - 1; i >= 0; i--) {
+                  if (events[i].seq === request.seq || events[i].requestSeq === request.seq) events.splice(i, 1);
+                }
+              });
+              incomplete(analyze(stringify(altered)));
+            });
+          }
+        }
+        await check(`${id}/duplicate-original-row-with-valid-hashes`, () => {
+          const altered = clone(bundle);
+          changeSnapshot(altered, 'start', (events) => {
+            const first = events.find((r) => r.kind === 'control-native' && r.queryId === 'visible-row-page');
+            const delivery = events.find((r) => r.kind === 'control-delivery' && r.requestSeq === first.requestSeq);
+            assert(first.native.rows.length > 1 && delivery.observation.rows.length > 1);
+            first.native.rows[1] = first.native.rows[0];
+            delivery.observation.rows[1] = delivery.observation.rows[0];
+          });
+          incomplete(analyze(stringify(altered)));
+        });
+        await check(`${id}/budget-across-multiple-pages`, () => {
+          incomplete(analyze(raw, { maxRows: 259 }));
+          incomplete(analyze(raw, { maxEffects: 259 }));
+        });
+        await check(`${id}/paging-requires-point-footprint`, () => {
+          const refused = analyze(raw, { pointFootprintOnly: false });
+          incomplete(refused);
+          assert(refused.reason.includes('window-paged-requires-point-footprint'));
+        });
+      }
+      continue;
+    }
     await check(`${id}/forged-verdict-rejected`, () => {
       const forged = clone(report);
       forged.status = report.status === 'refuted' ? 'checked-compatible' : 'refuted';
@@ -223,6 +296,16 @@ for (const record of campaign.records) {
       assert.equal(result.valid, false); assert.notEqual(result.reportMatches, true);
       return { valid: result.valid };
     });
+    if (fixture.name === 'snapshot-paged-write-skew') {
+      await check(`${id}/complete-source-and-paged-model-refutation`, () => {
+        assert.equal(report.semanticContract, 'postgres18-source-bound-point-crud-touched-keys/v1');
+        assert.equal(report.startSnapshot.rowsObserved, 260);
+        assert.equal(report.endSnapshot.effectsObserved - report.startSnapshot.effectsObserved, 2);
+        assert.equal(report.history.events.filter(event => event.kind === 'begin').length, 3);
+        assert.equal(verify(report, raw, { maxPointChecks: 0 }).valid, false);
+      });
+      continue;
+    }
     if (report.serialReplay?.judgment?.evidence?.kind === 'serial-relation-replay') {
       await check(`${id}/forged-serial-certificate-rejected`, () => {
         const forged = clone(report);
@@ -400,6 +483,12 @@ for (const record of campaign.records) {
 }
 
 assert.equal(sha(await readFile(args.receipt)), sha(receiptText), 'Original campaign receipt changed');
+if (snapshotReaders.size !== 0) {
+  await check('snapshot-reader-equivalence', () => {
+    assert.equal(snapshotReaders.size, 2);
+    assert.deepEqual(snapshotReaders.get('snapshot-row-v2'), snapshotReaders.get('snapshot-paged-v1'));
+  });
+}
 const failed = checks.filter((entry) => !entry.passed);
 const result = {
   format: 'moontxnwitness-configured-window-adversarial-check/v2',

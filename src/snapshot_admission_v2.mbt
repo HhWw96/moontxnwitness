@@ -25,14 +25,17 @@ fn snapshot_mode_sql_v2() -> String {
 }
 
 ///|
-fn snapshot_ledger_sql_v2(policy : SourcePolicyV4) -> String {
+fn snapshot_ledger_sql_v2(policy : SourcePolicyV4, page_size : Int32) -> String {
   "SELECT CASE WHEN pg_catalog.octet_length(p.payload)>65536 THEN '{\"kind\":\"effect-budget\"}' ELSE p.payload END FROM " +
   "(SELECT e.version,pg_catalog.jsonb_build_object('kind','effect','version',e.version::text," +
   "'baseVersion',e.base_version::text,'relationOid',e.relation_oid::bigint,'operation',e.operation," +
   "'writerXid',e.writer_xid,'writerLogin',e.writer_login,'writerPid',e.writer_pid," +
   "'rowKey',e.row_key,'oldKey',e.old_key,'rowValues',e.row_values)::text payload FROM " +
   point_quote_v2(policy.source_schema) +
-  ".effects e WHERE e.version>%s::bigint ORDER BY e.version LIMIT 1) p"
+  ".effects e WHERE e.version>%s::bigint ORDER BY e.version LIMIT " +
+  page_size.to_string() +
+  ") p" +
+  (if page_size == 1 { "" } else { " ORDER BY p.version" })
 }
 
 ///|
@@ -133,6 +136,7 @@ pub fn verify_snapshot_admission_v2(
   let mut snapshot : Json = Json::null()
   let mut reason = ""
   let mut control_complete = false
+  let mut paged = false
   let observed_versions : Array[Json] = []
   let observed_effects : Array[Json] = []
   let status = try {
@@ -161,9 +165,24 @@ pub fn verify_snapshot_admission_v2(
       "completeWindow", "modelCoverageAccepted", "rowsObserved", "effectsObserved",
       "snapshot", "peer", "tableOid", "visibleRowVersions", "effectVersions", "log",
     ])
-    if r.at("format") != Json("moontxnwitness-configured-source-snapshot/v2") ||
-      r.at("contract") !=
-      Json("postgres18-configured-point-window-observations/v2") ||
+    paged = r.at("format") ==
+      Json("moontxnwitness-configured-source-snapshot-paged/v1")
+    let (contract, log_format, page_size) = if paged {
+      (
+        "postgres18-configured-source-snapshot-pages/v1", "moontxnwitness-source-snapshot-log-paged/v1",
+        128,
+      )
+    } else {
+      (
+        "postgres18-configured-point-window-observations/v2", "moontxnwitness-source-snapshot-log/v2",
+        1,
+      )
+    }
+    if (
+        !paged &&
+        r.at("format") != Json("moontxnwitness-configured-source-snapshot/v2")
+      ) ||
+      r.at("contract") != Json(contract) ||
       r.at("status") != Json("observed-components-only") ||
       r.at("configSha256") != Json(config.digest) ||
       r.at("installationLogSha256") != Json(installation.log_digest) {
@@ -185,9 +204,10 @@ pub fn verify_snapshot_admission_v2(
     let stream = source_parse_control_v2(
       original_log,
       r.at("log"),
-      "moontxnwitness-source-snapshot-log/v2",
-      "postgres18-configured-point-window-observations/v2",
+      log_format,
+      contract,
       work,
+      allow_snapshot_pages=paged,
     )
     if stream.commit_request_seq != 0 {
       fail("mismatch:snapshot-unexpected-commit-request")
@@ -327,170 +347,186 @@ pub fn verify_snapshot_admission_v2(
     let row_keys : Map[String, Bool] = Map([])
     let mut previous = "0"
     let mut previous_json : Json = Json(0)
+    let mut visible_terminal_page = false
     while true {
       let page = stream.next(
-        "visible-row",
-        admission_snapshot_sql_v2(config),
+        if paged {
+          "visible-row-page"
+        } else {
+          "visible-row"
+        },
+        admission_snapshot_sql_v2(config, page_size~),
         Json([previous_json]),
       )
       if page.decoded.is_empty() {
         break
       }
-      if page.decoded.length() != 1 {
+      if visible_terminal_page || page.decoded.length() > page_size {
         fail("mismatch:snapshot-row-page-size")
       }
-      if rows.length() >= max_rows {
-        fail("budget:snapshot-visible-rows")
+      visible_terminal_page = page.decoded.length() < page_size
+      for raw_row in page.decoded {
+        if rows.length() >= max_rows {
+          fail("budget:snapshot-visible-rows")
+        }
+        if rows.length() >= claimed_row_limit {
+          fail("mismatch:snapshot-producer-row-limit")
+        }
+        let observation = orm_exact(raw_row, ["kind", "row"])
+        if observation.at("kind") != Json("initial-row") {
+          fail("unsupported:snapshot-row-budget-marker")
+        }
+        let expected = table.columns.map(c => c.name)
+        expected.push("__mtw_source_version")
+        let values = orm_exact(observation.at("row"), expected)
+        let version = source_positive_v4(values.at("__mtw_source_version"))
+        let _ = effects_decimal_v4(Json(version), "9223372036854775807")
+        if !source_version_after_v4(version, previous) || rows.contains(version) {
+          fail("mismatch:snapshot-visible-version-order")
+        }
+        let key = snapshot_key_v2(config, values.at(table.key))
+        let key_text = sql_canonical_v1(key)
+        if row_keys.contains(key_text) {
+          fail("mismatch:snapshot-duplicate-visible-key")
+        }
+        row_keys[key_text] = true
+        for column in table.columns {
+          work.charge()
+          let _ = snapshot_scalar_v2(config, column, values.at(column.name))
+        }
+        rows[version] = {
+          "row": observation.at("row"),
+          "requestSeq": Json(page.request_seq),
+          "resultSeq": Json(page.result_seq),
+        }
+        observed_versions.push(Json(version))
+        previous = version
+        previous_json = values.at("__mtw_source_version")
       }
-      if rows.length() >= claimed_row_limit {
-        fail("mismatch:snapshot-producer-row-limit")
-      }
-      let observation = orm_exact(page.decoded[0], ["kind", "row"])
-      if observation.at("kind") != Json("initial-row") {
-        fail("unsupported:snapshot-row-budget-marker")
-      }
-      let expected = table.columns.map(c => c.name)
-      expected.push("__mtw_source_version")
-      let values = orm_exact(observation.at("row"), expected)
-      let version = source_positive_v4(values.at("__mtw_source_version"))
-      let _ = effects_decimal_v4(Json(version), "9223372036854775807")
-      if !source_version_after_v4(version, previous) || rows.contains(version) {
-        fail("mismatch:snapshot-visible-version-order")
-      }
-      let key = snapshot_key_v2(config, values.at(table.key))
-      let key_text = sql_canonical_v1(key)
-      if row_keys.contains(key_text) {
-        fail("mismatch:snapshot-duplicate-visible-key")
-      }
-      row_keys[key_text] = true
-      for column in table.columns {
-        work.charge()
-        let _ = snapshot_scalar_v2(config, column, values.at(column.name))
-      }
-      rows[version] = {
-        "row": observation.at("row"),
-        "requestSeq": Json(page.request_seq),
-        "resultSeq": Json(page.result_seq),
-      }
-      observed_versions.push(Json(version))
-      previous = version
-      previous_json = values.at("__mtw_source_version")
     }
     previous = "0"
     let consumed : Map[String, Bool] = Map([])
     let matched : Map[String, Bool] = Map([])
     let writers : Map[String, Json] = Map([])
+    let mut effect_terminal_page = false
     while true {
       let page = stream.next(
-        "retained-effect",
-        snapshot_ledger_sql_v2(policy),
+        if paged {
+          "retained-effect-page"
+        } else {
+          "retained-effect"
+        },
+        snapshot_ledger_sql_v2(policy, page_size),
         Json([Json(previous)]),
       )
       if page.decoded.is_empty() {
         break
       }
-      if page.decoded.length() != 1 {
+      if effect_terminal_page || page.decoded.length() > page_size {
         fail("mismatch:snapshot-effect-page-size")
       }
-      if effects.length() >= max_effects {
-        fail("budget:snapshot-retained-effects")
-      }
-      if effects.length() >= claimed_effect_limit {
-        fail("mismatch:snapshot-producer-effect-limit")
-      }
-      let effect = orm_exact(page.decoded[0], [
-        "kind", "version", "baseVersion", "relationOid", "operation", "writerXid",
-        "writerLogin", "writerPid", "rowKey", "oldKey", "rowValues",
-      ])
-      if effect.at("kind") != Json("effect") {
-        fail("unsupported:snapshot-effect-budget-marker")
-      }
-      let version = effects_decimal_v4(
-        effect.at("version"),
-        "9223372036854775807",
-      )
-      if !source_version_after_v4(version, previous) ||
-        effects.contains(version) {
-        fail("mismatch:snapshot-effect-identity-order")
-      }
-      source_equal_v4(effect.at("relationOid"), oid, "snapshot-effect-table")
-      let operation = sql_string_v1(effect.at("operation"))
-      let key = snapshot_key_v2(config, effect.at("rowKey"))
-      let xid = effects_xid_v4(effect.at("writerXid"))
-      if !effects_xid_completed_v4(xid, upper, active) {
-        fail("mismatch:snapshot-effect-not-visible-in-snapshot")
-      }
-      let login = sql_identifier_v1(effect.at("writerLogin"))
-      let pid = fetch_number_v1(effect.at("writerPid"), 2147483647)
-      if pid == 0 {
-        fail("mismatch:snapshot-writer-pid")
-      }
-      let identity : Json = [Json(login), Json(pid)]
-      match writers.get(xid) {
-        Some(previous) if previous != identity =>
-          fail("mismatch:snapshot-XID-writer-identity")
-        None => writers[xid] = identity
-        _ => ()
-      }
-      if operation == "INITIAL" {
-        snapshot_initial_effect_v2(installation, version, effect, work)
-      } else if !policy.writers.contains(login) {
-        fail("mismatch:snapshot-effect-writer-outside-scope")
-      }
-      match operation {
-        "INITIAL" | "INSERT" =>
-          if effect.at("baseVersion") != Json::null() ||
-            effect.at("oldKey") != Json::null() {
-            fail("mismatch:snapshot-insert-initial-predecessor")
-          }
-        "UPDATE" | "DELETE" => {
-          let base = effects_decimal_v4(
-            effect.at("baseVersion"),
-            "9223372036854775807",
-          )
-          let parent = match effects.get(base) {
-            Some(value) => source_object_v4(value)
-            None => fail("mismatch:snapshot-missing-retained-predecessor")
-          }
-          if parent.at("operation") == Json("DELETE") ||
-            consumed.contains(base) ||
-            snapshot_key_v2(config, parent.at("rowKey")) != key ||
-            snapshot_key_v2(config, effect.at("oldKey")) != key {
-            fail("mismatch:snapshot-predecessor-key-or-reuse")
-          }
-          consumed[base] = true
+      effect_terminal_page = page.decoded.length() < page_size
+      for raw_effect in page.decoded {
+        if effects.length() >= max_effects {
+          fail("budget:snapshot-retained-effects")
         }
-        _ => fail("mismatch:snapshot-operation")
-      }
-      if operation == "DELETE" {
-        if effect.at("rowValues") != Json::null() || rows.contains(version) {
-          fail("mismatch:snapshot-deletion-is-not-live-row")
+        if effects.length() >= claimed_effect_limit {
+          fail("mismatch:snapshot-producer-effect-limit")
         }
-      } else {
-        snapshot_business_row_v2(config, effect.at("rowValues"), key, work)
-        match rows.get(version) {
-          Some(observed) => {
-            let full = source_object_v4(source_object_v4(observed).at("row"))
-            let business : Map[String, Json] = Map([])
-            for column in table.columns {
-              business[column.name] = full.at(column.name)
+        let effect = orm_exact(raw_effect, [
+          "kind", "version", "baseVersion", "relationOid", "operation", "writerXid",
+          "writerLogin", "writerPid", "rowKey", "oldKey", "rowValues",
+        ])
+        if effect.at("kind") != Json("effect") {
+          fail("unsupported:snapshot-effect-budget-marker")
+        }
+        let version = effects_decimal_v4(
+          effect.at("version"),
+          "9223372036854775807",
+        )
+        if !source_version_after_v4(version, previous) ||
+          effects.contains(version) {
+          fail("mismatch:snapshot-effect-identity-order")
+        }
+        source_equal_v4(effect.at("relationOid"), oid, "snapshot-effect-table")
+        let operation = sql_string_v1(effect.at("operation"))
+        let key = snapshot_key_v2(config, effect.at("rowKey"))
+        let xid = effects_xid_v4(effect.at("writerXid"))
+        if !effects_xid_completed_v4(xid, upper, active) {
+          fail("mismatch:snapshot-effect-not-visible-in-snapshot")
+        }
+        let login = sql_identifier_v1(effect.at("writerLogin"))
+        let pid = fetch_number_v1(effect.at("writerPid"), 2147483647)
+        if pid == 0 {
+          fail("mismatch:snapshot-writer-pid")
+        }
+        let identity : Json = [Json(login), Json(pid)]
+        match writers.get(xid) {
+          Some(previous) if previous != identity =>
+            fail("mismatch:snapshot-XID-writer-identity")
+          None => writers[xid] = identity
+          _ => ()
+        }
+        if operation == "INITIAL" {
+          snapshot_initial_effect_v2(installation, version, effect, work)
+        } else if !policy.writers.contains(login) {
+          fail("mismatch:snapshot-effect-writer-outside-scope")
+        }
+        match operation {
+          "INITIAL" | "INSERT" =>
+            if effect.at("baseVersion") != Json::null() ||
+              effect.at("oldKey") != Json::null() {
+              fail("mismatch:snapshot-insert-initial-predecessor")
             }
-            source_equal_v4(
-              Json(business),
-              effect.at("rowValues"),
-              "snapshot-visible-row-full-source",
+          "UPDATE" | "DELETE" => {
+            let base = effects_decimal_v4(
+              effect.at("baseVersion"),
+              "9223372036854775807",
             )
-            matched[version] = true
+            let parent = match effects.get(base) {
+              Some(value) => source_object_v4(value)
+              None => fail("mismatch:snapshot-missing-retained-predecessor")
+            }
+            if parent.at("operation") == Json("DELETE") ||
+              consumed.contains(base) ||
+              snapshot_key_v2(config, parent.at("rowKey")) != key ||
+              snapshot_key_v2(config, effect.at("oldKey")) != key {
+              fail("mismatch:snapshot-predecessor-key-or-reuse")
+            }
+            consumed[base] = true
           }
-          None => ()
+          _ => fail("mismatch:snapshot-operation")
         }
+        if operation == "DELETE" {
+          if effect.at("rowValues") != Json::null() || rows.contains(version) {
+            fail("mismatch:snapshot-deletion-is-not-live-row")
+          }
+        } else {
+          snapshot_business_row_v2(config, effect.at("rowValues"), key, work)
+          match rows.get(version) {
+            Some(observed) => {
+              let full = source_object_v4(source_object_v4(observed).at("row"))
+              let business : Map[String, Json] = Map([])
+              for column in table.columns {
+                business[column.name] = full.at(column.name)
+              }
+              source_equal_v4(
+                Json(business),
+                effect.at("rowValues"),
+                "snapshot-visible-row-full-source",
+              )
+              matched[version] = true
+            }
+            None => ()
+          }
+        }
+        let retained = source_object_v4(v4_json_copy(raw_effect))
+        retained["requestSeq"] = Json(page.request_seq)
+        retained["resultSeq"] = Json(page.result_seq)
+        effects[version] = Json(retained)
+        observed_effects.push(Json(version))
+        previous = version
       }
-      let retained = source_object_v4(v4_json_copy(page.decoded[0]))
-      retained["requestSeq"] = Json(page.request_seq)
-      retained["resultSeq"] = Json(page.result_seq)
-      effects[version] = Json(retained)
-      observed_effects.push(Json(version))
-      previous = version
     }
     if matched.length() != rows.length() {
       fail("mismatch:snapshot-visible-row-source-missing")
@@ -558,8 +594,20 @@ pub fn verify_snapshot_admission_v2(
   }
   let record : Json = {
     "format": "moontxnwitness-source-snapshot-admission/v2",
-    "semanticContract": "postgres18-original-readonly-snapshot-complete-ledger/v2",
-    "algorithm": "moonbit-snapshot-original-control-ledger-2",
+    "semanticContract": Json(
+      if paged {
+        "postgres18-configured-source-snapshot-pages/v1"
+      } else {
+        "postgres18-original-readonly-snapshot-complete-ledger/v2"
+      },
+    ),
+    "algorithm": Json(
+      if paged {
+        "moonbit-snapshot-paged-ledger-1"
+      } else {
+        "moonbit-snapshot-original-control-ledger-2"
+      },
+    ),
     "status": Json(status),
     "valid": Json(status == "matched"),
     "snapshotVerified": Json(status == "matched"),

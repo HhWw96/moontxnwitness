@@ -7,6 +7,7 @@ incremental visibility watermark. Sealing is durability, not model admission.
 from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -28,25 +29,49 @@ CONTRACT = 'postgres18-configured-point-window-observations/v2'
 SNAPSHOT_FORMAT = 'moontxnwitness-configured-source-snapshot/v2'
 SNAPSHOT_LOG = 'moontxnwitness-source-snapshot-log/v2'
 INPUT_FORMAT = 'moontxnwitness-configured-window-input/v2'
+PAGED_SNAPSHOT_FORMAT = 'moontxnwitness-configured-source-snapshot-paged/v1'
+PAGED_SNAPSHOT_LOG = 'moontxnwitness-source-snapshot-log-paged/v1'
+PAGED_SNAPSHOT_CONTRACT = 'postgres18-configured-source-snapshot-pages/v1'
+
+
+def _snapshot_profile(profile):
+    if profile == 'row-v2':
+        return SNAPSHOT_FORMAT, SNAPSHOT_LOG, CONTRACT, 1
+    if profile == 'paged-v1':
+        return PAGED_SNAPSHOT_FORMAT, PAGED_SNAPSHOT_LOG, PAGED_SNAPSHOT_CONTRACT, 128
+    raise ValueError('Unknown snapshot profile')
+
+
 canonical, digest = source.canonical, lambda text: hashlib.sha256(text.encode('utf8')).hexdigest()
 
 
 def _sealed(text, receipt, log_format):
-    lines = text.encode('utf8').splitlines(keepends=True)
-    if not lines or any(not line.endswith(b'\n') for line in lines):
+    payload = text.encode('utf8')
+    if not payload.endswith(b'\n'):
         raise ValueError('Original sealed log requires complete newline-terminated records')
-    records = [source._json(line.decode('utf8')) for line in lines]
-    if any(type(row) is not dict or type(row.get('seq')) is not int or row.get('seq') != i for i,row in enumerate(records,1)):
-        raise ValueError('Original log sequence differs')
-    seal = records[-1]
-    if (records[0].get('kind')!='header' or records[0].get('format')!=log_format
-            or seal.get('kind')!='seal' or type(seal.get('records')) is not int or seal.get('records')!=len(records)-1
-            or seal.get('prefixSha256')!=hashlib.sha256(b''.join(lines[:-1])).hexdigest()
-            or receipt.get('sealed') is not True or receipt.get('sha256')!=digest(text)
-            or type(receipt.get('bytes')) is not int or receipt.get('bytes')!=len(text.encode('utf8'))
-            or type(receipt.get('records')) is not int or receipt.get('records')!=len(records)):
+    if (receipt.get('sealed') is not True or type(receipt.get('bytes')) is not int
+            or receipt['bytes'] != len(payload) or receipt.get('sha256') != hashlib.sha256(payload).hexdigest()):
         raise ValueError('Original log seal/digest/inventory differs')
-    return records
+
+    cursor = io.BytesIO(payload)
+    count = 0
+    for line in cursor:
+        count += 1
+        cr = line.find(b'\r')
+        if cr >= 0 and cr != len(line) - 2:
+            raise ValueError('Original sealed log requires complete newline-terminated records')
+        record = source._json(line.decode('utf8'))
+        if type(record) is not dict or type(record.get('seq')) is not int or record['seq'] != count:
+            raise ValueError('Original log sequence differs')
+        if count == 1 and (record.get('kind') != 'header' or record.get('format') != log_format):
+            raise ValueError('Original log seal/digest/inventory differs')
+        if cursor.tell() == len(payload):
+            prefix = memoryview(payload)[:len(payload) - len(line)]
+            if (record.get('kind') != 'seal' or type(record.get('records')) is not int
+                    or record['records'] != count - 1 or type(receipt.get('records')) is not int
+                    or receipt['records'] != count
+                    or record.get('prefixSha256') != hashlib.sha256(prefix).hexdigest()):
+                raise ValueError('Original log seal/digest/inventory differs')
 
 
 @dataclass(frozen=True,slots=True)
@@ -74,13 +99,15 @@ class SourceInputsV2:
         return receipt  # Component claim only; an independent core must replay the original log.
 
 
-def ledger_snapshot_sql_v2(policy):
+def ledger_snapshot_sql_v2(policy, page_size=1):
     return ("SELECT CASE WHEN pg_catalog.octet_length(p.payload)>65536 THEN '{\"kind\":\"effect-budget\"}' ELSE p.payload END FROM "
         "(SELECT e.version,pg_catalog.jsonb_build_object('kind','effect','version',e.version::text,"
         "'baseVersion',e.base_version::text,'relationOid',e.relation_oid::bigint,'operation',e.operation,"
         "'writerXid',e.writer_xid,'writerLogin',e.writer_login,'writerPid',e.writer_pid,"
         "'rowKey',e.row_key,'oldKey',e.old_key,'rowValues',e.row_values)::text payload FROM "
-        +source._qi(policy.namespace)+".effects e WHERE e.version>%s::bigint ORDER BY e.version LIMIT 1) p")
+        +source._qi(policy.namespace)+".effects e WHERE e.version>%s::bigint ORDER BY e.version LIMIT "
+        +str(source._integer(page_size, 1, 128, "Snapshot page size"))+") p"
+        +(" ORDER BY p.version" if page_size != 1 else ""))
 
 
 def _version(value):
@@ -105,7 +132,8 @@ def _business_hash(config,key,values):
     return digest(canonical(values))
 
 
-def observe_source_snapshot_v2(connection,output,config,policy,installation,*,opt_in=False,max_rows=4096,max_effects=4096):
+def observe_source_snapshot_v2(connection,output,config,policy,installation,*,opt_in=False,max_rows=4096,max_effects=4096,snapshot_profile='row-v2'):
+    format_name, log_format, contract, page_size = _snapshot_profile(snapshot_profile)
     if opt_in is not True or type(installation) is not SourceInputsV2:
         raise ValueError('Explicit source snapshot opt-in and original installation inputs required')
     original=installation.validate(config,policy)
@@ -114,9 +142,9 @@ def observe_source_snapshot_v2(connection,output,config,policy,installation,*,op
     if not _pinned_connection(connection) or connection.autocommit is not True or int(connection.info.transaction_status)!=0:
         raise ValueError('Dedicated idle autocommit pinned control connection required')
     path=Path(output).resolve();path.mkdir(parents=True,exist_ok=False)
-    log=source._LogV2(path/'snapshot.jsonl',policy.max_log_bytes,log_format=SNAPSHOT_LOG,contract=CONTRACT)
+    log=source._LogV2(path/'snapshot.jsonl',policy.max_log_bytes,log_format=log_format,contract=contract)
     control=source._ControlV2(connection,log,terminal_queries=('snapshot-finish',))
-    receipt={'format':SNAPSHOT_FORMAT,'contract':CONTRACT,'status':'failed','configSha256':config.sha256,
+    receipt={'format':format_name,'contract':contract,'status':'failed','configSha256':config.sha256,
         'installationLogSha256':digest(installation.installation_log_text),'maxRows':max_rows,'maxEffects':max_effects,
         'sourceFactsProduced':False,'sourceAuthenticated':False,'moonbitSourceVerified':False,
         'completeWindow':False,'modelCoverageAccepted':False,'rowsObserved':0,'effectsObserved':0}
@@ -149,55 +177,60 @@ def observe_source_snapshot_v2(connection,output,config,policy,installation,*,op
         if scopes!=original.get('sourceScope'):
             raise source.SourceInstallError('Installed source scope changed')
         rows_by_version={};row_keys=set();last=0
+        query = 'visible-row' if page_size == 1 else 'visible-row-page'
+        sql = source.initial_snapshot_sql_v2(config, page_size)
         while True:
-            rows,_=control.command('visible-row',source.initial_snapshot_sql_v2(config),(last,))
-            if not rows:break
-            if len(rows_by_version)==max_rows:raise source.SourceInstallError('Snapshot row budget exhausted')
-            version,row,identity=source._initial_row(config,rows[0],last)
-            if identity in row_keys:raise source.SourceInstallError('Duplicate visible primary-key identity')
-            row_keys.add(identity)
-            values={k:v for k,v in row.items() if k!=source.VERSION_COLUMN}
-            rows_by_version[str(version)]=_business_hash(config,values[config.table.primary_key],values);last=version
+            page,_=control.command(query,sql,(last,),max_rows=page_size)
+            if not page:break
+            for observed in page:
+                if len(rows_by_version)==max_rows:raise source.SourceInstallError('Snapshot row budget exhausted')
+                version,row,identity=source._initial_row(config,observed,last)
+                if identity in row_keys:raise source.SourceInstallError('Duplicate visible primary-key identity')
+                row_keys.add(identity)
+                values={k:v for k,v in row.items() if k!=source.VERSION_COLUMN}
+                rows_by_version[str(version)]=_business_hash(config,values[config.table.primary_key],values);last=version
         last=0;versions=[];parents={};visible_matches=set()
+        query = 'retained-effect' if page_size == 1 else 'retained-effect-page'
+        sql = ledger_snapshot_sql_v2(policy, page_size)
         while True:
-            rows,_=control.command('retained-effect',ledger_snapshot_sql_v2(policy),(str(last),))
-            if not rows:break
-            if len(versions)==max_effects:raise source.SourceInstallError('Snapshot effect budget exhausted')
-            effect=rows[0]
-            if effect.get('kind')!='effect' or effect.get('relationOid')!=oid:
-                raise source.SourceInstallError('Incomplete or differently scoped retained effect')
-            version=_version(effect.get('version'));base=effect.get('baseVersion');operation=effect.get('operation')
-            if version<=last or operation not in ('INITIAL','INSERT','UPDATE','DELETE'):
-                raise source.SourceInstallError('Retained effect identity/order differs')
-            if operation in ('INITIAL','INSERT'):
-                if base is not None or effect.get('oldKey') is not None:raise source.SourceInstallError('Unexpected initial/insert predecessor')
-            else:
-                _version(base)
-                if effect.get('oldKey')!=effect.get('rowKey'):raise source.SourceInstallError('Changed primary key in retained effects')
-            xid=effect.get('writerXid')
-            if (type(xid) is not str or not xid.isascii() or not xid.isdigit() or len(xid)>20
-                    or not 1<=int(xid)<=2**64-1 or str(int(xid))!=xid):
-                raise source.SourceInstallError('Canonical native full transaction identity required')
-            source._integer(effect.get('writerPid'),1,2**31-1,'Writer PID')
-            source.identifier(effect.get('writerLogin'))
-            key=_input_value(effect.get('rowKey'),config.table.key.type,config.max_text_bytes)
-            if config.table.key.type=='uuid' and effect['rowKey']!=key:
-                raise source.SourceInstallError('Canonical native UUID key required')
-            if operation!='INITIAL' and effect['writerLogin'] not in policy.writers:
-                raise source.SourceInstallError('Retained effect writer is outside the installed scope')
-            if base is not None:
-                parent=parents.get(base)
-                if parent is None or parent[0]=='DELETE' or parent[1]!=(config.table.key.type,key):
-                    raise source.SourceInstallError('Retained predecessor source is missing or has a different key')
-            if operation=='DELETE':
-                if effect.get('rowValues') is not None:raise source.SourceInstallError('DELETE effect has a live row')
-                if str(version) in rows_by_version:raise source.SourceInstallError('Visible row uses a DELETE ledger event identity')
-            else:
-                row_hash=_business_hash(config,key,effect.get('rowValues'))
-                if str(version) in rows_by_version:
-                    if row_hash!=rows_by_version[str(version)]:raise source.SourceInstallError('Visible row differs from its complete retained effect')
-                    visible_matches.add(str(version))
-            versions.append(str(version));parents[str(version)]=(operation,(config.table.key.type,key));last=version
+            page,_=control.command(query,sql,(str(last),),max_rows=page_size)
+            if not page:break
+            for effect in page:
+                if len(versions)==max_effects:raise source.SourceInstallError('Snapshot effect budget exhausted')
+                if effect.get('kind')!='effect' or effect.get('relationOid')!=oid:
+                    raise source.SourceInstallError('Incomplete or differently scoped retained effect')
+                version=_version(effect.get('version'));base=effect.get('baseVersion');operation=effect.get('operation')
+                if version<=last or operation not in ('INITIAL','INSERT','UPDATE','DELETE'):
+                    raise source.SourceInstallError('Retained effect identity/order differs')
+                if operation in ('INITIAL','INSERT'):
+                    if base is not None or effect.get('oldKey') is not None:raise source.SourceInstallError('Unexpected initial/insert predecessor')
+                else:
+                    _version(base)
+                    if effect.get('oldKey')!=effect.get('rowKey'):raise source.SourceInstallError('Changed primary key in retained effects')
+                xid=effect.get('writerXid')
+                if (type(xid) is not str or not xid.isascii() or not xid.isdigit() or len(xid)>20
+                        or not 1<=int(xid)<=2**64-1 or str(int(xid))!=xid):
+                    raise source.SourceInstallError('Canonical native full transaction identity required')
+                source._integer(effect.get('writerPid'),1,2**31-1,'Writer PID')
+                source.identifier(effect.get('writerLogin'))
+                key=_input_value(effect.get('rowKey'),config.table.key.type,config.max_text_bytes)
+                if config.table.key.type=='uuid' and effect['rowKey']!=key:
+                    raise source.SourceInstallError('Canonical native UUID key required')
+                if operation!='INITIAL' and effect['writerLogin'] not in policy.writers:
+                    raise source.SourceInstallError('Retained effect writer is outside the installed scope')
+                if base is not None:
+                    parent=parents.get(base)
+                    if parent is None or parent[0]=='DELETE' or parent[1]!=(config.table.key.type,key):
+                        raise source.SourceInstallError('Retained predecessor source is missing or has a different key')
+                if operation=='DELETE':
+                    if effect.get('rowValues') is not None:raise source.SourceInstallError('DELETE effect has a live row')
+                    if str(version) in rows_by_version:raise source.SourceInstallError('Visible row uses a DELETE ledger event identity')
+                else:
+                    row_hash=_business_hash(config,key,effect.get('rowValues'))
+                    if str(version) in rows_by_version:
+                        if row_hash!=rows_by_version[str(version)]:raise source.SourceInstallError('Visible row differs from its complete retained effect')
+                        visible_matches.add(str(version))
+                versions.append(str(version));parents[str(version)]=(operation,(config.table.key.type,key));last=version
         if visible_matches!=set(rows_by_version):raise source.SourceInstallError('Visible row source is absent from the complete ledger')
         source._ack(control,'snapshot-finish','ROLLBACK','ROLLBACK',state=0)
         receipt.update(status='observed-components-only',rowsObserved=len(rows_by_version),effectsObserved=len(versions),
@@ -228,7 +261,9 @@ class ConfiguredCaptureWindowV2:
         return self.observer.wrap(raw)
 
     def __init__(self,output,config,control,policy,installation,*,opt_in=False,projection_options=None,
-                 max_rows=4096,max_effects=4096,**capture_options):
+                 max_rows=4096,max_effects=4096,snapshot_profile='row-v2',**capture_options):
+        _snapshot_profile(snapshot_profile)
+        self._snapshot_profile = snapshot_profile
         if opt_in is not True or type(installation) is not SourceInputsV2:
             raise ValueError('Explicit window opt-in and original V2 source inputs required')
         original=installation.validate(config,policy)
@@ -253,16 +288,17 @@ class ConfiguredCaptureWindowV2:
 
     def _snapshot(self,side):
         directory=self.output/side
+        format_name, log_format, contract, _ = _snapshot_profile(self._snapshot_profile)
         observe_source_snapshot_v2(self.control,directory,self.config,self.policy,self.installation,
-                                  opt_in=True,max_rows=self._max_rows,max_effects=self._max_effects)
-        value={'format':SNAPSHOT_FORMAT,'logText':read_text(directory/'snapshot.jsonl',64*1024*1024),
+            opt_in=True,max_rows=self._max_rows,max_effects=self._max_effects,snapshot_profile=self._snapshot_profile)
+        value={'format':format_name,'logText':read_text(directory/'snapshot.jsonl',64*1024*1024),
                'receiptText':read_text(directory/'snapshot-receipt.json',2*1024*1024)}
         receipt=source._json(value['receiptText'])
-        if (receipt.get('format')!=SNAPSHOT_FORMAT or receipt.get('contract')!=CONTRACT
+        if (receipt.get('format')!=format_name or receipt.get('contract')!=contract
                 or receipt.get('status')!='observed-components-only' or receipt.get('configSha256')!=self.config.sha256
                 or receipt.get('installationLogSha256')!=digest(self.installation.installation_log_text)):
             raise ValueError('Original snapshot receipt binding differs')
-        _sealed(value['logText'],receipt.get('log',{}),SNAPSHOT_LOG)
+        _sealed(value['logText'],receipt.get('log',{}),log_format)
         raw=canonical(value)+'\n';write_new(self.output/(side+'-input.json'),raw)
         setattr(self,'_'+side+'_digest',digest(raw))
         return value

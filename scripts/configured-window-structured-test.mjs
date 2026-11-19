@@ -129,11 +129,13 @@ if (args.receipt) {
     test(`original ${fixture.keyType}/${fixture.name}: full analysis/reduction, counters, bytes and cross-profile verification`, () => {
       const bundle = readFileSync(fixture.bundle, 'utf8');
       assert.equal(sha(bundle), fixture.bundleSha256);
-      const options = {config: fixture.config, policy: fixture.policy};
+      const source = {config: fixture.config, policy: fixture.policy};
+      const options = {...source, ...fixture.analysisOptions};
+      const analysisOptionsText = JSON.stringify(fixture.analysisOptions ?? {});
       const configText = JSON.stringify(fixture.config), policyText = JSON.stringify(fixture.policy);
       const complete = fixture.coverageComplete ?? fixture.expected !== 'unknown';
       const expected = fixture.expected === 'compatible' ? 'checked-compatible' : fixture.expected;
-      const raw = wireCores.map((core) => core.analyze_configured_window_v2_json(configText, policyText, bundle, '{}'));
+      const raw = wireCores.map((core) => core.analyze_configured_window_v2_json(configText, policyText, bundle, analysisOptionsText));
       const reports = raw.map(JSON.parse);
       for (let index = 0; index < 2; index++) {
         const api = [normal, structured][index], report = reports[index];
@@ -142,7 +144,7 @@ if (args.receipt) {
         assert.equal(report.sourceAuthenticated, false);
         if (fixture.expectedReason) assert(report.reason?.includes(fixture.expectedReason), report.reason);
         assert.deepEqual(api.analyzeConfiguredWindowV4(bundle, options), report);
-        assert.deepEqual(api.analyzeConfiguredWindowTextV4(bundle, configText, policyText), report);
+        assert.deepEqual(api.analyzeConfiguredWindowTextV4(bundle, configText, policyText, analysisOptionsText), report);
         checkSelfVerification(api, bundle, report, options, complete);
         const other = [normal, structured][1 - index];
         assert.equal(api.verifyConfiguredWindowV4(bundle, reports[1 - index], options).valid, complete);
@@ -154,8 +156,10 @@ if (args.receipt) {
         assert.equal(Buffer.byteLength(raw[0]), Buffer.byteLength(raw[1]));
       } else assert.deepEqual(flags(reports[0]), flags(reports[1]));
 
-      const target = {...options, preserveModel: 'serializable', reductionOptions: {maxChecks: 256}};
-      const reductionOptionsText = '{"preserveModel":"serializable","reductionOptions":{"maxChecks":256}}';
+      const reduction = {preserveModel: 'serializable', reductionOptions: {maxChecks: 256}};
+      if (fixture.analysisOptions) reduction.windowOptions = fixture.analysisOptions;
+      const target = {...source, ...reduction};
+      const reductionOptionsText = JSON.stringify(reduction);
       const reducedRaw = wireCores.map((core) => core.reduce_configured_window_v2_json(configText, policyText, bundle, reductionOptionsText));
       const reductions = reducedRaw.map(JSON.parse);
       for (let index = 0; index < 2; index++) {

@@ -36,7 +36,10 @@ fn admission_ddl_v2(
 }
 
 ///|
-fn admission_snapshot_sql_v2(config : SQLConfigV2) -> String raise {
+fn admission_snapshot_sql_v2(
+  config : SQLConfigV2,
+  page_size~ : Int32 = 1,
+) -> String raise {
   let table = config.parser_config.tables[0]
   let version = admission_qi_v2("__mtw_source_version")
   let terms : Array[String] = []
@@ -61,7 +64,8 @@ fn admission_snapshot_sql_v2(config : SQLConfigV2) -> String raise {
   version +
   ">%s ORDER BY t." +
   version +
-  " LIMIT 1"
+  " LIMIT " +
+  page_size.to_string()
 }
 
 ///|

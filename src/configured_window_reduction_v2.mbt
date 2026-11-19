@@ -168,10 +168,16 @@ fn configured_window_reduction_body_v2(
   let window_verified = observed.at("coverageComplete") == Json(true) &&
     observed.at("sourceMappingVerified") == Json(true) &&
     observed.at("writerWindowVerified") == Json(true)
+  let row_slots_contract = Json(
+    "postgres18-source-bound-point-crud-row-slots/v2",
+  )
+  let window_contract = observed.get_or_default(
+    "semanticContract", row_slots_contract,
+  )
   let record : Json = {
     "format": "moontxnwitness-configured-window-reduction/v1",
     "semanticContract": "verified-configured-window-model-selection/v1",
-    "windowSemanticContract": "postgres18-source-bound-point-crud-row-slots/v2",
+    "windowSemanticContract": window_contract,
     "classificationContract": "relation-predicate-models/v1",
     "reductionSemanticContract": "relation-predicate-model-reduction/v1",
     "algorithm": "verified-window-source-closed-relation-model-selection-1",
@@ -209,8 +215,9 @@ fn configured_window_reduction_body_v2(
     )
     return record
   }
-  if observed.at("semanticContract") !=
-    Json("postgres18-source-bound-point-crud-row-slots/v2") {
+  if window_contract != row_slots_contract &&
+    window_contract !=
+    Json("postgres18-source-bound-point-crud-touched-keys/v1") {
     fail("unsupported:configured-window-reduction-window-contract")
   }
   let reduction = configured_window_reduction_existing_v2(

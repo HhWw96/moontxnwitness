@@ -68,6 +68,9 @@ function independentOptions(options) {
     if (name === 'projectionOptions') {
       object(options[name], 'Independent projectionOptions');
       limits[name] = options[name];
+    } else if (name === 'pointFootprintOnly') {
+      if (typeof options[name] !== 'boolean') throw new TypeError('pointFootprintOnly must be a boolean');
+      limits[name] = options[name];
     } else if (budgetNames.includes(name)) {
       const value = options[name];
       if (!Number.isSafeInteger(value) || value < 0 || value > CONFIGURED_WINDOW_V4_LIMITS[name]) {

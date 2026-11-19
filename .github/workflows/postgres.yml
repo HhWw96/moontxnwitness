@@ -89,11 +89,11 @@ jobs:
         env:
           MTW_CONFIGURED_V2_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
         run: |
-          upstream=()
+          configured_extra=()
           if [ -d artifacts/fastapi-users-upstream ]; then
-            upstream+=(--fastapi-users-checkout artifacts/fastapi-users-upstream)
+            configured_extra+=(--fastapi-users-checkout artifacts/fastapi-users-upstream --with-paged)
           fi
-          python -B scripts/configured-source-v2-postgres.py --dsn-env MTW_CONFIGURED_V2_DSN --owned-database --with-window --with-analysis --with-reduction --with-async --with-sqlalchemy "${upstream[@]}" --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}
+          python -B scripts/configured-source-v2-postgres.py --dsn-env MTW_CONFIGURED_V2_DSN --owned-database --with-window --with-analysis --with-reduction --with-async --with-sqlalchemy "${configured_extra[@]}" --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}
           node scripts/configured-window-v2-check.mjs --core dist/sql-projection-v2-core.mjs --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/analysis-checks.json
           node scripts/configured-window-reduction-v2-check.mjs --core dist/sql-projection-v2-core.mjs --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/reduction/checks.json
           node scripts/configured-window-structured-test.mjs --runtime dist --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/structured-checks.json

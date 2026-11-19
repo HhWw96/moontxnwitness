@@ -18,8 +18,9 @@ const output=resolve(args.output);mkdirSync(dirname(output),{recursive:true});
 const corePath=resolve(dirname(output),'checked-core.mjs');writeFileSync(corePath,coreBytes,{flag:'wx'});
 const core=await import(pathToFileURL(corePath).href),checks=[];
 function check(name,body){try{body();checks.push({name,passed:true});}catch(error){checks.push({name,passed:false,error:error.message});}}
-const options={preserveModel:'serializable'},fixtureResults=[];
+const fixtureResults=[];
 for(const layout of campaign.records)for(const fixture of layout.analysisFixtures){
+  const options={preserveModel:'serializable',windowOptions:fixture.analysisOptions};
   const id=layout.keyType+'/'+fixture.name,bundle=readFileSync(fixture.bundle,'utf8');
   assert.equal(hash(bundle),fixture.bundleSha256,'Original fixture changed');
   const config=JSON.stringify(fixture.config),policy=JSON.stringify(fixture.policy);
@@ -73,7 +74,7 @@ for(const layout of campaign.records)for(const fixture of layout.analysisFixture
   check(id+'/independent-budget-change-is-refused',()=>assert.equal(verify(report,{...options,reductionOptions:{maxChecks:0}}).valid,false));
   check(id+'/original-byte-change-is-refused',()=>assert.equal(verify(report,options,bundle+'\n').valid,false));
   check(id+'/zero-window-budget-never-authorizes-selection',()=>{
-    const limited=run({...options,windowOptions:{maxPointChecks:0}});assert.equal(limited.status,'unknown');assert.equal(limited.windowVerified,false);assert.equal(limited.oneMinimal,false);
+    const limited=run({...options,windowOptions:{...options.windowOptions,maxPointChecks:0}});assert.equal(limited.status,'unknown');assert.equal(limited.windowVerified,false);assert.equal(limited.oneMinimal,false);
   });
   if(refuted){
     check(id+'/unfinished-candidates-never-one-minimal',()=>{
