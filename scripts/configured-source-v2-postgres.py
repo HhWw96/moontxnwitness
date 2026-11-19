@@ -129,6 +129,169 @@ def sqlalchemy_fixture(control, connect_writer, schema, writer, output):
         'sqlalchemyVersion': sa.__version__, 'businessParityVerified': True}
 
 
+def async_sqlalchemy_fixtures(control, connect_writer, schema, writer, output, upstream=None):
+    import sqlalchemy as sa
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+    from sqlalchemy.orm import DeclarativeBase, mapped_column
+    from sqlalchemy.pool import NullPool
+
+    table = TableConfigV2(schema, 'async_orm_rows', PrimaryKeyConfigV2('id', 'uuid'),
+        (ColumnConfig('email', 'text', TEXT_COMPARISON),))
+    config = SQLCaptureConfigV2(table)
+    policy = SourceInstallPolicy('mtw_source_async_' + schema, (writer,))
+    target = q(schema) + '.async_orm_rows'
+    control.execute('CREATE TABLE ' + target + ' (id uuid PRIMARY KEY, email varchar(320) COLLATE pg_catalog."C" NOT NULL)')
+    control.execute('GRANT SELECT, INSERT, UPDATE, DELETE ON ' + target + ' TO ' + q(writer))
+    install_dir = output / 'async-orm-install'
+    install_configured_source_v2(control, install_dir, config, policy, opt_in=True)
+    installation = SourceInputsV2.from_directory(install_dir)
+
+    class Base(DeclarativeBase):
+        pass
+
+    class Member(Base):
+        __tablename__ = 'async_orm_rows'
+        __table_args__ = {'schema': schema}
+        id = mapped_column(sa.Uuid, primary_key=True)
+        email = mapped_column(sa.String(320), nullable=False)
+
+    key = uuid.UUID(int=1061)
+
+    async def run(engine):
+        session_factory = async_sessionmaker(engine, expire_on_commit=False)
+        async with session_factory() as session:
+            member = Member(id=key, email='初始🙂 ')
+            session.add(member)
+            await session.commit()
+            await session.refresh(member)
+            refreshed = (member.id, member.email)
+            member.email = '修改🙂 '
+            await session.commit()
+        async with session_factory() as session:
+            member = await session.get(Member, key)
+            queried = (member.id, member.email)
+            await session.delete(member)
+            await session.commit()
+            missing = await session.get(Member, key)
+            await session.commit()
+        return refreshed, queried, missing, control.execute('SELECT id,email FROM ' + target).fetchall()
+
+    async def baseline(workload):
+        engine = create_async_engine('postgresql+psycopg://', async_creator=connect_writer,
+            poolclass=NullPool, pool_reset_on_return=None)
+        try:
+            return await workload(engine)
+        finally:
+            await engine.dispose()
+
+    def new_window(name):
+        return ConfiguredAsyncCaptureWindowV2(output / name, config, control, policy, installation, opt_in=True)
+
+    def fixture(window, name, expected):
+        bundle = window.seal()
+        return {'name': name, 'bundle': str(bundle), 'expected': expected, 'config': config.to_dict(),
+            'policy': policy.to_dict(), 'bundleSha256': sha(bundle), 'sqlalchemyVersion': sa.__version__}
+
+    async def run_fixtures():
+        expected = await baseline(run)
+        eq((expected[0][1], expected[1][1], expected[2], expected[3]), ('初始🙂 ', '修改🙂 ', None, []))
+        window = new_window('async-orm-window')
+        async with window.sqlalchemy_engine(connect_writer) as engine:
+            eq(await run(engine), expected)
+            try:
+                window.seal()
+            except ValueError as error:
+                eq(str(error), 'Finish the owned SQLAlchemy engine scope before sealing')
+            else:
+                raise AssertionError('Sealed an open engine scope')
+        verified = fixture(window, 'async-sqlalchemy-crud-refresh', 'compatible')
+        verified['businessParityVerified'] = True
+
+        window = new_window('async-orm-unread-window')
+        async with window.sqlalchemy_engine(connect_writer) as engine:
+            async with engine.connect() as connection:
+                await connection.execute(sa.insert(Member).values(id=key, email='undelivered'))
+                await connection.commit()
+                result = await connection.execute(sa.select(Member.id, Member.email).where(Member.id == key))
+                result.close()
+                await connection.commit()
+        unread = fixture(window, 'async-sqlalchemy-prefetched-unread', 'unknown')
+        unread['expectedReason'] = 'orm_unconsumed_result'
+        fixtures = [verified, unread]
+        if upstream is not None:
+            fixtures.append(await fastapi_users_fixture(control, connect_writer, schema, writer, output, upstream, baseline))
+        return fixtures
+
+    if os.name == 'nt':
+        with asyncio.Runner(loop_factory=asyncio.SelectorEventLoop) as runner:
+            return runner.run(run_fixtures())
+    return asyncio.run(run_fixtures())
+
+
+async def fastapi_users_fixture(control, connect_writer, schema, writer, output, upstream, baseline):
+    from sqlalchemy.ext.asyncio import async_sessionmaker
+    from sqlalchemy.orm import DeclarativeBase
+    sys.path.insert(0, str(ROOT/'experiments/business/fastapi_users'))
+    from profile_demo import COMMIT, upstream as verify_upstream
+
+    files = verify_upstream(upstream)
+    from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
+
+    class Base(DeclarativeBase):
+        pass
+
+    class User(SQLAlchemyBaseUserTableUUID, Base):
+        __tablename__ = 'configured_users'
+        __table_args__ = {'schema': schema}
+
+    table = TableConfigV2(schema, User.__tablename__, PrimaryKeyConfigV2('id', 'uuid'), (
+        ColumnConfig('email', 'text', TEXT_COMPARISON),
+        ColumnConfig('hashed_password', 'text', TEXT_COMPARISON),
+        ColumnConfig('is_active', 'bool'), ColumnConfig('is_superuser', 'bool'), ColumnConfig('is_verified', 'bool'),
+    ))
+    config = SQLCaptureConfigV2(table)
+    policy = SourceInstallPolicy('mtw_source_users_' + schema, (writer,))
+    target = q(schema) + '.configured_users'
+    control.execute('CREATE TABLE ' + target + ' (id uuid PRIMARY KEY, '
+        'email varchar(320) COLLATE pg_catalog."C" NOT NULL UNIQUE, '
+        'hashed_password varchar(1024) COLLATE pg_catalog."C" NOT NULL, '
+        'is_active boolean NOT NULL, is_superuser boolean NOT NULL, is_verified boolean NOT NULL)')
+    control.execute('GRANT SELECT, INSERT, UPDATE, DELETE ON ' + target + ' TO ' + q(writer))
+    install_dir = output / 'async-users-install'
+    install_configured_source_v2(control, install_dir, config, policy, opt_in=True)
+    identity = uuid.UUID(int=1062)
+    data = dict(id=identity, email='user@example.invalid', hashed_password='fixture-only',
+                is_active=True, is_superuser=False, is_verified=False)
+
+    async def run(engine):
+        sessions = async_sessionmaker(engine, expire_on_commit=False)
+        async with sessions() as session:
+            db = SQLAlchemyUserDatabase(session, User)
+            absent_before = await db.get(identity)
+            created = await db.create(dict(data))
+            created_state = (created.id, created.email, created.is_active)
+            changed = await db.update(created, {'is_active': False})
+            observed = await db.get(identity)
+            queried_state = (observed.id, observed.email, observed.is_active)
+            await db.delete(changed)
+            absent_after = await db.get(identity)
+            # Keep this read-only transaction in the committed point-window model.
+            await session.commit()
+        return (absent_before, created_state, queried_state, absent_after,
+                control.execute('SELECT id FROM ' + target).fetchall())
+
+    expected = await baseline(run)
+    eq(expected, (None, (identity, data['email'], True), (identity, data['email'], False), None, []))
+    window = ConfiguredAsyncCaptureWindowV2(output / 'async-users-window', config, control, policy,
+        SourceInputsV2.from_directory(install_dir), opt_in=True)
+    async with window.sqlalchemy_engine(connect_writer) as engine:
+        eq(await run(engine), expected)
+    bundle = window.seal()
+    return {'name': 'fastapi-users-base-crud', 'bundle': str(bundle), 'expected': 'compatible',
+        'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(bundle),
+        'upstreamCommit': COMMIT, 'upstreamFiles': files, 'businessParityVerified': True}
+
+
 def analysis_fixtures(control, connect_writer, config, policy, installation, output, key, fresh, other_key, *, with_reduction=False):
     """Run original SQL through wrappers; no model histories are constructed here."""
     import psycopg
@@ -375,7 +538,7 @@ def async_analysis_fixtures(control, connect_writer, connect_async_writer, confi
 
 
 def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_reduction=False, connect_async=None,
-          with_sqlalchemy=False):
+          with_sqlalchemy=False, fastapi_users_checkout=None):
     records = []
     for index, kind in enumerate(('int64', 'text', 'uuid')):
         owner, writer, schema = 'source_owner_'+str(index), 'source_writer_'+str(index), 'app_'+str(index)
@@ -481,6 +644,10 @@ def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_
                     if with_sqlalchemy:
                         analysis.append(sqlalchemy_fixture(control,
                             lambda: connect(user=writer,password=password),schema,writer,work))
+                        if connect_async is not None:
+                            analysis.extend(async_sqlalchemy_fixtures(control,
+                                lambda: connect_async(user=writer,password=password),schema,writer,work,
+                                upstream=fastapi_users_checkout))
                 if connect_async is not None:
                     async_key = 903 if kind == 'int64' else '异步新键🙂' if kind == 'text' else uuid.UUID(int=903)
                     analysis.extend(async_analysis_fixtures(control, lambda: connect(user=writer,password=password),
@@ -507,11 +674,14 @@ def main():
     cli.add_argument('--with-reduction',action='store_true',help='Also capture source-dependent noise transactions for model-preserving reduction')
     cli.add_argument('--with-async',action='store_true',help='Exercise native async business connections in the same source-window scope')
     cli.add_argument('--with-sqlalchemy',action='store_true',help='Exercise paired SQLAlchemy ORM CRUD and refresh using the scoped NullPool recipe')
+    cli.add_argument('--fastapi-users-checkout',type=Path,help='Compare the original pinned FastAPI Users SQLAlchemy base-user CRUD')
     args=cli.parse_args()
     if args.with_analysis and not args.with_window:cli.error('--with-analysis requires --with-window')
     if args.with_reduction and not args.with_analysis:cli.error('--with-reduction requires --with-analysis')
     if args.with_async and not args.with_analysis:cli.error('--with-async requires --with-analysis')
     if args.with_sqlalchemy and not args.with_analysis:cli.error('--with-sqlalchemy requires --with-analysis')
+    if args.fastapi_users_checkout and not (args.with_async and args.with_sqlalchemy):
+        cli.error('--fastapi-users-checkout requires --with-async and --with-sqlalchemy')
     if args.dsn_env and not args.owned_database:cli.error('--dsn-env requires --owned-database')
     if args.dsn_env and not os.environ.get(args.dsn_env):cli.error('the selected DSN environment variable is empty')
     work=args.output.resolve()
@@ -533,7 +703,7 @@ def main():
                 receipt['postgresVersion']='postgres (PostgreSQL) 18.6';receipt['actualDatabaseExecution']=True
                 receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,
                     with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None,
-                    with_sqlalchemy=args.with_sqlalchemy)
+                    with_sqlalchemy=args.with_sqlalchemy,fastapi_users_checkout=args.fastapi_users_checkout)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         (work/'receipt.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
@@ -566,7 +736,7 @@ def main():
                 receipt['actualDatabaseExecution']=True
                 receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,
                     with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None,
-                    with_sqlalchemy=args.with_sqlalchemy)
+                    with_sqlalchemy=args.with_sqlalchemy,fastapi_users_checkout=args.fastapi_users_checkout)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         finally:

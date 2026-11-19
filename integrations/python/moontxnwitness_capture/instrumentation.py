@@ -755,6 +755,8 @@ class _AdapterConnection:
             self._observed._session.gap('adapter_cursor_unobserved', 'Unknown SQLAlchemy async cursor adapter.')
             return cursor
         observed._adapter_delivery = True
+        return self._wrap_cursor(cursor, observed)
+    def _wrap_cursor(self, cursor, observed):
         return _AdapterCursor(cursor, observed)
     def execute(self, query, params=None, **kwargs):
         cursor = self.cursor()

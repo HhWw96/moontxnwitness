@@ -6,6 +6,7 @@ import asyncio
 import inspect
 import threading
 import uuid
+from contextlib import asynccontextmanager
 
 from .configured_effects import WRITER_PROBE_SQL
 from .configured_factory_v2 import record_factory_gap_v2
@@ -13,7 +14,10 @@ from .configured_point_capture_v2 import (
     PointCaptureV2, _PointProjectionState, _native, _retain_writer_checkpoint, _tuple_factory,
 )
 from .configured_window_v2 import ConfiguredCaptureWindowV2
-from .instrumentation import DiagnosticAsyncConnection, DiagnosticAsyncCursor, _end_call, _start_call
+from .instrumentation import (
+    DiagnosticAsyncConnection, DiagnosticAsyncCursor, _AdapterConnection, _AdapterCursor,
+    _end_call, _start_call,
+)
 
 
 def _owned_async_connection(raw):
@@ -33,6 +37,7 @@ class ConfiguredAsyncCaptureWindowV2(ConfiguredCaptureWindowV2):
     def __init__(self, *args, **kwargs):
         self._owner_thread = threading.get_ident()
         self._loop = None
+        self._engine_open = False
         super().__init__(*args, **kwargs)
 
     def _require_loop(self):
@@ -62,32 +67,93 @@ class ConfiguredAsyncCaptureWindowV2(ConfiguredCaptureWindowV2):
             self._require_loop()
             if self._state != 'open' or self._pending_factories >= 32:
                 raise ValueError('Window is closed or its concurrent acquisition budget is exhausted')
-            self._pending_factories += 1
-            raw = None
-            try:
-                pending = factory(*args, **kwargs)
-                if not inspect.isawaitable(pending):
-                    raise ValueError('Configured async factory must return an awaitable')
-                raw = await pending
-                return self.wrap_connection(raw)
-            except BaseException:
-                if not record_factory_gap_v2(self.observer):
-                    self._factory_observation_failed = True
-                if raw is not None and not any(raw is p._raw for p in self._participants):
-                    try:
-                        if _owned_async_connection(raw):
-                            await raw.close()
-                    except BaseException:
-                        pass
-                raise
-            finally:
-                self._pending_factories -= 1
+            return await self._acquire(factory, args, kwargs, self.wrap_connection)
 
         return connect
+
+    async def _acquire(self, factory, args, kwargs, admit):
+        self._pending_factories += 1
+        raw = None
+        try:
+            pending = factory(*args, **kwargs)
+            if not inspect.isawaitable(pending):
+                raise ValueError('Configured async factory must return an awaitable')
+            raw = await pending
+            return admit(raw)
+        except BaseException:
+            self._factory_gap()
+            if raw is not None and not any(raw is p._raw for p in self._participants):
+                try:
+                    if _owned_async_connection(raw):
+                        await raw.close()
+                except BaseException:
+                    pass
+            raise
+        finally:
+            self._pending_factories -= 1
+
+    def _factory_gap(self):
+        if not record_factory_gap_v2(self.observer):
+            self._factory_observation_failed = True
+
+    @asynccontextmanager
+    async def sqlalchemy_engine(self, factory):
+        """Own a single SQLAlchemy 2.0.55 async engine with no connection reuse."""
+        import sqlalchemy
+        from sqlalchemy.dialects.postgresql.psycopg import AsyncAdapt_psycopg_connection
+        from sqlalchemy.ext.asyncio import create_async_engine
+        from sqlalchemy.pool import NullPool
+
+        self._require_loop()
+        if (sqlalchemy.__version__ != '2.0.55' or not callable(factory)
+                or self._engine_open or self._state != 'open'):
+            raise ValueError('An open window and a new owned SQLAlchemy 2.0.55 engine are required')
+        active = True
+        self._engine_open = True
+        engine = None
+
+        def admit(raw):
+            if not active or not _ready_async_connection(raw):
+                raise ValueError('New idle owned psycopg 3.3.6 async tuple connection required')
+            if any(raw is participant._raw for participant in self._participants):
+                raise ValueError('The SQLAlchemy factory must open a fresh physical connection')
+            return raw
+
+        async def connect():
+            self._require_loop()
+            if not active or self._pending_factories >= 32:
+                raise ValueError('Engine scope is closed or its concurrent acquisition budget is exhausted')
+            return await self._acquire(factory, (), {}, admit)
+
+        def enroll(dbapi, record):
+            try:
+                if not active or type(dbapi) is not AsyncAdapt_psycopg_connection:
+                    raise ValueError('Unexpected scoped SQLAlchemy async connection adapter')
+                observed = self.wrap_connection(dbapi.driver_connection)
+                dbapi._connection = observed
+                record.dbapi_connection = _PointAdapterConnection(dbapi, observed)
+            except BaseException:
+                self._factory_gap()
+                raise
+
+        try:
+            engine = create_async_engine('postgresql+psycopg://', async_creator=connect,
+                                         poolclass=NullPool, pool_reset_on_return=None)
+            sqlalchemy.event.listen(engine.sync_engine, 'connect', enroll)
+            yield engine
+        finally:
+            active = False
+            try:
+                if engine is not None:
+                    await engine.dispose()
+            finally:
+                self._engine_open = False
 
     def seal(self):
         if threading.get_ident() != self._owner_thread:
             raise ValueError('Seal the configured window on its control connection thread')
+        if self._engine_open:
+            raise ValueError('Finish the owned SQLAlchemy engine scope before sealing')
         if any(participant._point_lock.locked() for participant in self._participants):
             raise ValueError('Finish all participant operations before sealing')
         return super().seal()
@@ -97,11 +163,42 @@ class _AsyncPointCaptureV2(PointCaptureV2):
     _producer_format = 'moontxnwitness-async-point-producer/v2'
 
     def _wrap(self, raw, *, asynchronous):
-        if (not self._enabled or not asynchronous or not _owned_async_connection(raw)
-                or raw.autocommit or raw.closed or int(raw.info.transaction_status) != 0
-                or raw._pipeline or raw._tpc or not _tuple_factory(raw)):
+        if not self._enabled or not asynchronous or not _ready_async_connection(raw):
             raise ValueError('New idle owned psycopg 3.3.6 async tuple connection required')
         return self._enroll_connection(raw, _AsyncPointConnectionV2, asynchronous=True)
+
+
+def _ready_async_connection(raw):
+    return (_owned_async_connection(raw) and not raw.autocommit and not raw.closed
+            and int(raw.info.transaction_status) == 0 and not raw._pipeline
+            and not raw._tpc and _tuple_factory(raw))
+
+
+class _PointAdapterConnection(_AdapterConnection):
+    def _wrap_cursor(self, cursor, observed):
+        return _PointAdapterCursor(cursor, observed)
+
+
+class _PointAdapterCursor(_AdapterCursor):
+    def _fetch(self, method, *args):
+        observed = self._observed
+        if observed._projection is None:
+            return super()._fetch(method, *args)
+        result = getattr(self._raw, method)(*args)
+        business = observed._projection['businessResult']
+        if business['mode'] == 'no-result':
+            return result
+        if not observed._session._enabled:
+            return observed._business_delivery(method, result, business)[0]
+        size = None
+        if method == 'fetchmany':
+            size = observed.arraysize if args[0] is None else args[0]
+            if size <= 0:
+                return result
+        delivered, rows = observed._record_delivery(
+            method, args, result, business, size, observed._delivery_position)
+        observed.delivered(rows, not self._raw._rows)
+        return delivered
 
 
 class _AsyncPointConnectionV2(DiagnosticAsyncConnection):
@@ -233,6 +330,13 @@ class _AsyncPointCursorV2(_PointProjectionState, DiagnosticAsyncCursor):
             actual_args = args if args and args[0] is not None else ()
             if self._raw.closed:
                 return await fetch(*actual_args)
+            if self._adapter_delivery and method == 'fetchall':
+                # SQLAlchemy drains the native cursor before application fetches.
+                # Only the scoped cursor proxy can deliver rows from its buffer.
+                business = self._projection['businessResult']
+                if business['mode'] == 'no-result':
+                    return []
+                return await fetch()
             observation = self._fetch_observation(method, args)
             self._session.activity(method)
             try:

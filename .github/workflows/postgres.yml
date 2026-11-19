@@ -65,6 +65,17 @@ jobs:
         run: python -m pip install --require-hashes -r examples/orm-requirements.txt
       - name: Install checksum-pinned configured SQL adapter
         run: python -m pip install --require-hashes -r integrations/python/requirements-configured-sql.txt
+      - name: Check out the fixed FastAPI Users SQLAlchemy adapter
+        if: ${{ !inputs.source_ref }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: fastapi-users/fastapi-users-db-sqlalchemy
+          ref: 6397ace506d829a2ee12786da5d724c3f4c6b634
+          path: artifacts/fastapi-users-upstream
+          persist-credentials: false
+      - name: Install FastAPI Users for the fixed base-user comparison
+        if: ${{ !inputs.source_ref }}
+        run: python -m pip install 'fastapi-users==14.0.2'
       - name: Verify configured same-connection initial diagnostics on three tables
         env:
           MTW_CONFIGURED_PG_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
@@ -78,7 +89,11 @@ jobs:
         env:
           MTW_CONFIGURED_V2_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
         run: |
-          python -B scripts/configured-source-v2-postgres.py --dsn-env MTW_CONFIGURED_V2_DSN --owned-database --with-window --with-analysis --with-reduction --with-async --with-sqlalchemy --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}
+          upstream=()
+          if [ -d artifacts/fastapi-users-upstream ]; then
+            upstream+=(--fastapi-users-checkout artifacts/fastapi-users-upstream)
+          fi
+          python -B scripts/configured-source-v2-postgres.py --dsn-env MTW_CONFIGURED_V2_DSN --owned-database --with-window --with-analysis --with-reduction --with-async --with-sqlalchemy "${upstream[@]}" --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}
           node scripts/configured-window-v2-check.mjs --core dist/sql-projection-v2-core.mjs --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/analysis-checks.json
           node scripts/configured-window-reduction-v2-check.mjs --core dist/sql-projection-v2-core.mjs --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/reduction/checks.json
           node scripts/configured-window-structured-test.mjs --runtime dist --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/structured-checks.json

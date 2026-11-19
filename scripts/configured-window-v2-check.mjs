@@ -198,6 +198,16 @@ for (const record of campaign.records) {
       assert.equal(result.valid, fixture.expected !== 'unknown');
       return { valid: result.valid, reportMatches: result.reportMatches };
     });
+    if (fixture.name === 'async-sqlalchemy-prefetched-unread') {
+      await check(`${id}/prefetch-is-not-delivery`, () => {
+        const events = jsonl(bundle.lifecycleText);
+        const nonempty = events.filter((event) => event.kind === 'configured-point-native' && frame(event).native.rows.length === 1);
+        const undelivered = nonempty.at(-1);
+        assert(undelivered);
+        const resultId = frame(undelivered).resultId;
+        assert(!events.some((event) => event.kind === 'configured-point-delivery' && frame(event).resultId === resultId));
+      });
+    }
     await check(`${id}/forged-verdict-rejected`, () => {
       const forged = clone(report);
       forged.status = report.status === 'refuted' ? 'checked-compatible' : 'refuted';

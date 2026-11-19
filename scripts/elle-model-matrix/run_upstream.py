@@ -83,8 +83,17 @@ def main() -> int:
     env.pop("PYTHONPATH", None)
     home = work / "home"
     home.mkdir()
+    lein_home = work / "lein-home"
+    lein_home.mkdir()
+    profile = output / "lein-profiles.clj"
+    profile.write_text(
+        '{:user {:mirrors {"central" {:name "central" :url "https://repo.maven.apache.org/maven2/"}}}}\n',
+        encoding="utf8",
+    )
+    shutil.copyfile(profile, lein_home / "profiles.clj")
+    record["leinProfiles"] = binding(profile)
     java = Path(env.get("JAVA_HOME_21_X64") or env.get("JAVA_HOME") or "")
-    env.update(HOME=str(home), LEIN_HOME=str(work / "lein-home"),
+    env.update(HOME=str(home), LEIN_HOME=str(lein_home),
                JAVA_HOME=str(java), PATH=str(java / "bin") + os.pathsep + env.get("PATH", ""),
                LEIN_JVM_OPTS=f"-Xmx2048m -Duser.home={home} -Djava.io.tmpdir={work}",
                JVM_OPTS=f"-Xmx2048m -Duser.home={home} -Djava.io.tmpdir={work}",

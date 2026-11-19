@@ -1,6 +1,6 @@
 # Roadmap and delivery history
 
-## Current source — v0.5.6
+## Current source — v0.5.7
 
 The current source base provides `classifyModelsV4`, registered inference modules,
 `classifyRelationModelsV4` and `reduceRelationModelsV4`, with independent verification
@@ -74,7 +74,8 @@ offline explanations over verified synchronous windows. Original bundles remain
 required; selections carry checked original-event mappings. The real PostgreSQL
 campaign includes three source-dependent read-only noise transactions around a
 two-transaction RR anomaly, rather than claiming a reduction from an already
-minimal pair. Async/ORM expansion remains separate work. The
+minimal pair. The scoped async ORM producer shares the committed point-window
+contract. The
 [structured-profile measurements](window-structured-verification.md) retain both
 failed P95 controls and do not qualify the profile for default promotion.
 
