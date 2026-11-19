@@ -192,3 +192,25 @@ each used five warmups and 30 measured calls. The one-row log stage went from
 went from 2.47 to 1.76 ms median and from 4.32 to 2.67 ms P95. These figures
 cover local log revalidation. Database latency, SDK analysis time and process
 RSS require separate measurements.
+
+### Capture cost pilot
+
+The small cost pilot runs the same 24 point read-update transactions in three
+orders. A uses the direct driver. B adds source tracking. C adds native result
+and transaction capture, both paged snapshots and durable window sealing. The
+complete-window throughput includes the snapshot and sealing work. Transaction
+P95 measures the business statements and commit acknowledgement.
+
+```sh
+python -B scripts/configured-window-cost-pilot.py --dsn-env MTW_PG_DSN --owned-database --output NEW_RUN
+node scripts/configured-window-cost-pilot-verify.mjs --receipt NEW_RUN/receipt.json --core dist/sql-projection-v2-core.mjs --output NEW_RUN/independent-check.json
+```
+
+Use a disposable PostgreSQL 18.6 instance. The verifier compares the final
+business data and checks all captured operations and writer bindings. The pilot
+uses the synchronous point producer and retains raw timings for a single small
+workload. The final three checked windows had identical business outcomes.
+Complete-window throughput for C ranged from 8.9% to 16.2% of A, and transaction
+P95 was 8.68–11.82 times A. Opening and sealing together took 55%–63% of the
+complete captured-window time. A full workload campaign is needed to assess
+capture throughput and tail latency at scale.

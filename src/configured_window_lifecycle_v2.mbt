@@ -20,78 +20,6 @@ priv struct WindowLifecycleV2 {
 }
 
 ///|
-priv struct WindowPoolLeaseV2 {
-  pid : Json
-  mut ordinal : Int32
-  mut borrowed : Bool
-  mut transaction : String?
-}
-
-///|
-fn window_pool_event_v2(
-  leases : Map[String, WindowPoolLeaseV2],
-  opened : Map[String, Bool],
-  event : Map[String, Json],
-  kind : String,
-) -> Unit raise {
-  let frame = orm_exact(window_frame_v2(event), [
-    "format", "connection", "backendPid", "lease", "transactionStatus",
-  ])
-  let connection = sql_string_v1(frame.at("connection"))
-  let pid = fetch_number_v1(frame.at("backendPid"), 2147483647)
-  let ordinal = fetch_number_v1(frame.at("lease"), 65536)
-  if !opened.contains(connection) ||
-    frame.at("format") != Json("moontxnwitness-configured-point-pool/v1") ||
-    frame.at("transactionStatus") != Json(0) ||
-    pid == 0 {
-    fail("mismatch:window-invalid-pool-boundary")
-  }
-  if kind == "configured-point-pool-enroll" {
-    if ordinal != 0 || leases.contains(connection) {
-      fail("mismatch:window-invalid-pool-enrollment")
-    }
-    leases[connection] = {
-      pid: Json(pid),
-      ordinal: 0,
-      borrowed: false,
-      transaction: None,
-    }
-    return
-  }
-  let lease = match leases.get(connection) {
-    Some(value) => value
-    None => fail("mismatch:window-pool-enrollment-missing")
-  }
-  if lease.pid != Json(pid) || lease.transaction is Some(_) {
-    fail("mismatch:window-pool-backend-or-transaction")
-  }
-  if kind == "configured-point-pool-checkout" {
-    if lease.borrowed || ordinal != lease.ordinal + 1 {
-      fail("mismatch:window-invalid-pool-checkout")
-    }
-    lease.ordinal = ordinal
-    lease.borrowed = true
-  } else {
-    if !lease.borrowed || ordinal != lease.ordinal {
-      fail("mismatch:window-invalid-pool-checkin")
-    }
-    lease.borrowed = false
-  }
-}
-
-///|
-fn window_pool_lease_v2(
-  leases : Map[String, WindowPoolLeaseV2],
-  connection : String,
-  borrowed : Bool,
-) -> WindowPoolLeaseV2 raise {
-  match leases.get(connection) {
-    Some(lease) if lease.borrowed == borrowed => lease
-    _ => fail("mismatch:window-pool-lease-state")
-  }
-}
-
-///|
 fn window_object_v2(raw : Json) -> Map[String, Json] raise {
   object_fields(raw, "configured V2 window")
 }
@@ -648,4 +576,76 @@ fn window_lifecycle_v2(
     }
   }
   { cases, commits, trace_events: events, trace_by_seq, begin_by_tx: begins, }
+}
+
+///|
+priv struct WindowPoolLeaseV2 {
+  pid : Json
+  mut ordinal : Int32
+  mut borrowed : Bool
+  mut transaction : String?
+}
+
+///|
+fn window_pool_event_v2(
+  leases : Map[String, WindowPoolLeaseV2],
+  opened : Map[String, Bool],
+  event : Map[String, Json],
+  kind : String,
+) -> Unit raise {
+  let frame = orm_exact(window_frame_v2(event), [
+    "format", "connection", "backendPid", "lease", "transactionStatus",
+  ])
+  let connection = sql_string_v1(frame.at("connection"))
+  let pid = fetch_number_v1(frame.at("backendPid"), 2147483647)
+  let ordinal = fetch_number_v1(frame.at("lease"), 65536)
+  if !opened.contains(connection) ||
+    frame.at("format") != Json("moontxnwitness-configured-point-pool/v1") ||
+    frame.at("transactionStatus") != Json(0) ||
+    pid == 0 {
+    fail("mismatch:window-invalid-pool-boundary")
+  }
+  if kind == "configured-point-pool-enroll" {
+    if ordinal != 0 || leases.contains(connection) {
+      fail("mismatch:window-invalid-pool-enrollment")
+    }
+    leases[connection] = {
+      pid: Json(pid),
+      ordinal: 0,
+      borrowed: false,
+      transaction: None,
+    }
+    return
+  }
+  let lease = match leases.get(connection) {
+    Some(value) => value
+    None => fail("mismatch:window-pool-enrollment-missing")
+  }
+  if lease.pid != Json(pid) || lease.transaction is Some(_) {
+    fail("mismatch:window-pool-backend-or-transaction")
+  }
+  if kind == "configured-point-pool-checkout" {
+    if lease.borrowed || ordinal != lease.ordinal + 1 {
+      fail("mismatch:window-invalid-pool-checkout")
+    }
+    lease.ordinal = ordinal
+    lease.borrowed = true
+  } else {
+    if !lease.borrowed || ordinal != lease.ordinal {
+      fail("mismatch:window-invalid-pool-checkin")
+    }
+    lease.borrowed = false
+  }
+}
+
+///|
+fn window_pool_lease_v2(
+  leases : Map[String, WindowPoolLeaseV2],
+  connection : String,
+  borrowed : Bool,
+) -> WindowPoolLeaseV2 raise {
+  match leases.get(connection) {
+    Some(lease) if lease.borrowed == borrowed => lease
+    _ => fail("mismatch:window-pool-lease-state")
+  }
 }

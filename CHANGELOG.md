@@ -1,6 +1,7 @@
 # Unreleased
 
 - Add opt-in asynchronous SQLAlchemy connection reuse for a scoped point window. Verify lease order, idle return, PostgreSQL backend identity and independent committed transactions. Invalidated leases retain a coverage gap.
+- Keep no-op commits on known idle driver connections from creating a transaction event. A caller can explicitly commit inside a connection context and then exit it normally.
 
 # 0.5.8
 

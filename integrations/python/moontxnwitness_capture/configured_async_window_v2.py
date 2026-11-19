@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from .configured_effects import WRITER_PROBE_SQL
 from .configured_factory_v2 import record_factory_gap_v2
 from .configured_point_capture_v2 import (
-    PointCaptureV2, _PointProjectionState, _native, _retain_writer_checkpoint, _tuple_factory,
+    PointCaptureV2, _PointProjectionState, _idle_commit_v2, _native, _retain_writer_checkpoint, _tuple_factory,
 )
 from .configured_window_v2 import ConfiguredCaptureWindowV2
 from .instrumentation import (
@@ -329,6 +329,8 @@ class _AsyncPointConnectionV2(DiagnosticAsyncConnection):
 
     async def commit(self):
         async with self._point_lock:
+            if _idle_commit_v2(self._raw, self._tx):
+                return await self._raw.commit()
             if (self._session._enabled and self._session._automatic_writer_checkpoints
                     and self._tx and int(self._raw.info.transaction_status) == 2):
                 try:
