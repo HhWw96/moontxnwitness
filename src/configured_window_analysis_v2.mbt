@@ -524,7 +524,12 @@ fn window_analysis_body_v2(
   let point_only = match opts.get("pointFootprintOnly") {
     None => paged
     Some(True) => true
-    Some(False) => false
+    Some(False) => {
+      if paged {
+        fail("unsupported:window-paged-requires-point-footprint")
+      }
+      false
+    }
     _ => fail("invalid:window-point-footprint-option")
   }
   let used_keys : Map[String, Bool] = Map([])

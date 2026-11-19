@@ -12,7 +12,7 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-当前源码版本为 **v0.5.7**，支持同步和原生异步 psycopg 的 PostgreSQL 点 CRUD 来源核验、异常缩减和离线复现。同步和异步 SQLAlchemy 均支持受控的 `NullPool` 接入。异步接入示例包含 FastAPI Users 按 ID 查询、创建、修改和删除。各版本构建与下载见 [GitHub Releases](https://github.com/HhWw96/moontxnwitness/releases)，接入方法见 [异步采集](docs/configured-async-window-v2.md)，后续工作见[开发路线](docs/ROADMAP.md)。
+当前源码版本为 **v0.5.8**，支持同步和原生异步 psycopg、受控的同步和异步 SQLAlchemy `NullPool` 接入，以及 PostgreSQL 点 CRUD 的来源核验、异常缩减和离线复现。可选的 [分页快照](docs/configured-window-v2.md#paged-source-snapshots) 批量读取原始来源并保留完整核验。各版本构建与下载见 [GitHub Releases](https://github.com/HhWw96/moontxnwitness/releases)，接入示例见[异步采集](docs/configured-async-window-v2.md)。
 
 ## 关系谓词模型与可组合推断
 

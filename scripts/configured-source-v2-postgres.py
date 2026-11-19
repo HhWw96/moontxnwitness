@@ -67,6 +67,8 @@ def varchar_binding_fixture(control, connect_writer, schema, writer, output):
 
 def paged_snapshot_fixture(control, connect_writer, schema, writer, output):
     """Compare the two readers over the same 260 initialized row versions."""
+    from psycopg import IsolationLevel
+
     table = TableConfigV2(schema, 'page_rows', PrimaryKeyConfigV2('id', 'int64'),
         (ColumnConfig('label', 'text', TEXT_COMPARISON),))
     config = SQLCaptureConfigV2(table)
@@ -90,6 +92,7 @@ def paged_snapshot_fixture(control, connect_writer, schema, writer, output):
                         [(key, 'row-' + str(key))])
         path = window.seal()
         fixtures.append({'name': 'snapshot-' + profile, 'bundle': str(path), 'expected': 'compatible',
+            'analysisOptions': {'pointFootprintOnly': True},
             'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(path)})
     window = ConfiguredCaptureWindowV2(output / 'snapshot-paged-late-commit', config, control, policy,
         installation, opt_in=True, snapshot_profile='paged-v1')
@@ -111,6 +114,33 @@ def paged_snapshot_fixture(control, connect_writer, schema, writer, output):
     fixtures.append({'name': 'snapshot-paged-late-commit', 'bundle': str(path), 'expected': 'compatible',
         'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(path),
         'lateVersion': late_version, 'earlierVisibleMaximum': str(max(map(int, before_late)))})
+
+    window = ConfiguredCaptureWindowV2(output / 'snapshot-paged-write-skew', config, control, policy,
+        installation, opt_in=True, snapshot_profile='paged-v1')
+    def repeatable_read():
+        connection = connect_writer()
+        connection.isolation_level = IsolationLevel.REPEATABLE_READ
+        return connection
+
+    connect = window.psycopg_factory(repeatable_read)
+    select = 'SELECT id,label FROM ' + target + ' WHERE id=%s'
+    barrier = threading.Barrier(2)
+
+    def write_skew(key):
+        with connect() as connection:
+            observed = [connection.execute(select, (v,)).fetchone() for v in (1, 260)]
+            eq(observed, [(1, 'late'), (260, 'early')])
+            barrier.wait(timeout=20)
+            eq(connection.execute(update, ('disabled', key)).fetchone(), (key, 'disabled'))
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        list(pool.map(write_skew, (1, 260)))
+    with connect() as connection:
+        eq(connection.execute(select, (1,)).fetchone(), (1, 'disabled'))
+    path = window.seal()
+    fixtures.append({'name': 'snapshot-paged-write-skew', 'bundle': str(path), 'expected': 'refuted',
+        'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(path),
+        'originalTransactions': 3, 'expectedReducedTransactions': 2})
     return fixtures
 
 

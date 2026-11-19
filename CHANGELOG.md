@@ -1,7 +1,8 @@
-# Unreleased
+# 0.5.8
 
 - Add an opt-in paged snapshot reader for point windows and check complete native page deliveries and cursor boundaries. Restrict model state to verified point keys after admitting the full source inventory.
 - Recheck sealed log records without retaining parsed copies of the entire log. Preserve exact byte limits, sequence validation and digest checks.
+- Reduce and independently replay source-verified paged histories. A real PostgreSQL write-skew window with 260 source rows reduces from three transactions to two.
 
 # 0.5.7
 

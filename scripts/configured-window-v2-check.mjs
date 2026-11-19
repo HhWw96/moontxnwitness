@@ -159,7 +159,7 @@ for (const record of campaign.records) {
     const configText = stringify(fixture.config);
     const policyText = stringify(fixture.policy);
     const snapshotComparison = ['snapshot-row-v2', 'snapshot-paged-v1'].includes(fixture.name);
-    const optionsText = (options) => stringify(snapshotComparison ? { pointFootprintOnly: true, ...options } : options);
+    const optionsText = (options) => stringify({ ...fixture.analysisOptions, ...options });
     const analyze = (text = raw, options = {}) => JSON.parse(core.analyze_configured_window_v2_json(configText, policyText, text, optionsText(options)));
     const verify = (report, text = raw, options = {}) => JSON.parse(core.verify_configured_window_v2_json(configText, policyText, text, stringify(report), optionsText(options)));
     const report = analyze();
@@ -273,6 +273,11 @@ for (const record of campaign.records) {
           incomplete(analyze(raw, { maxRows: 259 }));
           incomplete(analyze(raw, { maxEffects: 259 }));
         });
+        await check(`${id}/paging-requires-point-footprint`, () => {
+          const refused = analyze(raw, { pointFootprintOnly: false });
+          incomplete(refused);
+          assert(refused.reason.includes('window-paged-requires-point-footprint'));
+        });
       }
       continue;
     }
@@ -291,6 +296,16 @@ for (const record of campaign.records) {
       assert.equal(result.valid, false); assert.notEqual(result.reportMatches, true);
       return { valid: result.valid };
     });
+    if (fixture.name === 'snapshot-paged-write-skew') {
+      await check(`${id}/complete-source-and-paged-model-refutation`, () => {
+        assert.equal(report.semanticContract, 'postgres18-source-bound-point-crud-touched-keys/v1');
+        assert.equal(report.startSnapshot.rowsObserved, 260);
+        assert.equal(report.endSnapshot.effectsObserved - report.startSnapshot.effectsObserved, 2);
+        assert.equal(report.history.events.filter(event => event.kind === 'begin').length, 3);
+        assert.equal(verify(report, raw, { maxPointChecks: 0 }).valid, false);
+      });
+      continue;
+    }
     if (report.serialReplay?.judgment?.evidence?.kind === 'serial-relation-replay') {
       await check(`${id}/forged-serial-certificate-rejected`, () => {
         const forged = clone(report);

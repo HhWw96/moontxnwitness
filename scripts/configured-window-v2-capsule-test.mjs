@@ -144,8 +144,10 @@ if (args.receipt) {
     test(`original ${fixture.keyType}/${fixture.name}: both capsule domains and independent source/budget verification`, () => {
       const bundle = readFileSync(fixture.bundle, 'utf8');
       assert.equal(sha256(bundle), fixture.bundleSha256);
-      const options = {config: fixture.config, policy: fixture.policy};
-      const target = {...options, preserveModel: 'serializable', reductionOptions: {maxChecks: 256}};
+      const source = {config: fixture.config, policy: fixture.policy};
+      const options = {...source, ...fixture.analysisOptions};
+      const target = {...source, preserveModel: 'serializable', reductionOptions: {maxChecks: 256}};
+      if (fixture.analysisOptions) target.windowOptions = fixture.analysisOptions;
       const analysisCapsule = capsules.makeConfiguredWindowCapsuleV4(bundle, options);
       const reductionCapsule = capsules.makeConfiguredWindowReductionCapsuleV4(bundle, target);
       const analysis = capsules.replayConfiguredWindowCapsuleV4(analysisCapsule, options);
@@ -218,7 +220,7 @@ if (args.receipt) {
   assert(complete, 'Need an actual refutation fixture for budget cases');
   test('budget-exhausted analysis and reduction diagnostics reproduce without valid/refutation claims', () => {
     const bundle = readFileSync(complete.bundle, 'utf8');
-    const options = {config: complete.config, policy: complete.policy, maxPointChecks: 0};
+    const options = {config: complete.config, policy: complete.policy, ...complete.analysisOptions, maxPointChecks: 0};
     const capsule = capsules.makeConfiguredWindowCapsuleV4(bundle, options);
     const checked = capsules.replayConfiguredWindowCapsuleV4(capsule, options);
     assert.equal(checked.status, 'unknown');
@@ -237,7 +239,7 @@ if (args.receipt) {
   });
   test('recomputed outer digests cannot authorize forged report configuration or budget evidence', () => {
     const bundle = readFileSync(complete.bundle, 'utf8');
-    const options = {config: complete.config, policy: complete.policy};
+    const options = {config: complete.config, policy: complete.policy, ...complete.analysisOptions};
     const capsule = capsules.makeConfiguredWindowCapsuleV4(bundle, options);
     for (const field of ['configSha256', 'optionsSha256']) {
       const altered = changedReport(capsule, report => {report[field] = '0'.repeat(64);});
@@ -252,7 +254,8 @@ if (args.receipt) {
     assert.equal(duplicateChecked.envelopeVerified, true);
     assert.equal(duplicateChecked.reportMatches, false);
     assert.equal(duplicateChecked.valid, false);
-    const target = {...options, preserveModel: 'serializable', reductionOptions: {maxChecks: 256}};
+    const target = {config: complete.config, policy: complete.policy, preserveModel: 'serializable', reductionOptions: {maxChecks: 256}};
+    if (complete.analysisOptions) target.windowOptions = complete.analysisOptions;
     const reduction = capsules.makeConfiguredWindowReductionCapsuleV4(bundle, target);
     const altered = changedReport(reduction, report => {report.suppliedOptions.reductionOptions.maxChecks = 0;});
     const checked = capsules.replayConfiguredWindowReductionCapsuleV4(altered, target);

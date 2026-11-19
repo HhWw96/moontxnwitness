@@ -172,8 +172,9 @@ existing raw byte budget. Page-budget exhaustion is a source coverage gap.
 
 Paged analysis verifies the complete source inventories and restricts the
 model's initial row state to keys referenced by independently verified point
-statements. The `pointFootprintOnly` analysis option selects this projection
-explicitly for measurements with either snapshot reader. Replay requires the
+statements. Set `pointFootprintOnly: true` to apply the same projection to
+row-by-row snapshots for a comparison. Paged windows require the projection.
+Replay requires the
 same independently selected options. The source logs retain every row and
 effect. Use the original row reader for existing v2 replay and historical reports.
 
