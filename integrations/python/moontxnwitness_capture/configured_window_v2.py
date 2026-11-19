@@ -7,6 +7,7 @@ incremental visibility watermark. Sealing is durability, not model admission.
 from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -45,21 +46,32 @@ canonical, digest = source.canonical, lambda text: hashlib.sha256(text.encode('u
 
 
 def _sealed(text, receipt, log_format):
-    lines = text.encode('utf8').splitlines(keepends=True)
-    if not lines or any(not line.endswith(b'\n') for line in lines):
+    payload = text.encode('utf8')
+    if not payload.endswith(b'\n'):
         raise ValueError('Original sealed log requires complete newline-terminated records')
-    records = [source._json(line.decode('utf8')) for line in lines]
-    if any(type(row) is not dict or type(row.get('seq')) is not int or row.get('seq') != i for i,row in enumerate(records,1)):
-        raise ValueError('Original log sequence differs')
-    seal = records[-1]
-    if (records[0].get('kind')!='header' or records[0].get('format')!=log_format
-            or seal.get('kind')!='seal' or type(seal.get('records')) is not int or seal.get('records')!=len(records)-1
-            or seal.get('prefixSha256')!=hashlib.sha256(b''.join(lines[:-1])).hexdigest()
-            or receipt.get('sealed') is not True or receipt.get('sha256')!=digest(text)
-            or type(receipt.get('bytes')) is not int or receipt.get('bytes')!=len(text.encode('utf8'))
-            or type(receipt.get('records')) is not int or receipt.get('records')!=len(records)):
+    if (receipt.get('sealed') is not True or type(receipt.get('bytes')) is not int
+            or receipt['bytes'] != len(payload) or receipt.get('sha256') != hashlib.sha256(payload).hexdigest()):
         raise ValueError('Original log seal/digest/inventory differs')
-    return records
+
+    cursor = io.BytesIO(payload)
+    count = 0
+    for line in cursor:
+        count += 1
+        cr = line.find(b'\r')
+        if cr >= 0 and cr != len(line) - 2:
+            raise ValueError('Original sealed log requires complete newline-terminated records')
+        record = source._json(line.decode('utf8'))
+        if type(record) is not dict or type(record.get('seq')) is not int or record['seq'] != count:
+            raise ValueError('Original log sequence differs')
+        if count == 1 and (record.get('kind') != 'header' or record.get('format') != log_format):
+            raise ValueError('Original log seal/digest/inventory differs')
+        if cursor.tell() == len(payload):
+            prefix = memoryview(payload)[:len(payload) - len(line)]
+            if (record.get('kind') != 'seal' or type(record.get('records')) is not int
+                    or record['records'] != count - 1 or type(receipt.get('records')) is not int
+                    or receipt['records'] != count
+                    or record.get('prefixSha256') != hashlib.sha256(prefix).hexdigest()):
+                raise ValueError('Original log seal/digest/inventory differs')
 
 
 @dataclass(frozen=True,slots=True)

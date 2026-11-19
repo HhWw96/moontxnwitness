@@ -176,3 +176,18 @@ statements. The `pointFootprintOnly` analysis option selects this projection
 explicitly for measurements with either snapshot reader. Replay requires the
 same independently selected options. The source logs retain every row and
 effect. Use the original row reader for existing v2 replay and historical reports.
+
+### Snapshot and sealing measurements
+
+In the PostgreSQL 18.6 fixture with 260 initialized rows, paging reduces the SQL
+statements for each boundary snapshot from 522 to 8. The complete raw window
+is 2,026,192 bytes with paging and 3,673,961 bytes with one-row observations.
+The MoonBit verifier checks the full source inventory in both windows.
+
+The producer revalidates each original sealed log one record at a time. On
+identical saved boundaries, three independent Python processes per version
+each used five warmups and 30 measured calls. The one-row log stage went from
+18.65 to 13.13 ms median and from 25.71 to 15.24 ms P95. The paged log stage
+went from 2.47 to 1.76 ms median and from 4.32 to 2.67 ms P95. These figures
+cover local log revalidation. Database latency, SDK analysis time and process
+RSS require separate measurements.

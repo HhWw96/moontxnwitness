@@ -52,6 +52,22 @@ class WindowTests(unittest.TestCase):
         c,inputs=self.prepared();lines=inputs.installation_log_text.splitlines(keepends=True)
         header=json.loads(lines[0]);header['seq']=True;lines[0]=m.canonical(header)+'\n'
         with self.assertRaises(ValueError):m._sealed(''.join(lines),json.loads(inputs.installation_receipt_text)['log'],m.source.LOG_FORMAT)
+    def test_sealed_log_checks_record_structure_after_rehash(self):
+        header = m.canonical({'kind': 'header', 'seq': 1, 'format': m.SNAPSHOT_LOG}) + '\r\n'
+        valid = m.canonical({'kind': 'test', 'seq': 2, 'value': '行🙂'}) + '\r\n'
+
+        def check(line):
+            prefix = header + line
+            text = prefix + m.canonical({'kind': 'seal', 'seq': 3, 'records': 2,
+                                         'prefixSha256': m.digest(prefix)}) + '\n'
+            receipt = {'sealed': True, 'records': 3, 'bytes': len(text.encode('utf8')), 'sha256': m.digest(text)}
+            m._sealed(text, receipt, m.SNAPSHOT_LOG)
+
+        check(valid)
+        with self.assertRaisesRegex(ValueError, 'sequence'):
+            check(valid.replace('"seq":2', '"seq":true'))
+        with self.assertRaisesRegex(ValueError, 'newline-terminated'):
+            check(valid.replace('"seq":2', '"seq":\r2'))
     def test_snapshot_uses_own_header_and_preserves_original_files(self):
         c,inputs=self.prepared();before=inputs.installation_log_text
         receipt=json.loads(self.observe(c,inputs).read_text('utf8'))
@@ -147,6 +163,7 @@ class WindowTests(unittest.TestCase):
         c,inputs=self.prepared();window=object.__new__(m.ConfiguredCaptureWindowV2)
         window.output=self.root/'window';window.output.mkdir();window.control=c;window.config=c.config
         window.policy=f.POLICY;window.installation=inputs;window._max_rows=window._max_effects=4096
+        window._snapshot_profile='row-v2'
         original=m.observe_source_snapshot_v2
         def corrupt(*args,**kwargs):
             path=original(*args,**kwargs)
@@ -159,6 +176,7 @@ class WindowTests(unittest.TestCase):
         c,inputs=self.prepared();window=object.__new__(m.ConfiguredCaptureWindowV2)
         window.output=self.root/'window';window.output.mkdir();window.control=c;window.config=c.config
         window.policy=f.POLICY;window.installation=inputs;window._max_rows=window._max_effects=4096
+        window._snapshot_profile='row-v2'
         original=m.observe_source_snapshot_v2
         def corrupt(*args,**kwargs):
             path=original(*args,**kwargs);r=json.loads(path.read_text('utf8'));r['status']='failed';path.write_text(json.dumps(r),encoding='utf8');return path

@@ -1,6 +1,7 @@
 # Unreleased
 
 - Add an opt-in paged snapshot reader for point windows and check complete native page deliveries and cursor boundaries. Restrict model state to verified point keys after admitting the full source inventory.
+- Recheck sealed log records without retaining parsed copies of the entire log. Preserve exact byte limits, sequence validation and digest checks.
 
 # 0.5.7
 
