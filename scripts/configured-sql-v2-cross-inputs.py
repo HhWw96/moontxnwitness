@@ -65,7 +65,7 @@ for value in [-9223372036854775808, 9223372036854775807]:
 add('named-repeated', 0, 'UPDATE ledger.accounts SET balance=%(who)s,label=%(Name)s WHERE account_no=%(who)s', {'who':13,'Name':'原始%s'})
 add('literal-key-percent', 0, 'DELETE /* raw %s */ FROM ledger.accounts WHERE account_no=7 RETURNING *', None)
 
-# Real SQLAlchemy mapper refresh clause, compiled without an engine or driver.
+# Real SQLAlchemy mapper refresh and INSERT, compiled without a database.
 assert importlib.metadata.version('sqlalchemy') == '2.0.55'
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import psycopg
@@ -75,11 +75,16 @@ class Member(Base):
     __tablename__ = 'members'
     __table_args__ = {'schema':'identity'}
     member_uuid = mapped_column(sa.Uuid, primary_key=True)
-    email = mapped_column(sa.Text, nullable=False)
+    email = mapped_column(sa.String(320), nullable=False)
     is_active = mapped_column(sa.Boolean, nullable=False)
 clause, _ = sa.inspect(Member)._get_clause
 compiled = sa.select(Member).where(clause).compile(dialect=psycopg.dialect())
 add('sqlalchemy2055-refresh', 2, str(compiled), {key:'A8098C1AF86E11DABD1A00112444BE1E' for key in compiled.params})
+compiled = sa.insert(Member).values(member_uuid='A8098C1AF86E11DABD1A00112444BE1E', email='值🙂 ',
+    is_active=True).returning(Member.member_uuid).compile(dialect=psycopg.dialect())
+assert '%(email)s::VARCHAR' in str(compiled)
+add('sqlalchemy2055-insert', 2, str(compiled), compiled.params)
+add('direct-varchar-bind', 0, 'UPDATE ledger.accounts SET label=(%s::vArChAr) WHERE account_no=%s', ['值🙂 ', 7])
 output = Path(args.output).resolve()
 output.parent.mkdir(parents=True, exist_ok=True)
 receipt = {'format':'configured-sql-v2-real-python-cross-inputs/v1', 'cases':cases,

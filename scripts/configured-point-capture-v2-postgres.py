@@ -61,6 +61,13 @@ def suite(admin, connect, work):
             before = raw.execute('SELECT * FROM ' + target + ' WHERE ' + q(table.primary_key) + '=%s', (key,))
             expected_description = [(c.name, c.type_code) for c in before.description]
             assert before.fetchone() == original
+            text_column = next(c.name for c in table.business_columns if c.type == 'text')
+            cast_update = ('UPDATE ' + target + ' SET ' + q(text_column) + '=%(value)s::VARCHAR WHERE '
+                + q(table.primary_key) + '=%(key)s RETURNING ' + q(text_column))
+            cast_args = {'value': '写入🙂 ', 'key': key}
+            expected_cast_rows = raw.execute(cast_update, cast_args).fetchall()
+            assert expected_cast_rows == [(cast_args['value'],)]
+            raw.rollback()
             try:
                 raw.execute(insert, original)
             except Exception as error:
@@ -83,6 +90,10 @@ def suite(admin, connect, work):
         observer = PointCaptureV2(output, config, projection_options=options, opt_in=True)
         wrapped = observer.psycopg_factory(connect)
         connection = wrapped()
+        cursor = connection.execute(cast_update, cast_args)
+        checked(str(index) + '-varchar-native-projection', lambda: eq(cursor._projection['originalSql'], cast_update))
+        checked(str(index) + '-varchar-native-business-result', lambda: eq(cursor.fetchall(), expected_cast_rows))
+        connection.rollback()
         select = 'SELECT * FROM ' + target + ' WHERE ' + q(table.primary_key) + '=%s'
         cursor = connection.execute(select, (key,))
         checked(str(index) + '-description-before-fetch', lambda: eq([(c.name, c.type_code) for c in cursor.description], expected_description))
@@ -229,7 +240,8 @@ def main():
         'sourceFactsProduced': False, 'completeWindow': False, 'modelCoverageAccepted': False,
         'formalPerformanceMeasurement': False, 'sourceSha256': {str(path.relative_to(ROOT)): sha(path) for path in [
             Path(__file__).resolve(), ROOT/'integrations/python/moontxnwitness_capture/configured_point_capture_v2.py',
-            ROOT/'integrations/python/moontxnwitness_capture/configured_point_projection_v2.py']}}
+            ROOT/'integrations/python/moontxnwitness_capture/configured_point_projection_v2.py',
+            ROOT/'integrations/python/moontxnwitness_capture/configured_sql_v2.py']}}
     with (work/'control.log').open('xb') as log:
         def run(parts):
             subprocess.run([str(p) for p in parts], env=environment, stdin=subprocess.DEVNULL,

@@ -9,7 +9,17 @@ fn SQLParseWorkV1::scalar_v2(
     return value
   }
   if column.kind != "uuid" {
-    return self.scalar(column)
+    let token = self.peek()
+    let value = self.scalar(column)
+    if column.kind == "text" &&
+      column.name != self.table.unwrap().key &&
+      self.accept("::") {
+      if token.kind != "bind" && token.kind != "named" {
+        fail("unsupported:V2-VARCHAR-direct-bind")
+      }
+      self.expect("varchar")
+    }
+    return value
   }
   let cast = self.accept("cast")
   if cast {

@@ -14,7 +14,7 @@ from .capture_v3 import _pinned_connection
 from .instrumentation import Instrumentation, DiagnosticConnection, DiagnosticCursor
 from .configured_fetch import ConfiguredInstrumentation
 from .configured_sql_v2 import SQLCaptureConfigV2, ConfiguredSQLParserV2
-from .configured_point_projection_v2 import PointProjectionOptionsV2, build_point_projection
+from .configured_point_projection_v2 import PointProjectionOptionsV2, _build_captured_projection
 from .configured_factory_v2 import (require_sync_factory_v2, require_sync_result_v2,
     close_rejected_sync_result_v2, record_factory_gap_v2)
 
@@ -279,7 +279,7 @@ class _PointProjectionState:
                         or self._connection._raw._tpc or kwargs.get('binary')
                         or not set(kwargs).issubset({'prepare', 'binary'})):
                     raise ValueError('Unsupported cursor/execute mode')
-                projected = build_point_projection(self._session.parser.recognize(query), params, self._session.options)
+                projected = _build_captured_projection(self._session.parser, query, params, self._session.options)
             except Exception:
                 self._session.gap('point_projection_unrecognized', 'Original SQL executes unchanged and supplies no projection fact.')
         return projected

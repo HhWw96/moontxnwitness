@@ -13,6 +13,33 @@ with connect() as connection:
 # Finish and close every enrolled connection before calling window.seal().
 ```
 
+## Synchronous SQLAlchemy recipe
+
+For a fresh SQLAlchemy 2.0.55 `Engine` using psycopg, a connection listener can
+enroll the native connection after the dialect initializes it. The following
+recipe uses an owned `NullPool`, with each physical connection closed on return.
+Complete the source installation and open the configured window before use.
+
+```python
+import sqlalchemy as sa
+from sqlalchemy.pool import NullPool
+
+engine = sa.create_engine('postgresql+psycopg://',
+    creator=original_sync_connection_factory, poolclass=NullPool,
+    pool_reset_on_return=None)
+
+@sa.event.listens_for(engine, 'connect')
+def enroll(raw_connection, record):
+    record.dbapi_connection = window.wrap_connection(raw_connection)
+```
+
+Use the engine for full-row point operations, explicitly finish each
+transaction, dispose the engine and seal the window. The PostgreSQL workflow
+runs the same ORM routine with and without this listener and compares create,
+refresh, update, query, delete and the final data. Reused physical pool
+connections and SQLAlchemy's async adapter require separate lifecycle and
+delivery validation. [SQLAlchemy pool events](https://docs.sqlalchemy.org/en/20/core/events.html)
+
 The wrapper now checks known async functions, async callable objects and async
 generators before invoking the factory. A synchronous callable that returns an
 awaitable, future, asynchronous connection or async context lease is rejected

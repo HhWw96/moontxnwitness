@@ -53,6 +53,17 @@ function changeLifecycle(bundle, mutate) {
   bundle.lifecycleText = reseal(events);
 }
 
+function deliveredResult(events) {
+  const delivery = events.find((event) => event.kind === 'configured-point-delivery' && frame(event).rows.length > 0);
+  assert(delivery, 'No nonempty delivery');
+  const resultId = frame(delivery).resultId;
+  const native = events.find((event) => event.kind === 'configured-point-native' && frame(event).resultId === resultId);
+  assert(native && native.seq < delivery.seq, 'No preceding matching native result');
+  const projection = events.find((event) => event.kind === 'configured-point-projection' && event.seq === frame(native).projectionNoteSeq);
+  assert(projection, 'No matching projection');
+  return { delivery, native, projection };
+}
+
 function changeSnapshot(bundle, side, mutate) {
   const key = `${side}InputText`;
   const envelope = JSON.parse(bundle[key]);
@@ -276,19 +287,14 @@ for (const record of campaign.records) {
       assert(index >= 0); events.splice(index, 1);
     }));
     await tamper('reordered-native-delivery', (altered) => changeLifecycle(altered, (events) => {
-      const index = events.findIndex((event) => event.kind === 'configured-point-native');
-      assert(index >= 0);
-      const resultId = frame(events[index]).resultId;
-      const delivered = events.findIndex((event) => event.kind === 'configured-point-delivery' && frame(event).resultId === resultId);
-      assert(delivered > index, 'No subsequent matching delivery');
-      [events[index], events[delivered]] = [events[delivered], events[index]];
+      const { native, delivery } = deliveredResult(events);
+      [events[native.seq - 1], events[delivery.seq - 1]] = [delivery, native];
     }));
     await tamper('native-value-disagrees-with-delivery', (altered) => changeLifecycle(altered, (events) => {
-      const event = events.find((event) => event.kind === 'configured-point-native' && frame(event).native.rows.length > 0);
-      assert(event, 'No nonempty native result');
-      const value = frame(event);
+      const { native } = deliveredResult(events);
+      const value = frame(native);
       value.native.rows[0][0] = Buffer.from('changed-native-value').toString('base64');
-      setFrame(event, value);
+      setFrame(native, value);
     }));
     await tamper('partial-business-delivery', (altered) => changeLifecycle(altered, (events) => {
       const event = events.find((event) => event.kind === 'configured-point-delivery' && frame(event).rows.length > 0);
@@ -297,18 +303,12 @@ for (const record of campaign.records) {
       setFrame(event, value);
     }));
     await tamper('projection-native-delivery-wrong-connection', (altered) => changeLifecycle(altered, (events) => {
-      const projection = events.find((event) => event.kind === 'configured-point-projection');
-      assert(projection);
-      const projectionFrame = frame(projection);
-      const cursor = projectionFrame.cursor;
-      projectionFrame.connection = 'connection-not-opened'; setFrame(projection, projectionFrame);
-      let count = 1;
-      for (const event of events) {
-        if (!['configured-point-native', 'configured-point-delivery'].includes(event.kind)) continue;
+      const { delivery, native, projection } = deliveredResult(events);
+      for (const event of [projection, native, delivery]) {
         const value = frame(event);
-        if (value.cursor === cursor) { value.connection = 'connection-not-opened'; setFrame(event, value); count++; }
+        value.connection = 'connection-not-opened';
+        setFrame(event, value);
       }
-      assert(count >= 3, 'Need projection, native and delivery records');
     }));
     await tamper('removed-commit-confirmation', (altered) => changeLifecycle(altered, (events) => {
       const index = events.findIndex((event) => event.kind === 'commit-response');

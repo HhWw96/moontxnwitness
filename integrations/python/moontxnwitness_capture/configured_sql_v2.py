@@ -255,14 +255,17 @@ class _PointBuilderV2(_Builder):
         if type(node) is e.Cast:
             _args(node, {'this', 'to'})
             target = node.args.get('to')
-            if column.type != 'uuid' or type(target) is not e.DataType:
-                raise RecognitionError('uuid-bind-cast', 'Only a UUID primary-key bind may be cast')
+            if type(target) is not e.DataType:
+                raise RecognitionError('bind-cast', 'A supported built-in scalar cast is required')
             _args(target, {'this', 'nested'})
-            if target.this != e.DataType.Type.UUID or target.args.get('nested'):
-                raise RecognitionError('uuid-bind-cast', 'Only a direct scalar UUID bind cast is supported')
+            uuid_key = column.type == 'uuid' and target.this == e.DataType.Type.UUID
+            varchar_value = (column.type == 'text' and column.name != self.table.primary_key
+                             and target.this == e.DataType.Type.VARCHAR)
+            if target.args.get('nested') or not (uuid_key or varchar_value):
+                raise RecognitionError('bind-cast', 'Use a UUID key cast or an unbounded VARCHAR cast on a text assignment')
             node = node.this
             if type(node) is not e.Placeholder:
-                raise RecognitionError('uuid-bind-cast', 'UUID casts require a direct original bind slot')
+                raise RecognitionError('bind-cast', 'Casts require a direct original bind slot')
         if column.type == 'uuid' and type(node) is not e.Placeholder:
             raise RecognitionError('uuid-identity', 'UUID identity requires an original parameter binding')
         return super().scalar(node, column)
@@ -326,6 +329,15 @@ def _recognize_v2(config, sql):
         if len(statements) != 1 or statements[0] is None:
             raise RecognitionError('statement-count', 'Exactly one statement required')
         ast = statements[0]
+        # SQLGlot also normalizes quoted type names and VARCHAR2 to VARCHAR.
+        # Count only the original unquoted PostgreSQL ::VARCHAR spelling.
+        original_varchar = sum(
+            previous.token_type.name == 'DCOLON'
+            and token.token_type.name == 'VARCHAR'
+            and sql[token.start:token.end + 1].lower() == 'varchar'
+            for previous, token in zip(tokens, tokens[1:])
+        )
+        ast_varchar = 0
         for index, node in enumerate(ast.walk(), 1):
             if index > config.max_ast_nodes:
                 raise RecognitionError('ast-budget', 'AST node budget exhausted')
@@ -335,7 +347,16 @@ def _recognize_v2(config, sql):
                 raise RecognitionError('sql-function', 'Functions are outside V2 point CRUD')
             if isinstance(node, (exp.Join, exp.Subquery, exp.CTE, exp.Union, exp.Intersect, exp.Except)):
                 raise RecognitionError('multi-relation', 'Only one configured base table is supported')
-        return _PointBuilderV2(config, sql, exp, slots).build(ast, stray_percent)
+            if type(node) is exp.Cast and type(node.to) is exp.DataType and node.to.this == exp.DataType.Type.VARCHAR:
+                ast_varchar += 1
+        if ast_varchar != original_varchar:
+            raise RecognitionError('bind-cast', 'Text assignments support only the original unquoted ::VARCHAR spelling')
+        plan = _PointBuilderV2(config, sql, exp, slots).build(ast, stray_percent)
+        result = ast if plan.operation == 'select' else ast.args.get('returning')
+        # A quoted identifier containing '*' is not a wildcard node.
+        star = result is not None and any(type(node) is exp.Star
+            for expression in result.expressions for node in expression.walk())
+        return plan, star
     except RecognitionError:
         raise
     except (sqlglot.errors.SqlglotError, RecursionError, ValueError, TypeError, AttributeError) as error:
@@ -358,6 +379,9 @@ class ConfiguredSQLParserV2:
         return self._config
 
     def recognize(self, sql):
+        return self._recognize_with_shape(sql)[0]
+
+    def _recognize_with_shape(self, sql):
         if type(sql) is not str:
             raise RecognitionError('sql-type', 'Original plain SQL text is required')
         try:
@@ -371,7 +395,8 @@ class ConfiguredSQLParserV2:
                 self._hits += 1
                 return cached[0]
             self._misses += 1
-        plan = _recognize_v2(self._config, sql)
+        recognized = _recognize_v2(self._config, sql)
+        plan, _ = recognized
         size = len(_canonical(plan.to_dict()).encode('utf-8')) + len(sql.encode('utf-8'))
         with self._lock:
             if self._entries and size <= self._maximum:
@@ -381,9 +406,9 @@ class ConfiguredSQLParserV2:
                 while self._cache and (len(self._cache) >= self._entries or self._bytes + size > self._maximum):
                     _, (_, removed) = self._cache.popitem(last=False)
                     self._bytes -= removed
-                self._cache[sql] = (plan, size)
+                self._cache[sql] = (recognized, size)
                 self._bytes += size
-        return plan
+        return recognized
 
     def cache_info(self):
         with self._lock:

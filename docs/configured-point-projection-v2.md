@@ -41,6 +41,11 @@ the original SQL again using the independent configuration and compares the
 complete candidate. Changing a dataclass field, fingerprint or embedded option
 cannot authorize another rewrite.
 
+Within a configured capture, the connection's bounded parser cache reuses the
+SQL structure and wildcard shape for repeated statements. Each call validates
+its own parameters and builds the same projected statement and descriptor.
+The cache retains SQL structure without retaining parameters or row results.
+
 The output SQL uses fully quoted identifiers and positional `%s` bindings. A
 parameter-map entry identifies each original named key, positional index or
 literal and its projected index. Repeated named slots become separate positional
