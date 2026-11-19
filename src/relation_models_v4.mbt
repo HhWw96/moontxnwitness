@@ -5,11 +5,12 @@ pub struct RelationModelClassificationV4 {
 }
 
 ///|
+#derive(Eq)
 priv enum RmModeV4 {
   RmSerial
   RmSnapshot
   RmCommittedQueries
-} derive(Eq)
+}
 
 ///|
 priv struct RmSearchV4 {

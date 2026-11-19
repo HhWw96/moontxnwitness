@@ -101,7 +101,7 @@ node dist/moontxnwitness.mjs capabilities --format json
 
 ### v0.3.1
 
-需要 MoonBit moonc ≥0.10.16。当前构建与 CI 固定使用 0.10.16+b1a0e846e。JSON 转换已迁移至新标准库接口，并在构建前检查编译器版本。
+源码需要 MoonBit `moonc` ≥0.10.21。构建与 CI 固定使用 `0.10.21+06da1ed44`，与配套标准库的官方归档摘要一同记录在 [.moonbit-toolchain.json](.moonbit-toolchain.json)。执行 `python -B scripts/install_moonbit.py --home <新工具链目录>` 可校验并安装这套 Windows 或 Linux x86-64 工具链。
 
 直接运行 MoonBit 核心库示例，无需 Node.js 或 Python：
 

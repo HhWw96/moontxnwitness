@@ -1,9 +1,10 @@
 ///|
+#derive(Eq)
 priv enum RelationV3Cell {
   Integer(Int64)
   Text(String)
   Boolean(Bool)
-} derive(Eq)
+}
 
 ///|
 priv struct RelationV3Table {

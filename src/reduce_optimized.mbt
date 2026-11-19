@@ -1,8 +1,9 @@
 ///|
+#derive(Eq)
 pub(all) struct ReductionOptions {
   max_checks : Int32
   analysis : AnalysisOptions
-} derive(Eq)
+}
 
 ///|
 pub extend ReductionOptions with Eq::{equal, not_equal}
@@ -16,12 +17,13 @@ pub fn reduction_options(
 }
 
 ///|
+#derive(Eq)
 pub(all) struct ReductionResult {
   reduction : Reduction
   analysis : AnalysisResult
   cached_checks : Int32
   max_checks : Int32
-} derive(Eq)
+}
 
 ///|
 pub extend ReductionResult with Eq::{equal, not_equal}
@@ -52,7 +54,7 @@ fn reduction_candidate_key(
       ctx.original_indices[tx.id] = i
     }
   }
-  let key = StringBuilder(size_hint=txs.length())
+  let key = StringBuilder(capacity=txs.length())
   for tx in txs {
     key.write_char(ctx.original_indices.at(tx.id).unsafe_to_char())
   }

@@ -1,58 +1,66 @@
 ///|
 /// The supported workload is a versioned, point-read register workload.
+#derive(Eq)
 pub(all) enum OpKind {
   Read
   Write
-} derive(Eq)
+}
 
 ///|
+#derive(Eq)
 pub(all) enum TxStatus {
   Committed
   Aborted
   Unknown
-} derive(Eq)
+}
 
 ///|
+#derive(Eq)
 pub(all) enum Model {
   Serializable
   StrictSerializable
-} derive(Eq)
+}
 
 ///|
+#derive(Eq)
 pub(all) struct Operation {
   kind : OpKind
   key : String
   version : String
-} derive(Eq)
+}
 
 ///|
+#derive(Eq)
 pub(all) struct Transaction {
   id : String
   status : TxStatus
   ops : Array[Operation]
   start : Int64?
   end : Int64?
-} derive(Eq)
+}
 
 ///|
 /// Version orders contain the initial version followed by all committed final writes.
+#derive(Eq)
 pub(all) struct History {
   model : Model
   initial : Map[String, String]
   version_orders : Map[String, Array[String]]
   transactions : Array[Transaction]
-} derive(Eq)
+}
 
 ///|
+#derive(Eq, Hash)
 pub(all) enum Dependency {
   WR
   WW
   RW
   RT
-} derive(Eq, Hash)
+}
 
 ///|
 /// Operation indexes are zero-based. Initial versions have no transaction.
+#derive(Eq, Hash)
 pub(all) struct Edge {
   from : String
   to : String
@@ -63,7 +71,7 @@ pub(all) struct Edge {
   from_version : String?
   to_version : String?
   reason : String
-} derive(Eq, Hash)
+}
 
 ///|
 pub extend Dependency with Hash::{hash, hash_combine}
@@ -72,6 +80,7 @@ pub extend Dependency with Hash::{hash, hash_combine}
 pub extend Edge with Hash::{hash, hash_combine}
 
 ///|
+#derive(Eq)
 pub(all) struct Finding {
   code : String
   severity : String
@@ -79,18 +88,20 @@ pub(all) struct Finding {
   transactions : Array[String]
   key : String?
   ops : Array[Int32]
-} derive(Eq)
+}
 
 ///|
+#derive(Eq)
 pub(all) enum Outcome {
   Consistent
   Violation
   Inconclusive
   Invalid
-} derive(Eq)
+}
 
 ///|
 /// Consistent is a claim about the supplied complete history and asserted version orders.
+#derive(Eq)
 pub(all) struct Report {
   outcome : Outcome
   model : Model
@@ -106,9 +117,10 @@ pub(all) struct Report {
   search : SearchInfo
   graph : GraphInfo
   coverage : Array[KeyCoverage]
-} derive(Eq)
+}
 
 ///|
+#derive(Eq)
 pub(all) struct GraphInfo {
   analyzed : Bool
   components : Int32
@@ -116,15 +128,16 @@ pub(all) struct GraphInfo {
   cyclic_transactions : Int32
   bfs_roots : Int32
   edge_budget_exceeded : Bool
-} derive(Eq)
+}
 
 ///|
+#derive(Eq)
 pub(all) struct KeyCoverage {
   key : String
   committed_reads : Int32
   committed_final_writes : Int32
   unresolved_reads : Int32
-} derive(Eq)
+}
 
 ///|
 pub extend GraphInfo with Eq::{equal, not_equal}
@@ -133,13 +146,14 @@ pub extend GraphInfo with Eq::{equal, not_equal}
 pub extend KeyCoverage with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq)
 pub(all) struct SearchInfo {
   status : String
   attempts : Int32
   operation_checks : Int32
   reason : String
   blockers : Array[Finding]
-} derive(Eq)
+}
 
 ///|
 pub extend SearchInfo with Eq::{equal, not_equal}

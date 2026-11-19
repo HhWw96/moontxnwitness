@@ -27,7 +27,6 @@ jobs:
           --health-cmd "pg_isready -U mtw -d mtw_test"
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      MOONBIT_INSTALL_VERSION: 0.10.16+b1a0e846e
       MTW_INPUT_CACHE: ${{ github.workspace }}/artifacts/input-cache
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -44,8 +43,7 @@ jobs:
       - name: Install pinned MoonBit
         run: |
           set -euo pipefail
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$MOONBIT_INSTALL_VERSION"
-          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+          python -B scripts/install_moonbit.py --home "$RUNNER_TEMP/moonbit" --github-env
       - name: Restore checksum-pinned public test inputs
         run: python scripts/input_cache.py prepare --scope tests
       - name: Build offline analyzer

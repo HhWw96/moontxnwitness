@@ -1,13 +1,15 @@
 ///|
+#derive(Eq)
 pub(all) enum ScopedRuleSetV4 {
   Adya2000Mixed
   ElleFixed4e359e5
-} derive(Eq)
+}
 
 ///|
 pub extend ScopedRuleSetV4 with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq)
 pub(all) enum ScopedCategoryV4 {
   ScopedG0
   ScopedG1c
@@ -16,22 +18,24 @@ pub(all) enum ScopedCategoryV4 {
   ScopedGSingleItem
   ScopedGSingle
   ScopedGNonadjacent
-} derive(Eq)
+}
 
 ///|
 pub extend ScopedCategoryV4 with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq)
 pub(all) enum ScopedOrderContextV4 {
   ScopedDataOnly
   ScopedWithProcess
   ScopedWithRealtime
-} derive(Eq)
+}
 
 ///|
 pub extend ScopedOrderContextV4 with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq)
 pub(all) enum ScopedDataKindV4 {
   ScopedWWItem
   ScopedWWPredicate
@@ -39,16 +43,17 @@ pub(all) enum ScopedDataKindV4 {
   ScopedWRPredicate
   ScopedRWItem
   ScopedRWPredicate
-} derive(Eq)
+}
 
 ///|
 pub extend ScopedDataKindV4 with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq)
 pub(all) enum ScopedOrderKindV4 {
   ScopedProcess
   ScopedRealtime
-} derive(Eq)
+}
 
 ///|
 pub extend ScopedOrderKindV4 with Eq::{equal, not_equal}

@@ -1,8 +1,9 @@
 ///|
+#derive(Eq)
 pub(all) enum RelationProgramReplayModeV4 {
   RelationSnapshotPrefixes
   RelationSerialOrder
-} derive(Eq)
+}
 
 ///|
 pub extend RelationProgramReplayModeV4 with Eq::{equal, not_equal}

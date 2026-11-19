@@ -32,7 +32,7 @@ test "reduction cache does not confuse similar-ID candidates with opposite anoma
 test "reduction cache bounds long Unicode IDs and distinguishes indices zero and 511" {
   let original = large_noise(512)
   let txs = original.transactions.copy()
-  let name = StringBuilder(size_hint=256)
+  let name = StringBuilder(capacity=256)
   for _ in 0..<240 {
     name.write_char('长')
   }
