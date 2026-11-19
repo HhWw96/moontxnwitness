@@ -1,10 +1,11 @@
 ///|
 /// The three non-mixed input models understood by the structured analysis API.
+#derive(Eq)
 pub(all) enum DataModelV4 {
   RegisterV4
   AppendListV4
   RelationSetV4
-} derive(Eq)
+}
 
 ///|
 pub extend DataModelV4 with Eq::{equal, not_equal}
@@ -31,12 +32,13 @@ pub struct HistoryV4 {
 /// retain the original bounded interpreter limits. Unused fields grant no work.
 /// Register analysis uses the balanced 12-transaction entry point; the legacy
 /// `analyze` entry point and its budgets remain unchanged.
+#derive(Eq)
 pub(all) struct AnalysisOptionsV4 {
   max_attempts : Int32
   max_states : Int32
   max_operation_checks : Int32
   max_cached_states : Int32
-} derive(Eq)
+}
 
 ///|
 pub extend AnalysisOptionsV4 with Eq::{equal, not_equal}

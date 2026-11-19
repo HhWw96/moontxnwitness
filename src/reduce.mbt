@@ -1,4 +1,5 @@
 ///|
+#derive(Eq)
 pub(all) struct Reduction {
   history : History
   report : Report
@@ -7,7 +8,7 @@ pub(all) struct Reduction {
   checks : Int32
   one_minimal : Bool
   reason : String
-} derive(Eq)
+}
 
 ///|
 pub extend Reduction with Eq::{equal, not_equal}

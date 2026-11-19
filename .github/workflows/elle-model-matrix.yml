@@ -20,7 +20,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
-      MOONBIT_INSTALL_VERSION: 0.10.16+b1a0e846e
       PYTHONUTF8: "1"
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
@@ -42,8 +41,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$MOONBIT_INSTALL_VERSION"
-          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+          python -B scripts/install_moonbit.py --home "$RUNNER_TEMP/moonbit" --github-env
       - name: Validate actual compiler
         run: node scripts/toolchain-policy.mjs
       - name: Verify comparison accounting and evidence-failure refusal

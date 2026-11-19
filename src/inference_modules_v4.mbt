@@ -143,12 +143,13 @@ pub fn inference_module_v4(
 }
 
 ///|
+#derive(Eq)
 pub(all) enum BuiltinInferenceModuleV4 {
   InferenceReadSources
   InferenceGivenVersions
   InferenceListPrefixes
   InferenceDeclaredOrders
-} derive(Eq)
+}
 
 ///|
 pub extend BuiltinInferenceModuleV4 with Eq::{equal, not_equal}

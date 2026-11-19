@@ -1,14 +1,18 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "HhWw96/moontxnwitness"
 
+import {
+  "moonbitlang/core/json",
+}
+
 // Values
 pub fn analysis_options(max_attempts? : Int32, max_operation_checks? : Int32, max_cached_states? : Int32) -> AnalysisOptions
 
 pub fn analysis_options_v4(max_attempts? : Int32, max_states? : Int32, max_operation_checks? : Int32, max_cached_states? : Int32) -> AnalysisOptionsV4
 
-pub fn analysis_result_json(AnalysisResult) -> Json
+pub fn analysis_result_json(AnalysisResult) -> @json.Json
 
-pub fn analysis_v4_json(AnalysisV4) -> Json
+pub fn analysis_v4_json(AnalysisV4) -> @json.Json
 
 pub fn analyze(History) -> Report
 
@@ -62,9 +66,9 @@ pub fn capsule_v3_content_json(String) -> String
 
 pub fn capsule_v4_content_json(String) -> String
 
-pub fn capture_anomalies_v4_json(CaptureAnomaliesV4) -> Json
+pub fn capture_anomalies_v4_json(CaptureAnomaliesV4) -> @json.Json
 
-pub fn classification_v4_json(ClassificationV4) -> Json
+pub fn classification_v4_json(ClassificationV4) -> @json.Json
 
 pub fn classify_models_v4(ModelFactsV4, ModelOptionsV4) -> ModelClassificationV4
 
@@ -98,25 +102,25 @@ pub fn classify_with_inference_v4_json(String, String) -> String
 
 pub fn compare_configured_c_text_v1(String, String) -> Int32
 
-pub fn compare_models(History) -> Json
+pub fn compare_models(History) -> @json.Json
 
 pub fn compare_models_json(String) -> String
 
-pub fn configured_fetch_check_v1_json(ConfiguredFetchCheckV1) -> Json
+pub fn configured_fetch_check_v1_json(ConfiguredFetchCheckV1) -> @json.Json
 
-pub fn configured_result_check_v2_json(ConfiguredResultCheckV2) -> Json
+pub fn configured_result_check_v2_json(ConfiguredResultCheckV2) -> @json.Json
 
 pub fn configured_result_options_v2(max_checks? : Int32, max_cell_bytes? : Int32, max_total_bytes? : Int32, max_delivery_records? : Int32, grammar_options? : SQLVerificationOptionsV2) -> ConfiguredResultOptionsV2
 
 pub fn configured_session_bundle_v4_json(String) -> String
 
-pub fn configured_session_diagnostic_v4_json(ConfiguredSessionDiagnosticV4) -> Json
+pub fn configured_session_diagnostic_v4_json(ConfiguredSessionDiagnosticV4) -> @json.Json
 
 pub fn configured_session_options_v4(max_journal_checks? : Int32, max_results? : Int32, max_installation_checks? : Int32, max_fetch_checks? : Int32, max_result_checks? : Int32, max_source_checks? : Int32) -> Result[ConfiguredSessionOptionsV4, String]
 
 pub fn configured_session_options_v4_json(String) -> String
 
-pub fn diagnose_configured_session_v4(SQLConfigV1, String, String, Json, options? : ConfiguredSessionOptionsV4) -> ConfiguredSessionDiagnosticV4
+pub fn diagnose_configured_session_v4(SQLConfigV1, String, String, @json.Json, options? : ConfiguredSessionOptionsV4) -> ConfiguredSessionDiagnosticV4
 
 pub fn diagnose_configured_session_v4_json(String, String, String, String, String) -> String
 
@@ -124,25 +128,25 @@ pub fn dislock_sql_v3_proof_json(String) -> String
 
 pub fn elle_core_models_v4() -> Array[ElleModelV4]
 
-pub fn history_json(History) -> Json
+pub fn history_json(History) -> @json.Json
 
-pub fn history_v4_json(HistoryV4) -> Json
+pub fn history_v4_json(HistoryV4) -> @json.Json
 
 pub fn infer_dependencies_v4(ModelFactsV4, Array[InferenceModuleV4], options? : ModelOptionsV4, max_inference_checks? : Int32) -> Result[InferenceV4, String]
 
 pub fn infer_dependencies_v4_json(String, String) -> String
 
-pub fn inference_classification_v4_json(InferenceClassificationV4) -> Json
+pub fn inference_classification_v4_json(InferenceClassificationV4) -> @json.Json
 
-pub fn inference_module_v4(String, String, (InferenceViewV4, Json, InferenceBudgetV4) -> Result[InferenceContributionV4, String], parameters? : Json, algorithm? : String?) -> Result[InferenceModuleV4, String]
+pub fn inference_module_v4(String, String, (InferenceViewV4, @json.Json, InferenceBudgetV4) -> Result[InferenceContributionV4, String], parameters? : @json.Json, algorithm? : String?) -> Result[InferenceModuleV4, String]
 
 pub fn inference_options_v4_content_json(String) -> String
 
 pub fn inference_report_v4_content_json(String) -> String
 
-pub fn inference_v4_json(InferenceV4) -> Json
+pub fn inference_v4_json(InferenceV4) -> @json.Json
 
-pub fn inspect_anomalies_v4(HistoryV4, max_checks? : Int32) -> Json
+pub fn inspect_anomalies_v4(HistoryV4, max_checks? : Int32) -> @json.Json
 
 pub fn inspect_anomalies_v4_json(String, String) -> String
 
@@ -156,19 +160,19 @@ pub fn inspect_internal_consistency_v4(HistoryV4, max_checks? : Int32) -> Intern
 
 pub fn inspect_internal_consistency_v4_json(String, String) -> String
 
-pub fn inspect_lost_updates_v4(HistoryV4, max_checks? : Int32) -> Json
+pub fn inspect_lost_updates_v4(HistoryV4, max_checks? : Int32) -> @json.Json
 
 pub fn inspect_lost_updates_v4_json(String, String) -> String
 
-pub fn internal_consistency_v4_json(InternalConsistencyV4) -> Json
+pub fn internal_consistency_v4_json(InternalConsistencyV4) -> @json.Json
 
-pub fn list_graph_effective_v4_json(EffectiveListGraphV4) -> Json
+pub fn list_graph_effective_v4_json(EffectiveListGraphV4) -> @json.Json
 
-pub fn list_prefix_projection_v4_json(ListPrefixProjectionV4) -> Json
+pub fn list_prefix_projection_v4_json(ListPrefixProjectionV4) -> @json.Json
 
 pub fn model_capsule_v4_content_json(String) -> String
 
-pub fn model_classification_v4_json(ModelClassificationV4) -> Json
+pub fn model_classification_v4_json(ModelClassificationV4) -> @json.Json
 
 pub fn model_facts_v4(HistoryV4, clients? : Array[ModelClientV4], clients_complete? : Bool) -> Result[ModelFactsV4, String]
 
@@ -196,9 +200,9 @@ pub fn normalize_presence_capture_json(String) -> String
 
 pub fn normalize_relation_capture_v3_json(String) -> String
 
-pub fn normalize_sql_candidate_v1(SQLConfigV1, String, Json, options? : SQLVerificationOptionsV1) -> SQLCandidateCheckV1
+pub fn normalize_sql_candidate_v1(SQLConfigV1, String, @json.Json, options? : SQLVerificationOptionsV1) -> SQLCandidateCheckV1
 
-pub fn normalize_sql_candidate_v2(SQLConfigV2, String, Json, options? : SQLVerificationOptionsV2) -> SQLCandidateCheckV2
+pub fn normalize_sql_candidate_v2(SQLConfigV2, String, @json.Json, options? : SQLVerificationOptionsV2) -> SQLCandidateCheckV2
 
 pub fn normalize_sql_config_v1_json(String) -> String
 
@@ -222,7 +226,7 @@ pub fn parse_sql_config_v1(String) -> Result[SQLConfigV1, String]
 
 pub fn parse_sql_config_v2(String) -> Result[SQLConfigV2, String]
 
-pub fn point_projection_check_v2_json(PointProjectionCheckV2) -> Json
+pub fn point_projection_check_v2_json(PointProjectionCheckV2) -> @json.Json
 
 pub fn point_projection_options_v2(SQLConfigV2, version_column? : String, version_type? : String, star_contract? : String?, business_star_columns? : Array[String]?, max_projected_sql_bytes? : Int32, max_descriptor_bytes? : Int32) -> Result[PointProjectionOptionsV2, String]
 
@@ -232,7 +236,7 @@ pub fn project_list_prefix_v4(HistoryV4, max_checks? : Int32) -> Result[ListPref
 
 pub fn project_relation_rows_v4(HistoryV4, max_checks? : Int32) -> Result[RelationRowProjectionV4, String]
 
-pub fn projected_result_check_v2_json(ProjectedResultCheckV2) -> Json
+pub fn projected_result_check_v2_json(ProjectedResultCheckV2) -> @json.Json
 
 pub fn projected_result_options_v2(max_checks? : Int32, max_cell_bytes? : Int32, max_total_bytes? : Int32, max_delivery_records? : Int32, projection_budget? : PointProjectionVerificationOptionsV2) -> ProjectedResultOptionsV2
 
@@ -264,23 +268,23 @@ pub fn reduce_v4_json(String, String) -> String
 
 pub fn reduce_with_options(History, options? : ReductionOptions) -> ReductionResult
 
-pub fn reduction_json(Reduction) -> Json
+pub fn reduction_json(Reduction) -> @json.Json
 
 pub fn reduction_options(max_checks? : Int32, analysis? : AnalysisOptions) -> ReductionOptions
 
-pub fn reduction_result_json(ReductionResult) -> Json
+pub fn reduction_result_json(ReductionResult) -> @json.Json
 
-pub fn reduction_v4_json(ReductionV4) -> Json
+pub fn reduction_v4_json(ReductionV4) -> @json.Json
 
 pub fn register_history_v4(History) -> Result[HistoryV4, String]
 
-pub fn relation_category_reduction_v4_json(RelationCategoryReductionV4) -> Json
+pub fn relation_category_reduction_v4_json(RelationCategoryReductionV4) -> @json.Json
 
-pub fn relation_classification_v4_json(RelationClassificationV4) -> Json
+pub fn relation_classification_v4_json(RelationClassificationV4) -> @json.Json
 
 pub fn relation_model_capsule_v4_content_json(String) -> String
 
-pub fn relation_model_classification_v4_json(RelationModelClassificationV4) -> Json
+pub fn relation_model_classification_v4_json(RelationModelClassificationV4) -> @json.Json
 
 pub fn relation_model_options_v4_content_json(String) -> String
 
@@ -290,23 +294,23 @@ pub fn relation_model_reduction_options_v4_content_json(String) -> String
 
 pub fn relation_model_reduction_report_v4_content_json(String) -> String
 
-pub fn relation_model_reduction_v4_json(RelationModelReductionV4) -> Json
+pub fn relation_model_reduction_v4_json(RelationModelReductionV4) -> @json.Json
 
 pub fn relation_model_report_v4_content_json(String) -> String
 
-pub fn relation_point_graph_v4_json(RelationPointGraphV4) -> Json
+pub fn relation_point_graph_v4_json(RelationPointGraphV4) -> @json.Json
 
-pub fn relation_predicate_classification_v4_json(RelationPredicateClassificationV4) -> Json
+pub fn relation_predicate_classification_v4_json(RelationPredicateClassificationV4) -> @json.Json
 
-pub fn relation_predicate_graph_v4_json(RelationPredicateGraphV4) -> Json
+pub fn relation_predicate_graph_v4_json(RelationPredicateGraphV4) -> @json.Json
 
-pub fn relation_program_replay_v4_json(RelationProgramReplayV4) -> Json
+pub fn relation_program_replay_v4_json(RelationProgramReplayV4) -> @json.Json
 
 pub fn relation_reduction_capsule_v4_content_json(String) -> String
 
 pub fn relation_reduction_report_v4_content_json(String) -> String
 
-pub fn relation_row_projection_v4_json(RelationRowProjectionV4) -> Json
+pub fn relation_row_projection_v4_json(RelationRowProjectionV4) -> @json.Json
 
 pub fn render_analysis_v4(AnalysisV4) -> String
 
@@ -318,21 +322,21 @@ pub fn render_relation_classification_v4(RelationClassificationV4) -> String
 
 pub fn render_report(Report, String) -> String
 
-pub fn replay_relation_program_v4(HistoryV4, Json, mode~ : RelationProgramReplayModeV4, max_checks? : Int32) -> Result[RelationProgramReplayV4, String]
+pub fn replay_relation_program_v4(HistoryV4, @json.Json, mode~ : RelationProgramReplayModeV4, max_checks? : Int32) -> Result[RelationProgramReplayV4, String]
 
 pub fn replay_report_json(String, String) -> String
 
-pub fn report_json(Report) -> Json
+pub fn report_json(Report) -> @json.Json
 
 pub fn run_json(String, String) -> String
 
 pub fn run_options_json(String, String) -> String
 
-pub fn scoped_dependency_graph_v4(Array[String], Array[ScopedDataEdgeInputV4], order_edges? : Array[ScopedOrderEdgeInputV4], data_complete? : Bool, process_complete? : Bool, realtime_complete? : Bool, gaps? : Array[Json]) -> Result[ScopedDependencyGraphV4, String]
+pub fn scoped_dependency_graph_v4(Array[String], Array[ScopedDataEdgeInputV4], order_edges? : Array[ScopedOrderEdgeInputV4], data_complete? : Bool, process_complete? : Bool, realtime_complete? : Bool, gaps? : Array[@json.Json]) -> Result[ScopedDependencyGraphV4, String]
 
-pub fn scoped_dependency_graph_v4_json(ScopedDependencyGraphV4) -> Json
+pub fn scoped_dependency_graph_v4_json(ScopedDependencyGraphV4) -> @json.Json
 
-pub fn scoped_search_v4_json(ScopedSearchResultV4) -> Json
+pub fn scoped_search_v4_json(ScopedSearchResultV4) -> @json.Json
 
 pub fn search_scoped_category_v4(ScopedDependencyGraphV4, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> ScopedSearchResultV4
 
@@ -342,31 +346,31 @@ pub fn shrink_json(String) -> String
 
 pub fn shrink_options_json(String, String) -> String
 
-pub fn snapshot_admission_v2_json(SnapshotAdmissionV2) -> Json
+pub fn snapshot_admission_v2_json(SnapshotAdmissionV2) -> @json.Json
 
-pub fn source_admission_v2_json(SourceAdmissionV2) -> Json
+pub fn source_admission_v2_json(SourceAdmissionV2) -> @json.Json
 
-pub fn source_fetch_mapping_v4_json(SourceFetchMappingV4) -> Json
+pub fn source_fetch_mapping_v4_json(SourceFetchMappingV4) -> @json.Json
 
-pub fn source_installation_check_v4_json(SourceInstallationCheckV4) -> Json
+pub fn source_installation_check_v4_json(SourceInstallationCheckV4) -> @json.Json
 
 pub fn source_rules_capsule_v4_content_json(String) -> String
 
 pub fn source_rules_report_v4_content_json(String) -> String
 
-pub fn sql_candidate_check_v1_json(SQLCandidateCheckV1) -> Json
+pub fn sql_candidate_check_v1_json(SQLCandidateCheckV1) -> @json.Json
 
-pub fn sql_candidate_check_v2_json(SQLCandidateCheckV2) -> Json
+pub fn sql_candidate_check_v2_json(SQLCandidateCheckV2) -> @json.Json
 
-pub fn sql_config_v1_json(SQLConfigV1) -> Json
+pub fn sql_config_v1_json(SQLConfigV1) -> @json.Json
 
-pub fn sql_config_v2_json(SQLConfigV2) -> Json
+pub fn sql_config_v2_json(SQLConfigV2) -> @json.Json
 
 pub fn sql_verification_options_v1(max_checks? : Int32, max_tokens? : Int32, max_sql_bytes? : Int32) -> SQLVerificationOptionsV1
 
 pub fn sql_verification_options_v2(max_checks? : Int32, max_tokens? : Int32, max_sql_bytes? : Int32) -> SQLVerificationOptionsV2
 
-pub fn verify_anomalies_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
+pub fn verify_anomalies_v4(HistoryV4, @json.Json, max_checks? : Int32) -> Bool
 
 pub fn verify_anomalies_v4_json(String, String, String) -> String
 
@@ -376,13 +380,13 @@ pub fn verify_certificate_json(String, String) -> String
 
 pub fn verify_classification_v3_json(String, String) -> String
 
-pub fn verify_classification_v4(HistoryV4, Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, list_graph? : String, max_list_graph_checks? : Int32) -> Bool
+pub fn verify_classification_v4(HistoryV4, @json.Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, list_graph? : String, max_list_graph_checks? : Int32) -> Bool
 
 pub fn verify_classification_v4_json(String, String, String) -> String
 
 pub fn verify_configured_effects_snapshot_v4_json(String, String) -> String
 
-pub fn verify_configured_fetch_v1(SQLConfigV1, Json, Json, Json, max_checks? : Int32, grammar_options? : SQLVerificationOptionsV1) -> ConfiguredFetchCheckV1
+pub fn verify_configured_fetch_v1(SQLConfigV1, @json.Json, @json.Json, @json.Json, max_checks? : Int32, grammar_options? : SQLVerificationOptionsV1) -> ConfiguredFetchCheckV1
 
 pub fn verify_configured_fetch_v1_json(String, String, String, String, String) -> String
 
@@ -390,11 +394,11 @@ pub fn verify_configured_point_reduction_v4_json(String, String, String, String,
 
 pub fn verify_configured_point_window_v4_json(String, String, String, String, String) -> Bool
 
-pub fn verify_configured_result_v2(SQLConfigV2, Json, Json, Json, options? : ConfiguredResultOptionsV2) -> ConfiguredResultCheckV2
+pub fn verify_configured_result_v2(SQLConfigV2, @json.Json, @json.Json, @json.Json, options? : ConfiguredResultOptionsV2) -> ConfiguredResultCheckV2
 
 pub fn verify_configured_result_v2_json(String, String, String, String, String) -> String
 
-pub fn verify_configured_session_diagnostic_v4(SQLConfigV1, String, String, Json, Json, expected_options? : ConfiguredSessionOptionsV4) -> Bool
+pub fn verify_configured_session_diagnostic_v4(SQLConfigV1, String, String, @json.Json, @json.Json, expected_options? : ConfiguredSessionOptionsV4) -> Bool
 
 pub fn verify_configured_session_diagnostic_v4_json(String, String, String, String, String, String) -> Bool
 
@@ -418,93 +422,93 @@ pub fn verify_cycle(History, Array[Edge]) -> Bool
 
 pub fn verify_inference_v4_json(String, String, String) -> String
 
-pub fn verify_internal_consistency_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
+pub fn verify_internal_consistency_v4(HistoryV4, @json.Json, max_checks? : Int32) -> Bool
 
 pub fn verify_internal_consistency_v4_json(String, String, String) -> String
 
-pub fn verify_list_prefix_projection_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
+pub fn verify_list_prefix_projection_v4(HistoryV4, @json.Json, max_checks? : Int32) -> Bool
 
-pub fn verify_lost_updates_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
+pub fn verify_lost_updates_v4(HistoryV4, @json.Json, max_checks? : Int32) -> Bool
 
 pub fn verify_lost_updates_v4_json(String, String, String) -> String
 
 pub fn verify_model_classification_v4_json(String, String, String) -> String
 
-pub fn verify_models_v4(ModelFactsV4, Json, ModelOptionsV4) -> Bool
+pub fn verify_models_v4(ModelFactsV4, @json.Json, ModelOptionsV4) -> Bool
 
-pub fn verify_point_projection_v2(SQLConfigV2, String, Json, PointProjectionOptionsV2, Json, budget? : PointProjectionVerificationOptionsV2) -> PointProjectionCheckV2
+pub fn verify_point_projection_v2(SQLConfigV2, String, @json.Json, PointProjectionOptionsV2, @json.Json, budget? : PointProjectionVerificationOptionsV2) -> PointProjectionCheckV2
 
 pub fn verify_point_projection_v2_json(String, String, String, String, String, String) -> String
 
-pub fn verify_projected_result_v2(SQLConfigV2, String, Json, PointProjectionOptionsV2, Json, Json, Json, options? : ProjectedResultOptionsV2) -> ProjectedResultCheckV2
+pub fn verify_projected_result_v2(SQLConfigV2, String, @json.Json, PointProjectionOptionsV2, @json.Json, @json.Json, @json.Json, options? : ProjectedResultOptionsV2) -> ProjectedResultCheckV2
 
 pub fn verify_projected_result_v2_json(String, String, String, String, String, String, String, String) -> String
 
-pub fn verify_reduction_v4(HistoryV4, Json, preserve~ : Model, max_checks? : Int32, options? : AnalysisOptionsV4) -> Bool
+pub fn verify_reduction_v4(HistoryV4, @json.Json, preserve~ : Model, max_checks? : Int32, options? : AnalysisOptionsV4) -> Bool
 
 pub fn verify_reduction_v4_json(String, String, String) -> String
 
-pub fn verify_relation_category_reduction_v4(HistoryV4, Json, category~ : String, max_checks? : Int32, max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> Bool
+pub fn verify_relation_category_reduction_v4(HistoryV4, @json.Json, category~ : String, max_checks? : Int32, max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> Bool
 
 pub fn verify_relation_category_reduction_v4_json(String, String, String) -> String
 
-pub fn verify_relation_classification_v4(HistoryV4, Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> Bool
+pub fn verify_relation_classification_v4(HistoryV4, @json.Json, categories? : Array[String], max_states? : Int32, max_edge_checks? : Int32, max_graph_checks? : Int32) -> Bool
 
 pub fn verify_relation_classification_v4_json(String, String, String) -> String
 
-pub fn verify_relation_model_reduction_v4(ModelFactsV4, Json, ElleModelV4, ModelOptionsV4, max_checks? : Int32, realtime_known? : Bool) -> Bool
+pub fn verify_relation_model_reduction_v4(ModelFactsV4, @json.Json, ElleModelV4, ModelOptionsV4, max_checks? : Int32, realtime_known? : Bool) -> Bool
 
 pub fn verify_relation_model_reduction_v4_json(String, String, String) -> String
 
-pub fn verify_relation_models_v4(ModelFactsV4, Json, ModelOptionsV4, realtime_known? : Bool) -> Bool
+pub fn verify_relation_models_v4(ModelFactsV4, @json.Json, ModelOptionsV4, realtime_known? : Bool) -> Bool
 
 pub fn verify_relation_models_v4_json(String, String, String) -> String
 
-pub fn verify_relation_predicate_classification_v4(HistoryV4, Json, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32, max_states? : Int32, max_edge_checks? : Int32) -> Bool
+pub fn verify_relation_predicate_classification_v4(HistoryV4, @json.Json, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32, max_states? : Int32, max_edge_checks? : Int32) -> Bool
 
 pub fn verify_relation_predicate_classification_v4_json(String, String, String) -> String
 
-pub fn verify_relation_predicate_graph_v4(HistoryV4, Json, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32) -> Bool
+pub fn verify_relation_predicate_graph_v4(HistoryV4, @json.Json, max_graph_checks? : Int32, max_predicate_checks? : Int32, max_candidate_visits? : Int32) -> Bool
 
-pub fn verify_relation_program_replay_v4(HistoryV4, Json, Json, mode~ : RelationProgramReplayModeV4, max_checks? : Int32) -> Bool
+pub fn verify_relation_program_replay_v4(HistoryV4, @json.Json, @json.Json, mode~ : RelationProgramReplayModeV4, max_checks? : Int32) -> Bool
 
-pub fn verify_relation_row_projection_v4(HistoryV4, Json, max_checks? : Int32) -> Bool
+pub fn verify_relation_row_projection_v4(HistoryV4, @json.Json, max_checks? : Int32) -> Bool
 
-pub fn verify_scoped_category_v4(ScopedDependencyGraphV4, Json, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> Bool
+pub fn verify_scoped_category_v4(ScopedDependencyGraphV4, @json.Json, ScopedCategoryV4, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> Bool
 
-pub fn verify_si_extension_v4(ScopedDependencyGraphV4, Json, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> Bool
+pub fn verify_si_extension_v4(ScopedDependencyGraphV4, @json.Json, rule_set~ : ScopedRuleSetV4, order_context? : ScopedOrderContextV4, max_states? : Int32, max_edge_checks? : Int32) -> Bool
 
-pub fn verify_snapshot_admission_v2(SourceAdmissionV2, String, Json, max_checks? : Int32, max_rows? : Int32, max_effects? : Int32) -> SnapshotAdmissionV2
+pub fn verify_snapshot_admission_v2(SourceAdmissionV2, String, @json.Json, max_checks? : Int32, max_rows? : Int32, max_effects? : Int32) -> SnapshotAdmissionV2
 
 pub fn verify_snapshot_admission_v2_json(String, String, String, String, String, String, String) -> String
 
-pub fn verify_source_admission_v2(SQLConfigV2, Json, String, Json, max_checks? : Int32) -> SourceAdmissionV2
+pub fn verify_source_admission_v2(SQLConfigV2, @json.Json, String, @json.Json, max_checks? : Int32) -> SourceAdmissionV2
 
 pub fn verify_source_admission_v2_json(String, String, String, String, String) -> String
 
 pub fn verify_source_fetch_mapping_report_v4_json(String, String, String, String, String, String, String, String, String, String) -> Bool
 
-pub fn verify_source_fetch_mapping_v4(SourceInstallationCheckV4, Json, Json, Json, Json, max_checks? : Int32, max_fetch_checks? : Int32, grammar_options? : SQLVerificationOptionsV1) -> SourceFetchMappingV4
+pub fn verify_source_fetch_mapping_v4(SourceInstallationCheckV4, @json.Json, @json.Json, @json.Json, @json.Json, max_checks? : Int32, max_fetch_checks? : Int32, grammar_options? : SQLVerificationOptionsV1) -> SourceFetchMappingV4
 
 pub fn verify_source_fetch_mapping_v4_json(String, String, String, String, String, String, String, String, String) -> String
 
 pub fn verify_source_installation_report_v4_json(String, String, String, String, String, String) -> Bool
 
-pub fn verify_source_installation_v4(SQLConfigV1, Json, String, Json, max_checks? : Int32) -> SourceInstallationCheckV4
+pub fn verify_source_installation_v4(SQLConfigV1, @json.Json, String, @json.Json, max_checks? : Int32) -> SourceInstallationCheckV4
 
 pub fn verify_source_installation_v4_json(String, String, String, String, String) -> String
 
-pub fn verify_sql_candidate_v1(SQLConfigV1, String, Json, Json, options? : SQLVerificationOptionsV1) -> SQLCandidateCheckV1
+pub fn verify_sql_candidate_v1(SQLConfigV1, String, @json.Json, @json.Json, options? : SQLVerificationOptionsV1) -> SQLCandidateCheckV1
 
-pub fn verify_sql_candidate_v2(SQLConfigV2, String, Json, Json, options? : SQLVerificationOptionsV2) -> SQLCandidateCheckV2
+pub fn verify_sql_candidate_v2(SQLConfigV2, String, @json.Json, @json.Json, options? : SQLVerificationOptionsV2) -> SQLCandidateCheckV2
 
 pub fn verify_v3_json(String, String) -> String
 
-pub fn verify_v4(HistoryV4, Json, options? : AnalysisOptionsV4) -> Bool
+pub fn verify_v4(HistoryV4, @json.Json, options? : AnalysisOptionsV4) -> Bool
 
 pub fn verify_v4_json(String, String, String) -> String
 
-pub fn verify_with_inference_v4(ModelFactsV4, Json, Array[InferenceModuleV4], options? : ModelOptionsV4, max_inference_checks? : Int32) -> Bool
+pub fn verify_with_inference_v4(ModelFactsV4, @json.Json, Array[InferenceModuleV4], options? : ModelOptionsV4, max_inference_checks? : Int32) -> Bool
 
 pub fn verify_with_inference_v4_json(String, String, String) -> String
 
@@ -513,29 +517,32 @@ pub fn version() -> String
 // Errors
 
 // Types and methods
+#derive(Eq)
 pub(all) struct AnalysisOptions {
   max_attempts : Int32
   max_operation_checks : Int32
   max_cached_states : Int32
-} derive(Eq)
+}
 pub fn AnalysisOptions::equal(Self, Self) -> Bool
 pub fn AnalysisOptions::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub(all) struct AnalysisOptionsV4 {
   max_attempts : Int32
   max_states : Int32
   max_operation_checks : Int32
   max_cached_states : Int32
-} derive(Eq)
+}
 pub fn AnalysisOptionsV4::equal(Self, Self) -> Bool
 pub fn AnalysisOptionsV4::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub(all) struct AnalysisResult {
   report : Report
   options : AnalysisOptions
   cache_hits : Int32
   cached_states : Int32
-} derive(Eq)
+}
 pub fn AnalysisResult::equal(Self, Self) -> Bool
 pub fn AnalysisResult::not_equal(Self, Self) -> Bool
 
@@ -545,12 +552,13 @@ pub struct AnalysisV4 {
 pub fn AnalysisV4::data_model(Self) -> DataModelV4
 pub fn AnalysisV4::outcome(Self) -> Outcome
 
+#derive(Eq)
 pub(all) enum BuiltinInferenceModuleV4 {
   InferenceReadSources
   InferenceGivenVersions
   InferenceListPrefixes
   InferenceDeclaredOrders
-} derive(Eq)
+}
 pub fn BuiltinInferenceModuleV4::equal(Self, Self) -> Bool
 pub fn BuiltinInferenceModuleV4::not_equal(Self, Self) -> Bool
 
@@ -583,25 +591,28 @@ pub struct ConfiguredSessionOptionsV4 {
   // private fields
 }
 
+#derive(Eq)
 pub(all) enum DataModelV4 {
   RegisterV4
   AppendListV4
   RelationSetV4
-} derive(Eq)
+}
 pub fn DataModelV4::equal(Self, Self) -> Bool
 pub fn DataModelV4::not_equal(Self, Self) -> Bool
 
+#derive(Eq, Hash)
 pub(all) enum Dependency {
   WR
   WW
   RW
   RT
-} derive(Eq, Hash)
+}
 pub fn Dependency::equal(Self, Self) -> Bool
 pub fn Dependency::hash(Self) -> Int32
 pub fn Dependency::hash_combine(Self, Hasher) -> Unit
 pub fn Dependency::not_equal(Self, Self) -> Bool
 
+#derive(Eq, Hash)
 pub(all) struct Edge {
   from : String
   to : String
@@ -612,7 +623,7 @@ pub(all) struct Edge {
   from_version : String?
   to_version : String?
   reason : String
-} derive(Eq, Hash)
+}
 pub fn Edge::equal(Self, Self) -> Bool
 pub fn Edge::hash(Self) -> Int32
 pub fn Edge::hash_combine(Self, Hasher) -> Unit
@@ -622,6 +633,7 @@ pub struct EffectiveListGraphV4 {
   // private fields
 }
 
+#derive(Eq)
 pub(all) enum ElleModelV4 {
   ElleReadUncommitted
   ElleReadCommitted
@@ -637,10 +649,11 @@ pub(all) enum ElleModelV4 {
   ElleSessionSerializable
   ElleSessionSnapshotIsolation
   ElleStrongSnapshotIsolation
-} derive(Eq)
+}
 pub fn ElleModelV4::equal(Self, Self) -> Bool
 pub fn ElleModelV4::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub(all) struct Finding {
   code : String
   severity : String
@@ -648,10 +661,11 @@ pub(all) struct Finding {
   transactions : Array[String]
   key : String?
   ops : Array[Int32]
-} derive(Eq)
+}
 pub fn Finding::equal(Self, Self) -> Bool
 pub fn Finding::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub(all) struct GraphInfo {
   analyzed : Bool
   components : Int32
@@ -659,16 +673,17 @@ pub(all) struct GraphInfo {
   cyclic_transactions : Int32
   bfs_roots : Int32
   edge_budget_exceeded : Bool
-} derive(Eq)
+}
 pub fn GraphInfo::equal(Self, Self) -> Bool
 pub fn GraphInfo::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub(all) struct History {
   model : Model
   initial : Map[String, String]
   version_orders : Map[String, Array[String]]
   transactions : Array[Transaction]
-} derive(Eq)
+}
 pub fn History::equal(Self, Self) -> Bool
 pub fn History::not_equal(Self, Self) -> Bool
 
@@ -691,7 +706,7 @@ pub struct InferenceClassificationV4 {
 pub(all) struct InferenceContributionV4 {
   data_edges : Array[ScopedDataEdgeInputV4]
   order_edges : Array[ScopedOrderEdgeInputV4]
-  gaps : Array[Json]
+  gaps : Array[@json.Json]
 }
 
 pub struct InferenceModuleV4 {
@@ -707,7 +722,7 @@ pub struct InferenceViewV4 {
 }
 pub fn InferenceViewV4::data_edges(Self) -> Array[ScopedDataEdgeInputV4]
 pub fn InferenceViewV4::data_model(Self) -> DataModelV4
-pub fn InferenceViewV4::history_json(Self) -> Json
+pub fn InferenceViewV4::history_json(Self) -> @json.Json
 pub fn InferenceViewV4::nodes(Self) -> Array[String]
 pub fn InferenceViewV4::order_edges(Self) -> Array[ScopedOrderEdgeInputV4]
 
@@ -715,12 +730,13 @@ pub struct InternalConsistencyV4 {
   // private fields
 }
 
+#derive(Eq)
 pub(all) struct KeyCoverage {
   key : String
   committed_reads : Int32
   committed_final_writes : Int32
   unresolved_reads : Int32
-} derive(Eq)
+}
 pub fn KeyCoverage::equal(Self, Self) -> Bool
 pub fn KeyCoverage::not_equal(Self, Self) -> Bool
 
@@ -730,10 +746,11 @@ pub struct ListPrefixProjectionV4 {
 pub fn ListPrefixProjectionV4::dependency_edge_count(Self) -> Int32
 pub fn ListPrefixProjectionV4::is_projected(Self) -> Bool
 
+#derive(Eq)
 pub(all) enum Model {
   Serializable
   StrictSerializable
-} derive(Eq)
+}
 pub fn Model::equal(Self, Self) -> Bool
 pub fn Model::not_equal(Self, Self) -> Bool
 
@@ -746,10 +763,11 @@ pub(all) struct ModelClientV4 {
   transactions : Array[String]
 }
 
+#derive(Eq)
 pub(all) enum ModelCompletionPolicyV4 {
   ModelObservationOnlyCompletion
   ModelGivenSnapshotsUnsupported
-} derive(Eq)
+}
 pub fn ModelCompletionPolicyV4::equal(Self, Self) -> Bool
 pub fn ModelCompletionPolicyV4::not_equal(Self, Self) -> Bool
 
@@ -757,11 +775,12 @@ pub struct ModelFactsV4 {
   // private fields
 }
 
+#derive(Eq)
 pub(all) enum ModelListProfileV4 {
   ModelListNative
   ModelListPrefixStates
   ModelListOriginalSerial
-} derive(Eq)
+}
 pub fn ModelListProfileV4::equal(Self, Self) -> Bool
 pub fn ModelListProfileV4::not_equal(Self, Self) -> Bool
 
@@ -769,38 +788,42 @@ pub struct ModelOptionsV4 {
   // private fields
 }
 
+#derive(Eq)
 pub(all) enum ModelRelationProfileV4 {
   ModelRelationPoint
   ModelRelationPredicateKeySlots
   ModelRelationAtomicRows
-} derive(Eq)
+}
 pub fn ModelRelationProfileV4::equal(Self, Self) -> Bool
 pub fn ModelRelationProfileV4::not_equal(Self, Self) -> Bool
 
 #external
 pub type NativeReportObject
 
+#derive(Eq)
 pub(all) enum OpKind {
   Read
   Write
-} derive(Eq)
+}
 pub fn OpKind::equal(Self, Self) -> Bool
 pub fn OpKind::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub(all) struct Operation {
   kind : OpKind
   key : String
   version : String
-} derive(Eq)
+}
 pub fn Operation::equal(Self, Self) -> Bool
 pub fn Operation::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub(all) enum Outcome {
   Consistent
   Violation
   Inconclusive
   Invalid
-} derive(Eq)
+}
 pub fn Outcome::equal(Self, Self) -> Bool
 pub fn Outcome::not_equal(Self, Self) -> Bool
 
@@ -824,6 +847,7 @@ pub struct ProjectedResultOptionsV2 {
   // private fields
 }
 
+#derive(Eq)
 pub(all) struct Reduction {
   history : History
   report : Report
@@ -832,23 +856,25 @@ pub(all) struct Reduction {
   checks : Int32
   one_minimal : Bool
   reason : String
-} derive(Eq)
+}
 pub fn Reduction::equal(Self, Self) -> Bool
 pub fn Reduction::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub(all) struct ReductionOptions {
   max_checks : Int32
   analysis : AnalysisOptions
-} derive(Eq)
+}
 pub fn ReductionOptions::equal(Self, Self) -> Bool
 pub fn ReductionOptions::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub(all) struct ReductionResult {
   reduction : Reduction
   analysis : AnalysisResult
   cached_checks : Int32
   max_checks : Int32
-} derive(Eq)
+}
 pub fn ReductionResult::equal(Self, Self) -> Bool
 pub fn ReductionResult::not_equal(Self, Self) -> Bool
 
@@ -894,10 +920,11 @@ pub struct RelationPredicateGraphV4 {
 }
 pub fn RelationPredicateGraphV4::edges(Self) -> Array[RelationScopedEdgeV4]
 
+#derive(Eq)
 pub(all) enum RelationProgramReplayModeV4 {
   RelationSnapshotPrefixes
   RelationSerialOrder
-} derive(Eq)
+}
 pub fn RelationProgramReplayModeV4::equal(Self, Self) -> Bool
 pub fn RelationProgramReplayModeV4::not_equal(Self, Self) -> Bool
 
@@ -911,9 +938,10 @@ pub struct RelationRowProjectionV4 {
 }
 pub fn RelationRowProjectionV4::is_projected(Self) -> Bool
 
+#derive(Eq, Hash)
 pub struct RelationScopedEdgeV4 {
   // private fields
-} derive(Eq, Hash)
+}
 pub fn RelationScopedEdgeV4::dependency(Self) -> Edge
 pub fn RelationScopedEdgeV4::equal(Self, Self) -> Bool
 pub fn RelationScopedEdgeV4::hash(Self) -> Int32
@@ -921,6 +949,7 @@ pub fn RelationScopedEdgeV4::hash_combine(Self, Hasher) -> Unit
 pub fn RelationScopedEdgeV4::not_equal(Self, Self) -> Bool
 pub fn RelationScopedEdgeV4::scope(Self) -> String
 
+#derive(Eq)
 pub(all) struct Report {
   outcome : Outcome
   model : Model
@@ -936,7 +965,7 @@ pub(all) struct Report {
   search : SearchInfo
   graph : GraphInfo
   coverage : Array[KeyCoverage]
-} derive(Eq)
+}
 pub fn Report::equal(Self, Self) -> Bool
 pub fn Report::not_equal(Self, Self) -> Bool
 
@@ -964,6 +993,7 @@ pub struct SQLVerificationOptionsV2 {
   // private fields
 }
 
+#derive(Eq)
 pub(all) enum ScopedCategoryV4 {
   ScopedG0
   ScopedG1c
@@ -972,7 +1002,7 @@ pub(all) enum ScopedCategoryV4 {
   ScopedGSingleItem
   ScopedGSingle
   ScopedGNonadjacent
-} derive(Eq)
+}
 pub fn ScopedCategoryV4::equal(Self, Self) -> Bool
 pub fn ScopedCategoryV4::not_equal(Self, Self) -> Bool
 
@@ -981,9 +1011,10 @@ pub(all) struct ScopedDataEdgeInputV4 {
   from : String
   to : String
   kind : ScopedDataKindV4
-  sources : Array[Json]
+  sources : Array[@json.Json]
 }
 
+#derive(Eq)
 pub(all) enum ScopedDataKindV4 {
   ScopedWWItem
   ScopedWWPredicate
@@ -991,7 +1022,7 @@ pub(all) enum ScopedDataKindV4 {
   ScopedWRPredicate
   ScopedRWItem
   ScopedRWPredicate
-} derive(Eq)
+}
 pub fn ScopedDataKindV4::equal(Self, Self) -> Bool
 pub fn ScopedDataKindV4::not_equal(Self, Self) -> Bool
 
@@ -1000,11 +1031,12 @@ pub struct ScopedDependencyGraphV4 {
 }
 pub fn ScopedDependencyGraphV4::input_sha256(Self) -> String
 
+#derive(Eq)
 pub(all) enum ScopedOrderContextV4 {
   ScopedDataOnly
   ScopedWithProcess
   ScopedWithRealtime
-} derive(Eq)
+}
 pub fn ScopedOrderContextV4::equal(Self, Self) -> Bool
 pub fn ScopedOrderContextV4::not_equal(Self, Self) -> Bool
 
@@ -1018,22 +1050,24 @@ pub(all) struct ScopedOrderEdgeInputV4 {
   to_source : ScopedOriginalRefV4
 }
 
+#derive(Eq)
 pub(all) enum ScopedOrderKindV4 {
   ScopedProcess
   ScopedRealtime
-} derive(Eq)
+}
 pub fn ScopedOrderKindV4::equal(Self, Self) -> Bool
 pub fn ScopedOrderKindV4::not_equal(Self, Self) -> Bool
 
 pub(all) struct ScopedOriginalRefV4 {
   transaction : String
-  observation : Json
+  observation : @json.Json
 }
 
+#derive(Eq)
 pub(all) enum ScopedRuleSetV4 {
   Adya2000Mixed
   ElleFixed4e359e5
-} derive(Eq)
+}
 pub fn ScopedRuleSetV4::equal(Self, Self) -> Bool
 pub fn ScopedRuleSetV4::not_equal(Self, Self) -> Bool
 
@@ -1042,13 +1076,14 @@ pub struct ScopedSearchResultV4 {
 }
 pub fn ScopedSearchResultV4::status(Self) -> String
 
+#derive(Eq)
 pub(all) struct SearchInfo {
   status : String
   attempts : Int32
   operation_checks : Int32
   reason : String
   blockers : Array[Finding]
-} derive(Eq)
+}
 pub fn SearchInfo::equal(Self, Self) -> Bool
 pub fn SearchInfo::not_equal(Self, Self) -> Bool
 
@@ -1068,21 +1103,23 @@ pub struct SourceInstallationCheckV4 {
   // private fields
 }
 
+#derive(Eq)
 pub(all) struct Transaction {
   id : String
   status : TxStatus
   ops : Array[Operation]
   start : Int64?
   end : Int64?
-} derive(Eq)
+}
 pub fn Transaction::equal(Self, Self) -> Bool
 pub fn Transaction::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub(all) enum TxStatus {
   Committed
   Aborted
   Unknown
-} derive(Eq)
+}
 pub fn TxStatus::equal(Self, Self) -> Bool
 pub fn TxStatus::not_equal(Self, Self) -> Bool
 

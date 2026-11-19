@@ -1,4 +1,5 @@
 ///|
+#derive(Eq)
 pub(all) enum ElleModelV4 {
   ElleReadUncommitted
   ElleReadCommitted
@@ -14,36 +15,39 @@ pub(all) enum ElleModelV4 {
   ElleSessionSerializable
   ElleSessionSnapshotIsolation
   ElleStrongSnapshotIsolation
-} derive(Eq)
+}
 
 ///|
 pub extend ElleModelV4 with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq)
 pub(all) enum ModelRelationProfileV4 {
   ModelRelationPoint
   ModelRelationPredicateKeySlots
   ModelRelationAtomicRows
-} derive(Eq)
+}
 
 ///|
 pub extend ModelRelationProfileV4 with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq)
 pub(all) enum ModelListProfileV4 {
   ModelListNative
   ModelListPrefixStates
   ModelListOriginalSerial
-} derive(Eq)
+}
 
 ///|
 pub extend ModelListProfileV4 with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq)
 pub(all) enum ModelCompletionPolicyV4 {
   ModelObservationOnlyCompletion
   ModelGivenSnapshotsUnsupported
-} derive(Eq)
+}
 
 ///|
 pub extend ModelCompletionPolicyV4 with Eq::{equal, not_equal}

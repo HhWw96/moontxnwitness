@@ -16,7 +16,6 @@ jobs:
     env:
       PYTHONUTF8: "1"
       PYTHONIOENCODING: utf-8
-      MOONBIT_INSTALL_VERSION: 0.10.16+b1a0e846e
       MTW_INPUT_CACHE: ${{ github.workspace }}/artifacts/input-cache
     steps:
       - name: Enable long paths for the Windows checkout
@@ -50,20 +49,9 @@ jobs:
         run: python -B -m unittest discover -s scripts -p test_publish_github_ci_release.py -v
       - name: Check package and publication contracts before compilation
         run: python -B scripts/preflight_release.py
-      - name: Install official MoonBit (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          Invoke-RestMethod https://cli.moonbitlang.com/install/powershell.ps1 | Invoke-Expression
-          "$env:USERPROFILE\.moon\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      - name: Install official MoonBit (Ubuntu)
-        if: runner.os == 'Linux'
+      - name: Install the checksum-pinned MoonBit toolchain
         shell: bash
-        run: |
-          set -euo pipefail
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$MOONBIT_INSTALL_VERSION"
-          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+        run: python -B scripts/install_moonbit.py --home "$RUNNER_TEMP/moonbit" --github-env
       - name: Validate active compiler version
         run: node scripts/toolchain-policy.mjs
       - name: Test compiler version boundaries

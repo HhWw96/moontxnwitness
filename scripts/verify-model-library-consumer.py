@@ -307,7 +307,10 @@ def main(argv=None):
     try:
         versions = stage("compiler-versions", [str(moon), "version", "--all"], timeout=60)
         compiler = re.search(r"moonc\s+v?(\d+)\.(\d+)\.(\d+)([^\s]*)", versions)
-        require(compiler and tuple(map(int, compiler.group(1, 2, 3))) >= (0, 10, 16), "Actual moonc must be >=0.10.16")
+        lock = json.loads((Path(__file__).resolve().parents[1] / '.moonbit-toolchain.json').read_text('utf8'))
+        minimum = lock['minimumCompiler']
+        require(compiler and tuple(map(int, compiler.group(1, 2, 3))) >= tuple(map(int, minimum.split('.'))),
+                f"Actual moonc must be >={minimum}")
         receipt["compiler"] = compiler.group(0)
         receipt["compilerBinary"] = binding(moon.parent / ("moonc.exe" if os.name == "nt" else "moonc"))
         toolchain_manifest = moon.parent.parent / "lib/core/moon.mod"

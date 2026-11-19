@@ -1,5 +1,6 @@
 # Unreleased
 
+- Pin MoonBit `0.10.21+06da1ed44` and its official standard library archives across build and publication workflows. The source uses the new derivation syntax and requires MoonBit 0.10.21 or newer.
 - Capture configured point CRUD through native async psycopg connections with independent source verification. Exercise write skew, a confirmed `40001` and retry, and cancellation in the PostgreSQL workflow.
 
 # 0.5.5

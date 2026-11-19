@@ -1,9 +1,10 @@
 ///|
+#derive(Eq)
 pub(all) struct AnalysisOptions {
   max_attempts : Int32
   max_operation_checks : Int32
   max_cached_states : Int32
-} derive(Eq)
+}
 
 ///|
 pub extend AnalysisOptions with Eq::{equal, not_equal}
@@ -18,12 +19,13 @@ pub fn analysis_options(
 }
 
 ///|
+#derive(Eq)
 pub(all) struct AnalysisResult {
   report : Report
   options : AnalysisOptions
   cache_hits : Int32
   cached_states : Int32
-} derive(Eq)
+}
 
 ///|
 pub extend AnalysisResult with Eq::{equal, not_equal}

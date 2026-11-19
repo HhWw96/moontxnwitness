@@ -8,7 +8,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
-      MOONBIT_INSTALL_VERSION: 0.10.16+b1a0e846e
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -23,8 +22,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$MOONBIT_INSTALL_VERSION"
-          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+          python -B scripts/install_moonbit.py --home "$RUNNER_TEMP/moonbit" --github-env
       - name: Run fixed raw adapter, actual JDK21 upstream checkers and SDK comparison
         run: python -B scripts/experimental_elle_smoke_ci.py --work "${{ runner.temp }}/mtw-elle-first-smoke"
       - name: Preserve first original inputs, actual checker results and runtime bindings

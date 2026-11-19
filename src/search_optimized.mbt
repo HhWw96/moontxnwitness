@@ -83,7 +83,7 @@ extern "js" fn string_from_search_units(units : FixedArray[Int32]) -> String =
 ///|
 #cfg(not(target="js"))
 fn string_from_search_units(units : FixedArray[Int32]) -> String {
-  let b = StringBuilder(size_hint=units.length())
+  let b = StringBuilder(capacity=units.length())
   for value in units {
     b.write_char(value.unsafe_to_char())
   }

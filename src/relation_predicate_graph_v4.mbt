@@ -1,9 +1,10 @@
 ///|
 /// Scope is part of identity even if item and predicate edges share endpoints.
+#derive(Eq, Hash)
 pub struct RelationScopedEdgeV4 {
   priv dependency : Edge
   priv scope : String
-} derive(Eq, Hash)
+}
 
 ///|
 pub extend RelationScopedEdgeV4 with Eq::{equal, not_equal}
