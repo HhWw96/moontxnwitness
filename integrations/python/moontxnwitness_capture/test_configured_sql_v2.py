@@ -153,8 +153,8 @@ class PointCandidateV2Tests(unittest.TestCase):
             self.assertFalse(hasattr(plan, 'rows'))
             self.assertFalse(plan.to_dict()['sourceFactsProduced'])
 
-    def test_sqlalchemy_2055_entity_and_refresh_primary_key_queries(self):
-        # Compile the real pinned ORM's mapper primary-key clause, without an engine.
+    def test_sqlalchemy_2055_entity_refresh_and_insert(self):
+        # Compile the real pinned ORM without an engine.
         self.assertEqual(importlib.metadata.version('sqlalchemy'), '2.0.55')
         import sqlalchemy as sa
         from sqlalchemy.dialects.postgresql import psycopg
@@ -164,7 +164,7 @@ class PointCandidateV2Tests(unittest.TestCase):
             __tablename__ = 'members'
             __table_args__ = {'schema': 'identity'}
             member_uuid = mapped_column(sa.Uuid, primary_key=True)
-            email = mapped_column(sa.Text, nullable=False)
+            email = mapped_column(sa.String(320), nullable=False)
             is_active = mapped_column(sa.Boolean, nullable=False)
         parser = ConfiguredSQLParserV2(SQLCaptureConfigV2(layouts()[2]))
         mapper = sa.inspect(Member)
@@ -179,6 +179,26 @@ class PointCandidateV2Tests(unittest.TestCase):
             params = {name: uuid.UUID(int=17) for name in compiled.params}
             self.assertEqual(plan.bind(params)[0][1], '00000000-0000-0000-0000-000000000011')
             self.assertEqual([p.column for p in plan.projections], ['member_uuid','email','is_active'])
+        params = {'member_uuid': uuid.UUID(int=17), 'email': '用户🙂', 'is_active': True}
+        insert = sa.insert(Member).values(**params).returning(Member.member_uuid).compile(dialect=psycopg.dialect())
+        self.assertIn('%(email)s::VARCHAR', str(insert))
+        self.assertEqual([raw for _, raw in parser.recognize(str(insert)).bind(insert.params)],
+            [str(params['member_uuid']), params['email'], params['is_active']])
+
+    def test_varchar_cast_is_limited_to_unquoted_unbounded_assignment_binds(self):
+        parser = ConfiguredSQLParserV2(SQLCaptureConfigV2(layouts()[0]))
+        update = 'UPDATE ledger.accounts SET label={} WHERE account_no=%s'
+        value = '原始🙂 '
+        plan = parser.recognize(update.format('(%s::vArChAr)'))
+        self.assertEqual([raw for _, raw in plan.bind((value, 7))], [value, 7])
+        for expr in ['%s::varchar(3)', '%s::varchar2', '%s::"varchar"', '%s::aux.varchar',
+                     'CAST(%s AS VARCHAR)', '%s::character varying', '%s::varchar[]', "'x'::varchar"]:
+            with self.subTest(expr=expr), self.assertRaises(RecognitionError):
+                parser.recognize(update.format(expr))
+        with self.assertRaises(RecognitionError):
+            parser.recognize('UPDATE ledger.accounts SET balance=%s::varchar WHERE account_no=%s')
+        with self.assertRaises(RecognitionError):
+            ConfiguredSQLParserV2(SQLCaptureConfigV2(layouts()[1])).recognize(read_sql(layouts()[1]) + '::varchar')
 
     def test_uuid_canonical_log_identity_keeps_business_arguments(self):
         table = layouts()[2]

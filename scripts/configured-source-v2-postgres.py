@@ -35,6 +35,100 @@ def eq(actual, expected):
     if actual != expected: raise AssertionError((actual, expected))
 
 
+def varchar_binding_fixture(control, connect_writer, schema, writer, output):
+    table = TableConfigV2(schema, 'varchar_rows', PrimaryKeyConfigV2('id', 'uuid'),
+        (ColumnConfig('email', 'text', TEXT_COMPARISON),))
+    config = SQLCaptureConfigV2(table)
+    policy = SourceInstallPolicy('mtw_source_v2_varchar', (writer,))
+    target = q(schema) + '.varchar_rows'
+    control.execute('CREATE TABLE ' + target + ' (id uuid PRIMARY KEY, email varchar(320) COLLATE pg_catalog."C" NOT NULL)')
+    control.execute('GRANT SELECT, INSERT, UPDATE, DELETE ON ' + target + ' TO ' + q(writer))
+    install_dir = output / 'varchar-install'
+    install_configured_source_v2(control, install_dir, config, policy, opt_in=True)
+    window = ConfiguredCaptureWindowV2(output / 'varchar-window', config, control, policy,
+        SourceInputsV2.from_directory(install_dir), opt_in=True)
+    enroll = window.psycopg_factory(connect_writer)
+    key = uuid.UUID(int=1057)
+    params = {'id': key, 'email': '首个🙂 '}
+    select = 'SELECT id, email FROM ' + target + ' WHERE id=%(id)s::UUID'
+    with enroll() as connection:
+        insert = 'INSERT INTO ' + target + ' (id,email) VALUES (%(id)s::UUID,%(email)s::VARCHAR) RETURNING id'
+        eq(connection.execute(insert, params).fetchall(), [(key,)])
+        eq(connection.execute(select, {'id': key}).fetchall(), [(key, params['email'])])
+    with enroll() as connection:
+        update = 'UPDATE ' + target + ' SET email=%(email)s::VARCHAR WHERE id=%(id)s::UUID RETURNING id,email'
+        changed = {**params, 'email': '修改后🙂 '}
+        eq(connection.execute(update, changed).fetchall(), [(key, changed['email'])])
+    eq(control.execute(select, {'id': key}).fetchall(), [(key, changed['email'])])
+    bundle = window.seal()
+    return {'name': 'varchar-assignment', 'bundle': str(bundle), 'expected': 'compatible',
+        'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(bundle)}
+
+
+def sqlalchemy_fixture(control, connect_writer, schema, writer, output):
+    import sqlalchemy as sa
+    from sqlalchemy.orm import DeclarativeBase, Session, mapped_column
+    from sqlalchemy.pool import NullPool
+
+    eq(sa.__version__, '2.0.55')
+    table = TableConfigV2(schema, 'orm_rows', PrimaryKeyConfigV2('id', 'uuid'),
+        (ColumnConfig('email', 'text', TEXT_COMPARISON),))
+    config = SQLCaptureConfigV2(table)
+    policy = SourceInstallPolicy('mtw_source_v2_orm', (writer,))
+    target = q(schema) + '.orm_rows'
+    control.execute('CREATE TABLE ' + target + ' (id uuid PRIMARY KEY, email varchar(320) COLLATE pg_catalog."C" NOT NULL)')
+    control.execute('GRANT SELECT, INSERT, UPDATE, DELETE ON ' + target + ' TO ' + q(writer))
+    installation = output / 'orm-install'
+    install_configured_source_v2(control, installation, config, policy, opt_in=True)
+
+    class Base(DeclarativeBase):
+        pass
+
+    class Member(Base):
+        __tablename__ = 'orm_rows'
+        __table_args__ = {'schema': schema}
+        id = mapped_column(sa.Uuid, primary_key=True)
+        email = mapped_column(sa.String(320), nullable=False)
+
+    def execute(window=None):
+        engine = sa.create_engine('postgresql+psycopg://', creator=connect_writer,
+            poolclass=NullPool, pool_reset_on_return=None)
+        if window is not None:
+            @sa.event.listens_for(engine, 'connect')
+            def enroll(raw_connection, record):
+                record.dbapi_connection = window.wrap_connection(raw_connection)
+        try:
+            key = uuid.UUID(int=1060)
+            with Session(engine, expire_on_commit=False) as session:
+                member = Member(id=key, email='初始🙂 ')
+                session.add(member)
+                session.commit()
+                session.refresh(member)
+                refreshed = (member.id, member.email)
+                member.email = '修改🙂 '
+                session.commit()
+            with Session(engine, expire_on_commit=False) as session:
+                member = session.get(Member, key)
+                queried = (member.id, member.email)
+                session.delete(member)
+                session.commit()
+                missing = session.get(Member, key)
+                session.commit()
+            return refreshed, queried, missing, control.execute('SELECT id,email FROM ' + target).fetchall()
+        finally:
+            engine.dispose()
+
+    baseline = execute()
+    eq((baseline[0][1], baseline[1][1], baseline[2], baseline[3]), ('初始🙂 ', '修改🙂 ', None, []))
+    window = ConfiguredCaptureWindowV2(output / 'orm-window', config, control, policy,
+        SourceInputsV2.from_directory(installation), opt_in=True)
+    eq(execute(window), baseline)
+    bundle = window.seal()
+    return {'name': 'sqlalchemy-crud-refresh', 'bundle': str(bundle), 'expected': 'compatible',
+        'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(bundle),
+        'sqlalchemyVersion': sa.__version__, 'businessParityVerified': True}
+
+
 def analysis_fixtures(control, connect_writer, config, policy, installation, output, key, fresh, other_key, *, with_reduction=False):
     """Run original SQL through wrappers; no model histories are constructed here."""
     import psycopg
@@ -280,7 +374,8 @@ def async_analysis_fixtures(control, connect_writer, connect_async_writer, confi
     return results
 
 
-def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_reduction=False, connect_async=None):
+def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_reduction=False, connect_async=None,
+          with_sqlalchemy=False):
     records = []
     for index, kind in enumerate(('int64', 'text', 'uuid')):
         owner, writer, schema = 'source_owner_'+str(index), 'source_writer_'+str(index), 'app_'+str(index)
@@ -380,6 +475,12 @@ def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_
             if with_analysis:
                 if not with_window:raise ValueError('Analysis fixtures also require --with-window')
                 analysis=analysis_fixtures(control,lambda:connect(user=writer,password=password),config,policy,window.installation,work/('analysis-'+str(index)),key,fresh,slow_key,with_reduction=with_reduction)
+                if kind == 'uuid':
+                    analysis.append(varchar_binding_fixture(control,
+                        lambda: connect(user=writer,password=password),schema,writer,work))
+                    if with_sqlalchemy:
+                        analysis.append(sqlalchemy_fixture(control,
+                            lambda: connect(user=writer,password=password),schema,writer,work))
                 if connect_async is not None:
                     async_key = 903 if kind == 'int64' else '异步新键🙂' if kind == 'text' else uuid.UUID(int=903)
                     analysis.extend(async_analysis_fixtures(control, lambda: connect(user=writer,password=password),
@@ -405,10 +506,12 @@ def main():
     cli.add_argument('--with-analysis',action='store_true',help='Also run committed CRUD, real RR write skew and ordered Serializable business windows')
     cli.add_argument('--with-reduction',action='store_true',help='Also capture source-dependent noise transactions for model-preserving reduction')
     cli.add_argument('--with-async',action='store_true',help='Exercise native async business connections in the same source-window scope')
+    cli.add_argument('--with-sqlalchemy',action='store_true',help='Exercise paired SQLAlchemy ORM CRUD and refresh using the scoped NullPool recipe')
     args=cli.parse_args()
     if args.with_analysis and not args.with_window:cli.error('--with-analysis requires --with-window')
     if args.with_reduction and not args.with_analysis:cli.error('--with-reduction requires --with-analysis')
     if args.with_async and not args.with_analysis:cli.error('--with-async requires --with-analysis')
+    if args.with_sqlalchemy and not args.with_analysis:cli.error('--with-sqlalchemy requires --with-analysis')
     if args.dsn_env and not args.owned_database:cli.error('--dsn-env requires --owned-database')
     if args.dsn_env and not os.environ.get(args.dsn_env):cli.error('the selected DSN environment variable is empty')
     work=args.output.resolve()
@@ -428,7 +531,9 @@ def main():
             with connect(autocommit=True) as admin:
                 eq(int(admin.execute('SHOW server_version_num').fetchone()[0]),180006)
                 receipt['postgresVersion']='postgres (PostgreSQL) 18.6';receipt['actualDatabaseExecution']=True
-                receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None)
+                receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,
+                    with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None,
+                    with_sqlalchemy=args.with_sqlalchemy)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         (work/'receipt.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
@@ -458,7 +563,10 @@ def main():
                 options=dict(host='127.0.0.1',port=port,dbname='postgres',user='mtw',password=password);options.update(kwargs)
                 return psycopg.AsyncConnection.connect(**options)
             with connect(autocommit=True) as admin:
-                receipt['actualDatabaseExecution']=True;receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None)
+                receipt['actualDatabaseExecution']=True
+                receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,
+                    with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None,
+                    with_sqlalchemy=args.with_sqlalchemy)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         finally:

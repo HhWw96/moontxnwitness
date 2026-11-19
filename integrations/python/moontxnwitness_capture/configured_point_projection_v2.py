@@ -10,7 +10,7 @@ from dataclasses import dataclass
 import json
 import uuid
 
-from .configured_sql import RecognitionError, OptionalParserUnavailable, _canonical, _dependency, _identifier, _integer, _sha
+from .configured_sql import RecognitionError, OptionalParserUnavailable, _canonical, _identifier, _integer, _sha
 from .configured_sql_v2 import RecognizedSQLV2, SQLCaptureConfigV2, ConfiguredSQLParserV2
 
 PROJECTION_FORMAT = 'moontxnwitness-sql-point-projection/v2'
@@ -106,24 +106,22 @@ def _confirmed_plan(plan, options):
         raise RecognitionError('projection-input', 'RecognizedSQLV2 and independent PointProjectionOptionsV2 required')
     # A frozen dataclass is still caller-constructible. Reparse original text;
     # neither its embedded fingerprint nor its operation can authorize a rewrite.
-    actual = ConfiguredSQLParserV2(options.config, cache_entries=0).recognize(plan.original_sql)
+    actual, star = ConfiguredSQLParserV2(options.config, cache_entries=0)._recognize_with_shape(plan.original_sql)
     try:
         equal = _canonical(actual.to_dict()) == _canonical(plan.to_dict())
     except (ValueError, TypeError, AttributeError, IndexError):
         equal = False
     if not equal:
         raise RecognitionError('projection-candidate-mismatch', 'Candidate differs from independent original-SQL recognition')
-    return actual
+    return actual, star
 
 
-def _has_star(plan):
-    # Examine only original result expressions after independent V2 recognition.
-    # A quoted identifier or string containing '*' is not a wildcard node.
-    sqlglot, exp, _ = _dependency()
-    ast = sqlglot.parse_one(plan.original_sql, read='postgres')
-    result = ast if plan.operation == 'select' else ast.args.get('returning')
-    return result is not None and any(type(node) is exp.Star
-        for expression in result.expressions for node in expression.walk())
+def _build_captured_projection(parser, query, original_parameters, options):
+    if (type(parser) is not ConfiguredSQLParserV2 or type(options) is not PointProjectionOptionsV2
+            or parser.config != options.config):
+        return build_point_projection(parser.recognize(query), original_parameters, options)
+    plan, star = parser._recognize_with_shape(query)
+    return _project_confirmed(plan, star, original_parameters, options)
 
 
 def build_point_projection(plan, original_parameters, options):
@@ -133,8 +131,11 @@ def build_point_projection(plan, original_parameters, options):
     row's configured version column. DML RETURNING contains business outputs
     first, then explicit OLD/NEW row images and versions as write observations.
     """
-    plan = _confirmed_plan(plan, options)
-    star = _has_star(plan)
+    plan, star = _confirmed_plan(plan, options)
+    return _project_confirmed(plan, star, original_parameters, options)
+
+
+def _project_confirmed(plan, star, original_parameters, options):
     if star and options.star_contract is None:
         raise RecognitionError('projection-star-view-required', 'Star projection requires an explicit preinstallation business-schema view')
     bindings = plan.bind(original_parameters)
