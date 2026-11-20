@@ -25,7 +25,7 @@ def canonical(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False)
 
 
-def read_text(path, maximum):
+def read_retained_bytes(path, maximum):
     path = Path(path)
     st = path.lstat()
     if not stat.S_ISREG(st.st_mode) or getattr(st, 'st_file_attributes', 0) & 0x400:
@@ -34,7 +34,11 @@ def read_text(path, maximum):
         raw = stream.read(maximum + 1)
     if len(raw) > maximum:
         raise ValueError('Original observation text exceeds its verifier bound; no truncation is permitted')
-    return raw.decode('utf-8', errors='strict')
+    return raw
+
+
+def read_text(path, maximum):
+    return read_retained_bytes(path, maximum).decode('utf-8', errors='strict')
 
 
 def write_new(path, raw):
