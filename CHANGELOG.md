@@ -1,3 +1,8 @@
+# 0.6.0
+
+- Consolidate the supported PostgreSQL point-window recipes, verification budgets, reset and invalidation boundaries, and offline replay commands in one guide.
+- Document separate installation paths for the MoonBit core, the JavaScript portable runtime, and the optional Python capture integration.
+
 # 0.5.9
 
 - Add opt-in asynchronous SQLAlchemy connection reuse for a scoped point window. Verify lease order, idle return, PostgreSQL backend identity and independent committed transactions. Invalidated leases retain a coverage gap.
