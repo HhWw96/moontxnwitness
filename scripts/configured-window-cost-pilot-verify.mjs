@@ -23,6 +23,9 @@ if (formal) {
   assert.equal(receipt.transactionsPerPhase, 24);
   assert.equal(receipt.warmupWindowsPerPhase, receipt.formalPerformanceMeasurement ? 5 : 0);
   assert.equal(receipt.measuredWindowsPerPhase, receipt.formalPerformanceMeasurement ? 30 : 1);
+  if (receipt.formalPerformanceMeasurement) {
+    assert(Number.isSafeInteger(receipt.peakProcessRssBytes) && receipt.peakProcessRssBytes > 0);
+  }
 } else {
   assert.equal(receipt.formalPerformanceMeasurement, false);
   assert.deepEqual(receipt.batches.map(batch => batch.order), orders);
@@ -70,6 +73,19 @@ function median(samples) {
   return (values[lower] + values[values.length - 1 - lower]) / 2;
 }
 
+function phaseStatistics(measured) {
+  const stats = values => ({median: median(values), p95: percentile(values, .95)});
+  return Object.fromEntries(['A', 'B', 'C'].map(phase => {
+    const windows = measured.map(cells => cells[phase]);
+    const values = field => stats(windows.map(cell => cell[field]));
+    return [phase, {openNs: values('windowOpenNs'), businessNs: values('businessNs'),
+      sealNs: values('windowSealNs'), windowNs: values('windowNs'),
+      throughputPerSecond: 1e9 * receipt.transactionsPerPhase / median(windows.map(cell => cell.windowNs)),
+      transactionNs: stats(windows.flatMap(cell => cell.transactionSamplesNs)),
+      outputBytes: values('outputBytes')}];
+  }));
+}
+
 for (const batch of receipt.batches) {
   const measured = formal ? batch.windows : [batch.cells];
   const warmup = formal ? batch.warmup : [];
@@ -83,7 +99,8 @@ for (const batch of receipt.batches) {
   }
   const verified = [];
   for (const cells of [...warmup, ...measured]) verified.push(await verifyWindow(cells, batch.connections));
-  const results = formal ? {workload: batch.workload, warmup: warmup.length, windows: verified} : verified[0];
+  const results = formal ? {workload: batch.workload, warmup: warmup.length, windows: verified,
+    phases: phaseStatistics(measured)} : verified[0];
   checks.push({order: batch.order, ...results, throughputCA: batch.completeWindowThroughputRatioCA,
     transactionP95CA: batch.transactionP95RatioCA});
 }
@@ -92,5 +109,8 @@ const result = {format: formal ? 'configured-source-window-cost-verification/v1'
                               : 'configured-source-window-cost-pilot-verification/v1', passed: true,
   formalPerformanceMeasurement: receipt.formalPerformanceMeasurement,
   originalReceiptSha256: sha256(bytes), coreSha256: sha256(compiled), checks};
+if (formal && Number.isSafeInteger(receipt.peakProcessRssBytes)) {
+  result.peakProcessRssBytes = receipt.peakProcessRssBytes;
+}
 await writeFile(args.output, JSON.stringify(result, null, 2) + '\n', {flag: 'wx'});
 console.log(JSON.stringify({passed: true, windows: checks.length, output: args.output}));
