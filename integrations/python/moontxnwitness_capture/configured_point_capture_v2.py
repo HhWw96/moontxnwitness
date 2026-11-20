@@ -174,6 +174,8 @@ class PointConnectionV2(DiagnosticConnection):
 
     def commit(self):
         with self._operation_lock:
+            if _idle_commit_v2(self._raw, self._tx):
+                return self._raw.commit()
             if (self._session._enabled and self._session._automatic_writer_checkpoints
                     and self._tx and int(self._raw.info.transaction_status) == 2):
                 try:
@@ -209,6 +211,13 @@ class PointConnectionV2(DiagnosticConnection):
             else:
                 cursor.execute('RELEASE SAVEPOINT "' + savepoint + '"', prepare=False)
         _retain_writer_checkpoint(self, pid, native, rows)
+
+
+def _idle_commit_v2(raw, transaction):
+    # psycopg can request a no-op commit when a context closes after an
+    # explicit commit. Only a known idle connection has no boundary to retain.
+    return (transaction is None and not raw.closed and int(raw.info.transaction_status) == 0
+            and not raw._pipeline and not raw._tpc)
 
 
 def _retain_writer_checkpoint(connection, pid, native, rows):

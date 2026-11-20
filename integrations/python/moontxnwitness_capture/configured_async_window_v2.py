@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from .configured_effects import WRITER_PROBE_SQL
 from .configured_factory_v2 import record_factory_gap_v2
 from .configured_point_capture_v2 import (
-    PointCaptureV2, _PointProjectionState, _native, _retain_writer_checkpoint, _tuple_factory,
+    PointCaptureV2, _PointProjectionState, _idle_commit_v2, _native, _retain_writer_checkpoint, _tuple_factory,
 )
 from .configured_window_v2 import ConfiguredCaptureWindowV2
 from .instrumentation import (
@@ -34,10 +34,13 @@ class ConfiguredAsyncCaptureWindowV2(ConfiguredCaptureWindowV2):
     calls, use the local factory from a single event loop on that thread.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, sqlalchemy_pool_size=None, **kwargs):
+        if sqlalchemy_pool_size is not None and (type(sqlalchemy_pool_size) is not int or not 1 <= sqlalchemy_pool_size <= 8):
+            raise ValueError('A configured SQLAlchemy pool must have one to eight physical connections')
         self._owner_thread = threading.get_ident()
         self._loop = None
         self._engine_open = False
+        self._pool_size = sqlalchemy_pool_size
         super().__init__(*args, **kwargs)
 
     def _require_loop(self):
@@ -53,14 +56,17 @@ class ConfiguredAsyncCaptureWindowV2(ConfiguredCaptureWindowV2):
         return self.observer.wrap_async(raw)
 
     def _make_observer(self, path, config, **options):
-        return _AsyncPointCaptureV2(path, config, **options)
+        producer = _PooledAsyncPointCaptureV2 if self._pool_size is not None else _AsyncPointCaptureV2
+        return producer(path, config, **options)
 
     def wrap_connection(self, raw):
         self._require_loop()
+        if self._pool_size is not None:
+            raise ValueError('Use the owned SQLAlchemy engine to enroll pooled connections')
         return super().wrap_connection(raw)
 
     def psycopg_factory(self, factory):
-        if not callable(factory):
+        if self._pool_size is not None or not callable(factory):
             raise ValueError('An owned async connection factory is required')
 
         async def connect(*args, **kwargs):
@@ -98,11 +104,11 @@ class ConfiguredAsyncCaptureWindowV2(ConfiguredCaptureWindowV2):
 
     @asynccontextmanager
     async def sqlalchemy_engine(self, factory):
-        """Own a single SQLAlchemy 2.0.55 async engine with no connection reuse."""
+        """Own a scoped SQLAlchemy 2.0.55 async engine and its physical connections."""
         import sqlalchemy
         from sqlalchemy.dialects.postgresql.psycopg import AsyncAdapt_psycopg_connection
         from sqlalchemy.ext.asyncio import create_async_engine
-        from sqlalchemy.pool import NullPool
+        from sqlalchemy.pool import AsyncAdaptedQueuePool, NullPool
 
         self._require_loop()
         if (sqlalchemy.__version__ != '2.0.55' or not callable(factory)
@@ -111,6 +117,7 @@ class ConfiguredAsyncCaptureWindowV2(ConfiguredCaptureWindowV2):
         active = True
         self._engine_open = True
         engine = None
+        pool = _PointPoolLifecycleV2(self) if self._pool_size is not None else None
 
         def admit(raw):
             if not active or not _ready_async_connection(raw):
@@ -129,17 +136,27 @@ class ConfiguredAsyncCaptureWindowV2(ConfiguredCaptureWindowV2):
             try:
                 if not active or type(dbapi) is not AsyncAdapt_psycopg_connection:
                     raise ValueError('Unexpected scoped SQLAlchemy async connection adapter')
-                observed = self.wrap_connection(dbapi.driver_connection)
+                self._require_loop()
+                observed = super(ConfiguredAsyncCaptureWindowV2, self).wrap_connection(dbapi.driver_connection)
                 dbapi._connection = observed
                 record.dbapi_connection = _PointAdapterConnection(dbapi, observed)
+                if pool is not None:
+                    pool.enrolled(observed)
             except BaseException:
                 self._factory_gap()
                 raise
 
         try:
+            options = {'poolclass': NullPool}
+            if pool is not None:
+                options = {'poolclass': AsyncAdaptedQueuePool, 'pool_size': self._pool_size, 'max_overflow': 0}
             engine = create_async_engine('postgresql+psycopg://', async_creator=connect,
-                                         poolclass=NullPool, pool_reset_on_return=None)
+                                         pool_reset_on_return=None, **options)
             sqlalchemy.event.listen(engine.sync_engine, 'connect', enroll)
+            if pool is not None:
+                sqlalchemy.event.listen(engine.sync_engine, 'checkout', pool.checkout)
+                sqlalchemy.event.listen(engine.sync_engine, 'checkin', pool.checkin)
+                sqlalchemy.event.listen(engine.sync_engine, 'invalidate', pool.invalidate)
             yield engine
         finally:
             active = False
@@ -166,6 +183,62 @@ class _AsyncPointCaptureV2(PointCaptureV2):
         if not self._enabled or not asynchronous or not _ready_async_connection(raw):
             raise ValueError('New idle owned psycopg 3.3.6 async tuple connection required')
         return self._enroll_connection(raw, _AsyncPointConnectionV2, asynchronous=True)
+
+
+class _PooledAsyncPointCaptureV2(_AsyncPointCaptureV2):
+    _producer_format = 'moontxnwitness-async-point-pool-producer/v1'
+
+
+class _PointPoolLifecycleV2:
+    def __init__(self, window):
+        self.window = window
+        self.generations = {}
+        self.borrowed = set()
+
+    def _record(self, kind, connection, lease):
+        try:
+            raw = connection._raw
+            if (raw.closed or int(raw.info.transaction_status) != 0 or connection._tx is not None
+                    or connection._point_lock.locked() or any(cursor._pending for cursor in connection._cursors)):
+                raise ValueError('Connection has unfinished operations')
+            note = self.window.observer.frame('configured-point-pool-' + kind, {
+                'format': 'moontxnwitness-configured-point-pool/v1', 'connection': connection._identity,
+                'backendPid': raw.info.backend_pid, 'lease': lease, 'transactionStatus': 0,
+            })
+            if note is None:
+                raise ValueError('Pool boundary not recorded')
+        except Exception:
+            self.window._factory_gap()
+
+    def enrolled(self, connection):
+        self.generations[connection._identity] = 0
+        self._record('enroll', connection, 0)
+
+    def checkout(self, adapter, _record, _proxy):
+        if not isinstance(adapter, _PointAdapterConnection):
+            self.window._factory_gap()
+            return
+        connection = adapter._observed
+        identity = connection._identity
+        if identity in self.borrowed or identity not in self.generations:
+            self.window._factory_gap()
+            return
+        generation = self.generations[identity] + 1
+        self.generations[identity] = generation
+        self.borrowed.add(identity)
+        self._record('checkout', connection, generation)
+
+    def checkin(self, adapter, _record):
+        if not isinstance(adapter, _PointAdapterConnection) or adapter._observed._identity not in self.borrowed:
+            self.window._factory_gap()
+            return
+        connection = adapter._observed
+        identity = connection._identity
+        self.borrowed.discard(identity)
+        self._record('checkin', connection, self.generations[identity])
+
+    def invalidate(self, _adapter, _record, _exception):
+        self.window._factory_gap()
 
 
 def _ready_async_connection(raw):
@@ -256,6 +329,8 @@ class _AsyncPointConnectionV2(DiagnosticAsyncConnection):
 
     async def commit(self):
         async with self._point_lock:
+            if _idle_commit_v2(self._raw, self._tx):
+                return await self._raw.commit()
             if (self._session._enabled and self._session._automatic_writer_checkpoints
                     and self._tx and int(self._raw.info.transaction_status) == 2):
                 try:

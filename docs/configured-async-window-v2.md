@@ -93,3 +93,23 @@ Read write skew, an actual Serializable `40001` followed by rollback and retry,
 a cancelled factory and cancellation while PostgreSQL is waiting on a row lock.
 The source-window verifier also rejects a lifecycle with a mismatched connection
 mode after its outer digest has been recomputed.
+
+### Reusing the physical connections
+
+Set `sqlalchemy_pool_size` to an integer from 1 to 8 when constructing
+`ConfiguredAsyncCaptureWindowV2` to opt into reuse with its owned async engine.
+The engine uses a bounded `AsyncAdaptedQueuePool` without overflow. The default
+continues to open and close a fresh connection per lease via `NullPool`.
+
+The producer and MoonBit verifier check checkout and return against physical
+backend identity, an increasing lease number and idle transaction state.
+Every observed transaction must start and finish within one lease. A returned
+connection can be borrowed again with a fresh transaction identity. Complete
+the transaction before returning the session or connection. Invalidations and
+unconfirmed or rolled back transactions leave the source decision unknown.
+
+The PostgreSQL fixture uses a one-connection pool for multiple committed
+transactions and compares ORM CRUD and refresh with the uncaptured routine.
+The verifier rejects rehashed changes to the lease generation or PostgreSQL
+backend identity. This scope covers the window-owned SQLAlchemy engine on a
+single event loop.
