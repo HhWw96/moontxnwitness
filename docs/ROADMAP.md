@@ -1,6 +1,6 @@
 # Roadmap and delivery history
 
-## Current source — v0.5.9
+## Current source — v0.6.0
 
 The current source base provides `classifyModelsV4`, registered inference modules,
 `classifyRelationModelsV4` and `reduceRelationModelsV4`, with independent verification
@@ -60,7 +60,7 @@ The v0.5.5 package consolidates the synchronous v0.5.2–v0.5.5 development incr
 | v0.5.6 | MoonBit 0.10.21, native async psycopg, synchronous SQLAlchemy `NullPool`, and projection cache | Cross-target regression, paired ORM results, actual PostgreSQL writer and retry checks, and clean installation |
 | v0.5.7 | Scoped async SQLAlchemy `NullPool` and original FastAPI Users base-user CRUD and refresh | Paired original-business runs, actual result consumption, confirmed outcomes and retry identity |
 | v0.5.8 | Bounded paging of source snapshots and faster window sealing | Complete snapshot coverage, stable model results, and stage timings on the same inputs |
-| v0.5.9 | Optional asynchronous pool reuse, full capture-cost measurements and integrated regression | Pool lease and reset evidence, complete A/B/C logs, reference checks, source-closed replay and fresh package consumers |
+| v0.5.9 | Optional asynchronous pool reuse and a capture-cost pilot | Pool lease and reset evidence, independent replay of the pilot, reference checks and fresh package consumers |
 | v0.6.0 | Freeze recommended APIs, source contracts, budgets, support matrix and reproducible examples | Cross-target regression, reference comparisons, clean public installation and source-bound replay |
 
 The synchronous CRUD work has its own contract; it does not relabel the earlier
