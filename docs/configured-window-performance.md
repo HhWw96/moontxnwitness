@@ -34,6 +34,9 @@ retain its `receipt.json` and `verified.json`, then run:
 node scripts/compare-configured-window-cost.mjs --baseline BASELINE_RUN --candidate CANDIDATE_RUN --output comparison.json
 ```
 
+Use `--seal-profile streamed-v1` in the candidate run to select the
+experimental writer. The baseline can use its default writer.
+
 ## Historical SDK baseline
 
 The baseline uses v0.4.1 source commit

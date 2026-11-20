@@ -77,12 +77,17 @@ def _sealed_bytes(payload, receipt, log_format):
                 raise ValueError('Original log seal/digest/inventory differs')
 
 
-def _checked_text(path, maximum, expected_sha256, message, expected_bytes=None):
-    payload = read_retained_bytes(path, maximum)
+def _checked_text(path, maximum, expected_sha256, message, expected_bytes=None, *, streamed):
+    if streamed:
+        payload = read_retained_bytes(path, maximum)
+        text = None
+    else:
+        text = read_text(path, maximum)
+        payload = text.encode('utf-8')
     if ((expected_bytes is not None and expected_bytes != len(payload))
             or expected_sha256 != hashlib.sha256(payload).hexdigest()):
         raise ValueError(message)
-    return payload.decode('utf-8', errors='strict')
+    return payload.decode('utf-8', errors='strict') if streamed else text
 
 
 def _write_window_bundle(path, bundle, maximum=32 * 1024 * 1024):
@@ -300,9 +305,13 @@ class ConfiguredCaptureWindowV2:
         return self.observer.wrap(raw)
 
     def __init__(self,output,config,control,policy,installation,*,opt_in=False,projection_options=None,
-                 max_rows=4096,max_effects=4096,snapshot_profile='row-v2',**capture_options):
+                 max_rows=4096,max_effects=4096,snapshot_profile='row-v2',seal_profile='original-v2',
+                 **capture_options):
         _snapshot_profile(snapshot_profile)
+        if seal_profile not in ('original-v2', 'streamed-v1'):
+            raise ValueError('Unknown seal profile')
         self._snapshot_profile = snapshot_profile
+        self._seal_profile = seal_profile
         if opt_in is not True or type(installation) is not SourceInputsV2:
             raise ValueError('Explicit window opt-in and original V2 source inputs required')
         original=installation.validate(config,policy)
@@ -415,29 +424,42 @@ class ConfiguredCaptureWindowV2:
             if self.observer.frame('configured-window-end',{'format':INPUT_FORMAT,'snapshotInputSha256':self._end_digest,'sourceFactsProduced':False}) is None:
                 raise ValueError('Window end boundary was not retained')
             self.observer.close()
+            streamed = self._seal_profile == 'streamed-v1'
             metadata=source._json(read_text(self.output/'capture/instrumentation.json',65536))
-            lifecycle_bytes = read_retained_bytes(self.output/'capture/lifecycle.jsonl', 8*1024*1024)
-            _sealed_bytes(lifecycle_bytes, metadata.get('lifecycle',{}), 'moontxnwitness-instrumentation/v1')
-            lifecycle = lifecycle_bytes.decode('utf-8', errors='strict')
-            del lifecycle_bytes
+            lifecycle_path = self.output/'capture/lifecycle.jsonl'
+            if streamed:
+                lifecycle_bytes = read_retained_bytes(lifecycle_path, 8*1024*1024)
+                _sealed_bytes(lifecycle_bytes, metadata.get('lifecycle',{}), 'moontxnwitness-instrumentation/v1')
+                lifecycle = lifecycle_bytes.decode('utf-8', errors='strict')
+                del lifecycle_bytes
+            else:
+                lifecycle = read_text(lifecycle_path, 8*1024*1024)
+                _sealed(lifecycle, metadata.get('lifecycle',{}), 'moontxnwitness-instrumentation/v1')
             trace=self.output/'diagnostic-trace.json';trace_receipt=self.observer.export_diagnostic(trace)
             trace_bytes = trace_receipt.get('bytes')
             if type(trace_bytes) is not int:
                 raise ValueError('Original diagnostic trace changed after export')
             trace_text = _checked_text(trace, 8*1024*1024, trace_receipt.get('sha256'),
-                'Original diagnostic trace changed after export', trace_bytes)
+                'Original diagnostic trace changed after export', trace_bytes, streamed=streamed)
             # Re-read every original file once; no caller-owned dictionaries or
             # accumulated event list is substituted for the retained inputs.
             start = _checked_text(self.output/'start-input.json', 64*1024*1024,
-                self._start_digest, 'Retained snapshot input changed')
+                self._start_digest, 'Retained snapshot input changed', streamed=streamed)
             end = _checked_text(self.output/'end-input.json', 64*1024*1024,
-                self._end_digest, 'Retained snapshot input changed')
+                self._end_digest, 'Retained snapshot input changed', streamed=streamed)
             bundle={'format':INPUT_FORMAT,'contract':CONTRACT,'configText':canonical(self.config.to_dict()),
                 'policyText':canonical(self.policy.to_dict()),'installationLogText':self.installation.installation_log_text,
                 'installationReceiptText':self.installation.installation_receipt_text,'startInputText':start,'endInputText':end,
                 'lifecycleText':lifecycle,'diagnosticTraceText':trace_text}
             target=self.output/'configured-window-input.json'
-            bundle_sha256 = _write_window_bundle(target, bundle)
+            if streamed:
+                bundle_sha256 = _write_window_bundle(target, bundle)
+            else:
+                raw = canonical(bundle) + '\n'
+                if len(raw.encode('utf-8')) > 32 * 1024 * 1024:
+                    raise ValueError('Window bundle byte budget exceeded; original files retained')
+                write_new(target, raw)
+                bundle_sha256 = digest(raw)
             self._publish_receipt({'format':'moontxnwitness-configured-window-producer-receipt/v2',
                 'status':'sealed-original-inputs','bundleSha256':bundle_sha256,'startInputSha256':self._start_digest,
                 'endInputSha256':self._end_digest,'diagnosticTraceSha256':digest(trace_text),'participantCount':len(self._participants),

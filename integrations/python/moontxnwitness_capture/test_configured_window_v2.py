@@ -200,9 +200,10 @@ class WindowTests(unittest.TestCase):
         (self.root/'window-receipt.json').write_bytes(b'existing')
         with self.assertRaises(FileExistsError):window._publish_receipt({'status':'sealed-original-inputs'})
         self.assertEqual((self.root/'window-receipt.json').read_bytes(),b'existing')
-    def seal_fixture(self,*,tamper_trace=False):
+    def seal_fixture(self,*,tamper_trace=False, profile='original-v2'):
         window=object.__new__(m.ConfiguredCaptureWindowV2)
         window.output=self.root/'seal';window.output.mkdir();(window.output/'capture').mkdir()
+        window._seal_profile = profile
         window._lock=m.threading.RLock();window._state='open';window._participants=[types.SimpleNamespace(_raw=types.SimpleNamespace(closed=True))]
         window.config=f.config();window.policy=f.POLICY;window.installation=m.SourceInputsV2('original-log','original-receipt')
         start='{}\n';m.write_new(window.output/'start-input.json',start);window._start_digest=m.digest(start)
@@ -247,7 +248,7 @@ class WindowTests(unittest.TestCase):
         self.assertEqual(path.read_bytes(), expected)
 
     def test_bundle_sync_failure_cannot_publish_bundle_or_receipt(self):
-        window = self.seal_fixture()
+        window = self.seal_fixture(profile='streamed-v1')
         original = m._write_window_bundle
         def fail_sync(*args, **kwargs):
             with patch.object(m.os, 'fsync', side_effect=OSError('bundle sync failed')):

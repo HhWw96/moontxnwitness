@@ -58,7 +58,7 @@ def peak_process_rss():
 
 
 def write_cell(output, options, schema, role, writer, password, phase, keys, keys_for_transactions,
-               *, workers=1, coordinated=False):
+               *, workers=1, coordinated=False, seal_profile=None):
     path = output / f'{schema}-{phase}'
     path.mkdir()
     schema_name = f'{schema}_{phase.lower()}'
@@ -88,8 +88,10 @@ def write_cell(output, options, schema, role, writer, password, phase, keys, key
 
         start = time.perf_counter_ns()
         if installation is not None and phase == 'C':
+            sealing = {} if seal_profile is None else {'seal_profile': seal_profile}
             window = ConfiguredCaptureWindowV2(path / 'capture', config, control, policy,
-                SourceInputsV2.from_directory(installation), opt_in=True, snapshot_profile='paged-v1')
+                SourceInputsV2.from_directory(installation), opt_in=True, snapshot_profile='paged-v1',
+                **sealing)
         acquire = window.psycopg_factory(connect) if window is not None else connect
         def execute(keys_for_worker):
             samples = []
@@ -155,7 +157,7 @@ FORMAL_LOADS = (
 )
 
 
-def formal_batches(report, output, options, run_id, role, writer, password, warmups, samples):
+def formal_batches(report, output, options, run_id, role, writer, password, warmups, samples, seal_profile):
     report['warmupWindowsPerPhase'] = warmups
     report['measuredWindowsPerPhase'] = samples
     for workload, keys, workers, transactions in FORMAL_LOADS:
@@ -171,7 +173,8 @@ def formal_batches(report, output, options, run_id, role, writer, password, warm
                     schema = f'mtw_{run_id}_{workload}_{index}_{kind[0]}{number}'
                     for phase in order:
                         cells[phase] = write_cell(output, options, schema, role, writer, password,
-                            phase, keys, transactions, workers=workers, coordinated=True)
+                            phase, keys, transactions, workers=workers, coordinated=True,
+                            seal_profile=seal_profile)
                     if len({cell['finalBusinessSha256'] for cell in cells.values()}) != 1:
                         raise ValueError('Business outcomes differ across phases')
             medians = {phase: statistics.median(window[phase]['windowNs'] for window in batch['windows'])
@@ -194,6 +197,8 @@ def main():
     group.add_argument('--formal', action='store_true', help='Run the frozen 5+30-window protocol')
     group.add_argument('--formal-smoke', action='store_true', help='Exercise all formal loads once without a performance claim')
     cli.add_argument('--exclusive-host', action='store_true', help='Confirm that the formal run has exclusive use of the benchmark host')
+    cli.add_argument('--seal-profile', choices=('original-v2', 'streamed-v1'),
+                     help='Select a producer seal profile when supported by the tested source')
     args = cli.parse_args()
     if not args.owned_database or not os.environ.get(args.dsn_env):
         cli.error('An explicit disposable database and populated DSN variable are required')
@@ -211,6 +216,7 @@ def main():
                          else 'configured-source-window-cost-pilot/v1'), 'passed': False,
               'formalPerformanceMeasurement': False, 'actualDatabaseExecution': False,
               'keys': args.keys, 'transactionsPerPhase': args.transactions, 'batches': [],
+              'sealProfileRequested': args.seal_profile,
               'environment': {'system': platform.system(), 'machine': platform.machine(),
                               'python': platform.python_version(), 'psycopg': psycopg.__version__},
               'harnessSha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
@@ -229,13 +235,13 @@ def main():
             report.pop('keys')
             report['transactionsPerPhase'] = 24
             formal_batches(report, output, options, run_id, role, writer, password,
-                           5 if args.formal else 0, 30 if args.formal else 1)
+                           5 if args.formal else 0, 30 if args.formal else 1, args.seal_profile)
         for index, order in enumerate(() if formal_shape else ('ABC', 'BCA', 'CAB')):
             batch = {'order': order, 'cells': {}}
             report['batches'].append(batch)
             for phase in order:
                 batch['cells'][phase] = write_cell(output, options, f'mtw_cost_{run_id}_{index}',
-                    role, writer, password, phase, args.keys, workload)
+                    role, writer, password, phase, args.keys, workload, seal_profile=args.seal_profile)
             a, b, c = (batch['cells'][phase] for phase in 'ABC')
             if len({a['finalBusinessSha256'], b['finalBusinessSha256'], c['finalBusinessSha256']}) != 1:
                 raise ValueError('Business outcomes differ across phases')
