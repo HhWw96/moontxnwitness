@@ -89,7 +89,20 @@ and the pinned upstream commit `6397ace506d829a2ee12786da5d724c3f4c6b634`.
 Pass `--fastapi-users-seed-campaign` with that checkout to record 30 fixed
 workloads. The fixture writes the seed plan before running the original CRUD
 and refresh methods on the uncaptured table, then repeats them through the
-capture engine. The window verifier checks the plan digest and all 30 bundles.
+capture engine. A paired duplicate-email attempt must retain PostgreSQL
+SQLSTATE `23505` and the same final rows, while the aborted capture window stays
+`unknown`. The window verifier checks the plan digest and every case bundle.
+
+From a source checkout with the optional dependencies and a built runtime, run
+the database and replay steps together with the pinned upstream checkout:
+
+```sh
+node scripts/configured-business-window-demo.mjs --bin PG_BIN --upstream PINNED_CHECKOUT --runtime dist --output NEW_RUN
+```
+
+Use `--dsn-env` in place of `--bin` for a separately owned PostgreSQL 18.6
+test service. To replay previously collected evidence without PostgreSQL, use
+`--receipt NEW_RUN/database/receipt.json --runtime dist --output NEW_REPLAY`.
 
 The PostgreSQL workflow runs the original SQL for all three key types with
 `scripts/configured-source-v2-postgres.py --with-window --with-analysis --with-async`.

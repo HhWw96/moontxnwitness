@@ -362,6 +362,7 @@ def async_sqlalchemy_fixtures(control, connect_writer, schema, writer, output, u
 
 async def fastapi_users_fixtures(control, connect_writer, schema, writer, output, upstream, baseline, *, seed_campaign):
     from random import Random
+    from sqlalchemy.exc import IntegrityError
     from sqlalchemy.ext.asyncio import async_sessionmaker
     from sqlalchemy.orm import DeclarativeBase
     sys.path.insert(0, str(ROOT/'experiments/business/fastapi_users'))
@@ -426,6 +427,26 @@ async def fastapi_users_fixtures(control, connect_writer, schema, writer, output
         return (absent_before, created_state, queried_state, absent_after,
                 control.execute('SELECT id FROM ' + target).fetchall())
 
+    async def run_duplicate(engine):
+        sessions = async_sessionmaker(engine, expire_on_commit=False)
+        data = cases[0][1]
+        identity = data['id']
+        conflicting = uuid.UUID(int=41063)
+        async with sessions() as session:
+            db = SQLAlchemyUserDatabase(session, User)
+            await db.create(dict(data))
+            try:
+                await db.create(dict(data, id=conflicting))
+            except IntegrityError as error:
+                sqlstate = error.orig.sqlstate
+                await session.rollback()
+            else:
+                raise AssertionError('Expected the original unique-email constraint to reject the duplicate')
+            row = await db.get(identity)
+            eq(await db.get(conflicting), None)
+            await db.delete(row)
+        return sqlstate, control.execute('SELECT id FROM ' + target).fetchall()
+
     expected = []
     for _, data in cases:
         outcome = await baseline(lambda engine: run(engine, data))
@@ -433,6 +454,9 @@ async def fastapi_users_fixtures(control, connect_writer, schema, writer, output
         after = (data['id'], data['email'], not data['is_active'], data['is_verified'])
         eq(outcome, (None, before, after, None, []))
         expected.append(outcome)
+    if seed_campaign:
+        duplicate_expected = await baseline(run_duplicate)
+        eq(duplicate_expected, ('23505', []))
     install_dir = output / 'async-users-install'
     install_configured_source_v2(control, install_dir, config, policy, opt_in=True)
     installation = SourceInputsV2.from_directory(install_dir)
@@ -450,6 +474,15 @@ async def fastapi_users_fixtures(control, connect_writer, schema, writer, output
         if seed_campaign:
             record.update(seed=seed, seedPlanSha256=sha(plan_path))
         fixtures.append(record)
+    if seed_campaign:
+        window = ConfiguredAsyncCaptureWindowV2(output / 'async-users-duplicate', config, control,
+            policy, installation, opt_in=True)
+        async with window.sqlalchemy_engine(connect_writer) as engine:
+            eq(await run_duplicate(engine), duplicate_expected)
+        bundle = window.seal()
+        fixtures.append({'name': 'fastapi-users-duplicate-email', 'bundle': str(bundle), 'expected': 'unknown',
+            'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(bundle),
+            'upstreamCommit': COMMIT, 'businessParityVerified': True, 'businessSqlstate': duplicate_expected[0]})
     return fixtures
 
 

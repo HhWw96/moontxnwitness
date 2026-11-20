@@ -124,6 +124,12 @@ if (campaign.fastapiUsersSeedCampaign === true) {
     assert.equal(fixture.upstreamCommit, plan.upstreamCommit);
     assert.equal(fixture.businessParityVerified, true);
   }
+  const duplicates = campaign.records.flatMap(record => record.analysisFixtures)
+    .filter(fixture => fixture.name === 'fastapi-users-duplicate-email');
+  assert.equal(duplicates.length, 1);
+  assert.equal(duplicates[0].businessSqlstate, '23505');
+  assert.equal(duplicates[0].businessParityVerified, true);
+  assert.equal(duplicates[0].expected, 'unknown');
 }
 const coreBytes = await readFile(args.core);
 const corePath = path.join(directory, `configured-window-core-${sha(coreBytes).slice(0, 16)}.mjs`);
