@@ -26,6 +26,14 @@ peak process RSS for the run. The verifier replays the complete C evidence and
 recomputes the throughput and P95 ratios. Use `--formal-smoke` instead of
 `--formal --exclusive-host` for a single rehearsal per phase and order.
 
+To compare two verified formal runs on the same host, use the same harness
+and MoonBit verifier for both versions. Give each run a new directory and
+retain its `receipt.json` and `verified.json`, then run:
+
+```sh
+node scripts/compare-configured-window-cost.mjs --baseline BASELINE_RUN --candidate CANDIDATE_RUN --output comparison.json
+```
+
 ## Historical SDK baseline
 
 The baseline uses v0.4.1 source commit
