@@ -208,7 +208,7 @@ def sqlalchemy_fixture(control, connect_writer, schema, writer, output):
         'sqlalchemyVersion': sa.__version__, 'businessParityVerified': True}
 
 
-def async_sqlalchemy_fixtures(control, connect_writer, schema, writer, output, upstream=None):
+def async_sqlalchemy_fixtures(control, connect_writer, schema, writer, output, upstream=None, seed_campaign=False):
     import sqlalchemy as sa
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
     from sqlalchemy.orm import DeclarativeBase, mapped_column
@@ -350,7 +350,8 @@ def async_sqlalchemy_fixtures(control, connect_writer, schema, writer, output, u
         unread['expectedReason'] = 'orm_unconsumed_result'
         fixtures = [verified, unread, pooled, invalidated, skew]
         if upstream is not None:
-            fixtures.append(await fastapi_users_fixture(control, connect_writer, schema, writer, output, upstream, baseline))
+            fixtures.extend(await fastapi_users_fixtures(control, connect_writer, schema, writer,
+                output, upstream, baseline, seed_campaign=seed_campaign))
         return fixtures
 
     if os.name == 'nt':
@@ -359,7 +360,8 @@ def async_sqlalchemy_fixtures(control, connect_writer, schema, writer, output, u
     return asyncio.run(run_fixtures())
 
 
-async def fastapi_users_fixture(control, connect_writer, schema, writer, output, upstream, baseline):
+async def fastapi_users_fixtures(control, connect_writer, schema, writer, output, upstream, baseline, *, seed_campaign):
+    from random import Random
     from sqlalchemy.ext.asyncio import async_sessionmaker
     from sqlalchemy.orm import DeclarativeBase
     sys.path.insert(0, str(ROOT/'experiments/business/fastapi_users'))
@@ -388,22 +390,35 @@ async def fastapi_users_fixture(control, connect_writer, schema, writer, output,
         'hashed_password varchar(1024) COLLATE pg_catalog."C" NOT NULL, '
         'is_active boolean NOT NULL, is_superuser boolean NOT NULL, is_verified boolean NOT NULL)')
     control.execute('GRANT SELECT, INSERT, UPDATE, DELETE ON ' + target + ' TO ' + q(writer))
-    install_dir = output / 'async-users-install'
-    install_configured_source_v2(control, install_dir, config, policy, opt_in=True)
-    identity = uuid.UUID(int=1062)
-    data = dict(id=identity, email='user@example.invalid', hashed_password='fixture-only',
-                is_active=True, is_superuser=False, is_verified=False)
+    seeds = tuple(range(30)) if seed_campaign else (None,)
+    cases = []
+    for seed in seeds:
+        if seed is None:
+            identity, email, active, verified = uuid.UUID(int=1062), 'user@example.invalid', True, False
+        else:
+            random = Random(seed)
+            identity = uuid.UUID(int=random.getrandbits(128), version=4)
+            email = f'user-{seed}@example.invalid'
+            active, verified = bool(random.getrandbits(1)), bool(random.getrandbits(1))
+        cases.append((seed, dict(id=identity, email=email, hashed_password='fixture-only',
+            is_active=active, is_superuser=False, is_verified=verified)))
+    if seed_campaign:
+        plan_path = output / 'async-users-seeds.json'
+        with plan_path.open('x', encoding='utf-8') as plan:
+            json.dump({'upstreamCommit': COMMIT, 'seeds': list(seeds)}, plan, sort_keys=True)
+            plan.write('\n')
 
-    async def run(engine):
+    async def run(engine, data):
+        identity = data['id']
         sessions = async_sessionmaker(engine, expire_on_commit=False)
         async with sessions() as session:
             db = SQLAlchemyUserDatabase(session, User)
             absent_before = await db.get(identity)
             created = await db.create(dict(data))
-            created_state = (created.id, created.email, created.is_active)
-            changed = await db.update(created, {'is_active': False})
+            created_state = (created.id, created.email, created.is_active, created.is_verified)
+            changed = await db.update(created, {'is_active': not data['is_active']})
             observed = await db.get(identity)
-            queried_state = (observed.id, observed.email, observed.is_active)
+            queried_state = (observed.id, observed.email, observed.is_active, observed.is_verified)
             await db.delete(changed)
             absent_after = await db.get(identity)
             # Keep this read-only transaction in the committed point-window model.
@@ -411,16 +426,31 @@ async def fastapi_users_fixture(control, connect_writer, schema, writer, output,
         return (absent_before, created_state, queried_state, absent_after,
                 control.execute('SELECT id FROM ' + target).fetchall())
 
-    expected = await baseline(run)
-    eq(expected, (None, (identity, data['email'], True), (identity, data['email'], False), None, []))
-    window = ConfiguredAsyncCaptureWindowV2(output / 'async-users-window', config, control, policy,
-        SourceInputsV2.from_directory(install_dir), opt_in=True)
-    async with window.sqlalchemy_engine(connect_writer) as engine:
-        eq(await run(engine), expected)
-    bundle = window.seal()
-    return {'name': 'fastapi-users-base-crud', 'bundle': str(bundle), 'expected': 'compatible',
-        'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(bundle),
-        'upstreamCommit': COMMIT, 'upstreamFiles': files, 'businessParityVerified': True}
+    expected = []
+    for _, data in cases:
+        outcome = await baseline(lambda engine: run(engine, data))
+        before = (data['id'], data['email'], data['is_active'], data['is_verified'])
+        after = (data['id'], data['email'], not data['is_active'], data['is_verified'])
+        eq(outcome, (None, before, after, None, []))
+        expected.append(outcome)
+    install_dir = output / 'async-users-install'
+    install_configured_source_v2(control, install_dir, config, policy, opt_in=True)
+    installation = SourceInputsV2.from_directory(install_dir)
+    fixtures = []
+    for (seed, data), outcome in zip(cases, expected, strict=True):
+        suffix = '' if seed is None else f'-{seed:02d}'
+        window = ConfiguredAsyncCaptureWindowV2(output / ('async-users-window' + suffix), config,
+            control, policy, installation, opt_in=True)
+        async with window.sqlalchemy_engine(connect_writer) as engine:
+            eq(await run(engine, data), outcome)
+        bundle = window.seal()
+        record = {'name': 'fastapi-users-base-crud' + suffix, 'bundle': str(bundle), 'expected': 'compatible',
+            'config': config.to_dict(), 'policy': policy.to_dict(), 'bundleSha256': sha(bundle),
+            'upstreamCommit': COMMIT, 'upstreamFiles': files, 'businessParityVerified': True}
+        if seed_campaign:
+            record.update(seed=seed, seedPlanSha256=sha(plan_path))
+        fixtures.append(record)
+    return fixtures
 
 
 def analysis_fixtures(control, connect_writer, config, policy, installation, output, key, fresh, other_key, *, with_reduction=False):
@@ -669,7 +699,8 @@ def async_analysis_fixtures(control, connect_writer, connect_async_writer, confi
 
 
 def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_reduction=False, connect_async=None,
-          with_sqlalchemy=False, fastapi_users_checkout=None, with_paged=False):
+          with_sqlalchemy=False, fastapi_users_checkout=None, with_paged=False,
+          fastapi_users_seed_campaign=False):
     records = []
     for index, kind in enumerate(('int64', 'text', 'uuid')):
         owner, writer, schema = 'source_owner_'+str(index), 'source_writer_'+str(index), 'app_'+str(index)
@@ -781,7 +812,7 @@ def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_
                         if connect_async is not None:
                             analysis.extend(async_sqlalchemy_fixtures(control,
                                 lambda: connect_async(user=writer,password=password),schema,writer,work,
-                                upstream=fastapi_users_checkout))
+                                upstream=fastapi_users_checkout, seed_campaign=fastapi_users_seed_campaign))
                 if connect_async is not None:
                     async_key = 903 if kind == 'int64' else '异步新键🙂' if kind == 'text' else uuid.UUID(int=903)
                     analysis.extend(async_analysis_fixtures(control, lambda: connect(user=writer,password=password),
@@ -809,6 +840,7 @@ def main():
     cli.add_argument('--with-async',action='store_true',help='Exercise native async business connections in the same source-window scope')
     cli.add_argument('--with-sqlalchemy',action='store_true',help='Exercise paired SQLAlchemy ORM CRUD and refresh using the scoped NullPool recipe')
     cli.add_argument('--fastapi-users-checkout',type=Path,help='Compare the original pinned FastAPI Users SQLAlchemy base-user CRUD')
+    cli.add_argument('--fastapi-users-seed-campaign',action='store_true',help='Record and run all 30 fixed base-user workloads with and without capture')
     cli.add_argument('--with-paged',action='store_true',help='Compare full and paged snapshots over 260 rows')
     args=cli.parse_args()
     if args.with_analysis and not args.with_window:cli.error('--with-analysis requires --with-window')
@@ -817,6 +849,8 @@ def main():
     if args.with_sqlalchemy and not args.with_analysis:cli.error('--with-sqlalchemy requires --with-analysis')
     if args.fastapi_users_checkout and not (args.with_async and args.with_sqlalchemy):
         cli.error('--fastapi-users-checkout requires --with-async and --with-sqlalchemy')
+    if args.fastapi_users_seed_campaign and not args.fastapi_users_checkout:
+        cli.error('--fastapi-users-seed-campaign requires --fastapi-users-checkout')
     if args.with_paged and not args.with_analysis:cli.error('--with-paged requires --with-analysis')
     if args.dsn_env and not args.owned_database:cli.error('--dsn-env requires --owned-database')
     if args.dsn_env and not os.environ.get(args.dsn_env):cli.error('the selected DSN environment variable is empty')
@@ -832,7 +866,9 @@ def main():
         def connect_async(**kwargs):return psycopg.AsyncConnection.connect(**dict(service,**kwargs))
         receipt={'format':'configured-source-v2-native-installation-validation/v1','passed':False,'actualDatabaseExecution':False,
             'actualV2InstallationExecuted':False,'formalPerformanceMeasurement':False,'windowProducerRequested':args.with_window,
-            'analysisFixturesRequested':args.with_analysis,'reductionFixturesRequested':args.with_reduction,'sourceSha256':{str(Path(__file__).resolve().relative_to(ROOT)):sha(Path(__file__))}}
+            'analysisFixturesRequested':args.with_analysis,'reductionFixturesRequested':args.with_reduction,
+            'fastapiUsersSeedCampaign':args.fastapi_users_seed_campaign,
+            'sourceSha256':{str(Path(__file__).resolve().relative_to(ROOT)):sha(Path(__file__))}}
         try:
             with connect(autocommit=True) as admin:
                 eq(int(admin.execute('SHOW server_version_num').fetchone()[0]),180006)
@@ -840,6 +876,7 @@ def main():
                 receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,
                     with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None,
                     with_sqlalchemy=args.with_sqlalchemy,fastapi_users_checkout=args.fastapi_users_checkout,
+                    fastapi_users_seed_campaign=args.fastapi_users_seed_campaign,
                     with_paged=args.with_paged)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
@@ -855,6 +892,7 @@ def main():
     receipt={'format':'configured-source-v2-native-installation-validation/v1','passed':False,'actualDatabaseExecution':False,
         'actualV2InstallationExecuted':False,'postgresVersion':version,'sourceFactsProduced':False,'completeWindow':False,
         'modelCoverageAccepted':False,'formalPerformanceMeasurement':False,'windowProducerRequested':args.with_window,'analysisFixturesRequested':args.with_analysis,'reductionFixturesRequested':args.with_reduction,
+        'fastapiUsersSeedCampaign':args.fastapi_users_seed_campaign,
         'sourceSha256':{str(path.relative_to(ROOT)):sha(path) for path in [Path(__file__).resolve(),ROOT/'integrations/python/moontxnwitness_capture/configured_source_v2.py',ROOT/'integrations/python/moontxnwitness_capture/configured_point_capture_v2.py',ROOT/'integrations/python/moontxnwitness_capture/configured_window_v2.py']}}
     with (work/'control.log').open('xb') as log:
         def run(parts):subprocess.run([str(p) for p in parts],env=environment,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=120,creationflags=flags)
@@ -874,6 +912,7 @@ def main():
                 receipt['records']=suite(admin,connect,work,with_window=args.with_window,with_analysis=args.with_analysis,
                     with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None,
                     with_sqlalchemy=args.with_sqlalchemy,fastapi_users_checkout=args.fastapi_users_checkout,
+                    fastapi_users_seed_campaign=args.fastapi_users_seed_campaign,
                     with_paged=args.with_paged)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()

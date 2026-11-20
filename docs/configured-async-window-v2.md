@@ -86,6 +86,11 @@ grammar. The fixture requires `--with-window --with-analysis --with-async
 --with-sqlalchemy`, the [business dependency list](../experiments/business/fastapi_users/requirements-lock.txt),
 and the pinned upstream commit `6397ace506d829a2ee12786da5d724c3f4c6b634`.
 
+Pass `--fastapi-users-seed-campaign` with that checkout to record 30 fixed
+workloads. The fixture writes the seed plan before running the original CRUD
+and refresh methods on the uncaptured table, then repeats them through the
+capture engine. The window verifier checks the plan digest and all 30 bundles.
+
 The PostgreSQL workflow runs the original SQL for all three key types with
 `scripts/configured-source-v2-postgres.py --with-window --with-analysis --with-async`.
 The fixtures cover CRUD with negative and transaction-local reads, Repeatable
