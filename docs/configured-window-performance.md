@@ -1,5 +1,33 @@
 # Configured-window SDK baseline
 
+## Complete PostgreSQL capture cost
+
+Run on a separately owned PostgreSQL 18.6 test database. The selected DSN
+environment variable is read by the collector. Use a new output directory.
+
+```sh
+python -B scripts/configured-window-cost-pilot.py --dsn-env MTW_TEST_DSN --owned-database --formal --exclusive-host --output NEW_COST_RUN
+node scripts/configured-window-cost-pilot-verify.mjs --core dist/sql-projection-v2-core.mjs --receipt NEW_COST_RUN/receipt.json --output NEW_COST_RUN/verified.json
+```
+
+The formal protocol rotates ABC, BCA and CAB across three fresh batches per
+workload. Each phase warms up on five windows and measures thirty windows of
+24 transactions. Workloads use 24 keys with one connection, 1,024 keys with
+four connections, and 32 keys with eight connections. In the last workload,
+22 of 24 writes use four hot keys. Workers update and read their own result
+within each transaction, with identical business values and final state across
+all three phases. Each matched set starts from freshly initialized tables.
+
+A runs the business operations, B enables the source installation, and C
+also opens and durably seals the configured point window. Setup and subsequent
+analysis are outside the measured window. Receipts retain window opening,
+business and seal time, per-transaction samples, output size, and collector
+peak process RSS for the run. The verifier replays the complete C evidence and
+recomputes the throughput and P95 ratios. Use `--formal-smoke` instead of
+`--formal --exclusive-host` for a single rehearsal per phase and order.
+
+## Historical SDK baseline
+
 The baseline uses v0.4.1 source commit
 `b7008ce2eb404bd85eedc3bd5e0b5b9bfdadcb48`, MoonBit
 `0.10.16+b1a0e846e` and Node.js `24.13.0` on Windows. It measures complete

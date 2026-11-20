@@ -231,5 +231,32 @@ class WindowTests(unittest.TestCase):
         self.assertFalse(r['completeWindow']);self.assertFalse(r['modelCoverageAccepted']);self.assertEqual(window._state,'sealed')
         with self.assertRaises(ValueError):window.seal()
 
+    def test_streamed_bundle_preserves_canonical_bytes_and_exact_limit(self):
+        path = self.root / 'bundle.json'
+        bundle = {'z': '月光🌙\r\n"\\', 'a': '{}\n'}
+        expected = (m.canonical(bundle) + '\n').encode('utf-8')
+        with self.assertRaisesRegex(ValueError, 'byte budget'):
+            m._write_window_bundle(path, bundle, maximum=len(expected) - 1)
+        self.assertFalse(path.exists())
+        self.assertFalse(path.with_suffix('.pending.json').exists())
+        checksum = m._write_window_bundle(path, bundle, maximum=len(expected))
+        self.assertEqual(path.read_bytes(), expected)
+        self.assertEqual(checksum, m.hashlib.sha256(expected).hexdigest())
+        with self.assertRaises(FileExistsError):
+            m._write_window_bundle(path, {'other': 'bundle'})
+        self.assertEqual(path.read_bytes(), expected)
+
+    def test_bundle_sync_failure_cannot_publish_bundle_or_receipt(self):
+        window = self.seal_fixture()
+        original = m._write_window_bundle
+        def fail_sync(*args, **kwargs):
+            with patch.object(m.os, 'fsync', side_effect=OSError('bundle sync failed')):
+                return original(*args, **kwargs)
+        with patch.object(m, '_write_window_bundle', fail_sync), self.assertRaisesRegex(OSError, 'bundle sync'):
+            window.seal()
+        self.assertFalse((window.output/'configured-window-input.json').exists())
+        self.assertFalse((window.output/'window-receipt.json').exists())
+        self.assertTrue((window.output/'window-failure.json').exists())
+
 
 if __name__=='__main__':unittest.main(verbosity=2)

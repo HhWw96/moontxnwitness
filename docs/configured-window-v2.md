@@ -28,6 +28,10 @@ point producer supplies automatic writer probes and actual commit observation.
 
 ## Snapshot and durability contract
 
+The window bundle writer validates the retained UTF-8 bytes and writes canonical
+JSON in bounded pieces. The file is synchronized before its final name is
+published and its digest is bound into the success receipt.
+
 Each boundary uses an acknowledged `REPEATABLE READ READ ONLY` transaction. It
 records the actual database snapshot and server peer, rechecks environment,
 catalogs, permissions and source scope, and independently enumerates:

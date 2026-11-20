@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import math
@@ -30,7 +31,34 @@ def percentile(samples, fraction):
     return sorted(samples)[math.ceil(len(samples) * fraction) - 1]
 
 
-def write_cell(output, options, schema, role, writer, password, phase, keys, keys_for_transactions):
+def peak_process_rss():
+    if sys.platform == 'win32':
+        import ctypes as c
+        from ctypes import wintypes as w
+
+        class Counters(c.Structure):
+            _fields_ = [('cb', w.DWORD), ('faults', w.DWORD)] + [
+                (field, c.c_size_t) for field in (
+                    'peak', 'working', 'peak_paged', 'paged', 'peak_nonpaged',
+                    'nonpaged', 'pagefile', 'peak_pagefile')]
+
+        current = c.windll.kernel32.GetCurrentProcess
+        current.restype = w.HANDLE
+        memory = c.windll.psapi.GetProcessMemoryInfo
+        memory.argtypes = [w.HANDLE, c.POINTER(Counters), w.DWORD]
+        memory.restype = w.BOOL
+        result = Counters()
+        result.cb = c.sizeof(result)
+        if not memory(current(), c.byref(result), result.cb):
+            raise c.WinError()
+        return result.peak
+    import resource
+    rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return rss if sys.platform == 'darwin' else rss * 1024
+
+
+def write_cell(output, options, schema, role, writer, password, phase, keys, keys_for_transactions,
+               *, workers=1, coordinated=False):
     path = output / f'{schema}-{phase}'
     path.mkdir()
     schema_name = f'{schema}_{phase.lower()}'
@@ -63,26 +91,42 @@ def write_cell(output, options, schema, role, writer, password, phase, keys, key
             window = ConfiguredCaptureWindowV2(path / 'capture', config, control, policy,
                 SourceInputsV2.from_directory(installation), opt_in=True, snapshot_profile='paged-v1')
         acquire = window.psycopg_factory(connect) if window is not None else connect
-        samples = []
+        def execute(keys_for_worker):
+            samples = []
+            with acquire() as connection:
+                for key in keys_for_worker:
+                    begin = time.perf_counter_ns()
+                    if coordinated:
+                        # Lock through UPDATE first; the following read sees
+                        # this transaction's own write even on a shared key.
+                        updated = connection.execute(modify, (1, key)).fetchone()
+                        row = connection.execute(select, (key,)).fetchone()
+                        if row != (key, 1) or row != updated:
+                            raise ValueError('Concurrent workload did not deliver its own write')
+                    else:
+                        row = connection.execute(select, (key,)).fetchone()
+                        if row is None or row[0] != key:
+                            raise ValueError('Control workload did not deliver the requested key')
+                        updated = connection.execute(modify, (row[1] + 1, key)).fetchone()
+                        if updated != (key, row[1] + 1):
+                            raise ValueError('Control workload did not deliver the expected update')
+                    connection.commit()
+                    samples.append(time.perf_counter_ns() - begin)
+            return samples
         begin_business = time.perf_counter_ns()
-        with acquire() as connection:
-            for key in keys_for_transactions:
-                begin = time.perf_counter_ns()
-                row = connection.execute(select, (key,)).fetchone()
-                if row is None or row[0] != key:
-                    raise ValueError('Control workload did not deliver the requested key')
-                updated = connection.execute(modify, (row[1] + 1, key)).fetchone()
-                if updated != (key, row[1] + 1):
-                    raise ValueError('Control workload did not deliver the expected update')
-                connection.commit()
-                samples.append(time.perf_counter_ns() - begin)
+        if workers == 1:
+            samples = execute(keys_for_transactions)
+        else:
+            assignments = [keys_for_transactions[offset::workers] for offset in range(workers)]
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                samples = [sample for group in executor.map(execute, assignments) for sample in group]
         end_business = time.perf_counter_ns()
         bundle = window.seal() if window is not None else None
         end = time.perf_counter_ns()
         final = control.execute(sql.SQL('SELECT id,value FROM {} ORDER BY id').format(target)).fetchall()
         expected = dict.fromkeys(range(1, keys + 1), 0)
         for key in keys_for_transactions:
-            expected[key] += 1
+            expected[key] = 1 if coordinated else expected[key] + 1
         if final != list(expected.items()):
             raise ValueError('Final business data differ')
 
@@ -90,12 +134,53 @@ def write_cell(output, options, schema, role, writer, password, phase, keys, key
                'medianTransactionNs': statistics.median(samples), 'p95TransactionNs': percentile(samples, .95),
                'windowOpenNs': begin_business - start, 'businessNs': end_business - begin_business,
                'windowSealNs': end - end_business, 'windowNs': end - start,
-               'finalBusinessSha256': hashlib.sha256(json.dumps(final).encode('utf8')).hexdigest()}
+               'finalBusinessSha256': hashlib.sha256(json.dumps(final).encode('utf8')).hexdigest(),
+               'connections': workers, 'outputBytes': 0}
         if bundle is not None:
             digest = hashlib.sha256(bundle.read_bytes()).hexdigest()
             row.update(bundle=str(bundle), bundleSha256=digest, config=config.to_dict(), policy=policy.to_dict(),
+                       outputBytes=bundle.stat().st_size,
                        producerReceipt=str(bundle.with_name('window-receipt.json')))
+        if coordinated:
+            if installation is not None:
+                control.execute(sql.SQL('DROP SCHEMA {} CASCADE').format(sql.Identifier(policy.namespace)))
+            control.execute(sql.SQL('DROP SCHEMA {} CASCADE').format(sql.Identifier(schema_name)))
         return row
+
+
+FORMAL_LOADS = (
+    ('small', 24, 1, tuple(range(1, 25))),
+    ('wide', 1024, 4, tuple((i * 17 % 1024) + 1 for i in range(24))),
+    ('hot', 32, 8, tuple(i % 4 + 1 for i in range(22)) + (5, 6)),
+)
+
+
+def formal_batches(report, output, options, run_id, role, writer, password, warmups, samples):
+    report['warmupWindowsPerPhase'] = warmups
+    report['measuredWindowsPerPhase'] = samples
+    for workload, keys, workers, transactions in FORMAL_LOADS:
+        for index, order in enumerate(('ABC', 'BCA', 'CAB')):
+            batch = {'workload': workload, 'keys': keys, 'connections': workers, 'order': order,
+                     'warmup': [], 'windows': []}
+            report['batches'].append(batch)
+            for kind, count, result in (('warmup', warmups, batch['warmup']),
+                                         ('measured', samples, batch['windows'])):
+                for number in range(count):
+                    cells = {}
+                    result.append(cells)
+                    schema = f'mtw_{run_id}_{workload}_{index}_{kind[0]}{number}'
+                    for phase in order:
+                        cells[phase] = write_cell(output, options, schema, role, writer, password,
+                            phase, keys, transactions, workers=workers, coordinated=True)
+                    if len({cell['finalBusinessSha256'] for cell in cells.values()}) != 1:
+                        raise ValueError('Business outcomes differ across phases')
+            medians = {phase: statistics.median(window[phase]['windowNs'] for window in batch['windows'])
+                       for phase in order}
+            p95s = {phase: percentile([value for window in batch['windows']
+                                      for value in window[phase]['transactionSamplesNs']], .95)
+                    for phase in order}
+            batch['completeWindowThroughputRatioCA'] = medians['A'] / medians['C']
+            batch['transactionP95RatioCA'] = p95s['C'] / p95s['A']
 
 
 def main():
@@ -105,22 +190,32 @@ def main():
     cli.add_argument('--output', type=Path, required=True)
     cli.add_argument('--keys', type=int, choices=range(8, 65), default=24, metavar='8..64')
     cli.add_argument('--transactions', type=int, choices=range(1, 33), default=24, metavar='1..32')
+    group = cli.add_mutually_exclusive_group()
+    group.add_argument('--formal', action='store_true', help='Run the frozen 5+30-window protocol')
+    group.add_argument('--formal-smoke', action='store_true', help='Exercise all formal loads once without a performance claim')
+    cli.add_argument('--exclusive-host', action='store_true', help='Confirm that the formal run has exclusive use of the benchmark host')
     args = cli.parse_args()
     if not args.owned_database or not os.environ.get(args.dsn_env):
         cli.error('An explicit disposable database and populated DSN variable are required')
     if psycopg.__version__ != '3.3.6':
         cli.error('Use psycopg 3.3.6')
+    if args.formal and not args.exclusive_host:
+        cli.error('Formal measurement requires --exclusive-host')
     options = conninfo_to_dict(os.environ[args.dsn_env])
     output = args.output.resolve()
     output.mkdir(exist_ok=False)
     run_id = secrets.token_hex(4)
     role, writer, password = 'mtw_cost_owner_' + run_id, 'mtw_cost_writer_' + run_id, secrets.token_hex(20)
-    report = {'format': 'configured-source-window-cost-pilot/v1', 'passed': False,
+    formal_shape = args.formal or args.formal_smoke
+    report = {'format': ('configured-source-window-cost/v1' if formal_shape
+                         else 'configured-source-window-cost-pilot/v1'), 'passed': False,
               'formalPerformanceMeasurement': False, 'actualDatabaseExecution': False,
               'keys': args.keys, 'transactionsPerPhase': args.transactions, 'batches': [],
               'environment': {'system': platform.system(), 'machine': platform.machine(),
                               'python': platform.python_version(), 'psycopg': psycopg.__version__},
-              'producerSha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+              'harnessSha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+              'producerSha256': hashlib.sha256(
+                  Path(sys.modules[ConfiguredCaptureWindowV2.__module__].__file__).read_bytes()).hexdigest()}
     try:
         with psycopg.connect(**options, autocommit=True) as admin:
             if admin.info.server_version != 180006:
@@ -130,7 +225,12 @@ def main():
             admin.execute(sql.SQL('CREATE ROLE {} LOGIN PASSWORD {}').format(sql.Identifier(writer), sql.Literal(password)))
             admin.execute(sql.SQL('GRANT CREATE ON DATABASE {} TO {}').format(sql.Identifier(admin.info.dbname), sql.Identifier(role)))
         workload = [(i * 17 % args.keys) + 1 for i in range(args.transactions)]
-        for index, order in enumerate(('ABC', 'BCA', 'CAB')):
+        if formal_shape:
+            report.pop('keys')
+            report['transactionsPerPhase'] = 24
+            formal_batches(report, output, options, run_id, role, writer, password,
+                           5 if args.formal else 0, 30 if args.formal else 1)
+        for index, order in enumerate(() if formal_shape else ('ABC', 'BCA', 'CAB')):
             batch = {'order': order, 'cells': {}}
             report['batches'].append(batch)
             for phase in order:
@@ -141,6 +241,8 @@ def main():
                 raise ValueError('Business outcomes differ across phases')
             batch['completeWindowThroughputRatioCA'] = a['windowNs'] / c['windowNs']
             batch['transactionP95RatioCA'] = c['p95TransactionNs'] / a['p95TransactionNs']
+        report['peakProcessRssBytes'] = peak_process_rss()
+        report['formalPerformanceMeasurement'] = args.formal
         report['passed'] = True
     finally:
         (output / 'receipt.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf8')

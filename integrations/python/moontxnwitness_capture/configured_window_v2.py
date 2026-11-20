@@ -15,7 +15,7 @@ import threading
 
 from .capture_v3 import _pinned_connection
 from .journal_v3 import _sync_directory
-from .configured_session import read_text, write_new
+from .configured_session import read_retained_bytes, read_text, write_new
 from .configured_point_capture_v2 import PointCaptureV2
 from .instrumentation import DiagnosticConnection
 from .configured_point_projection_v2 import PointProjectionOptionsV2
@@ -46,7 +46,10 @@ canonical, digest = source.canonical, lambda text: hashlib.sha256(text.encode('u
 
 
 def _sealed(text, receipt, log_format):
-    payload = text.encode('utf8')
+    _sealed_bytes(text.encode('utf8'), receipt, log_format)
+
+
+def _sealed_bytes(payload, receipt, log_format):
     if not payload.endswith(b'\n'):
         raise ValueError('Original sealed log requires complete newline-terminated records')
     if (receipt.get('sealed') is not True or type(receipt.get('bytes')) is not int
@@ -72,6 +75,42 @@ def _sealed(text, receipt, log_format):
                     or receipt['records'] != count
                     or record.get('prefixSha256') != hashlib.sha256(prefix).hexdigest()):
                 raise ValueError('Original log seal/digest/inventory differs')
+
+
+def _checked_text(path, maximum, expected_sha256, message, expected_bytes=None):
+    payload = read_retained_bytes(path, maximum)
+    if ((expected_bytes is not None and expected_bytes != len(payload))
+            or expected_sha256 != hashlib.sha256(payload).hexdigest()):
+        raise ValueError(message)
+    return payload.decode('utf-8', errors='strict')
+
+
+def _write_window_bundle(path, bundle, maximum=32 * 1024 * 1024):
+    encoder = json.JSONEncoder(ensure_ascii=False, sort_keys=True,
+                               separators=(',', ':'), allow_nan=False)
+    pending = path.with_suffix('.pending.json')
+    checksum = hashlib.sha256()
+    count = 0
+    stream = pending.open('xb')
+    try:
+        with stream:
+            for part in encoder.iterencode(bundle):
+                payload = part.encode('utf-8')
+                count += len(payload)
+                if count >= maximum:
+                    raise ValueError('Window bundle byte budget exceeded; original files retained')
+                if stream.write(payload) != len(payload):
+                    raise OSError('Short window bundle write')
+                checksum.update(payload)
+            if stream.write(b'\n') != 1:
+                raise OSError('Short window bundle write')
+            checksum.update(b'\n')
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(pending, path)
+    finally:
+        pending.unlink()
+    return checksum.hexdigest()
 
 
 @dataclass(frozen=True,slots=True)
@@ -376,28 +415,31 @@ class ConfiguredCaptureWindowV2:
             if self.observer.frame('configured-window-end',{'format':INPUT_FORMAT,'snapshotInputSha256':self._end_digest,'sourceFactsProduced':False}) is None:
                 raise ValueError('Window end boundary was not retained')
             self.observer.close()
-            lifecycle=read_text(self.output/'capture/lifecycle.jsonl',8*1024*1024)
             metadata=source._json(read_text(self.output/'capture/instrumentation.json',65536))
-            _sealed(lifecycle,metadata.get('lifecycle',{}),'moontxnwitness-instrumentation/v1')
+            lifecycle_bytes = read_retained_bytes(self.output/'capture/lifecycle.jsonl', 8*1024*1024)
+            _sealed_bytes(lifecycle_bytes, metadata.get('lifecycle',{}), 'moontxnwitness-instrumentation/v1')
+            lifecycle = lifecycle_bytes.decode('utf-8', errors='strict')
+            del lifecycle_bytes
             trace=self.output/'diagnostic-trace.json';trace_receipt=self.observer.export_diagnostic(trace)
-            trace_text=read_text(trace,8*1024*1024)
-            if trace_receipt.get('sha256')!=digest(trace_text) or trace_receipt.get('bytes')!=len(trace_text.encode('utf8')):
+            trace_bytes = trace_receipt.get('bytes')
+            if type(trace_bytes) is not int:
                 raise ValueError('Original diagnostic trace changed after export')
+            trace_text = _checked_text(trace, 8*1024*1024, trace_receipt.get('sha256'),
+                'Original diagnostic trace changed after export', trace_bytes)
             # Re-read every original file once; no caller-owned dictionaries or
             # accumulated event list is substituted for the retained inputs.
-            start=read_text(self.output/'start-input.json',64*1024*1024)
-            end=read_text(self.output/'end-input.json',64*1024*1024)
-            if digest(start)!=self._start_digest or digest(end)!=self._end_digest:
-                raise ValueError('Retained snapshot input changed')
+            start = _checked_text(self.output/'start-input.json', 64*1024*1024,
+                self._start_digest, 'Retained snapshot input changed')
+            end = _checked_text(self.output/'end-input.json', 64*1024*1024,
+                self._end_digest, 'Retained snapshot input changed')
             bundle={'format':INPUT_FORMAT,'contract':CONTRACT,'configText':canonical(self.config.to_dict()),
                 'policyText':canonical(self.policy.to_dict()),'installationLogText':self.installation.installation_log_text,
                 'installationReceiptText':self.installation.installation_receipt_text,'startInputText':start,'endInputText':end,
                 'lifecycleText':lifecycle,'diagnosticTraceText':trace_text}
-            raw=canonical(bundle)+'\n'
-            if len(raw.encode('utf8'))>32*1024*1024:raise ValueError('Window bundle byte budget exceeded; original files retained')
-            target=self.output/'configured-window-input.json';write_new(target,raw)
+            target=self.output/'configured-window-input.json'
+            bundle_sha256 = _write_window_bundle(target, bundle)
             self._publish_receipt({'format':'moontxnwitness-configured-window-producer-receipt/v2',
-                'status':'sealed-original-inputs','bundleSha256':digest(raw),'startInputSha256':self._start_digest,
+                'status':'sealed-original-inputs','bundleSha256':bundle_sha256,'startInputSha256':self._start_digest,
                 'endInputSha256':self._end_digest,'diagnosticTraceSha256':digest(trace_text),'participantCount':len(self._participants),
                 'sourceFactsProduced':False,'completeWindow':False,'moonbitSourceVerified':False,'modelCoverageAccepted':False})
             self._state='sealed';return target
