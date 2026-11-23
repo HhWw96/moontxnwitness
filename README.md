@@ -14,7 +14,7 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-当前源码版本为 **v0.6.8**。[点窗口使用指南](docs/point-window-quickstart.md)汇总同步和异步 psycopg、受控 SQLAlchemy 接入、来源核验、异常缩减及离线复现。[可复制的下游示例](examples/downstream-point-ci/README.md)可固定发行包摘要并重新验证胶囊。[真实采集复现](docs/point-window-replay.md#run-the-database-cases-again)从便携包重复执行写偏斜与 Serializable 对照。
+当前源码版本为 **v0.6.9**。[点窗口使用指南](docs/point-window-quickstart.md)汇总同步和异步 psycopg、受控 SQLAlchemy 接入、来源核验、异常缩减及离线复现。[可复制的下游示例](examples/downstream-point-ci/README.md)可固定发行包摘要并重新验证胶囊。[采集性能协议](docs/configured-window-performance.md)提供交错 A/B/C 测量和独立回放。
 
 ## 关系谓词模型与可组合推断
 

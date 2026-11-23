@@ -5,6 +5,7 @@ import {parseArgs} from 'node:util';
 
 const {values: args} = parseArgs({options: {
   receipt: {type: 'string'}, core: {type: 'string'}, output: {type: 'string'},
+  'writer-proof-profile': {type: 'string'},
 }});
 for (const filename of ['receipt', 'core', 'output']) assert(args[filename], `Require --${filename}`);
 
@@ -15,6 +16,10 @@ const formal = receipt.format === 'configured-source-window-cost/v1';
 assert(formal || receipt.format === 'configured-source-window-cost-pilot/v1');
 assert.equal(receipt.actualDatabaseExecution, true);
 assert.equal(receipt.passed, true);
+const profile = args['writer-proof-profile'] ?? null;
+assert([null, 'returning-v1'].includes(profile), 'Unknown independent writer proof profile');
+assert.equal(receipt.writerProofProfileRequested ?? null, profile);
+const options = JSON.stringify(profile === null ? {} : {projectionOptions: {writerProofProfile: profile}});
 const orders = ['ABC', 'BCA', 'CAB'];
 if (formal) {
   const shape = [['small', 24, 1], ['wide', 1024, 4], ['hot', 32, 8]];
@@ -52,15 +57,20 @@ async function verifyWindow(cells, connections) {
   assert.equal(sha256(raw), full.bundleSha256);
   if (formal) assert.equal(Buffer.byteLength(raw), full.outputBytes);
   const config = JSON.stringify(full.config), policy = JSON.stringify(full.policy);
-  const report = core.analyze_configured_window_v2_json(config, policy, raw, '{}');
+  const report = core.analyze_configured_window_v2_json(config, policy, raw, options);
   const analysis = JSON.parse(report);
   assert.equal(analysis.sourceMappingVerified, true, analysis.reason);
   assert.equal(analysis.writerWindowVerified, true, analysis.reason);
   const transactions = analysis.history.events.filter(event => event.kind === 'begin');
   assert.equal(transactions.length, full.commits);
-  const replay = JSON.parse(core.verify_configured_window_v2_json(config, policy, raw, report, '{}'));
+  if (profile !== null) {
+    assert.equal(analysis.execution.returningWriterProofs, full.commits);
+    assert.equal(analysis.execution.precommitWriterProofs, 0);
+  }
+  const replay = JSON.parse(core.verify_configured_window_v2_json(config, policy, raw, report, options));
   assert.equal(replay.reportMatches, true);
-  return {commits: full.commits, sourceClosed: true, modelStatus: analysis.status};
+  return {commits: full.commits, sourceClosed: true, modelStatus: analysis.status,
+    ...(profile === null ? {} : {returningWriterProofs: analysis.execution.returningWriterProofs})};
 }
 
 function percentile(samples, fraction) {
@@ -109,6 +119,7 @@ const result = {format: formal ? 'configured-source-window-cost-verification/v1'
                               : 'configured-source-window-cost-pilot-verification/v1', passed: true,
   formalPerformanceMeasurement: receipt.formalPerformanceMeasurement,
   originalReceiptSha256: sha256(bytes), coreSha256: sha256(compiled), checks};
+if (profile !== null) result.writerProofProfile = profile;
 if (formal && Number.isSafeInteger(receipt.peakProcessRssBytes)) {
   result.peakProcessRssBytes = receipt.peakProcessRssBytes;
 }
