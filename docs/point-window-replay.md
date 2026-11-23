@@ -61,3 +61,41 @@ checks. To stage the same small offline fixture set from that new receipt, run
 `node scripts/stage-point-window-replay.mjs --receipt new-run/database/receipt.json --runtime dist --output new-fixtures`.
 For exact offline replay of the new capture, use `new-fixtures` as the
 `examples/point-window-replay-data` directory in a disposable copy of the example.
+
+## Use the verification step in your CI
+
+Start with a verified portable archive. Have your capture job write an analysis
+capsule and keep the configuration, policy and budget under CI control. In this
+example, the archive was extracted into `vendor/moontxnwitness`.
+
+```yaml
+- name: Recompute the point-window Serializable result
+  run: >-
+    node vendor/moontxnwitness/examples/check-point-window.mjs
+    --config ci/point-window-config.json
+    --policy ci/point-window-policy.json
+    --max-point-checks 1000000
+    artifacts/database-window.capsule.json
+```
+
+Exit code `0` means the source-bound model report recomputed and established a
+compatible result for this window. Code `1` indicates a verified model
+refutation. Code `2` covers incomplete evidence, verification or input errors.
+The gate treats the entire captured window with a rolled-back attempt according
+to its actual coverage. Run `node scripts/point-window-ci-test.mjs` to exercise
+the passing result, the actual counterexample, coverage and source gaps, a
+tampered report with recalculated digests, and a caller-budget mismatch.
+
+A separate consumer can verify the shared normalized inputs using the public
+MoonBit library. This creates a new MoonBit project and installs only the
+requested registry version. The JavaScript runtime comes from an extracted
+portable archive. Set `--module-version` to the matching version.
+
+```sh
+node scripts/verify-point-window-moon-consumer.mjs --runtime dist --module-version 0.6.4 --output new-moon-consumer
+```
+
+The consumer compares the normalized history digest, `serializable` decision
+and full model judgment for the counterexample and ordered control. The SQL and
+writer evidence are first verified by the capsule runtime. The separate core
+comparison begins at the normalized relation-history boundary.

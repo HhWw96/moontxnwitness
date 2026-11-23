@@ -643,6 +643,10 @@ def select_distribution_files(root, public_names, tested_files, version):
         portable.add('scripts/configured-window-structured-test.mjs')
     if configured_window_capsule:
         portable.update(('scripts/configured-window-v2-capsule-test.mjs', 'docs/configured-window-v2-capsule.md'))
+    if 'examples/check-point-window.mjs' in public_names:
+        for name in ('scripts/point-window-ci-test.mjs', 'scripts/verify-point-window-moon-consumer.mjs'):
+            require(name, 'independent configured point-window consumer')
+            portable.add(name)
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         portable.update(NATIVE038_PORTABLE_INPUTS)
     if tuple(map(int, version.split('.'))) >= (0, 5, 1):

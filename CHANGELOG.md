@@ -1,3 +1,9 @@
+# 0.6.4
+
+- Add a portable CI check for source-verified Serializable results, with separate exit codes for refuted and incomplete or changed evidence.
+- Compare the full model verdict on the same normalized PostgreSQL histories using an independent Mooncakes consumer and the JavaScript SDK.
+- Exercise compatible, refuted, incomplete, tampered and budget-mismatched capsules in CI and in fresh release packages.
+
 # 0.6.2
 
 - Replay a captured PostgreSQL write skew offline, explain its `G2-item` dependency cycle, and verify a source-closed reduction from five transactions to two.
