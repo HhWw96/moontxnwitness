@@ -1,3 +1,8 @@
+# 0.7.2
+
+- Capture full native PostgreSQL range reads on an int64 primary key in a dedicated synchronous transaction.
+- Verify empty and multi-row delivery against original snapshots and all retained committed inserts. Evidence gaps remain inconclusive.
+
 # 0.7.1
 
 - Publish a smaller point-window verification ZIP from the same tested runtime as the portable distribution.

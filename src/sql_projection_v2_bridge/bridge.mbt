@@ -123,3 +123,14 @@ pub fn window_reduction_verification(
     config, policy, bundle, report, options,
   )
 }
+
+///|
+#export_name("admit_configured_predicate_window_v1_json")
+pub fn predicate_admission(
+  config : String,
+  policy : String,
+  bundle : String,
+  options : String,
+) -> String {
+  @txn.admit_configured_predicate_window_v1_json(config, policy, bundle, options)
+}
