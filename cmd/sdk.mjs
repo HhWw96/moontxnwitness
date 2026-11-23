@@ -509,3 +509,5 @@ export {analyzeConfiguredWindowV4, verifyConfiguredWindowV4,
   reduceConfiguredWindowV4, verifyConfiguredWindowReductionV4, explainConfiguredWindowV4,
   CONFIGURED_WINDOW_V4_LIMITS, CONFIGURED_WINDOW_REDUCTION_V4_LIMITS} from './configured-window-v2.mjs';
 export {admitConfiguredPredicateWindowV1} from './configured-window-v2-standalone.mjs';
+export {analyzeConfiguredPredicateWindowV1, reduceConfiguredPredicateWindowV1,
+  makeConfiguredPredicateCapsuleV1, replayConfiguredPredicateCapsuleV1} from './configured-predicate-window-v1.mjs';

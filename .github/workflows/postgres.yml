@@ -109,6 +109,7 @@ jobs:
           out="verification/predicate-window/postgres-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           python -B scripts/predicate-window-postgres.py --owned-database --dsn-env MTW_PREDICATE_DSN --output "$out"
           node scripts/verify-predicate-window.mjs --core dist/sql-projection-v2-core.mjs --input "$out" --output "$out/admission.json"
+          node scripts/postgres-predicate-window-demo.mjs --runtime dist --dsn-env MTW_PREDICATE_DSN --output "$out/reservations"
       - name: Retain original range captures and independent admission
         if: always() && (steps.predicate_admission.outcome == 'success' || steps.predicate_admission.outcome == 'failure')
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

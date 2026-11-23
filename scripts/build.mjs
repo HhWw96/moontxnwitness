@@ -46,6 +46,7 @@ for(const [name,folder]of Object.entries(configuredWindowCompiledCores))copyFile
 for (const name of configuredWindowWrappers) copyFileSync(resolve(root, 'cmd', name), resolve(output, name));
 const configuredWindowCapsuleRuntime = ['configured-window-v2-capsule.mjs'];
 for (const name of configuredWindowCapsuleRuntime) copyFileSync(resolve(root, 'cmd', name), resolve(output, name));
+copyFileSync(resolve(root, 'cmd/configured-predicate-window-v1.mjs'), resolve(output, 'configured-predicate-window-v1.mjs'));
 const structuredWindowRuntime = ['structured-window-verification-core.mjs', 'configured-window-v2-structured.mjs'];
 copyFileSync(resolve(root, 'cmd', structuredWindowRuntime[1]), resolve(output, structuredWindowRuntime[1]));
 for(const name of ['configured-v4.mjs','configured-session-v4.mjs','source-components-v4.mjs','sql-candidate-v1.mjs','sql-fetch-v1.mjs','sql-candidate-host-v1.mjs','sql-fetch-host-v1.mjs','configured-shared-v4.mjs','point-window-explanation-v4.mjs'])copyFileSync(resolve(root,'cmd',name),resolve(output,name));
