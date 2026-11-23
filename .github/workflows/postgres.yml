@@ -91,13 +91,14 @@ jobs:
         run: |
           configured_extra=()
           if [ -d artifacts/fastapi-users-upstream ]; then
-            configured_extra+=(--fastapi-users-checkout artifacts/fastapi-users-upstream --with-paged)
+            configured_extra+=(--fastapi-users-checkout artifacts/fastapi-users-upstream --fastapi-users-seed-campaign --with-paged)
           fi
           python -B scripts/configured-source-v2-postgres.py --dsn-env MTW_CONFIGURED_V2_DSN --owned-database --with-window --with-analysis --with-reduction --with-async --with-sqlalchemy "${configured_extra[@]}" --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}
           node scripts/configured-window-v2-check.mjs --core dist/sql-projection-v2-core.mjs --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/analysis-checks.json
           node scripts/configured-window-reduction-v2-check.mjs --core dist/sql-projection-v2-core.mjs --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/reduction/checks.json
           node scripts/configured-window-structured-test.mjs --runtime dist --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/structured-checks.json
           node scripts/configured-window-v2-capsule-test.mjs --runtime dist --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/capsule-checks.json
+          node examples/point-window-replay.mjs
       - name: Capture all ten configured model scenarios and verify the current build
         shell: bash
         env:

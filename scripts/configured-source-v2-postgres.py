@@ -572,7 +572,7 @@ def analysis_fixtures(control, connect_writer, config, policy, installation, out
     return cases
 
 
-def async_analysis_fixtures(control, connect_writer, connect_async_writer, config, policy, installation, output, key, fresh, other):
+def async_analysis_fixtures(control, connect_writer, connect_async_writer, config, policy, installation, output, key, fresh, other, *, with_reduction=False):
     import psycopg
 
     target = q(config.table.schema) + '.' + q(config.table.table)
@@ -602,28 +602,46 @@ def async_analysis_fixtures(control, connect_writer, connect_async_writer, confi
             cursor = await connection.execute(select, (fresh,))
             eq(await cursor.fetchall(), [])
 
-    async def skew(window, connect, isolation):
+    async def observe_constraint(connection):
+        rows = [await row(connection, identity) for identity in (key, other)]
+        return [result[2] for result in rows]
+
+    async def apply_rule(connection, identity, enabled):
+        if all(enabled):
+            cursor = await connection.execute(update, (False, identity))
+            eq(cursor.rowcount, 1)
+            return True
+        return False
+
+    async def skew(connect, isolation, *, noise=0):
         connections = [await connect(isolation), await connect(isolation)]
         try:
-            for connection in connections:
-                eq((await row(connection, key))[2] and (await row(connection, other))[2], True)
-            for connection, identity in zip(connections, (key, other)):
-                await connection.execute(update, (False, identity))
+            initial = [await observe_constraint(connection) for connection in connections]
+            eq(initial, [[True, True], [True, True]])
+            for connection, identity, observed in zip(connections, (key, other), initial):
+                eq(await apply_rule(connection, identity, observed), True)
             await connections[0].commit()
+            observations = {'committed': 2, 'initialEnabled': initial}
             if isolation == psycopg.IsolationLevel.REPEATABLE_READ:
                 await connections[1].commit()
-                return {'committed': 2}
-            try:
-                await connections[1].commit()
-            except psycopg.errors.SerializationFailure as error:
-                eq((error.sqlstate, error.diag.sqlstate), ('40001', '40001'))
-                await connections[1].rollback()
             else:
-                raise AssertionError('Expected PostgreSQL to abort the second Serializable writer')
-            eq((await row(connections[1], key))[2], False)
-            eq((await row(connections[1], other))[2], True)
-            await connections[1].commit()
-            return {'committed': 2, 'rollbackSqlstate': '40001', 'retryCommitted': True}
+                try:
+                    await connections[1].commit()
+                except psycopg.errors.SerializationFailure as error:
+                    eq((error.sqlstate, error.diag.sqlstate), ('40001', '40001'))
+                    await connections[1].rollback()
+                    observations['rollbackSqlstate'] = error.sqlstate
+                else:
+                    raise AssertionError('Expected PostgreSQL to abort the second Serializable writer')
+                retry = await observe_constraint(connections[1])
+                eq(retry, [False, True])
+                eq(await apply_rule(connections[1], other, retry), False)
+                await connections[1].commit()
+                observations.update(retryEnabled=retry, retryCommitted=True)
+            for _ in range(noise):
+                eq((await row(connections[0], key))[2], False)
+                await connections[0].commit()
+            return observations
         finally:
             for connection in connections:
                 await connection.close()
@@ -706,7 +724,9 @@ def async_analysis_fixtures(control, connect_writer, connect_async_writer, confi
         if expected_reason is not None:
             result['expectedReason'] = expected_reason
         if remaining is not None:
-            eq(control.execute('SELECT count(*) FROM ' + target + ' WHERE identity IN (%s,%s) AND enabled', (key, other)).fetchone()[0], remaining)
+            enabled = [control.execute(select, (identity,)).fetchone()[2] for identity in (key, other)]
+            eq(sum(enabled), remaining)
+            result['observations']['finalEnabled'] = enabled
         return result
 
     def reset():
@@ -716,9 +736,14 @@ def async_analysis_fixtures(control, connect_writer, connect_async_writer, confi
 
     reset()
     results = [run('async-crud', crud, 'compatible')]
-    results.append(run('async-rr-write-skew', lambda w, c: skew(w, c, psycopg.IsolationLevel.REPEATABLE_READ), 'refuted', remaining=0))
+    results.append(run('async-rr-write-skew', lambda w, c: skew(c, psycopg.IsolationLevel.REPEATABLE_READ), 'refuted', remaining=0))
+    if with_reduction:
+        reset()
+        noisy = run('async-rr-write-skew-noise', lambda w, c: skew(c, psycopg.IsolationLevel.REPEATABLE_READ, noise=3), 'refuted', remaining=0)
+        noisy.update(originalTransactions=5, expectedReducedTransactions=2)
+        results.append(noisy)
     reset()
-    aborted = run('async-serializable-retry', lambda w, c: skew(w, c, psycopg.IsolationLevel.SERIALIZABLE), 'unknown', remaining=1)
+    aborted = run('async-serializable-retry', lambda w, c: skew(c, psycopg.IsolationLevel.SERIALIZABLE), 'unknown', remaining=1)
     events = json.loads(json.loads(Path(aborted['bundle']).read_text('utf8'))['diagnosticTraceText'])['events']
     rollback, = [event for event in events if event['kind'] == 'rollback_ok']
     eq(rollback['commitResponse']['sqlstate'], '40001')
@@ -850,7 +875,7 @@ def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_
                     async_key = 903 if kind == 'int64' else '异步新键🙂' if kind == 'text' else uuid.UUID(int=903)
                     analysis.extend(async_analysis_fixtures(control, lambda: connect(user=writer,password=password),
                         lambda: connect_async(user=writer,password=password),config,policy,window.installation,
-                        work/('async-analysis-'+str(index)),key,async_key,slow_key))
+                        work/('async-analysis-'+str(index)),key,async_key,slow_key,with_reduction=with_reduction))
             records.append({'keyType':kind,'passed':True,'initialRows':1,'committedEffects':3,'analysisFixtures':analysis,
                 'sourceInstallationReceiptSha256':sha(work/('install-'+str(index))/'receipt-v2.json'),
                 'sourceInstallationLogSha256':sha(work/('install-'+str(index))/'source-install-v2.jsonl'),
