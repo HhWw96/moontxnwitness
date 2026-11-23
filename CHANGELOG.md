@@ -1,3 +1,8 @@
+# 0.6.9
+
+- Interleave two pinned sources for the full A/B/C PostgreSQL capture benchmark and bind every matched pair to its capture and result hashes.
+- Independently replay the original sources and report window P95, transaction P95, output size, RSS and the per-batch controls.
+
 # 0.6.8
 
 - Run five independent PostgreSQL capture and replay rounds from the portable package. Retain a verified five-to-two write-skew reduction, a separate Serializable control and the actual 40001 rollback and retry in each round.

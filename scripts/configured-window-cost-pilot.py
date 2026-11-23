@@ -16,7 +16,8 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'integrations' / 'python'))
+PRODUCER_ROOT = Path(os.environ.get('MTW_COST_PRODUCER_ROOT', str(ROOT))).resolve()
+sys.path.insert(0, str(PRODUCER_ROOT / 'integrations' / 'python'))
 
 import psycopg
 from psycopg import sql
@@ -25,6 +26,7 @@ from psycopg.conninfo import conninfo_to_dict
 from moontxnwitness_capture.configured_source_v2 import SourceInstallPolicy, install_configured_source_v2
 from moontxnwitness_capture.configured_sql_v2 import ColumnConfig, PrimaryKeyConfigV2, SQLCaptureConfigV2, TableConfigV2
 from moontxnwitness_capture.configured_window_v2 import ConfiguredCaptureWindowV2, SourceInputsV2
+from moontxnwitness_capture.configured_point_projection_v2 import PointProjectionOptionsV2
 
 
 def percentile(samples, fraction):
@@ -58,7 +60,7 @@ def peak_process_rss():
 
 
 def write_cell(output, options, schema, role, writer, password, phase, keys, keys_for_transactions,
-               *, workers=1, coordinated=False, seal_profile=None):
+               *, workers=1, coordinated=False, seal_profile=None, writer_proof_profile=None):
     path = output / f'{schema}-{phase}'
     path.mkdir()
     schema_name = f'{schema}_{phase.lower()}'
@@ -88,10 +90,12 @@ def write_cell(output, options, schema, role, writer, password, phase, keys, key
 
         start = time.perf_counter_ns()
         if installation is not None and phase == 'C':
-            sealing = {} if seal_profile is None else {'seal_profile': seal_profile}
+            capture = {} if seal_profile is None else {'seal_profile': seal_profile}
+            if writer_proof_profile is not None:
+                capture['projection_options'] = PointProjectionOptionsV2(config, writer_proof_profile=writer_proof_profile)
             window = ConfiguredCaptureWindowV2(path / 'capture', config, control, policy,
                 SourceInputsV2.from_directory(installation), opt_in=True, snapshot_profile='paged-v1',
-                **sealing)
+                **capture)
         acquire = window.psycopg_factory(connect) if window is not None else connect
         def execute(keys_for_worker):
             samples = []
@@ -157,7 +161,8 @@ FORMAL_LOADS = (
 )
 
 
-def formal_batches(report, output, options, run_id, role, writer, password, warmups, samples, seal_profile):
+def formal_batches(report, output, options, run_id, role, writer, password, warmups, samples,
+                   seal_profile, writer_proof_profile):
     report['warmupWindowsPerPhase'] = warmups
     report['measuredWindowsPerPhase'] = samples
     for workload, keys, workers, transactions in FORMAL_LOADS:
@@ -174,7 +179,7 @@ def formal_batches(report, output, options, run_id, role, writer, password, warm
                     for phase in order:
                         cells[phase] = write_cell(output, options, schema, role, writer, password,
                             phase, keys, transactions, workers=workers, coordinated=True,
-                            seal_profile=seal_profile)
+                            seal_profile=seal_profile, writer_proof_profile=writer_proof_profile)
                     if len({cell['finalBusinessSha256'] for cell in cells.values()}) != 1:
                         raise ValueError('Business outcomes differ across phases')
             medians = {phase: statistics.median(window[phase]['windowNs'] for window in batch['windows'])
@@ -199,6 +204,8 @@ def main():
     cli.add_argument('--exclusive-host', action='store_true', help='Confirm that the formal run has exclusive use of the benchmark host')
     cli.add_argument('--seal-profile', choices=('original-v2', 'streamed-v1'),
                      help='Select a producer seal profile when supported by the tested source')
+    cli.add_argument('--writer-proof-profile', choices=('returning-v1',),
+                     help='Explicitly use the synchronous RETURNING client writer proof')
     args = cli.parse_args()
     if not args.owned_database or not os.environ.get(args.dsn_env):
         cli.error('An explicit disposable database and populated DSN variable are required')
@@ -212,16 +219,20 @@ def main():
     run_id = secrets.token_hex(4)
     role, writer, password = 'mtw_cost_owner_' + run_id, 'mtw_cost_writer_' + run_id, secrets.token_hex(20)
     formal_shape = args.formal or args.formal_smoke
+    producer = Path(sys.modules[ConfiguredCaptureWindowV2.__module__].__file__).parent
+    producer_hashes = {name: hashlib.sha256((producer / name).read_bytes()).hexdigest()
+        for name in ('configured_window_v2.py', 'configured_point_capture_v2.py', 'configured_point_projection_v2.py')}
     report = {'format': ('configured-source-window-cost/v1' if formal_shape
                          else 'configured-source-window-cost-pilot/v1'), 'passed': False,
               'formalPerformanceMeasurement': False, 'actualDatabaseExecution': False,
               'keys': args.keys, 'transactionsPerPhase': args.transactions, 'batches': [],
               'sealProfileRequested': args.seal_profile,
+              'writerProofProfileRequested': args.writer_proof_profile,
               'environment': {'system': platform.system(), 'machine': platform.machine(),
                               'python': platform.python_version(), 'psycopg': psycopg.__version__},
               'harnessSha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-              'producerSha256': hashlib.sha256(
-                  Path(sys.modules[ConfiguredCaptureWindowV2.__module__].__file__).read_bytes()).hexdigest()}
+              'producerFilesSha256': producer_hashes,
+              'producerSha256': hashlib.sha256(json.dumps(producer_hashes,sort_keys=True).encode()).hexdigest()}
     try:
         with psycopg.connect(**options, autocommit=True) as admin:
             if admin.info.server_version != 180006:
@@ -235,13 +246,15 @@ def main():
             report.pop('keys')
             report['transactionsPerPhase'] = 24
             formal_batches(report, output, options, run_id, role, writer, password,
-                           5 if args.formal else 0, 30 if args.formal else 1, args.seal_profile)
+                           5 if args.formal else 0, 30 if args.formal else 1,
+                           args.seal_profile, args.writer_proof_profile)
         for index, order in enumerate(() if formal_shape else ('ABC', 'BCA', 'CAB')):
             batch = {'order': order, 'cells': {}}
             report['batches'].append(batch)
             for phase in order:
                 batch['cells'][phase] = write_cell(output, options, f'mtw_cost_{run_id}_{index}',
-                    role, writer, password, phase, args.keys, workload, seal_profile=args.seal_profile)
+                    role, writer, password, phase, args.keys, workload, seal_profile=args.seal_profile,
+                    writer_proof_profile=args.writer_proof_profile)
             a, b, c = (batch['cells'][phase] for phase in 'ABC')
             if len({a['finalBusinessSha256'], b['finalBusinessSha256'], c['finalBusinessSha256']}) != 1:
                 raise ValueError('Business outcomes differ across phases')

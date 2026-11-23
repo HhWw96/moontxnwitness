@@ -37,6 +37,29 @@ node scripts/compare-configured-window-cost.mjs --baseline BASELINE_RUN --candid
 Use `--seal-profile streamed-v1` in the candidate run to select the
 experimental writer. The baseline can use its default writer.
 
+### Paired comparison for the same-statement writer
+
+Use two clean source checkouts and one disposable PostgreSQL 18.6 database.
+The coordinator alternates which revision runs first for each matched set.
+It retains the full A/B/C schedule, exact source commits and input digests.
+Both revisions use the original seal. The candidate explicitly selects
+`returning-v1` and must supply one same-statement proof per committed write.
+
+```sh
+python -B scripts/paired-configured-window-cost.py --dsn-env MTW_TEST_DSN --owned-database --baseline PUBLISHED_SOURCE --candidate EXPERIMENT_SOURCE --formal --exclusive-host --output PAIRED_RUN
+node scripts/configured-window-cost-pilot-verify.mjs --core MATCHED_CORE --receipt PAIRED_RUN/baseline/receipt.json --output PAIRED_RUN/baseline/verified.json
+node scripts/configured-window-cost-pilot-verify.mjs --core MATCHED_CORE --receipt PAIRED_RUN/candidate/receipt.json --writer-proof-profile returning-v1 --output PAIRED_RUN/candidate/verified.json
+node scripts/compare-configured-window-cost.mjs --baseline PAIRED_RUN/baseline --candidate PAIRED_RUN/candidate --output comparison.json
+```
+
+Use the same independently compiled MoonBit core from the candidate source
+for both replay passes. Omit `--formal --exclusive-host` to rehearse the
+schedule with one window per order. The comparison requires full replayed
+samples and reports both window P95 and transaction P95. The experimental
+profile qualifies for recommendation only when full-window throughput is at
+least 1.5 times baseline, transaction P95 falls by at least 30%, and all
+control P95 changes stay within the greater of 10% or 2 ms.
+
 ## Historical SDK baseline
 
 The baseline uses v0.4.1 source commit
