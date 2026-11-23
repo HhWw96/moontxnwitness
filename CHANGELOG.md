@@ -1,3 +1,8 @@
+# 0.7.1
+
+- Publish a smaller point-window verification ZIP from the same tested runtime as the portable distribution.
+- Add the explicit point-gate Action profile with its own SHA-256 pin. Check complete verdict parity and cold start on both supported CI platforms.
+
 # 0.7.0
 
 - Run the same point-window gate on every freshly captured compatible, refuted and incomplete window during the portable PostgreSQL demo.

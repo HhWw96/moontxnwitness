@@ -20,6 +20,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+from package_archive import POINT_GATE_FILES, POINT_GATE_MAX_BYTES, release_archive_names
 
 REPOSITORY = 'HhWw96/moontxnwitness'
 WORKFLOW = '.github/workflows/ci.yml'
@@ -354,7 +355,9 @@ def validate_archive(path, artifact, run, version, source_sha, output, source_tr
     review = output.parent / 'archive-review'
     review.mkdir(exist_ok=False)
     stem = 'MoonTxnWitness-v' + version
-    asset_names = [stem + '-source.zip', stem + '-portable.zip', stem + '-SHA256SUMS.txt']
+    archive_names = release_archive_names(version)
+    sums_name = stem + '-SHA256SUMS.txt'
+    asset_names = [*archive_names, sums_name]
     with zipfile.ZipFile(path) as archive:
         rows = zip_inventory(archive)
         index_raw = read_member(archive, rows, 'current-run-index.json', 8 * 1024 ** 2)
@@ -397,19 +400,38 @@ def validate_archive(path, artifact, run, version, source_sha, output, source_tr
             if name in tested:
                 require(row['sha256'] == tested[name], 'Indexed tested source/runtime binding differs: ' + name)
         archives = package.get('archives')
-        require(isinstance(archives, list) and len(archives) == 2 and {record.get('file') for record in archives} == set(asset_names[:2]), 'Exactly two current-version archive targets required')
+        require(isinstance(archives, list) and len(archives) == len(archive_names)
+                and {record.get('file') for record in archives} == set(archive_names), 'Current-version archive targets differ')
+        if len(archive_names) > 2:
+            gate = package.get('pointGateConsumer', {})
+            require(isinstance(gate, dict) and gate.get('passed') is True and gate.get('sameVerdicts') is True
+                    and isinstance(gate.get('cases'), list) and len(gate['cases']) == 6,
+                    'Fresh point gate equivalence receipt is missing')
+            require(bindings.get('artifacts/' + archive_names[-1], {}).get('bytes', POINT_GATE_MAX_BYTES + 1)
+                    <= POINT_GATE_MAX_BYTES, 'Point gate archive exceeds the release bound')
         for record in archives:
             require(set(record) == {'file', 'bytes', 'sha256', 'files'} and type(record['files']) is int and record['files'] > 0, 'Invalid archive receipt')
             member = 'artifacts/' + record['file']
             require(member in bindings and record['bytes'] == bindings[member]['bytes'] and record['sha256'] == bindings[member]['sha256'], 'Archive differs from fresh-consumer receipt')
-        sums = read_member(archive, rows, 'artifacts/' + asset_names[2], 4096)
-        require(sums == ''.join(record['sha256'] + '  ' + record['file'] + '\n' for record in archives).encode(), 'SHA256SUMS must bind exactly both current targets')
+        sums = read_member(archive, rows, 'artifacts/' + sums_name, 4096)
+        require(sums == ''.join(record['sha256'] + '  ' + record['file'] + '\n' for record in archives).encode(), 'SHA256SUMS must bind exactly the current archive targets')
         for name in asset_names:
             with archive.open(rows['artifacts/' + name]) as source, (review / name).open('xb') as target:
                 for chunk in iter(lambda: source.read(1024 * 1024), b''):
                     target.write(chunk)
         for record in archives:
-            validate_nested(review / record['file'], 'source' if record['file'].endswith('-source.zip') else 'portable', version, manifest, tested, bindings, record, source_tree)
+            if record['file'].endswith('-point-gate.zip'):
+                with zipfile.ZipFile(review / record['file']) as gate_zip, zipfile.ZipFile(review / (stem + '-portable.zip')) as portable_zip:
+                    thin = zip_inventory(gate_zip)
+                    expected = {stem + '/' + file for file in POINT_GATE_FILES}
+                    require(set(thin) == expected and record['files'] == len(expected), 'Point gate dependency inventory differs')
+                    for name, member in thin.items():
+                        full = portable_zip.getinfo(name)
+                        require(member.file_size == full.file_size
+                                and member_digest(gate_zip, member) == member_digest(portable_zip, full),
+                                'Point gate differs from validated portable bytes: ' + name)
+            else:
+                validate_nested(review / record['file'], 'source' if record['file'].endswith('-source.zip') else 'portable', version, manifest, tested, bindings, record, source_tree)
         output.mkdir(exist_ok=False)
         for name in asset_names:
             (review / name).rename(output / name)

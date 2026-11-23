@@ -8,7 +8,7 @@ import time
 import zipfile
 from evidence_json import load_receipt
 from pathlib import Path
-from package_archive import sha256
+from package_archive import release_archive_names, sha256
 from publication_ci import ci_details_ready
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -578,7 +578,7 @@ def validate_scoped_acceptance(acceptance, manifest):
     if tuple(map(int, VERSION.split('.'))) >= (0, 3, 7):
         validate_configured037_receipts(summary, package)
 
-    expected_names = {'MoonTxnWitness-v' + VERSION + '-' + kind + '.zip' for kind in ('source', 'portable')}
+    expected_names = set(release_archive_names(VERSION))
     assert {item['file'] for item in package['archives']} == expected_names
     for item in package['archives']:
         path = ROOT / 'artifacts' / item['file']
@@ -891,7 +891,7 @@ def publish():
             output.write('\nFull-report local comparison with v0.0.6: graph %.2fx, bounded search %.2fx, reduction %.2fx; graph peak RSS %.2f%% lower (group geometric means).\n' % (groups['graph']['geometricMeanSpeedup'], groups['search']['geometricMeanSpeedup'], groups['reduction']['geometricMeanSpeedup'], (1-groups['graph']['geometricMeanPeakMemoryRatio'])*100))
             output.write('Actual PostgreSQL 18: 20 RR write-skew rounds + 20 Serializable abort/fresh-retry rounds on Windows and independent Linux CI, with 2-transaction reduction and three replay capsules.\n')
             output.write('See docs/performance.md and docs/project-brief.md for algorithms, reproducible examples, tests and installation.\n')
-    assets = [str(ROOT / ('artifacts/MoonTxnWitness-v' + VERSION + suffix)) for suffix in ('-source.zip', '-portable.zip', '-SHA256SUMS.txt')]
+    assets = [str(ROOT / 'artifacts' / name) for name in (*release_archive_names(VERSION), 'MoonTxnWitness-v' + VERSION + '-SHA256SUMS.txt')]
     run(['gh', 'release', 'create', tag, '--repo', MODULE, '--target', sha, '--title', 'MoonTxnWitness ' + tag, '--notes-file', str(notes), *assets], timeout=900)
     print('Public GitHub Release created: ' + tag, flush=True)
     run([sys.executable, 'scripts/verify_publication.py', VERSION], timeout=900, capture=False)

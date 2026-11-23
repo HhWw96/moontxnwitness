@@ -96,22 +96,25 @@ For exact offline replay of the new capture, use `new-fixtures` as the
 Have your capture job write an analysis capsule and keep the configuration,
 policy, budget and expected archive digest under CI control. The GitHub Action
 runs with Python 3.12 and Node.js 24 in the calling job. Pin the Action to the
-commit of the release you reviewed. This example uses the Action from v0.6.5
-with the already published v0.6.4 portable archive.
+reviewed release. Record the SHA-256 for the selected ZIP from that release's
+checksum manifest in your repository variable before running the job.
 
 ```yaml
 - name: Verify the captured window
-  uses: HhWw96/moontxnwitness/.github/actions/check-point-window@v0.6.5
+  uses: HhWw96/moontxnwitness/.github/actions/check-point-window@v0.7.1
   with:
-    release-version: '0.6.4'
-    portable-sha256: 53483a92b1449667914456a7999ce28ad3406e1389467b86661d736e7e7bfdfc
+    release-version: '0.7.1'
+    archive-profile: point-gate
+    point-gate-sha256: ${{ vars.MTW_POINT_GATE_SHA256 }}
     config: ci/point-window-config.json
     policy: ci/point-window-policy.json
     capsule: artifacts/database-window.capsule.json
     max-point-checks: '1000000'
 ```
 
-The Action checks the exact archive SHA-256 before loading the verifier.
+The Action checks the selected archive's exact SHA-256 before loading the verifier.
+The default `portable` profile continues to use `portable-sha256`. The
+`point-gate` profile uses `point-gate-sha256` and runs the same verifier bytes.
 Its `exit-code` and `verdict` outputs retain the gate result for subsequent
 steps. The calling job fails for exit codes 1 and 2. The verifier also runs
 directly from an archive previously extracted to `vendor/moontxnwitness`.
@@ -149,7 +152,7 @@ requested registry version. The JavaScript runtime comes from an extracted
 portable archive. Set `--module-version` to the matching version.
 
 ```sh
-node scripts/verify-point-window-moon-consumer.mjs --runtime dist --module-version 0.6.4 --output new-moon-consumer
+node scripts/verify-point-window-moon-consumer.mjs --runtime dist --module-version 0.7.1 --output new-moon-consumer
 ```
 
 The consumer compares the normalized history digest, `serializable` decision

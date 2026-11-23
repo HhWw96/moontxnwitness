@@ -4,6 +4,21 @@ import zipfile
 from pathlib import Path
 
 CHUNK_BYTES = 64 * 1024
+POINT_GATE_MAX_BYTES = 5 * 1024 * 1024
+POINT_GATE_FILES = (
+    'LICENSE', 'THIRD_PARTY.md', 'dist/THIRD_PARTY_NOTICES.txt',
+    'examples/check-point-window.mjs', 'dist/configured-window-v2-capsule.mjs',
+    'dist/configured-window-v2-standalone.mjs', 'dist/configured-window-v2-host.mjs',
+    'dist/sql-projection-v2-core.mjs',
+)
+
+
+def release_archive_names(version):
+    prefix = 'MoonTxnWitness-v' + version
+    names = [prefix + '-source.zip', prefix + '-portable.zip']
+    if tuple(map(int, version.split('.'))) >= (0, 7, 1):
+        names.append(prefix + '-point-gate.zip')
+    return names
 
 
 def sha256(path):

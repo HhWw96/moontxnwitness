@@ -11,6 +11,7 @@ from pathlib import Path
 import shutil
 import subprocess
 from import_postgres_ci_bundle import validated_ci_reproduction_files
+from package_archive import release_archive_names
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -55,7 +56,7 @@ def stage(root=ROOT):
                     and (folder == 'dist' or name in public)):
                 selected.add(name)
     name = 'MoonTxnWitness-v' + version
-    for filename in (name + '-source.zip', name + '-portable.zip', name + '-SHA256SUMS.txt', name + '-release.json', 'release-index.json'):
+    for filename in (*release_archive_names(version), name + '-SHA256SUMS.txt', name + '-release.json', 'release-index.json'):
         if (root / 'artifacts' / filename).is_file():
             selected.add('artifacts/' + filename)
     rows = []
