@@ -44,6 +44,7 @@ const configuredWindowCompiledCores = {
 };
 for(const [name,folder]of Object.entries(configuredWindowCompiledCores))copyFileSync(resolve(root,'_build/js/release/build',folder,folder+'.js'),resolve(output,name));
 for (const name of configuredWindowWrappers) copyFileSync(resolve(root, 'cmd', name), resolve(output, name));
+copyFileSync(resolve(root, 'cmd/configured-predicate-admission-v1.mjs'), resolve(output, 'configured-predicate-admission-v1.mjs'));
 const configuredWindowCapsuleRuntime = ['configured-window-v2-capsule.mjs'];
 for (const name of configuredWindowCapsuleRuntime) copyFileSync(resolve(root, 'cmd', name), resolve(output, name));
 copyFileSync(resolve(root, 'cmd/configured-predicate-window-v1.mjs'), resolve(output, 'configured-predicate-window-v1.mjs'));

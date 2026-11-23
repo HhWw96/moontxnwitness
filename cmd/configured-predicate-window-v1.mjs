@@ -1,6 +1,6 @@
 // PostgreSQL observation admission and relation analysis independently execute in MoonBit.
 import {createHash} from 'node:crypto';
-import {admitConfiguredPredicateWindowV1} from './configured-window-v2-standalone.mjs';
+import {admitConfiguredPredicateWindowV1} from './configured-predicate-admission-v1.mjs';
 import {classifyRelationPredicateV4} from './relation-v4.mjs';
 import {classifyRelationModelsV4} from './relation-models-v4.mjs';
 import {reduceRelationCategoryV4} from './relation-reduction-v4.mjs';
