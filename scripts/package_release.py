@@ -850,6 +850,14 @@ for kind in ("portable", "source"):
         assert point['retry']['status'] == 'unknown' and point['retry']['sqlstate'] == '40001'
         assert point['orderedControl']['status'] == 'checked-compatible'
         checks.append(kind + ' captured PostgreSQL point-window analysis, reduction and repair replay')
+    if tuple(map(int, VERSION.split('.'))) >= (0, 7, 5):
+        predicate = json.loads(run([NODE, 'examples/predicate-window-replay.mjs'], consumer))
+        assert predicate['passed'] and predicate['offlineReplay']
+        before, ordered, retry = predicate['cases']
+        assert [row['gateExit'] for row in (before, ordered, retry)] == [1, 0, 2]
+        assert before['witness']['oneMinimal'] and before['witness']['reducedTransactions'] == 2
+        assert retry['rawExecution']['sqlstates'] == ['40001']
+        checks.append(kind + ' native PostgreSQL predicate analysis, reduction and offline rollback replay')
     if (consumer / 'examples/check-point-window.mjs').is_file():
         gate = json.loads(run([NODE, 'scripts/point-window-ci-test.mjs'], consumer))
         assert gate['passed'] and [c['code'] for c in gate['cases']] == [0, 1, 2, 2, 2, 2]

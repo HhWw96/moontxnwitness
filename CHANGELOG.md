@@ -1,3 +1,8 @@
+# 0.7.5
+
+- Ship digest-checked original PostgreSQL reservation inputs for offline predicate analysis, source-closed reduction and repair replay.
+- Verify point and predicate examples from fresh release consumers and document the measured capture profile and current CI pins.
+
 # 0.7.4
 
 - Add an explicit 256-row boundary snapshot profile with independent MoonBit verification and the original native byte limit.

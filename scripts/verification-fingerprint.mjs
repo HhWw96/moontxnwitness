@@ -74,6 +74,10 @@ export function verificationFingerprint(root,{includeDist=true}={}) {
     visit('examples/point-window-replay-data',true);
   }
   if (existsSync(resolve(root,'examples/check-point-window.mjs'))) names.push('examples/check-point-window.mjs');
+  if (existsSync(resolve(root,'examples/predicate-window-replay.mjs'))) {
+    names.push('examples/predicate-window-replay.mjs','examples/check-predicate-window.mjs');
+    visit('examples/predicate-window-replay-data',true);
+  }
   const result=Object.fromEntries([...new Set(names)].sort().map(name=>[name,
     createHash('sha256').update(readFileSync(resolve(root,name))).digest('hex')]));
   for(const[name,record]of Object.entries(pinned))if(!name.startsWith('artifacts/')&&result[name]!==record.sha256)throw Error('Frozen input differs from pinned bytes: '+name);

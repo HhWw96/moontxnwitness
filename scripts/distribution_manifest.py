@@ -657,6 +657,13 @@ def select_distribution_files(root, public_names, tested_files, version):
                      'examples/check-predicate-window.mjs', 'dist/configured-predicate-window-v1.mjs'):
             require(name, 'live predicate-window capture and independently replayable evidence')
             portable.add(name)
+    if tuple(map(int, version.split('.'))) >= (0, 7, 5):
+        predicate_replay = ('examples/predicate-window-replay.mjs',) + tuple(
+            'examples/predicate-window-replay-data/' + name
+            for name in ('manifest.json', 'before.json.gz', 'ordered.json.gz', 'retry.json.gz'))
+        for name in predicate_replay:
+            require(name, 'offline PostgreSQL predicate replay and frozen input digests')
+            portable.add(name)
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         portable.update(NATIVE038_PORTABLE_INPUTS)
     if tuple(map(int, version.split('.'))) >= (0, 5, 1):

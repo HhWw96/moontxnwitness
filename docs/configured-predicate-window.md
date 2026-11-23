@@ -44,3 +44,19 @@ node examples/check-predicate-window.mjs --capsule reservation-run/database/roun
 ```
 
 The command replays the capsule offline and uses exits `0` for compatible, `1` for verified refutation and `2` for unknown or invalid evidence. The SDK exports `analyzeConfiguredPredicateWindowV1`, `reduceConfiguredPredicateWindowV1`, `makeConfiguredPredicateCapsuleV1` and `replayConfiguredPredicateCapsuleV1`. A reduction capsule also binds the original window and is replayed with the caller's explicit configuration, policy and chosen budgets.
+
+## Replay in a clean directory
+
+The portable archive contains the original PostgreSQL input from one round of
+the five-round campaign. No database or external service is needed.
+
+```sh
+node examples/predicate-window-replay.mjs --output reservation-replay.json
+```
+
+The report shows the original range SQL, parameters, commit count and SQLSTATE
+alongside the verified model judgment. In the RR run, both inserts committed
+without a database error. Replaying the original snapshots and writes
+identifies the two predicate edges, proves the refutation and checks the
+minimal reduction. The same report records the compatible ordered control and
+the inconclusive retry window with its original `40001`.
