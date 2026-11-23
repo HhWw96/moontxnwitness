@@ -110,6 +110,8 @@ jobs:
           compression-level: 6
       - name: Verify declared source profiles and canonical model results
         run: node scripts/feature-matrix-v4.mjs --output artifacts/feature-matrix-v4
+      - name: Check captured PostgreSQL cases through the consumer CI entry
+        run: node scripts/point-window-ci-test.mjs
       - name: Compare original relation programs with the independent interpreter
         id: relation_reference
         if: runner.os == 'Linux'

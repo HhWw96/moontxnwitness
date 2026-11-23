@@ -844,6 +844,10 @@ for kind in ("portable", "source"):
         assert point['retry']['status'] == 'unknown' and point['retry']['sqlstate'] == '40001'
         assert point['orderedControl']['status'] == 'checked-compatible'
         checks.append(kind + ' captured PostgreSQL point-window analysis, reduction and repair replay')
+    if (consumer / 'examples/check-point-window.mjs').is_file():
+        gate = json.loads(run([NODE, 'scripts/point-window-ci-test.mjs'], consumer))
+        assert gate['passed'] and [c['code'] for c in gate['cases']] == [0, 1, 2, 2, 2, 2]
+        checks.append(kind + ' PostgreSQL point-window CI gate passes verified repair and blocks counterexamples')
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 0):
         assert demo['profile'] == 'balanced' and demo['reportSchemaVersion'] == 2
     assert all((consumer / demo["outputDirectory"] / name).is_file() for name in demo["files"])
