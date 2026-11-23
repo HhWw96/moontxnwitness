@@ -28,3 +28,19 @@ console.log(report.status, report.coverageComplete);
 MoonBit replays the installation and closing ledgers, checks native result bytes and delivered rows, then reconstructs each complete range from the original PostgreSQL snapshot and prior writes in the same transaction. An external write, unsupported statement, failed or unconfirmed transaction, missing observation or exhausted budget keeps the result unknown. Admit reports certify coverage of the supplied capture within this scope. The PostgreSQL source itself remains a caller trust boundary.
 
 Run the real fixture with `python -B scripts/predicate-window-postgres.py --owned-database --dsn-env MTW_PREDICATE_DSN --output new-range-capture` and replay it with `node scripts/verify-predicate-window.mjs --core dist/sql-projection-v2-core.mjs --input new-range-capture --output admission.json`.
+
+## Reproduce the reservation case
+
+From the portable distribution, use a dedicated PostgreSQL 18.6 test database. The Python environment needs psycopg 3.3.6 and the pinned Python requirements supplied in the package. Set `MTW_PREDICATE_DSN` to the disposable database. Its admin role needs to create the fixture schemas and roles.
+
+```sh
+node scripts/postgres-predicate-window-demo.mjs --dsn-env MTW_PREDICATE_DSN --output reservation-run
+```
+
+Each of five rounds checks three independent histories. Repeatable Read commits two reservations after both transactions read the same empty interval. The source-backed witness has two predicate anti-dependencies and zero item anti-dependencies. The reducer checks a five-to-two transaction, source-closed, one-minimal reproduction. The ordered Serializable run accepts one reservation and checks compatible. Concurrent Serializable returns SQLSTATE `40001`; the retry sees the committed reservation. The original retry window returns unknown under this contract because it includes a failed transaction.
+
+```sh
+node examples/check-predicate-window.mjs --capsule reservation-run/database/round-1/before/analysis-capsule.json --config reservation-run/database/round-1/before/config.json --policy reservation-run/database/round-1/before/policy.json
+```
+
+The command replays the capsule offline and uses exits `0` for compatible, `1` for verified refutation and `2` for unknown or invalid evidence. The SDK exports `analyzeConfiguredPredicateWindowV1`, `reduceConfiguredPredicateWindowV1`, `makeConfiguredPredicateCapsuleV1` and `replayConfiguredPredicateCapsuleV1`. A reduction capsule also binds the original window and is replayed with the caller's explicit configuration, policy and chosen budgets.

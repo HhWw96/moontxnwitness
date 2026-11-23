@@ -1,3 +1,9 @@
+# 0.7.3
+
+- Analyze admitted PostgreSQL ranges for serializability and distinguish predicate G2 from item-level G2.
+- Reduce a real reservation counterexample from five transactions to two and replay its original source and reduced witness with independent budgets.
+- Replay five rounds of Repeatable Read write skew, an ordered Serializable control and a real 40001 rollback and retry.
+
 # 0.7.2
 
 - Capture full native PostgreSQL range reads on an int64 primary key in a dedicated synchronous transaction.
