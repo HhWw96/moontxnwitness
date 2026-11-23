@@ -652,6 +652,11 @@ def select_distribution_files(root, public_names, tested_files, version):
                      'scripts/stage-point-window-replay.mjs'):
             require(name, 'live point-window portable reproduction')
             portable.add(name)
+    if tuple(map(int, version.split('.'))) >= (0, 7, 3):
+        for name in ('scripts/postgres-predicate-window-demo.mjs', 'scripts/predicate-window-postgres.py',
+                     'examples/check-predicate-window.mjs', 'dist/configured-predicate-window-v1.mjs'):
+            require(name, 'live predicate-window capture and independently replayable evidence')
+            portable.add(name)
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         portable.update(NATIVE038_PORTABLE_INPUTS)
     if tuple(map(int, version.split('.'))) >= (0, 5, 1):
