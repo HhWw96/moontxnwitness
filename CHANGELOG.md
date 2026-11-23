@@ -1,3 +1,8 @@
+# 0.6.8
+
+- Run five independent PostgreSQL capture and replay rounds from the portable package. Retain a verified five-to-two write-skew reduction, a separate Serializable control and the actual 40001 rollback and retry in each round.
+- Accept independently staged fixtures and an explicit runtime directory in the offline replay command.
+
 # 0.6.7
 
 - Stage independently replayable gate inputs from the original FastAPI Users SQLAlchemy CRUD campaign.
