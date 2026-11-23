@@ -8,6 +8,7 @@ import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+from package_archive import POINT_GATE_MAX_BYTES, release_archive_names
 from publication_download import MAX_MANIFEST_BYTES, download_file, extract_zip, sha256_file
 from publication_ci import wait_for_successful_run_list
 
@@ -61,18 +62,29 @@ try:
     prefix = REPOSITORY + '/releases/download/v' + VERSION + '/'
     sums = download(prefix + NAME + '-SHA256SUMS.txt', 'SHA256SUMS', max_bytes=MAX_MANIFEST_BYTES)
     assets = []
+    remaining = set(release_archive_names(VERSION))
     for line in sums.read_text(encoding='utf-8').splitlines():
         expected, name = line.split('  ', 1)
         assert re.fullmatch(r'[0-9a-f]{64}', expected) and Path(name).name == name
-        assert name in {NAME + '-source.zip', NAME + '-portable.zip'}
+        assert name in remaining
+        remaining.remove(name)
         path = download(prefix + name, name, expected_sha256=expected)
         assets.append({'name': name, 'url': prefix + name, 'bytes': path.stat().st_size, 'sha256': expected, 'anonymousDownload': True})
-    assert len(assets) == 2
+    assert not remaining
     RECEIPT['github']['assets'] = assets
     destination = WORK / 'portable'
     extraction = extract_zip(WORK / (NAME + '-portable.zip'), destination)
     RECEIPT['github']['portableExtraction'] = {key: extraction[key] for key in ('entries', 'files', 'uncompressedBytes')}
     portable = destination / NAME
+    gate_zip = WORK / (NAME + '-point-gate.zip')
+    if gate_zip.is_file():
+        assert gate_zip.stat().st_size <= POINT_GATE_MAX_BYTES
+        gate_root = WORK / 'point-gate'
+        extract_zip(gate_zip, gate_root)
+        compared = json.loads(run([NODE, 'scripts/point-window-ci-test.mjs', '--candidate-gate',
+                                   str(gate_root / NAME / 'examples/check-point-window.mjs')], portable))
+        assert compared['passed'] and compared['sameVerdicts'] and len(compared['cases']) == 6
+        RECEIPT['github']['pointGateComparison'] = compared
     assert run([NODE, 'dist/moontxnwitness.mjs', '--version'], portable).strip() == VERSION
     assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'check', 'examples/write-skew.json', '--format', 'json'], portable, 1))['status'] == 'violation'
     demo = json.loads(run([NODE, 'dist/demo.mjs', '--json'], portable))

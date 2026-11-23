@@ -37,7 +37,7 @@ def run_node(script, args, work, env):
     return json.loads(result.stdout)
 
 
-def verify(version, portable_digest, registry_digest, output):
+def verify(version, portable_digest, registry_digest, output, point_gate_digest=None):
     output = output.resolve()
     output.mkdir()
     work = output / "work"
@@ -62,10 +62,22 @@ def verify(version, portable_digest, registry_digest, output):
     stages["extractSeconds"] = time.monotonic() - start
     public = package / f"MoonTxnWitness-v{version}"
     env = {**os.environ, "TMPDIR": str(work), "TEMP": str(work), "TMP": str(work)}
+    gate_arguments = []
+    if point_gate_digest:
+        thin = output / "point-gate.zip"
+        start = time.monotonic()
+        ACTION.download_point_gate(version, point_gate_digest, thin)
+        stages["downloadPointGateSeconds"] = time.monotonic() - start
+        start = time.monotonic()
+        candidate = ACTION.unpack_runtime(thin, output / "point-gate", version)
+        stages["extractPointGateSeconds"] = time.monotonic() - start
+        gate_arguments = ["--candidate-gate", str(candidate)]
     start = time.monotonic()
-    gate = run_node(public / GATE_TEST, [], work, env)
+    gate = run_node(public / GATE_TEST, gate_arguments, work, env)
     if gate.get("passed") is not True or {row["name"]: row["code"] for row in gate["cases"]} != CASES:
         raise ValueError("Public package returned unexpected gate results")
+    if point_gate_digest and gate.get("sameVerdicts") is not True:
+        raise ValueError("Point gate and full portable verdicts differ")
     stages["gateSeconds"] = time.monotonic() - start
     start = time.monotonic()
     moon = run_node(public / MOON_CHECK, [
@@ -83,6 +95,9 @@ def verify(version, portable_digest, registry_digest, output):
         "stages": {name: round(value, 3) for name, value in stages.items()},
         "gate": gate["cases"], "compared": moon["compared"],
     }
+    if point_gate_digest:
+        receipt.update(pointGateSha256=point_gate_digest, pointGateBytes=thin.stat().st_size,
+                       coldStartMs=gate["coldStartMs"], sameVerdicts=True)
     (output / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(receipt, ensure_ascii=True))
 
@@ -92,14 +107,16 @@ def main():
     parser.add_argument("--version", required=True)
     parser.add_argument("--portable-sha256", required=True)
     parser.add_argument("--registry-sha256", required=True)
+    parser.add_argument("--point-gate-sha256", default="")
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
     if not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", args.version):
         parser.error("Choose a stable version without a v prefix")
     digests = [args.portable_sha256.lower(), args.registry_sha256.lower()]
-    if not all(re.fullmatch(r"[0-9a-f]{64}", value) for value in digests):
-        parser.error("Both archive pins must be exact SHA-256 digests")
-    verify(args.version, *digests, args.output)
+    gate = args.point_gate_sha256.lower() or None
+    if not all(re.fullmatch(r"[0-9a-f]{64}", value) for value in (*digests, *((gate,) if gate else ()))):
+        parser.error("Archive pins must be exact SHA-256 digests")
+    verify(args.version, *digests, args.output, gate)
 
 
 if __name__ == "__main__":

@@ -46,6 +46,8 @@ class ActionTests(unittest.TestCase):
             ("MTW_RELEASE_VERSION", "v0.6.4"),
             ("MTW_RELEASE_VERSION", "../0.6.4"),
             ("MTW_PORTABLE_SHA256", "abcdef"),
+            ("MTW_ARCHIVE_PROFILE", "unexpected"),
+            ("MTW_ARCHIVE_PROFILE", "point-gate"),
             ("MTW_MAX_POINT_CHECKS", "1000001"),
             ("MTW_CAPSULE", "missing.json"),
         ]:
@@ -81,6 +83,19 @@ class ActionTests(unittest.TestCase):
                     self.assertEqual(ACTION.main(), 2)
                 unpack.assert_not_called()
                 run.assert_not_called()
+
+    def test_point_gate_profile_uses_its_own_asset_and_pin(self):
+        payload = b"thin archive response"
+        digest = hashlib.sha256(payload).hexdigest()
+        inputs = {**self.inputs, "MTW_RELEASE_VERSION": "0.7.1",
+                  "MTW_ARCHIVE_PROFILE": "point-gate", "MTW_POINT_GATE_SHA256": digest}
+        verdict = {"accepted": True, "verifiedRefutation": False, "sourceCoverageComplete": True}
+        with patch.object(ACTION, "urlopen", return_value=Response(payload)) as open_url, patch.object(
+            ACTION, "unpack_runtime", return_value=self.directory / "gate.mjs"
+        ), patch.object(ACTION.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, json.dumps(verdict))):
+            self.assertEqual(ACTION.run_check(inputs), (0, verdict))
+            self.assertTrue(open_url.call_args.args[0].full_url.endswith(
+                "/v0.7.1/MoonTxnWitness-v0.7.1-point-gate.zip"))
 
     def test_zip_rejects_traversal_and_case_collisions_before_extracting(self):
         root = "MoonTxnWitness-v0.6.4"

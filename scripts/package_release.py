@@ -7,10 +7,11 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import zipfile
 from evidence_json import load_receipt
 from pathlib import Path
-from package_archive import sha256, write_archive
+from package_archive import POINT_GATE_FILES, POINT_GATE_MAX_BYTES, release_archive_names, sha256, write_archive
 from publication_privacy import private_home_paths
 from distribution_manifest import select_distribution_files, assert_complete, relation034_available, predicate035_available, models036_available, configured037_available
 from distribution_manifest import SHARED_CONFIGURED_WRAPPERS
@@ -128,9 +129,14 @@ portable = selection['portable']
 
 ARTIFACTS.mkdir(exist_ok=True)
 archives = [archive(source, ARTIFACTS / (NAME + "-source.zip")), archive(portable, ARTIFACTS / (NAME + "-portable.zip"))]
+archive_names = release_archive_names(VERSION)
+if len(archive_names) > 2:
+    assert set(POINT_GATE_FILES) <= set(portable), 'Point gate files must come from the same portable build'
+    archives.append(archive(POINT_GATE_FILES, ARTIFACTS / archive_names[-1]))
+    assert archives[-1]['bytes'] <= POINT_GATE_MAX_BYTES, 'Point gate ZIP exceeds 5 MiB'
 current_sums = "".join(item["sha256"] + "  " + item["file"] + "\n" for item in archives)
 (ARTIFACTS / (NAME + "-SHA256SUMS.txt")).write_text(current_sums, encoding="utf-8")
-all_releases = [path for path in sorted(ARTIFACTS.glob("MoonTxnWitness-v*-*.zip")) if re.fullmatch(r"MoonTxnWitness-v[0-9]+\.[0-9]+\.[0-9]+-(source|portable)\.zip", path.name)]
+all_releases = [path for path in sorted(ARTIFACTS.glob("MoonTxnWitness-v*-*.zip")) if re.fullmatch(r"MoonTxnWitness-v[0-9]+\.[0-9]+\.[0-9]+-(source|portable|point-gate)\.zip", path.name)]
 (ARTIFACTS / "SHA256SUMS").write_text("".join(sha256(path) + "  " + path.name + "\n" for path in all_releases), encoding="utf-8")
 
 # All work is created below the project. No existing directory is reset or removed.
@@ -965,6 +971,25 @@ console.log(JSON.stringify({passed:true,groups:3}));
             checks.append(kind + ' actual PostgreSQL bundled ' + case + ' capsule replay')
 
 receipt = {"tool": "MoonTxnWitness", "version": VERSION, "passed": True, "archives": archives, "freshConsumerChecks": len(checks), "checks": checks, "sourceRebuilt": True, "portableRequires": "Node.js >=20 (tested with current installed Node)", "node": run([NODE, "--version"], ROOT).strip(), "nativeExecutableIncluded": False, "publiclyPublished": False}
+if len(archive_names) > 2:
+    destination = work / 'point-gate'
+    started = time.monotonic()
+    with zipfile.ZipFile(ARTIFACTS / archive_names[-1]) as packed:
+        assert set(packed.namelist()) == {NAME + '/' + file for file in POINT_GATE_FILES}
+        packed.extractall(destination)
+    extracted = destination / NAME
+    extract_seconds = time.monotonic() - started
+    original = work / 'portable' / NAME
+    assert all(sha256(extracted / file) == sha256(original / file) for file in POINT_GATE_FILES)
+    comparison = json.loads(run([
+        NODE, 'scripts/point-window-ci-test.mjs',
+        '--candidate-gate', str(extracted / 'examples/check-point-window.mjs'),
+    ], original))
+    assert comparison['passed'] and comparison['sameVerdicts'] and len(comparison['cases']) == 6
+    comparison['extractSeconds'] = round(extract_seconds, 3)
+    receipt['pointGateConsumer'] = comparison
+    checks.append('point gate ZIP matches the portable build and every gate verdict')
+    receipt['freshConsumerChecks'] = len(checks)
 if tuple(map(int, VERSION.split('.'))) >= (0, 4, 0):
     receipt['public034Consumers'] = public034_consumers
 if RELATION034:

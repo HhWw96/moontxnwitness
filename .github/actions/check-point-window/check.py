@@ -15,6 +15,7 @@ from zipfile import BadZipFile, ZipFile
 
 RELEASES = "https://github.com/HhWw96/moontxnwitness/releases/download"
 MAX_DOWNLOAD = 512 * 1024 * 1024
+MAX_POINT_GATE_DOWNLOAD = 5 * 1024 * 1024
 MAX_RUNTIME = 1024 * 1024 * 1024
 GATE = "examples/check-point-window.mjs"
 
@@ -24,7 +25,13 @@ def download_portable(version, expected_digest, destination):
     download_archive(f"{RELEASES}/v{version}/{filename}", expected_digest, destination)
 
 
-def download_archive(url, expected_digest, destination):
+def download_point_gate(version, expected_digest, destination):
+    filename = f"MoonTxnWitness-v{version}-point-gate.zip"
+    download_archive(f"{RELEASES}/v{version}/{filename}", expected_digest, destination,
+                     limit=MAX_POINT_GATE_DOWNLOAD)
+
+
+def download_archive(url, expected_digest, destination, *, limit=MAX_DOWNLOAD):
     request = Request(url, headers={
         "User-Agent": "MoonTxnWitness-CI",
         "Accept-Encoding": "identity",
@@ -36,7 +43,7 @@ def download_archive(url, expected_digest, destination):
             raise ValueError("Portable archive download did not return HTTPS bytes")
         for block in iter(lambda: response.read(1024 * 1024), b""):
             downloaded += len(block)
-            if downloaded > MAX_DOWNLOAD:
+            if downloaded > limit:
                 raise ValueError("Portable archive exceeds the download limit")
             digest.update(block)
             output.write(block)
@@ -76,12 +83,21 @@ def unpack_runtime(archive, target, version, extra_files=()):
 
 def run_check(inputs):
     version = inputs.get("MTW_RELEASE_VERSION", "")
-    sha256 = inputs.get("MTW_PORTABLE_SHA256", "").lower()
+    profile = inputs.get("MTW_ARCHIVE_PROFILE", "portable")
+    if profile == "portable":
+        download = download_portable
+        key, label = "MTW_PORTABLE_SHA256", "portable-sha256"
+    elif profile == "point-gate":
+        download = download_point_gate
+        key, label = "MTW_POINT_GATE_SHA256", "point-gate-sha256"
+    else:
+        raise ValueError("archive-profile must be portable or point-gate")
+    sha256 = inputs.get(key, "").lower()
     budget = inputs.get("MTW_MAX_POINT_CHECKS", "1000000")
     if not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", version):
         raise ValueError("release-version must be a stable version such as 0.6.4")
     if not re.fullmatch(r"[0-9a-f]{64}", sha256):
-        raise ValueError("portable-sha256 must be a 64-digit hexadecimal SHA-256")
+        raise ValueError(f"{label} must be a 64-digit hexadecimal SHA-256")
     if not re.fullmatch(r"0|[1-9][0-9]{0,6}", budget) or int(budget) > 1_000_000:
         raise ValueError("max-point-checks must be an integer from 0 to 1000000")
     paths = {}
@@ -93,8 +109,8 @@ def run_check(inputs):
 
     with tempfile.TemporaryDirectory(prefix="mtw-point-action-", dir=inputs.get("RUNNER_TEMP")) as temporary:
         work = Path(temporary)
-        archive = work / "portable.zip"
-        download_portable(version, sha256, archive)
+        archive = work / "runtime.zip"
+        download(version, sha256, archive)
         gate = unpack_runtime(archive, work, version)
         result = subprocess.run(
             ["node", str(gate), "--config", str(paths["config"]), "--policy", str(paths["policy"]),
