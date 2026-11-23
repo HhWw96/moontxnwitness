@@ -200,9 +200,10 @@ class WindowTests(unittest.TestCase):
         (self.root/'window-receipt.json').write_bytes(b'existing')
         with self.assertRaises(FileExistsError):window._publish_receipt({'status':'sealed-original-inputs'})
         self.assertEqual((self.root/'window-receipt.json').read_bytes(),b'existing')
-    def seal_fixture(self,*,tamper_trace=False):
+    def seal_fixture(self,*,tamper_trace=False, profile='original-v2'):
         window=object.__new__(m.ConfiguredCaptureWindowV2)
         window.output=self.root/'seal';window.output.mkdir();(window.output/'capture').mkdir()
+        window._seal_profile = profile
         window._lock=m.threading.RLock();window._state='open';window._participants=[types.SimpleNamespace(_raw=types.SimpleNamespace(closed=True))]
         window.config=f.config();window.policy=f.POLICY;window.installation=m.SourceInputsV2('original-log','original-receipt')
         start='{}\n';m.write_new(window.output/'start-input.json',start);window._start_digest=m.digest(start)
@@ -230,6 +231,33 @@ class WindowTests(unittest.TestCase):
         self.assertEqual(r['bundleSha256'],m.digest(path.read_text('utf8')))
         self.assertFalse(r['completeWindow']);self.assertFalse(r['modelCoverageAccepted']);self.assertEqual(window._state,'sealed')
         with self.assertRaises(ValueError):window.seal()
+
+    def test_streamed_bundle_preserves_canonical_bytes_and_exact_limit(self):
+        path = self.root / 'bundle.json'
+        bundle = {'z': '月光🌙\r\n"\\', 'a': '{}\n'}
+        expected = (m.canonical(bundle) + '\n').encode('utf-8')
+        with self.assertRaisesRegex(ValueError, 'byte budget'):
+            m._write_window_bundle(path, bundle, maximum=len(expected) - 1)
+        self.assertFalse(path.exists())
+        self.assertFalse(path.with_suffix('.pending.json').exists())
+        checksum = m._write_window_bundle(path, bundle, maximum=len(expected))
+        self.assertEqual(path.read_bytes(), expected)
+        self.assertEqual(checksum, m.hashlib.sha256(expected).hexdigest())
+        with self.assertRaises(FileExistsError):
+            m._write_window_bundle(path, {'other': 'bundle'})
+        self.assertEqual(path.read_bytes(), expected)
+
+    def test_bundle_sync_failure_cannot_publish_bundle_or_receipt(self):
+        window = self.seal_fixture(profile='streamed-v1')
+        original = m._write_window_bundle
+        def fail_sync(*args, **kwargs):
+            with patch.object(m.os, 'fsync', side_effect=OSError('bundle sync failed')):
+                return original(*args, **kwargs)
+        with patch.object(m, '_write_window_bundle', fail_sync), self.assertRaisesRegex(OSError, 'bundle sync'):
+            window.seal()
+        self.assertFalse((window.output/'configured-window-input.json').exists())
+        self.assertFalse((window.output/'window-receipt.json').exists())
+        self.assertTrue((window.output/'window-failure.json').exists())
 
 
 if __name__=='__main__':unittest.main(verbosity=2)

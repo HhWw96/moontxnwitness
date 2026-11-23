@@ -1,6 +1,6 @@
 # Roadmap and delivery history
 
-## Current source — v0.6.0
+## Current source — v0.6.1
 
 The current source base provides `classifyModelsV4`, registered inference modules,
 `classifyRelationModelsV4` and `reduceRelationModelsV4`, with independent verification
