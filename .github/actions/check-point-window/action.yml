@@ -1,0 +1,42 @@
+name: Check a MoonTxnWitness point window
+description: Recompute a source-verified Serializable verdict using an exact public portable release.
+inputs:
+  release-version:
+    description: MoonTxnWitness release version without the v prefix
+    required: true
+  portable-sha256:
+    description: Expected SHA-256 of the public portable ZIP
+    required: true
+  capsule:
+    description: Path to the analysis capsule
+    required: true
+  config:
+    description: Path to the caller's capture configuration
+    required: true
+  policy:
+    description: Path to the caller's source policy
+    required: true
+  max-point-checks:
+    description: Independent verification budget, from 0 to 1000000
+    default: '1000000'
+outputs:
+  exit-code:
+    description: 0 for compatible, 1 for a verified refutation, or 2 for incomplete or failed verification
+    value: ${{ steps.check.outputs.exit-code }}
+  verdict:
+    description: JSON verdict from the verified runtime, or a structured error
+    value: ${{ steps.check.outputs.verdict }}
+runs:
+  using: composite
+  steps:
+    - id: check
+      shell: bash
+      env:
+        MTW_RELEASE_VERSION: ${{ inputs.release-version }}
+        MTW_PORTABLE_SHA256: ${{ inputs.portable-sha256 }}
+        MTW_CAPSULE: ${{ inputs.capsule }}
+        MTW_CONFIG: ${{ inputs.config }}
+        MTW_POLICY: ${{ inputs.policy }}
+        MTW_MAX_POINT_CHECKS: ${{ inputs.max-point-checks }}
+        PYTHONUTF8: '1'
+      run: python -B "$GITHUB_ACTION_PATH/check.py"

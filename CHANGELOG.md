@@ -1,3 +1,8 @@
+# 0.6.5
+
+- Add a reusable GitHub Action that downloads the caller's pinned public portable archive and recomputes a point-window verdict.
+- Preserve the compatible, verified-refutation and incomplete-evidence exit codes. Reject download, archive and input errors before approval.
+
 # 0.6.4
 
 - Add a portable CI check for source-verified Serializable results, with separate exit codes for refuted and incomplete or changed evidence.
