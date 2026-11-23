@@ -1,3 +1,9 @@
+# 0.6.2
+
+- Replay a captured PostgreSQL write skew offline, explain its `G2-item` dependency cycle, and verify a source-closed reduction from five transactions to two.
+- Run the same business rule under Serializable. Retain PostgreSQL's `40001` response, the fresh transaction retry, final row versions, and a separate serial certificate.
+- Exercise the original FastAPI Users CRUD methods under 30 fixed inputs and record the actual duplicate-email `23505` rollback.
+
 # 0.6.1
 
 - Measure PostgreSQL source installation and full capture with matched business inputs, three workload layouts, rotated batches and independent MoonBit replay.

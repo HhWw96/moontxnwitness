@@ -1,5 +1,7 @@
 # MoonTxnWitness
 
+从 GitHub 便携包运行 `node examples/point-window-replay.mjs --html witness.html`，可离线核验真实 PostgreSQL 写偏斜、五到二事务缩减、`40001` 回滚重试和修复后的业务约束。[逐步复现](docs/point-window-replay.md)
+
 MoonBit 通用事务异常分析基础库。以 Elle 的异常与模型定义为对照，提供可嵌入的分析、解释、缩减和证据回放。[功能与互操作矩阵](docs/feature-matrix-v4.md)按数据模型、异常类别、来源配置和模型义务列出实际范围；[可组合推断模块](docs/inference-modules-v4.md)与[类型化图适配器](docs/dependency-inference-v4.md)提供可运行的扩展入口。
 
 当前源码与历史运行归档已分离；原始材料通过提交／标签恢复，规则和精简计数见[仓库布局](docs/repository-layout.md)。
@@ -12,7 +14,7 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-当前源码版本为 **v0.6.1**。[点窗口使用指南](docs/point-window-quickstart.md)汇总同步和异步 psycopg、受控 SQLAlchemy 接入、来源核验、异常缩减及离线复现。[采集成本测量](docs/configured-window-performance.md)给出完整 A/B/C 运行与独立回放方法。各版本构建与下载见 [GitHub Releases](https://github.com/HhWw96/moontxnwitness/releases)。
+当前源码版本为 **v0.6.2**。[点窗口使用指南](docs/point-window-quickstart.md)汇总同步和异步 psycopg、受控 SQLAlchemy 接入、来源核验、异常缩减及离线复现。[采集成本测量](docs/configured-window-performance.md)给出完整 A/B/C 运行与独立回放方法。各版本构建与下载见 [GitHub Releases](https://github.com/HhWw96/moontxnwitness/releases)。
 
 ## 关系谓词模型与可组合推断
 

@@ -515,6 +515,12 @@ def select_distribution_files(root, public_names, tested_files, version):
         for name in ('scripts/configured-window-v2-capsule-test.mjs', 'docs/configured-window-v2-capsule.md'):
             require(name, 'source-window capsule consumer and original-input replay contract')
 
+    if tuple(map(int, version.split('.'))) >= (0, 6, 2):
+        require('examples/point-window-replay.mjs', 'captured PostgreSQL point-window replay entry')
+        for name in ('manifest.json', 'config.json', 'policy.json', 'before.json.gz',
+                     'reduced.json.gz', 'retry.json.gz', 'ordered.json.gz'):
+            require('examples/point-window-replay-data/' + name, 'captured PostgreSQL replay fixture')
+
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         for name in NATIVE038_PORTABLE_INPUTS:
             require(name, 'native JS report current SDK and digest-bound performance scope')

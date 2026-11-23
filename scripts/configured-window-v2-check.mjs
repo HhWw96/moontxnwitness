@@ -111,6 +111,26 @@ assert.equal(campaign.passed, true, 'Original database campaign did not pass');
 assert.equal(campaign.actualDatabaseExecution, true, 'Need actual database observations');
 assert.equal(campaign.analysisFixturesRequested, true, 'Campaign lacks analysis fixtures');
 assert(Array.isArray(campaign.records) && campaign.records.length > 0, 'No campaign records');
+if (campaign.fastapiUsersSeedCampaign === true) {
+  const planBytes = await readFile(path.join(path.dirname(path.resolve(args.receipt)), 'async-users-seeds.json'));
+  const plan = JSON.parse(planBytes);
+  const seeds = Array.from({ length: 30 }, (_, index) => index);
+  assert.deepEqual(plan, { upstreamCommit: '6397ace506d829a2ee12786da5d724c3f4c6b634', seeds });
+  const cases = campaign.records.flatMap(record => record.analysisFixtures)
+    .filter(fixture => fixture.name.startsWith('fastapi-users-base-crud-'));
+  assert.deepEqual(cases.map(fixture => fixture.seed), seeds);
+  for (const fixture of cases) {
+    assert.equal(fixture.seedPlanSha256, sha(planBytes));
+    assert.equal(fixture.upstreamCommit, plan.upstreamCommit);
+    assert.equal(fixture.businessParityVerified, true);
+  }
+  const duplicates = campaign.records.flatMap(record => record.analysisFixtures)
+    .filter(fixture => fixture.name === 'fastapi-users-duplicate-email');
+  assert.equal(duplicates.length, 1);
+  assert.equal(duplicates[0].businessSqlstate, '23505');
+  assert.equal(duplicates[0].businessParityVerified, true);
+  assert.equal(duplicates[0].expected, 'unknown');
+}
 const coreBytes = await readFile(args.core);
 const corePath = path.join(directory, `configured-window-core-${sha(coreBytes).slice(0, 16)}.mjs`);
 await copyFile(args.core, corePath);

@@ -836,6 +836,14 @@ for kind in ("portable", "source"):
     checks.append(kind + " model comparison")
     demo = json.loads(run([NODE, "dist/demo.mjs", "--json"], consumer))
     assert demo["passed"] is True and demo["replayValid"] is True and demo["version"] == VERSION
+    if tuple(map(int, VERSION.split('.'))) >= (0, 6, 2):
+        point = json.loads(run([NODE, 'examples/point-window-replay.mjs'], consumer))
+        assert point['passed'] and not point['databaseExecutedDuringReplay']
+        assert (point['originalTransactions'], point['reducedTransactions']) == (5, 2)
+        assert point['oneMinimalVerified'] and point['category'] == 'G2-item'
+        assert point['retry']['status'] == 'unknown' and point['retry']['sqlstate'] == '40001'
+        assert point['orderedControl']['status'] == 'checked-compatible'
+        checks.append(kind + ' captured PostgreSQL point-window analysis, reduction and repair replay')
     if tuple(map(int, VERSION.split('.'))) >= (0, 1, 0):
         assert demo['profile'] == 'balanced' and demo['reportSchemaVersion'] == 2
     assert all((consumer / demo["outputDirectory"] / name).is_file() for name in demo["files"])
