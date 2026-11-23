@@ -624,7 +624,8 @@ def prepare(client, version, source_sha, run_id, notes, output, publish=False):
             require(uploaded.get('name') == asset['name'] and uploaded.get('size') == asset['bytes']
                     and uploaded.get('digest') == 'sha256:' + asset['sha256'], 'Uploaded asset bytes differ')
     _, checked, checked_assets = release_state(client, tag, source_sha, text_notes, packet['assets'])
-    require(checked and len(checked_assets) == 3, 'Published release asset set incomplete')
+    require(checked and set(checked_assets) == {row['name'] for row in packet['assets']},
+            'Published release asset set incomplete')
     receipt = {**receipt, 'published': True, 'releaseId': checked['id'],
                'url': 'https://github.com/' + REPOSITORY + '/releases/tag/' + tag}
     save(output / 'published.json', receipt)
