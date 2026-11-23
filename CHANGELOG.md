@@ -1,3 +1,8 @@
+# 0.6.6
+
+- Add a copyable downstream workflow pinned to a public portable archive and an exact Action commit.
+- Verify six gate cases and compare the Mooncakes and JavaScript model verdicts from new Windows and Linux consumer environments. Record published package sizes and stage timings.
+
 # 0.6.5
 
 - Add a reusable GitHub Action that downloads the caller's pinned public portable archive and recomputes a point-window verdict.

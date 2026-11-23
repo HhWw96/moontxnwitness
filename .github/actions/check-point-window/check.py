@@ -21,7 +21,11 @@ GATE = "examples/check-point-window.mjs"
 
 def download_portable(version, expected_digest, destination):
     filename = f"MoonTxnWitness-v{version}-portable.zip"
-    request = Request(f"{RELEASES}/v{version}/{filename}", headers={
+    download_archive(f"{RELEASES}/v{version}/{filename}", expected_digest, destination)
+
+
+def download_archive(url, expected_digest, destination):
+    request = Request(url, headers={
         "User-Agent": "MoonTxnWitness-CI",
         "Accept-Encoding": "identity",
     })
@@ -40,7 +44,7 @@ def download_portable(version, expected_digest, destination):
         raise ValueError("Portable archive SHA-256 differs from the caller's pin")
 
 
-def unpack_runtime(archive, target, version):
+def unpack_runtime(archive, target, version, extra_files=()):
     root = f"MoonTxnWitness-v{version}"
     seen = set()
     runtime = []
@@ -58,7 +62,7 @@ def unpack_runtime(archive, target, version):
                 raise ValueError("Duplicate portable archive member")
             seen.add(key)
             relative = "/".join(parts[1:])
-            if not member.is_dir() and (relative == GATE or relative.startswith("dist/")):
+            if not member.is_dir() and (relative == GATE or relative.startswith("dist/") or relative in extra_files):
                 size += member.file_size
                 if size > MAX_RUNTIME:
                     raise ValueError("Portable runtime exceeds the extraction limit")
