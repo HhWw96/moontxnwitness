@@ -14,7 +14,7 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-当前源码版本为 **v0.7.4**。[稳定使用路径](docs/point-window-replay.md)包含公开包安装、真实采集、离线回放和 CI 验证。[下游工作流](examples/downstream-point-ci/README.md)可固定轻量门禁包或完整包的 SHA-256。[范围预约案例](docs/configured-predicate-window.md#reproduce-the-reservation-case)展示 PostgreSQL 谓词异常、五到二事务缩减与修复回归。[采集性能协议](docs/configured-window-performance.md#paired-comparison-for-larger-boundary-pages)包含边界分页和多列负载的对照命令。[公开验证记录](docs/point-window-release-evidence.md)汇总复现实证。
+当前源码版本为 **v0.7.5**。可直接运行 `node examples/predicate-window-replay.mjs` 离线核验真实预约案例。[范围预约指南](docs/configured-predicate-window.md#reproduce-the-reservation-case)提供 PostgreSQL 实跑、五到二事务缩减和修复对照。[点窗口](docs/point-window-replay.md)和[下游工作流](examples/downstream-point-ci/README.md)提供安装、回放和 CI 用法。[采集性能协议](docs/configured-window-performance.md#paired-comparison-for-larger-boundary-pages)及[公开验证记录](docs/point-window-release-evidence.md)汇总实测证据。
 
 ## 关系谓词模型与可组合推断
 

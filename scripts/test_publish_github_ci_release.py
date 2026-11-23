@@ -7,6 +7,7 @@ from pathlib import Path
 import stat
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 
 SPEC = importlib.util.spec_from_file_location('github_ci_release', Path(__file__).with_name('publish-github-ci-release.py'))
@@ -252,6 +253,27 @@ class ReleaseTests(unittest.TestCase):
         before = list(client.mutations)
         self.assertTrue(self.prepare(client, True, name='second')['published'])
         self.assertEqual(client.mutations, before)
+
+    def test_publication_accepts_every_asset_in_an_extended_validated_packet(self):
+        validate_archive = M.validate_archive
+        extra = 'MoonTxnWitness-v' + V + '-point-gate.zip'
+
+        def validate_with_point_gate(original, artifact, run, version, source_sha, output, tree):
+            packet = validate_archive(original, artifact, run, version, source_sha, output, tree)
+            contents = b'synthetic digest-bound point gate archive'
+            (output / extra).write_bytes(contents)
+            packet['assets'].append({'name': extra, 'bytes': len(contents), 'sha256': M.digest(contents)})
+            return packet
+
+        client = FakeGitHub()
+        with patch.object(M, 'validate_archive', side_effect=validate_with_point_gate):
+            published = self.prepare(client, True)
+            self.assertTrue(published['published'])
+            self.assertIn(extra, {item['name'] for item in client.assets})
+            self.assertEqual(len(client.assets), 4)
+            mutations = client.mutations[:]
+            self.assertTrue(self.prepare(client, True, name='second')['published'])
+            self.assertEqual(client.mutations, mutations)
 
     def test_wrong_explicit_version_or_sha(self):
         for version, sha in [('v0.4.2', SHA), ('0.4.02', SHA), (V, 'abc'), (V, 'b' * 40)]:

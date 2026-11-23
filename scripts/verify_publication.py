@@ -93,6 +93,12 @@ try:
         assert demo['profile'] == 'balanced' and demo['reportSchemaVersion'] == 2
     assert json.loads(run([NODE, 'dist/moontxnwitness.mjs', 'replay', str(portable / demo['outputDirectory'] / 'case.capsule.json')], portable))['valid'] is True
     RECEIPT['github']['downloadedRuntimeChecks'] = ['exact version', 'write-skew diagnosis', 'one-command demo', 'exported capsule replay']
+    if tuple(map(int, VERSION.split('.'))) >= (0, 7, 5):
+        predicate = json.loads(run([NODE, 'examples/predicate-window-replay.mjs'], portable))
+        assert predicate['passed'] and predicate['offlineReplay']
+        assert [row['gateExit'] for row in predicate['cases']] == [1, 0, 2]
+        RECEIPT['github']['predicateReplay'] = predicate
+        RECEIPT['github']['downloadedRuntimeChecks'].append('offline PostgreSQL predicate evidence and repair replay')
     if tuple(map(int, VERSION.split('.'))) >= (0, 0, 11):
         for case in ('rr', 'serial', 'mini'):
             capsule = 'verification/releases/' + VERSION + '/postgres/' + case + '.capsule.json'

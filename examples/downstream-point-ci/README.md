@@ -17,10 +17,10 @@ Use `archive-profile: portable` and `portable-sha256` for the full archive.
 Keep the capture policy and analysis budget under your own CI's control.
 
 The portable archive also contains the MoonBit registry consumer. With
-`moon` on PATH, run the following from the extracted v0.7.1 portable archive.
+`moon` on PATH, run the following from the extracted v0.7.5 portable archive.
 
 ```sh
-node scripts/verify-point-window-moon-consumer.mjs --runtime dist --module-version 0.7.1 --output new-consumer
+node scripts/verify-point-window-moon-consumer.mjs --runtime dist --module-version 0.7.5 --output new-consumer
 ```
 
 The command creates a project, installs the requested Mooncakes version and
