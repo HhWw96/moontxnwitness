@@ -49,3 +49,5 @@ run(node, ['scripts/configured-window-reduction-v2-check.mjs', '--core', core, '
   '--output', resolve(output, 'reduction', 'checks.json')]);
 run(node, ['scripts/configured-window-v2-capsule-test.mjs', '--runtime', runtime, '--receipt', evidence,
   '--output', resolve(output, 'capsule-checks.json')]);
+run(node, ['scripts/stage-orm-point-window-gates.mjs', '--runtime', runtime, '--receipt', evidence,
+  '--output', resolve(output, 'orm-gate')]);
