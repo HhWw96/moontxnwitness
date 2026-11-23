@@ -72,12 +72,12 @@ page when its native payload reaches that cap.
 Use clean producer checkouts. The baseline for this protocol is public
 v0.7.0 at `fd42493935532e6b69f43a999c6aabb6f0f9598e`. The candidate adds only
 the boundary-page selection to the measured capture. The new matrix adds a
-1,024-key, four-connection table with 14 columns, including 12 independent
+1,024-key, four-connection table with 14 columns, including 12
 int64 payload columns. Every read and write result covers all columns, and the
 verifier checks the final business values for all three phases.
 
 ```sh
-python -B scripts/paired-configured-window-cost.py --dsn-env MTW_TEST_DSN --owned-database --baseline BASELINE_SOURCE --candidate CANDIDATE_SOURCE --matrix multicolumn-v2 --candidate-snapshot-profile paged-256-v1 --formal --exclusive-host --output PAIRED_PAGES
+python -B scripts/paired-configured-window-cost.py --dsn-env MTW_TEST_DSN --owned-database --baseline BASELINE_SOURCE --candidate CANDIDATE_SOURCE --matrix multicolumn-v2 --candidate-snapshot-profile paged-256-v1 --formal --exclusive-host --compact-artifacts --output PAIRED_PAGES
 node scripts/configured-window-cost-pilot-verify.mjs --core MATCHED_CORE --receipt PAIRED_PAGES/baseline/receipt.json --snapshot-profile paged-v1 --output PAIRED_PAGES/baseline/verified.json
 node scripts/configured-window-cost-pilot-verify.mjs --core MATCHED_CORE --receipt PAIRED_PAGES/candidate/receipt.json --snapshot-profile paged-256-v1 --output PAIRED_PAGES/candidate/verified.json
 node scripts/compare-configured-window-cost.mjs --baseline PAIRED_PAGES/baseline --candidate PAIRED_PAGES/candidate --output comparison.json
@@ -88,6 +88,13 @@ same-statement writer on a separate arm. Omit `--candidate-snapshot-profile`
 to test the experimental writer with the 14-column matrix, using its MoonBit
 runtime and `--writer-proof-profile returning-v1` for that candidate replay.
 Both writer-comparison arms pass `--snapshot-profile paged-v1` to the verifier.
+
+`--compact-artifacts` losslessly compresses each sealed C bundle and archives
+the corresponding B source installation after timing stops. It keeps every
+timing sample, the original byte count and checksum, and the compressed
+checksum. The producer verifies the compressed evidence before retiring its
+scratch directory. Replay can use `--artifact-dir` to open the same compact
+files after they have been relocated.
 
 ## Historical SDK baseline
 

@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFile, writeFile} from 'node:fs/promises';
+import {basename, resolve} from 'node:path';
 import {parseArgs} from 'node:util';
+import {gunzipSync} from 'node:zlib';
 
 const {values: args} = parseArgs({options: {
   receipt: {type: 'string'}, core: {type: 'string'}, output: {type: 'string'},
-  'writer-proof-profile': {type: 'string'}, 'snapshot-profile': {type: 'string'},
+  'writer-proof-profile': {type: 'string'}, 'snapshot-profile': {type: 'string'}, 'artifact-dir': {type: 'string'},
 }});
 for (const filename of ['receipt', 'core', 'output']) assert(args[filename], `Require --${filename}`);
 
@@ -55,6 +57,8 @@ if (formal) {
 const compiled = await readFile(args.core);
 const core = await import('data:text/javascript;base64,' + compiled.toString('base64'));
 const checks = [];
+const artifact = path => args['artifact-dir'] ? resolve(args['artifact-dir'], basename(path)) : path;
+if (args['artifact-dir']) assert.equal(receipt.artifactStorage, 'gzip-original-capture/v1');
 
 async function verifyWindow(cells, connections, payloadColumns, checkTampering) {
   for (const phase of ['A', 'B', 'C']) {
@@ -70,7 +74,17 @@ async function verifyWindow(cells, connections, payloadColumns, checkTampering) 
     }
   }
   const full = cells.C;
-  const raw = await readFile(full.bundle, 'utf8');
+  const captureBytes = await readFile(artifact(full.bundle));
+  let raw;
+  if (full.bundleEncoding === 'gzip') {
+    assert.equal(receipt.artifactStorage, 'gzip-original-capture/v1');
+    assert.equal(sha256(captureBytes), full.compressedSha256);
+    assert.equal(sha256(await readFile(artifact(cells.B.sourceInstallation))), cells.B.sourceInstallationSha256);
+    raw = new TextDecoder('utf-8', {fatal: true}).decode(gunzipSync(captureBytes, {maxOutputLength: 64 * 1024 * 1024}));
+  } else {
+    assert.equal(receipt.artifactStorage, undefined);
+    raw = new TextDecoder('utf-8', {fatal: true}).decode(captureBytes);
+  }
   assert.equal(sha256(raw), full.bundleSha256);
   if (formal) assert.equal(Buffer.byteLength(raw), full.outputBytes);
   let bundle;

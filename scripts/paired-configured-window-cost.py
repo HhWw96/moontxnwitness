@@ -2,6 +2,7 @@
 
 import argparse
 from contextlib import ExitStack
+import gzip
 import hashlib
 import json
 import os
@@ -9,9 +10,12 @@ from pathlib import Path
 import platform
 import runpy
 import secrets
+import shutil
 import statistics
 import subprocess
 import sys
+import tempfile
+import zipfile
 
 import psycopg
 from psycopg import sql
@@ -50,6 +54,33 @@ def send(process, value):
     return json.loads(line)
 
 
+def retain_cell(output, scratch, schema, phase, cell):
+    if phase == 'C':
+        original = Path(cell['bundle']).resolve()
+        if not original.is_relative_to(scratch):
+            raise ValueError('Capture escaped the sample directory')
+        packed = output / f'{schema}-{phase}.json.gz'
+        with original.open('rb') as source, packed.open('xb') as stream:
+            with gzip.GzipFile(filename='', mode='wb', fileobj=stream, mtime=0) as compressed:
+                shutil.copyfileobj(source, compressed)
+        with gzip.open(packed, 'rb') as reopened:
+            if hashlib.file_digest(reopened, 'sha256').hexdigest() != cell['bundleSha256']:
+                raise ValueError('The archived capture differs from the sealed original')
+        retained_receipt = output / f'{schema}-{phase}.receipt.json'
+        shutil.copyfile(cell['producerReceipt'], retained_receipt)
+        cell.update(bundle=str(packed), bundleEncoding='gzip', compressedSha256=digest(packed),
+                    producerReceipt=str(retained_receipt))
+    elif phase == 'B':
+        installation = shutil.make_archive(str(output / f'{schema}-{phase}'), 'zip', root_dir=scratch)
+        with zipfile.ZipFile(installation) as archived:
+            if archived.testzip() is not None:
+                raise ValueError('The archived source installation is damaged')
+        cell.update(sourceInstallation=str(installation), sourceInstallationSha256=digest(Path(installation)))
+    if scratch.parent != output or not scratch.name.startswith('.sample-'):
+        raise ValueError('Refusing to clean a directory outside this worker')
+    shutil.rmtree(scratch)
+
+
 def worker(output):
     driver = runpy.run_path(str(HARNESS))
     actual = Path(sys.modules[driver['ConfiguredCaptureWindowV2'].__module__].__file__).resolve().parent
@@ -65,6 +96,7 @@ def worker(output):
         loads['multicolumn'] = (keys, connections, 12, transactions)
     writer_profile = os.environ.get('MTW_PAIRED_COST_WRITER_PROFILE')
     snapshot_profile = os.environ['MTW_PAIRED_COST_SNAPSHOT_PROFILE']
+    compact = os.environ.get('MTW_PAIRED_COST_ARTIFACTS') == 'gzip-original-capture/v1'
     for line in sys.stdin:
         request = json.loads(line)
         if request == 'describe':
@@ -78,13 +110,17 @@ def worker(output):
             keys, connections, payload_columns, transactions = loads[request['load']]
             result = {}
             for phase in request['order']:
-                result[phase] = driver['write_cell'](
-                    output, options, request['schema'], os.environ['MTW_PAIRED_COST_OWNER'],
+                scratch = Path(tempfile.mkdtemp(prefix='.sample-', dir=output)).resolve() if compact else output
+                cell = driver['write_cell'](
+                    scratch, options, request['schema'], os.environ['MTW_PAIRED_COST_OWNER'],
                     os.environ['MTW_PAIRED_COST_WRITER'], os.environ['MTW_PAIRED_COST_WRITER_SECRET'],
                     phase, keys, transactions, workers=connections, coordinated=True,
                     seal_profile=SEAL, writer_proof_profile=writer_profile,
                     snapshot_profile=snapshot_profile, payload_columns=payload_columns,
                 )
+                if compact:
+                    retain_cell(output, scratch, request['schema'], phase, cell)
+                result[phase] = cell
         print(json.dumps(result), flush=True)
 
 
@@ -179,6 +215,7 @@ def compare(args, dsn):
                 snapshot = snapshot or 'paged-v1'
                 producer_env['MTW_PAIRED_COST_MATRIX'] = args.matrix
                 producer_env['MTW_PAIRED_COST_SNAPSHOT_PROFILE'] = snapshot
+                producer_env['MTW_PAIRED_COST_ARTIFACTS'] = 'gzip-original-capture/v1' if args.compact_artifacts else ''
                 if profile is not None:
                     producer_env['MTW_PAIRED_COST_WRITER_PROFILE'] = profile
                 worker_process = subprocess.Popen([sys.executable, '-B', str(ENTRY), '--worker', str(destination)],
@@ -193,6 +230,8 @@ def compare(args, dsn):
                                 'writerProofProfileRequested': profile}
                 if multicolumn:
                     reports[arm]['snapshotProfileRequested'] = snapshot
+                if args.compact_artifacts:
+                    reports[arm]['artifactStorage'] = 'gzip-original-capture/v1'
             loads = descriptions['baseline']['loadShapes']
             if descriptions['candidate']['loadShapes'] != loads:
                 raise ValueError('Producer workload shapes differ')
@@ -211,7 +250,9 @@ def compare(args, dsn):
                     process.wait(timeout=10)
             for arm, report in reports.items():
                 report['pairedSchedule'] = schedule
-                (output / arm / 'receipt.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+                with (output / arm / 'receipt.json').open('x', encoding='utf-8') as receipt:
+                    json.dump(report, receipt, indent=2)
+                    receipt.write('\n')
     print(json.dumps({'passed': True, 'formal': args.formal, 'matchedPairs': len(schedule), 'output': str(output)}))
 
 
@@ -227,6 +268,8 @@ def main():
     parser.add_argument('--matrix', choices=('legacy-v1', 'multicolumn-v2'), default='legacy-v1')
     parser.add_argument('--candidate-snapshot-profile', choices=('paged-256-v1',),
                         help='Compare boundary pages instead of same-statement writer proofs')
+    parser.add_argument('--compact-artifacts', action='store_true',
+                        help='Compress original capture bytes after each timed window')
     args = parser.parse_args()
     dsn = os.environ.get(args.dsn_env)
     if not args.owned_database or not dsn:

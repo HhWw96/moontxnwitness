@@ -32,6 +32,7 @@ const [baseline, candidate] = await Promise.all([
 assert.deepEqual(baseline.receipt.environment, candidate.receipt.environment);
 assert.equal(baseline.receipt.format, candidate.receipt.format);
 assert.equal(baseline.receipt.harnessSha256, candidate.receipt.harnessSha256);
+assert.equal(baseline.receipt.artifactStorage, candidate.receipt.artifactStorage);
 assert.equal(baseline.verified.coreSha256, candidate.verified.coreSha256);
 assert.notEqual(baseline.receipt.producerSha256, candidate.receipt.producerSha256);
 assert.equal(baseline.verified.checks.length, candidate.verified.checks.length);
