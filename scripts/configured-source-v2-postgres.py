@@ -39,7 +39,7 @@ def varchar_binding_fixture(control, connect_writer, schema, writer, output):
     table = TableConfigV2(schema, 'varchar_rows', PrimaryKeyConfigV2('id', 'uuid'),
         (ColumnConfig('email', 'text', TEXT_COMPARISON),))
     config = SQLCaptureConfigV2(table)
-    policy = SourceInstallPolicy('mtw_source_v2_varchar', (writer,))
+    policy = SourceInstallPolicy('mtw_source_v2_varchar_' + schema, (writer,))
     target = q(schema) + '.varchar_rows'
     control.execute('CREATE TABLE ' + target + ' (id uuid PRIMARY KEY, email varchar(320) COLLATE pg_catalog."C" NOT NULL)')
     control.execute('GRANT SELECT, INSERT, UPDATE, DELETE ON ' + target + ' TO ' + q(writer))
@@ -72,7 +72,7 @@ def paged_snapshot_fixture(control, connect_writer, schema, writer, output):
     table = TableConfigV2(schema, 'page_rows', PrimaryKeyConfigV2('id', 'int64'),
         (ColumnConfig('label', 'text', TEXT_COMPARISON),))
     config = SQLCaptureConfigV2(table)
-    policy = SourceInstallPolicy('mtw_source_v2_page', (writer,))
+    policy = SourceInstallPolicy('mtw_source_v2_page_' + schema, (writer,))
     target = q(schema) + '.page_rows'
     control.execute('CREATE TABLE ' + target + ' (id bigint PRIMARY KEY, label text COLLATE pg_catalog."C" NOT NULL)')
     control.execute('INSERT INTO ' + target + " SELECT n,'row-'||n FROM pg_catalog.generate_series(1,260) n")
@@ -153,7 +153,7 @@ def sqlalchemy_fixture(control, connect_writer, schema, writer, output):
     table = TableConfigV2(schema, 'orm_rows', PrimaryKeyConfigV2('id', 'uuid'),
         (ColumnConfig('email', 'text', TEXT_COMPARISON),))
     config = SQLCaptureConfigV2(table)
-    policy = SourceInstallPolicy('mtw_source_v2_orm', (writer,))
+    policy = SourceInstallPolicy('mtw_source_v2_orm_' + schema, (writer,))
     target = q(schema) + '.orm_rows'
     control.execute('CREATE TABLE ' + target + ' (id uuid PRIMARY KEY, email varchar(320) COLLATE pg_catalog."C" NOT NULL)')
     control.execute('GRANT SELECT, INSERT, UPDATE, DELETE ON ' + target + ' TO ' + q(writer))
@@ -781,7 +781,7 @@ def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_
             control.execute('INSERT INTO '+target+' VALUES(17,true,%s)',(key,))
             control.execute('GRANT USAGE ON SCHEMA '+q(schema)+' TO '+q(writer))
             control.execute('GRANT SELECT,INSERT,UPDATE,DELETE ON '+target+' TO '+q(writer))
-            policy = SourceInstallPolicy('mtw_source_v2_'+str(index),(writer,))
+            policy = SourceInstallPolicy('mtw_source_v2_'+suffix,(writer,))
             installation = install_configured_source_v2(control,work/('install-'+str(index)),config,policy,opt_in=True).to_dict()
             eq(installation['status'],'installed-components-only')
             for field in ('catalogComponentsChecked','initialSnapshotComponentsChecked','initialLedgerComponentsChecked','actualCommitConfirmed'):
