@@ -19,6 +19,7 @@ const runtime = resolve(args.runtime);
 const python = process.env.MTW_PYTHON || (process.platform === 'win32' ? 'python' : 'python3');
 const db = args.bin ? ['--bin', resolve(args.bin)] : ['--dsn-env', args['dsn-env'], '--owned-database'];
 const runs = [];
+const namespaces = new Set();
 const start = Date.now();
 await mkdir(output);
 
@@ -45,6 +46,12 @@ try {
     });
     if (capture.error) throw capture.error;
     assert.equal(capture.status, 0, 'PostgreSQL capture round ' + index);
+    if (args['dsn-env']) {
+      const raw = JSON.parse(await readFile(receipt, 'utf8'));
+      assert.match(raw.fixtureNamespace, /^_[0-9a-f]{10}$/);
+      assert(!namespaces.has(raw.fixtureNamespace), 'PostgreSQL rounds must use isolated fixture names');
+      namespaces.add(raw.fixtureNamespace);
+    }
     run(process.execPath, 'scripts/stage-point-window-replay.mjs', [
       '--runtime', runtime, '--receipt', receipt, '--output', fixtures,
     ]);
