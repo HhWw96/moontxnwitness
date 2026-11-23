@@ -57,7 +57,9 @@ if (formal) {
 const compiled = await readFile(args.core);
 const core = await import('data:text/javascript;base64,' + compiled.toString('base64'));
 const checks = [];
-const artifact = path => args['artifact-dir'] ? resolve(args['artifact-dir'], basename(path)) : path;
+const artifact = path => args['artifact-dir']
+  ? resolve(args['artifact-dir'], basename(path.replaceAll('\\', '/')))
+  : path;
 if (args['artifact-dir']) assert.equal(receipt.artifactStorage, 'gzip-original-capture/v1');
 
 async function verifyWindow(cells, connections, payloadColumns, checkTampering) {
