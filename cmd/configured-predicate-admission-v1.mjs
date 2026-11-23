@@ -1,4 +1,4 @@
-import * as core from './sql-projection-v2-core.mjs';
+import * as core from './core.mjs';
 
 export function admitConfiguredPredicateWindowV1(bundleText, {config, policy, maxChecks = 1_000_000}) {
   if (typeof bundleText !== 'string' || config == null || policy == null) {
