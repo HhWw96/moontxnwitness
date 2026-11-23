@@ -64,9 +64,28 @@ For exact offline replay of the new capture, use `new-fixtures` as the
 
 ## Use the verification step in your CI
 
-Start with a verified portable archive. Have your capture job write an analysis
-capsule and keep the configuration, policy and budget under CI control. In this
-example, the archive was extracted into `vendor/moontxnwitness`.
+Have your capture job write an analysis capsule and keep the configuration,
+policy, budget and expected archive digest under CI control. The GitHub Action
+runs with Python 3.12 and Node.js 24 in the calling job. Pin the Action to the
+commit of the release you reviewed. This example uses the Action from v0.6.5
+with the already published v0.6.4 portable archive.
+
+```yaml
+- name: Verify the captured window
+  uses: HhWw96/moontxnwitness/.github/actions/check-point-window@v0.6.5
+  with:
+    release-version: '0.6.4'
+    portable-sha256: 53483a92b1449667914456a7999ce28ad3406e1389467b86661d736e7e7bfdfc
+    config: ci/point-window-config.json
+    policy: ci/point-window-policy.json
+    capsule: artifacts/database-window.capsule.json
+    max-point-checks: '1000000'
+```
+
+The Action checks the exact archive SHA-256 before loading the verifier.
+Its `exit-code` and `verdict` outputs retain the gate result for subsequent
+steps. The calling job fails for exit codes 1 and 2. The verifier also runs
+directly from an archive previously extracted to `vendor/moontxnwitness`.
 
 ```yaml
 - name: Recompute the point-window Serializable result
