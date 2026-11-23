@@ -57,7 +57,13 @@ Its model verdict remains `unknown`. This upstream integration is independent
 of the primary write-skew fixture. [Adapter and regression details](configured-async-window-v2.md)
 
 The wrapper retains the raw receipt and runs analysis, reduction, and capsule
-checks. To stage the same small offline fixture set from that new receipt, run
+checks. It stages `orm-gate/ordered.capsule.json`, `duplicate.capsule.json`,
+`config.json` and `policy.json` for the Action. The PostgreSQL workflow
+rechecks both windows with a pinned public verifier. The ordered CRUD
+window exits 0. The duplicate-email window retains a real rollback and a
+new committed transaction, and exits 2 with a reproduced `unknown`.
+
+To stage the separate write-skew offline fixture set from that new receipt, run
 `node scripts/stage-point-window-replay.mjs --receipt new-run/database/receipt.json --runtime dist --output new-fixtures`.
 For exact offline replay of the new capture, use `new-fixtures` as the
 `examples/point-window-replay-data` directory in a disposable copy of the example.

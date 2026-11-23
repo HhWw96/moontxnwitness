@@ -1,3 +1,8 @@
+# 0.6.7
+
+- Stage independently replayable gate inputs from the original FastAPI Users SQLAlchemy CRUD campaign.
+- Run the public point-window Action on a verified compatible ORM window and the real duplicate-email rollback window. Retain the SQLSTATE and the later confirmed commit.
+
 # 0.6.6
 
 - Add a copyable downstream workflow pinned to a public portable archive and an exact Action commit.

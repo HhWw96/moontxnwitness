@@ -99,6 +99,59 @@ jobs:
           node scripts/configured-window-structured-test.mjs --runtime dist --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/structured-checks.json
           node scripts/configured-window-v2-capsule-test.mjs --runtime dist --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/capsule-checks.json
           node examples/point-window-replay.mjs
+      - name: Stage the gate inputs from the original ORM run
+        if: ${{ !inputs.source_ref }}
+        env:
+          RECEIPT: verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json
+        run: node scripts/stage-orm-point-window-gates.mjs --runtime dist --receipt "$RECEIPT" --output "$RUNNER_TEMP/mtw-orm-action"
+      - name: Require the ordered ORM capture to pass with the public verifier
+        if: ${{ !inputs.source_ref }}
+        id: ordered_orm
+        uses: ./.github/actions/check-point-window
+        with:
+          release-version: '0.6.4'
+          portable-sha256: 53483a92b1449667914456a7999ce28ad3406e1389467b86661d736e7e7bfdfc
+          capsule: ${{ runner.temp }}/mtw-orm-action/ordered.capsule.json
+          config: ${{ runner.temp }}/mtw-orm-action/config.json
+          policy: ${{ runner.temp }}/mtw-orm-action/policy.json
+      - name: Exercise the capture with the duplicate email rollback
+        if: ${{ !inputs.source_ref }}
+        id: duplicate_orm
+        continue-on-error: true
+        uses: ./.github/actions/check-point-window
+        with:
+          release-version: '0.6.4'
+          portable-sha256: 53483a92b1449667914456a7999ce28ad3406e1389467b86661d736e7e7bfdfc
+          capsule: ${{ runner.temp }}/mtw-orm-action/duplicate.capsule.json
+          config: ${{ runner.temp }}/mtw-orm-action/config.json
+          policy: ${{ runner.temp }}/mtw-orm-action/policy.json
+      - name: Require the incomplete ORM window to block the job
+        if: ${{ !inputs.source_ref }}
+        env:
+          ORDERED: ${{ steps.ordered_orm.outputs.verdict }}
+          DUPLICATE: ${{ steps.duplicate_orm.outputs.verdict }}
+          DUPLICATE_EXIT: ${{ steps.duplicate_orm.outputs.exit-code }}
+          DUPLICATE_OUTCOME: ${{ steps.duplicate_orm.outcome }}
+        run: |
+          python -B - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP']) / 'mtw-orm-action'
+          ordered, duplicate = (json.loads(os.environ[key]) for key in ('ORDERED', 'DUPLICATE'))
+          assert ordered['accepted'] is True and ordered['sourceCoverageComplete'] is True
+          assert os.environ['DUPLICATE_OUTCOME'] == 'failure' and os.environ['DUPLICATE_EXIT'] == '2'
+          assert duplicate['accepted'] is False and duplicate['status'] == 'unknown'
+          assert duplicate['reportMatches'] is True and duplicate['sourceCoverageComplete'] is False
+          (root / 'gate.json').write_text(json.dumps({'passed': True, 'ordered': ordered, 'duplicate': duplicate}, indent=2), encoding='utf-8')
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !inputs.source_ref }}
+        with:
+          name: fastapi-users-point-window-gates
+          path: |
+            ${{ runner.temp }}/mtw-orm-action/staged.json
+            ${{ runner.temp }}/mtw-orm-action/gate.json
       - name: Capture all ten configured model scenarios and verify the current build
         shell: bash
         env:
