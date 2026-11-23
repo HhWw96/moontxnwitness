@@ -80,6 +80,7 @@ fn source_parse_control_v2(
   work : SourceWorkV4,
   allow_commit_request~ : Bool = false,
   allow_snapshot_pages~ : Bool = false,
+  allow_predicate_rows~ : Bool = false,
 ) -> SourceControlStreamV2 raise {
   if orm_utf8_size(text) > 67108864 || !text.has_suffix("\n") {
     fail("unsupported:admission-log-size-or-tail")
@@ -180,7 +181,9 @@ fn source_parse_control_v2(
         [Json("visible-row-page"), Json("retained-effect-page")].contains(
           request.at("queryId"),
         )
-      let max_rows = if paged { 128 } else { 1 }
+      let predicate = allow_predicate_rows &&
+        request.at("queryId") == Json("range")
+      let max_rows = if paged || predicate { 128 } else { 1 }
       if rows.length() > max_rows ||
         native.at("rowCount") != Json(rows.length()) {
         fail("mismatch:admission-native-row-count")

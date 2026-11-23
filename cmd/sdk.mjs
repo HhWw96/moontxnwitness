@@ -508,3 +508,4 @@ export {diagnoseConfiguredSessionTextV4,diagnoseConfiguredSessionV4,verifyConfig
 export {analyzeConfiguredWindowV4, verifyConfiguredWindowV4,
   reduceConfiguredWindowV4, verifyConfiguredWindowReductionV4, explainConfiguredWindowV4,
   CONFIGURED_WINDOW_V4_LIMITS, CONFIGURED_WINDOW_REDUCTION_V4_LIMITS} from './configured-window-v2.mjs';
+export {admitConfiguredPredicateWindowV1} from './configured-predicate-admission-v1.mjs';

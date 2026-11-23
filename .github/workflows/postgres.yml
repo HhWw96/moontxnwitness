@@ -99,6 +99,26 @@ jobs:
           node scripts/configured-window-structured-test.mjs --runtime dist --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/structured-checks.json
           node scripts/configured-window-v2-capsule-test.mjs --runtime dist --receipt verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/receipt.json --output verification/configured-window-v2/postgres-ci-${{ github.run_id }}-${{ github.run_attempt }}/capsule-checks.json
           node examples/point-window-replay.mjs
+      - name: Admit real PostgreSQL range observations through MoonBit
+        id: predicate_admission
+        if: ${{ !inputs.source_ref }}
+        env:
+          MTW_PREDICATE_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        shell: bash
+        run: |
+          out="verification/predicate-window/postgres-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          python -B scripts/predicate-window-postgres.py --owned-database --dsn-env MTW_PREDICATE_DSN --output "$out"
+          node scripts/verify-predicate-window.mjs --core dist/sql-projection-v2-core.mjs --input "$out" --output "$out/admission.json"
+      - name: Retain original range captures and independent admission
+        if: always() && (steps.predicate_admission.outcome == 'success' || steps.predicate_admission.outcome == 'failure')
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: configured-predicate-postgres
+          path: |
+            verification/predicate-window/
+            dist/sql-projection-v2-core.mjs
+            dist/build-manifest.json
+          if-no-files-found: error
       - name: Stage the gate inputs from the original ORM run
         if: ${{ !inputs.source_ref }}
         env:

@@ -717,3 +717,16 @@ pub fn verify_configured_window_reduction_v2_json(
     config, policy, bundle, report, options,
   )
 }
+
+///|
+#export_name("admit_configured_predicate_window_v1_json")
+pub fn admit_configured_predicate_window_v1_json(
+  config : String,
+  policy : String,
+  bundle : String,
+  options : String,
+) -> String {
+  @txn.admit_configured_predicate_window_v1_json(
+    config, policy, bundle, options,
+  )
+}
