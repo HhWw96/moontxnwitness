@@ -32,6 +32,9 @@ INPUT_FORMAT = 'moontxnwitness-configured-window-input/v2'
 PAGED_SNAPSHOT_FORMAT = 'moontxnwitness-configured-source-snapshot-paged/v1'
 PAGED_SNAPSHOT_LOG = 'moontxnwitness-source-snapshot-log-paged/v1'
 PAGED_SNAPSHOT_CONTRACT = 'postgres18-configured-source-snapshot-pages/v1'
+LARGE_PAGE_SNAPSHOT_FORMAT = 'moontxnwitness-configured-source-snapshot-paged/v2'
+LARGE_PAGE_SNAPSHOT_LOG = 'moontxnwitness-source-snapshot-log-paged/v2'
+LARGE_PAGE_SNAPSHOT_CONTRACT = 'postgres18-configured-source-snapshot-pages/v2'
 
 
 def _snapshot_profile(profile):
@@ -39,6 +42,8 @@ def _snapshot_profile(profile):
         return SNAPSHOT_FORMAT, SNAPSHOT_LOG, CONTRACT, 1
     if profile == 'paged-v1':
         return PAGED_SNAPSHOT_FORMAT, PAGED_SNAPSHOT_LOG, PAGED_SNAPSHOT_CONTRACT, 128
+    if profile == 'paged-256-v1':
+        return LARGE_PAGE_SNAPSHOT_FORMAT, LARGE_PAGE_SNAPSHOT_LOG, LARGE_PAGE_SNAPSHOT_CONTRACT, 256
     raise ValueError('Unknown snapshot profile')
 
 
@@ -150,7 +155,7 @@ def ledger_snapshot_sql_v2(policy, page_size=1):
         "'writerXid',e.writer_xid,'writerLogin',e.writer_login,'writerPid',e.writer_pid,"
         "'rowKey',e.row_key,'oldKey',e.old_key,'rowValues',e.row_values)::text payload FROM "
         +source._qi(policy.namespace)+".effects e WHERE e.version>%s::bigint ORDER BY e.version LIMIT "
-        +str(source._integer(page_size, 1, 128, "Snapshot page size"))+") p"
+        +str(source._integer(page_size, 1, 256, "Snapshot page size"))+") p"
         +(" ORDER BY p.version" if page_size != 1 else ""))
 
 

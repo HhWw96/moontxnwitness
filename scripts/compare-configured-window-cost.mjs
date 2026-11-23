@@ -17,7 +17,9 @@ const loadComparisonInput = async directory => {
   const verified = JSON.parse(await readFile(resolve(directory, 'verified.json')));
   assert.equal(receipt.formalPerformanceMeasurement, true);
   assert.equal(receipt.actualDatabaseExecution, true);
-  assert.equal(verified.format, 'configured-source-window-cost-verification/v1');
+  const multicolumn = receipt.format === 'configured-source-window-cost/v2';
+  assert.equal(verified.format, multicolumn ? 'configured-source-window-cost-verification/v2'
+    : 'configured-source-window-cost-verification/v1');
   assert.equal(verified.passed, true);
   assert.equal(verified.formalPerformanceMeasurement, true);
   assert.equal(verified.originalReceiptSha256, digest(original));
@@ -28,6 +30,7 @@ const [baseline, candidate] = await Promise.all([
   loadComparisonInput(values.baseline), loadComparisonInput(values.candidate),
 ]);
 assert.deepEqual(baseline.receipt.environment, candidate.receipt.environment);
+assert.equal(baseline.receipt.format, candidate.receipt.format);
 assert.equal(baseline.receipt.harnessSha256, candidate.receipt.harnessSha256);
 assert.equal(baseline.verified.coreSha256, candidate.verified.coreSha256);
 assert.notEqual(baseline.receipt.producerSha256, candidate.receipt.producerSha256);
@@ -43,10 +46,19 @@ if (baseline.receipt.pairedSchedule || candidate.receipt.pairedSchedule) {
   assert.deepEqual(schedule, expected, 'Incomplete or differently ordered paired schedule');
 }
 const returning = candidate.verified.writerProofProfile === 'returning-v1';
+const paging = candidate.verified.snapshotProfile === 'paged-256-v1';
 if (returning) {
   assert.equal(baseline.verified.writerProofProfile, undefined);
   assert.equal(candidate.receipt.writerProofProfileRequested, 'returning-v1');
   assert.equal(baseline.receipt.writerProofProfileRequested, null);
+  assert.equal(candidate.receipt.sealProfileRequested, baseline.receipt.sealProfileRequested);
+}
+if (paging) {
+  assert.equal(baseline.verified.snapshotProfile, 'paged-v1');
+  assert.equal(baseline.receipt.snapshotProfileRequested, 'paged-v1');
+  assert.equal(candidate.receipt.snapshotProfileRequested, 'paged-256-v1');
+  assert.equal(baseline.receipt.writerProofProfileRequested, null);
+  assert.equal(candidate.receipt.writerProofProfileRequested, null);
   assert.equal(candidate.receipt.sealProfileRequested, baseline.receipt.sealProfileRequested);
 }
 const withinControl = (base, next) => next - base <= Math.max(0.10 * base, 2_000_000);
@@ -66,16 +78,20 @@ const rows = baseline.verified.checks.map((base, index) => {
     windowThroughputSpeedup: newC.throughputPerSecond / oldC.throughputPerSecond,
     windowP95Ratio: newC.windowNs.p95 / oldC.windowNs.p95,
     transactionP95Ratio: newC.transactionNs.p95 / oldC.transactionNs.p95,
+    ...(paging ? {openP95Ratio: newC.openNs.p95 / oldC.openNs.p95,
+      businessP95Ratio: newC.businessNs.p95 / oldC.businessNs.p95} : {}),
     sealP95Ratio: newC.sealNs.p95 / oldC.sealNs.p95,
     outputMedianBytes: { baseline: oldC.outputBytes.median, candidate: newC.outputBytes.median },
     transactionP95WithinControl: withinControl(oldC.transactionNs.p95, newC.transactionNs.p95),
-    ...(returning ? {controls} : {}),
+    ...(returning || paging ? {controls} : {}),
     captureCostCA: { throughputRatio: next.throughputCA, transactionP95Ratio: next.transactionP95CA },
+    ...(paging ? {baselineCaptureCostCA: {throughputRatio: base.throughputCA,
+      transactionP95Ratio: base.transactionP95CA}} : {}),
   };
 });
 const geometricMean = values => Math.exp(values.reduce((sum, value) => sum + Math.log(value), 0) / values.length);
 const output = {
-  format: 'configured-source-window-cost-comparison/v1',
+  format: paging ? 'configured-source-window-cost-comparison/v2' : 'configured-source-window-cost-comparison/v1',
   baselineReceiptSha256: baseline.verified.originalReceiptSha256,
   candidateReceiptSha256: candidate.verified.originalReceiptSha256,
   baselineCommit: baseline.receipt.sourceCommit,
@@ -87,11 +103,11 @@ const output = {
   allTransactionP95ControlsPassed: rows.every(row => row.transactionP95WithinControl),
   rows,
 };
-if (returning) {
+if (returning || paging) {
   const throughputTarget = 1.5;
   const p95RatioTarget = 0.70;
   const controlPhasesPassed = rows.every(row => row.controls.A.passed && row.controls.B.passed);
-  output.returningQualification = {
+  output[paging ? 'boundaryPagingQualification' : 'returningQualification'] = {
     throughputTarget, p95RatioTarget, controlPhasesPassed,
     recommended: controlPhasesPassed && output.allTransactionP95ControlsPassed
       && output.windowThroughputGeometricMean >= throughputTarget

@@ -5,25 +5,42 @@ import {parseArgs} from 'node:util';
 
 const {values: args} = parseArgs({options: {
   receipt: {type: 'string'}, core: {type: 'string'}, output: {type: 'string'},
-  'writer-proof-profile': {type: 'string'},
+  'writer-proof-profile': {type: 'string'}, 'snapshot-profile': {type: 'string'},
 }});
 for (const filename of ['receipt', 'core', 'output']) assert(args[filename], `Require --${filename}`);
 
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const bytes = await readFile(args.receipt);
 const receipt = JSON.parse(bytes);
-const formal = receipt.format === 'configured-source-window-cost/v1';
+const multicolumn = receipt.format === 'configured-source-window-cost/v2';
+const formal = multicolumn || receipt.format === 'configured-source-window-cost/v1';
 assert(formal || receipt.format === 'configured-source-window-cost-pilot/v1');
 assert.equal(receipt.actualDatabaseExecution, true);
 assert.equal(receipt.passed, true);
 const profile = args['writer-proof-profile'] ?? null;
 assert([null, 'returning-v1'].includes(profile), 'Unknown independent writer proof profile');
 assert.equal(receipt.writerProofProfileRequested ?? null, profile);
+const snapshotProfile = args['snapshot-profile'];
+const snapshotFormats = new Map([
+  ['paged-v1', 'moontxnwitness-configured-source-snapshot-paged/v1'],
+  ['paged-256-v1', 'moontxnwitness-configured-source-snapshot-paged/v2'],
+]);
+if (multicolumn) {
+  assert(snapshotFormats.has(snapshotProfile), 'Supply the independently expected --snapshot-profile');
+  assert.equal(receipt.snapshotProfileRequested, snapshotProfile);
+} else {
+  assert.equal(snapshotProfile, undefined);
+}
 const options = JSON.stringify(profile === null ? {} : {projectionOptions: {writerProofProfile: profile}});
 const orders = ['ABC', 'BCA', 'CAB'];
 if (formal) {
   const shape = [['small', 24, 1], ['wide', 1024, 4], ['hot', 32, 8]];
-  assert.deepEqual(receipt.batches.map(b => [b.workload, b.keys, b.connections, b.order]),
+  if (multicolumn) {
+    shape.forEach(load => load.push(0));
+    shape.push(['multicolumn', 1024, 4, 12]);
+  }
+  assert.deepEqual(receipt.batches.map(b => [b.workload, b.keys, b.connections,
+    ...(multicolumn ? [b.payloadColumns] : []), b.order]),
     shape.flatMap(load => orders.map(order => [...load, order])));
   assert.equal(receipt.transactionsPerPhase, 24);
   assert.equal(receipt.warmupWindowsPerPhase, receipt.formalPerformanceMeasurement ? 5 : 0);
@@ -39,7 +56,7 @@ const compiled = await readFile(args.core);
 const core = await import('data:text/javascript;base64,' + compiled.toString('base64'));
 const checks = [];
 
-async function verifyWindow(cells, connections) {
+async function verifyWindow(cells, connections, payloadColumns, checkTampering) {
   for (const phase of ['A', 'B', 'C']) {
     const cell = cells[phase];
     assert.equal(cell.phase, phase);
@@ -56,6 +73,16 @@ async function verifyWindow(cells, connections) {
   const raw = await readFile(full.bundle, 'utf8');
   assert.equal(sha256(raw), full.bundleSha256);
   if (formal) assert.equal(Buffer.byteLength(raw), full.outputBytes);
+  let bundle;
+  if (multicolumn) {
+    assert.equal(full.config.table.businessColumns.length, 1 + payloadColumns);
+    bundle = JSON.parse(raw);
+    for (const boundary of ['startInputText', 'endInputText']) {
+      const input = JSON.parse(bundle[boundary]);
+      assert.equal(input.format, snapshotFormats.get(snapshotProfile));
+      assert.equal(JSON.parse(input.receiptText).format, input.format);
+    }
+  }
   const config = JSON.stringify(full.config), policy = JSON.stringify(full.policy);
   const report = core.analyze_configured_window_v2_json(config, policy, raw, options);
   const analysis = JSON.parse(report);
@@ -69,6 +96,14 @@ async function verifyWindow(cells, connections) {
   }
   const replay = JSON.parse(core.verify_configured_window_v2_json(config, policy, raw, report, options));
   assert.equal(replay.reportMatches, true);
+  if (checkTampering && snapshotProfile === 'paged-256-v1') {
+    const start = JSON.parse(bundle.startInputText);
+    start.format = snapshotFormats.get('paged-v1');
+    const changedReceipt = {...JSON.parse(start.receiptText), format: start.format};
+    bundle.startInputText = JSON.stringify({...start, receiptText: JSON.stringify(changedReceipt)});
+    const changed = JSON.parse(core.analyze_configured_window_v2_json(config, policy, JSON.stringify(bundle), options));
+    assert.notEqual(changed.sourceMappingVerified, true);
+  }
   return {commits: full.commits, sourceClosed: true, modelStatus: analysis.status,
     ...(profile === null ? {} : {returningWriterProofs: analysis.execution.returningWriterProofs})};
 }
@@ -108,18 +143,22 @@ for (const batch of receipt.batches) {
     assert.equal(batch.transactionP95RatioCA, latency('C') / latency('A'));
   }
   const verified = [];
-  for (const cells of [...warmup, ...measured]) verified.push(await verifyWindow(cells, batch.connections));
+  for (const cells of [...warmup, ...measured]) {
+    verified.push(await verifyWindow(cells, batch.connections, batch.payloadColumns, verified.length === 0));
+  }
   const results = formal ? {workload: batch.workload, warmup: warmup.length, windows: verified,
     phases: phaseStatistics(measured)} : verified[0];
   checks.push({order: batch.order, ...results, throughputCA: batch.completeWindowThroughputRatioCA,
     transactionP95CA: batch.transactionP95RatioCA});
 }
 
-const result = {format: formal ? 'configured-source-window-cost-verification/v1'
+const result = {format: multicolumn ? 'configured-source-window-cost-verification/v2'
+  : formal ? 'configured-source-window-cost-verification/v1'
                               : 'configured-source-window-cost-pilot-verification/v1', passed: true,
   formalPerformanceMeasurement: receipt.formalPerformanceMeasurement,
   originalReceiptSha256: sha256(bytes), coreSha256: sha256(compiled), checks};
 if (profile !== null) result.writerProofProfile = profile;
+if (multicolumn) result.snapshotProfile = snapshotProfile;
 if (formal && Number.isSafeInteger(receipt.peakProcessRssBytes)) {
   result.peakProcessRssBytes = receipt.peakProcessRssBytes;
 }

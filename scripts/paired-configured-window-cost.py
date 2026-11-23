@@ -25,6 +25,7 @@ SEAL = 'original-v2'
 WRITER = 'returning-v1'
 SOURCE_FILES = ('configured_window_v2.py', 'configured_point_capture_v2.py',
                 'configured_point_projection_v2.py')
+SNAPSHOT_SOURCE_FILES = (*SOURCE_FILES, 'configured_source_v2.py')
 
 
 def digest(path):
@@ -56,24 +57,33 @@ def worker(output):
     if actual != expected:
         raise ValueError('The imported producer is outside its pinned checkout')
     options = conninfo_to_dict(os.environ['MTW_PAIRED_COST_DSN'])
-    loads = {name: (keys, connections, transactions) for name, keys, connections, transactions in driver['FORMAL_LOADS']}
-    profile = os.environ.get('MTW_PAIRED_COST_WRITER_PROFILE')
+    loads = {name: (keys, connections, 0, transactions)
+             for name, keys, connections, transactions in driver['FORMAL_LOADS']}
+    multicolumn = os.environ['MTW_PAIRED_COST_MATRIX'] == 'multicolumn-v2'
+    if multicolumn:
+        keys, connections, _, transactions = loads['wide']
+        loads['multicolumn'] = (keys, connections, 12, transactions)
+    writer_profile = os.environ.get('MTW_PAIRED_COST_WRITER_PROFILE')
+    snapshot_profile = os.environ['MTW_PAIRED_COST_SNAPSHOT_PROFILE']
     for line in sys.stdin:
         request = json.loads(line)
         if request == 'describe':
-            result = {'producerFilesSha256': {name: digest(actual / name) for name in SOURCE_FILES},
-                      'loadShapes': {name: list(value[:2]) for name, value in loads.items()}}
+            names = SNAPSHOT_SOURCE_FILES if multicolumn else SOURCE_FILES
+            result = {'producerFilesSha256': {name: digest(actual / name) for name in names},
+                      'loadShapes': {name: list(value[:3]) if multicolumn else list(value[:2])
+                                     for name, value in loads.items()}}
         elif request == 'peak':
             result = {'peakProcessRssBytes': driver['peak_process_rss']()}
         else:
-            keys, connections, transactions = loads[request['load']]
+            keys, connections, payload_columns, transactions = loads[request['load']]
             result = {}
             for phase in request['order']:
                 result[phase] = driver['write_cell'](
                     output, options, request['schema'], os.environ['MTW_PAIRED_COST_OWNER'],
                     os.environ['MTW_PAIRED_COST_WRITER'], os.environ['MTW_PAIRED_COST_WRITER_SECRET'],
                     phase, keys, transactions, workers=connections, coordinated=True,
-                    seal_profile=SEAL, writer_proof_profile=profile,
+                    seal_profile=SEAL, writer_proof_profile=writer_profile,
+                    snapshot_profile=snapshot_profile, payload_columns=payload_columns,
                 )
         print(json.dumps(result), flush=True)
 
@@ -100,11 +110,14 @@ def validate_pair(pair):
 
 
 def paired_trials(workers, reports, loads, run_id, warmups, samples, schedule):
-    for workload, (keys, connections) in loads.items():
+    for workload, shape in loads.items():
+        keys, connections = shape[:2]
         for order_index, order in enumerate(ORDERS):
             batches = {arm: {'workload': workload, 'keys': keys, 'connections': connections,
                              'order': order, 'warmup': [], 'windows': []} for arm in workers}
             for arm, batch in batches.items():
+                if len(shape) == 3:
+                    batch['payloadColumns'] = shape[2]
                 reports[arm]['batches'].append(batch)
             for kind, prefix, count in (('warmup', 'w', warmups), ('windows', 'm', samples)):
                 for index in range(count):
@@ -143,7 +156,9 @@ def compare(args, dsn):
            'MTW_PAIRED_COST_WRITER': writer, 'MTW_PAIRED_COST_WRITER_SECRET': password}
     env.pop('MTW_PAIRED_COST_WRITER_PROFILE', None)
     warmups, samples = (5, 30) if args.formal else (0, 1)
-    common = {'format': 'configured-source-window-cost/v1', 'passed': False,
+    multicolumn = args.matrix == 'multicolumn-v2'
+    common = {'format': 'configured-source-window-cost/v2' if multicolumn else 'configured-source-window-cost/v1',
+              'passed': False,
               'formalPerformanceMeasurement': False, 'actualDatabaseExecution': True,
               'harnessSha256': digest(HARNESS), 'pairedRunnerSha256': digest(ENTRY),
               'sealProfileRequested': SEAL, 'transactionsPerPhase': 24,
@@ -159,7 +174,11 @@ def compare(args, dsn):
                 destination.mkdir()
                 log = resources.enter_context((destination / 'worker.log').open('xb'))
                 producer_env = {**env, 'MTW_COST_PRODUCER_ROOT': str(root)}
-                profile = WRITER if arm == 'candidate' else None
+                profile = WRITER if arm == 'candidate' and args.candidate_snapshot_profile is None else None
+                snapshot = args.candidate_snapshot_profile if arm == 'candidate' else None
+                snapshot = snapshot or 'paged-v1'
+                producer_env['MTW_PAIRED_COST_MATRIX'] = args.matrix
+                producer_env['MTW_PAIRED_COST_SNAPSHOT_PROFILE'] = snapshot
                 if profile is not None:
                     producer_env['MTW_PAIRED_COST_WRITER_PROFILE'] = profile
                 worker_process = subprocess.Popen([sys.executable, '-B', str(ENTRY), '--worker', str(destination)],
@@ -172,6 +191,8 @@ def compare(args, dsn):
                                 'producerFilesSha256': sources,
                                 'producerSha256': hashlib.sha256(json.dumps(sources, sort_keys=True).encode()).hexdigest(),
                                 'writerProofProfileRequested': profile}
+                if multicolumn:
+                    reports[arm]['snapshotProfileRequested'] = snapshot
             loads = descriptions['baseline']['loadShapes']
             if descriptions['candidate']['loadShapes'] != loads:
                 raise ValueError('Producer workload shapes differ')
@@ -203,12 +224,17 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--formal', action='store_true', help='Run all 5+30 windows in each of three orders')
     parser.add_argument('--exclusive-host', action='store_true')
+    parser.add_argument('--matrix', choices=('legacy-v1', 'multicolumn-v2'), default='legacy-v1')
+    parser.add_argument('--candidate-snapshot-profile', choices=('paged-256-v1',),
+                        help='Compare boundary pages instead of same-statement writer proofs')
     args = parser.parse_args()
     dsn = os.environ.get(args.dsn_env)
     if not args.owned_database or not dsn:
         parser.error('Use an explicitly owned disposable database and a populated DSN environment variable')
     if args.formal and not args.exclusive_host:
         parser.error('--formal requires --exclusive-host')
+    if args.candidate_snapshot_profile and args.matrix != 'multicolumn-v2':
+        parser.error('Boundary-page comparisons use --matrix multicolumn-v2')
     compare(args, dsn)
 
 
