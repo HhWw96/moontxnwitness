@@ -132,5 +132,7 @@ pub fn predicate_admission(
   bundle : String,
   options : String,
 ) -> String {
-  @txn.admit_configured_predicate_window_v1_json(config, policy, bundle, options)
+  @txn.admit_configured_predicate_window_v1_json(
+    config, policy, bundle, options,
+  )
 }

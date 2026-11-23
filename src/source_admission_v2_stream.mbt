@@ -181,7 +181,8 @@ fn source_parse_control_v2(
         [Json("visible-row-page"), Json("retained-effect-page")].contains(
           request.at("queryId"),
         )
-      let predicate = allow_predicate_rows && request.at("queryId") == Json("range")
+      let predicate = allow_predicate_rows &&
+        request.at("queryId") == Json("range")
       let max_rows = if paged || predicate { 128 } else { 1 }
       if rows.length() > max_rows ||
         native.at("rowCount") != Json(rows.length()) {
