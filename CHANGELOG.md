@@ -1,3 +1,8 @@
+# 0.7.4
+
+- Add an explicit 256-row boundary snapshot profile with independent MoonBit verification and the original native byte limit.
+- Extend the paired A/B/C protocol with a 14-column workload and separate opening, business, seal, transaction and RSS results.
+
 # 0.7.3
 
 - Analyze admitted PostgreSQL ranges for serializability and distinguish predicate G2 from item-level G2.

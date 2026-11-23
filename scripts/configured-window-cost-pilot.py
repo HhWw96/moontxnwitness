@@ -60,30 +60,47 @@ def peak_process_rss():
 
 
 def write_cell(output, options, schema, role, writer, password, phase, keys, keys_for_transactions,
-               *, workers=1, coordinated=False, seal_profile=None, writer_proof_profile=None):
+               *, workers=1, coordinated=False, seal_profile=None, writer_proof_profile=None,
+               snapshot_profile='paged-v1', payload_columns=0):
     path = output / f'{schema}-{phase}'
     path.mkdir()
     schema_name = f'{schema}_{phase.lower()}'
     target = sql.Identifier(schema_name, 'business_rows')
     native = {**options, 'user': writer, 'password': password}
+    payload = tuple(f'p{index:02}' for index in range(1, payload_columns + 1))
+    row_identifiers = [sql.Identifier(name) for name in ('id', 'value', *payload)]
+    row_projection = sql.SQL(', ').join(row_identifiers)
+    columns = sql.SQL(', ').join(
+        [sql.SQL('id bigint PRIMARY KEY')] +
+        [sql.SQL('{} bigint NOT NULL').format(column) for column in row_identifiers[1:]])
+    initial_values = sql.SQL(', ').join(
+        [sql.SQL('k'), sql.SQL('0')] +
+        [sql.SQL('k + {}').format(sql.Literal(index)) for index in range(1, payload_columns + 1)])
+
+    def expected_row(key, value):
+        return (key, value, *(key + index for index in range(1, payload_columns + 1)))
+
     with psycopg.connect(**options, autocommit=True) as control:
         control.execute(sql.SQL('CREATE SCHEMA {} AUTHORIZATION {}').format(sql.Identifier(schema_name), sql.Identifier(role)))
         control.execute(sql.SQL('SET ROLE {}').format(sql.Identifier(role)))
-        control.execute(sql.SQL('CREATE TABLE {} (id bigint PRIMARY KEY, value bigint NOT NULL)').format(target))
-        control.execute(sql.SQL('INSERT INTO {} SELECT k, 0 FROM pg_catalog.generate_series(1, %s) AS k').format(target), (keys,))
+        control.execute(sql.SQL('CREATE TABLE {} ({})').format(target, columns))
+        control.execute(sql.SQL('INSERT INTO {} SELECT {} FROM pg_catalog.generate_series(1, %s) AS k')
+                        .format(target, initial_values), (keys,))
         control.execute(sql.SQL('GRANT USAGE ON SCHEMA {} TO {}').format(sql.Identifier(schema_name), sql.Identifier(writer)))
         control.execute(sql.SQL('GRANT SELECT, UPDATE ON {} TO {}').format(target, sql.Identifier(writer)))
 
         config = SQLCaptureConfigV2(TableConfigV2(schema_name, 'business_rows',
-            PrimaryKeyConfigV2('id', 'int64'), (ColumnConfig('value', 'int64'),)))
+            PrimaryKeyConfigV2('id', 'int64'), tuple(ColumnConfig(name, 'int64') for name in ('value', *payload))))
         policy = SourceInstallPolicy('mtw_source_' + schema_name, (writer,))
         installation = None
         if phase != 'A':
             installation = path / 'installation'
             install_configured_source_v2(control, installation, config, policy, opt_in=True)
         window = None
-        select = sql.SQL('SELECT id, value FROM {} WHERE id=%s').format(target).as_string(control)
-        modify = sql.SQL('UPDATE {} SET value=%s WHERE id=%s RETURNING id, value').format(target).as_string(control)
+        select = sql.SQL('SELECT {} FROM {} WHERE id=%s').format(
+            row_projection, target).as_string(control)
+        modify = sql.SQL('UPDATE {} SET value=%s WHERE id=%s RETURNING {}').format(
+            target, row_projection).as_string(control)
 
         def connect():
             return psycopg.connect(**native)
@@ -94,7 +111,7 @@ def write_cell(output, options, schema, role, writer, password, phase, keys, key
             if writer_proof_profile is not None:
                 capture['projection_options'] = PointProjectionOptionsV2(config, writer_proof_profile=writer_proof_profile)
             window = ConfiguredCaptureWindowV2(path / 'capture', config, control, policy,
-                SourceInputsV2.from_directory(installation), opt_in=True, snapshot_profile='paged-v1',
+                SourceInputsV2.from_directory(installation), opt_in=True, snapshot_profile=snapshot_profile,
                 **capture)
         acquire = window.psycopg_factory(connect) if window is not None else connect
         def execute(keys_for_worker):
@@ -107,14 +124,14 @@ def write_cell(output, options, schema, role, writer, password, phase, keys, key
                         # this transaction's own write even on a shared key.
                         updated = connection.execute(modify, (1, key)).fetchone()
                         row = connection.execute(select, (key,)).fetchone()
-                        if row != (key, 1) or row != updated:
+                        if row != expected_row(key, 1) or row != updated:
                             raise ValueError('Concurrent workload did not deliver its own write')
                     else:
                         row = connection.execute(select, (key,)).fetchone()
                         if row is None or row[0] != key:
                             raise ValueError('Control workload did not deliver the requested key')
                         updated = connection.execute(modify, (row[1] + 1, key)).fetchone()
-                        if updated != (key, row[1] + 1):
+                        if updated != expected_row(key, row[1] + 1):
                             raise ValueError('Control workload did not deliver the expected update')
                     connection.commit()
                     samples.append(time.perf_counter_ns() - begin)
@@ -129,11 +146,11 @@ def write_cell(output, options, schema, role, writer, password, phase, keys, key
         end_business = time.perf_counter_ns()
         bundle = window.seal() if window is not None else None
         end = time.perf_counter_ns()
-        final = control.execute(sql.SQL('SELECT id,value FROM {} ORDER BY id').format(target)).fetchall()
+        final = control.execute(sql.SQL('SELECT {} FROM {} ORDER BY id').format(row_projection, target)).fetchall()
         expected = dict.fromkeys(range(1, keys + 1), 0)
         for key in keys_for_transactions:
             expected[key] = 1 if coordinated else expected[key] + 1
-        if final != list(expected.items()):
+        if final != [expected_row(key, value) for key, value in expected.items()]:
             raise ValueError('Final business data differ')
 
         row = {'phase': phase, 'commits': len(samples), 'transactionSamplesNs': samples,

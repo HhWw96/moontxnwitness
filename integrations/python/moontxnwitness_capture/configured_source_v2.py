@@ -312,7 +312,7 @@ def initial_snapshot_sql_v2(config, page_size=1):
     table=config.table; row='pg_catalog.to_jsonb(t)'; version=_qi(VERSION_COLUMN)
     limits=' OR '.join('pg_catalog.octet_length(t.'+_qi(c.name)+')>'+str(min(config.max_text_bytes,65536)) for c in table.columns if c.type=='text') or 'FALSE'
     return ("SELECT CASE WHEN ("+limits+") OR pg_catalog.octet_length("+row+"::text)>65536 THEN pg_catalog.jsonb_build_object('kind','initial-row-budget') "
-            "ELSE pg_catalog.jsonb_build_object('kind','initial-row','row',"+row+") END::text FROM "+_qt(table)+" t WHERE t."+version+">%s ORDER BY t."+version+" LIMIT "+str(_integer(page_size, 1, 128, "Snapshot page size")))
+            "ELSE pg_catalog.jsonb_build_object('kind','initial-row','row',"+row+") END::text FROM "+_qt(table)+" t WHERE t."+version+">%s ORDER BY t."+version+" LIMIT "+str(_integer(page_size, 1, 256, "Snapshot page size")))
 
 
 def initial_ledger_sql_v2(policy):

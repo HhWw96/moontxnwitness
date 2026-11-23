@@ -155,6 +155,7 @@ fn window_snapshot_input_v2(input : Json) -> (String, Json) raise {
   if ![
       Json("moontxnwitness-configured-source-snapshot/v2"),
       Json("moontxnwitness-configured-source-snapshot-paged/v1"),
+      Json("moontxnwitness-configured-source-snapshot-paged/v2"),
     ].contains(format) ||
     window_object_v2(receipt).at("format") != format {
     fail("invalid:window-snapshot-input-format")
@@ -519,8 +520,10 @@ fn window_analysis_body_v2(
   }
   let row_relation = "configured_row"
   let primary_kind = config.parser_config.tables[0].columns[0].kind
-  let paged = window_object_v2(start_receipt).at("format") ==
-    Json("moontxnwitness-configured-source-snapshot-paged/v1")
+  let paged = [
+    Json("moontxnwitness-configured-source-snapshot-paged/v1"),
+    Json("moontxnwitness-configured-source-snapshot-paged/v2"),
+  ].contains(window_object_v2(start_receipt).at("format"))
   let point_only = match opts.get("pointFootprintOnly") {
     None => paged
     Some(True) => true

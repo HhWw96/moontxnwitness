@@ -137,6 +137,7 @@ pub fn verify_snapshot_admission_v2(
   let mut reason = ""
   let mut control_complete = false
   let mut paged = false
+  let mut large_pages = false
   let observed_versions : Array[Json] = []
   let observed_effects : Array[Json] = []
   let status = try {
@@ -165,9 +166,18 @@ pub fn verify_snapshot_admission_v2(
       "completeWindow", "modelCoverageAccepted", "rowsObserved", "effectsObserved",
       "snapshot", "peer", "tableOid", "visibleRowVersions", "effectVersions", "log",
     ])
-    paged = r.at("format") ==
+    let receipt_format = r.at("format")
+    large_pages = receipt_format ==
+      Json("moontxnwitness-configured-source-snapshot-paged/v2")
+    paged = large_pages ||
+      receipt_format ==
       Json("moontxnwitness-configured-source-snapshot-paged/v1")
-    let (contract, log_format, page_size) = if paged {
+    let (contract, log_format, page_size) = if large_pages {
+      (
+        "postgres18-configured-source-snapshot-pages/v2", "moontxnwitness-source-snapshot-log-paged/v2",
+        256,
+      )
+    } else if paged {
       (
         "postgres18-configured-source-snapshot-pages/v1", "moontxnwitness-source-snapshot-log-paged/v1",
         128,
@@ -207,7 +217,7 @@ pub fn verify_snapshot_admission_v2(
       log_format,
       contract,
       work,
-      allow_snapshot_pages=paged,
+      snapshot_page_rows=page_size,
     )
     if stream.commit_request_seq != 0 {
       fail("mismatch:snapshot-unexpected-commit-request")
@@ -595,14 +605,18 @@ pub fn verify_snapshot_admission_v2(
   let record : Json = {
     "format": "moontxnwitness-source-snapshot-admission/v2",
     "semanticContract": Json(
-      if paged {
+      if large_pages {
+        "postgres18-configured-source-snapshot-pages/v2"
+      } else if paged {
         "postgres18-configured-source-snapshot-pages/v1"
       } else {
         "postgres18-original-readonly-snapshot-complete-ledger/v2"
       },
     ),
     "algorithm": Json(
-      if paged {
+      if large_pages {
+        "moonbit-snapshot-paged-ledger-2"
+      } else if paged {
         "moonbit-snapshot-paged-ledger-1"
       } else {
         "moonbit-snapshot-original-control-ledger-2"
