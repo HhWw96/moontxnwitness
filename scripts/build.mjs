@@ -37,7 +37,8 @@ const configuredCores={
  'sql-fetch-core.mjs':'sql_fetch_bridge',
 };
 for(const [name,folder]of Object.entries(configuredCores))copyFileSync(resolve(root,'_build/js/release/build',folder,folder+'.js'),resolve(output,name));
-const configuredWindowWrappers = ['configured-window-v2.mjs', 'configured-window-v2-host.mjs', 'configured-window-v2-standalone.mjs'];
+const configuredWindowWrappers = ['configured-window-v2.mjs', 'configured-window-v2-host.mjs',
+  'configured-window-v2-standalone.mjs', 'configured-predicate-admission-v1.mjs'];
 const configuredWindowCompiledCores = {
  'sql-projection-v2-core.mjs': 'sql_projection_v2_bridge',
  'structured-window-verification-core.mjs': 'structured_window_verification_bridge',
