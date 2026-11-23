@@ -1,3 +1,9 @@
+# 0.6.1
+
+- Measure PostgreSQL source installation and full capture with matched business inputs, three workload layouts, rotated batches and independent MoonBit replay.
+- Report setup and sealing time, transaction P95, complete-window throughput, output size and collector peak RSS.
+- Add an experimental streamed sealing profile with byte-compatible bundles, bounded writes and failure checks. The original sealing profile remains the default.
+
 # 0.6.0
 
 - Consolidate the supported PostgreSQL point-window recipes, verification budgets, reset and invalidation boundaries, and offline replay commands in one guide.
