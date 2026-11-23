@@ -1,14 +1,16 @@
 // CI may pass only on a source-verified Serializable result.
 import {readFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {parseArgs} from 'node:util';
-import {replayConfiguredWindowCapsuleV4} from '../dist/configured-window-v2-capsule.mjs';
 
 try {
   const {positionals, values} = parseArgs({allowPositionals: true, options: {
     config: {type: 'string'}, policy: {type: 'string'}, 'max-point-checks': {type: 'string'},
+    runtime: {type: 'string'},
   }});
   if (positionals.length !== 1 || !values.config || !values.policy) {
-    throw new Error('Use check-point-window.mjs --config FILE --policy FILE [--max-point-checks N] CAPSULE');
+    throw new Error('Use check-point-window.mjs --config FILE --policy FILE [--max-point-checks N] [--runtime DIST] CAPSULE');
   }
   const budget = values['max-point-checks'] ?? '1000000';
   if (!/^(?:0|[1-9][0-9]{0,6})$/.test(budget) || Number(budget) > 1_000_000) {
@@ -16,6 +18,9 @@ try {
   }
   const [capsule, config, policy] = await Promise.all(
     [positionals[0], values.config, values.policy].map(path => readFile(path, 'utf8')));
+  const runtime = values.runtime ? pathToFileURL(resolve(values.runtime, 'configured-window-v2-capsule.mjs'))
+    : new URL('../dist/configured-window-v2-capsule.mjs', import.meta.url);
+  const {replayConfiguredWindowCapsuleV4} = await import(runtime.href);
   const {report, ...proof} = replayConfiguredWindowCapsuleV4(capsule, {
     config, policy, maxPointChecks: Number(budget),
   });

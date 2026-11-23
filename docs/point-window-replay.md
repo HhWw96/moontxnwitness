@@ -50,8 +50,10 @@ node examples/point-window-replay.mjs --fixtures new-run/round-1/fixtures --html
 On Windows, `--bin PATH_TO_POSTGRES_BIN` starts an owned instance for each
 round. Use an unused output path under `D:\CodexScratch` for the Windows
 producer. Each round retains the database receipt, fixture checksums,
-independent replay and HTML explanation. PostgreSQL CI submits the first
-newly captured refutation to the public verifier and requires exit 1.
+independent replay and HTML explanation. The command verifies all three
+fresh capsules with the same runtime and records the compatible, refuted
+and incomplete gate results. PostgreSQL CI also submits the first newly
+captured refutation to the pinned public Action and requires exit 1.
 
 ## Run the separate FastAPI Users case
 
@@ -113,6 +115,15 @@ The Action checks the exact archive SHA-256 before loading the verifier.
 Its `exit-code` and `verdict` outputs retain the gate result for subsequent
 steps. The calling job fails for exit codes 1 and 2. The verifier also runs
 directly from an archive previously extracted to `vendor/moontxnwitness`.
+
+The stable inputs are `release-version`, `portable-sha256`, `capsule`,
+`config`, `policy` and optional `max-point-checks`. The default budget is
+1,000,000 and the caller may lower it. Use a controlled single-table
+PostgreSQL point window with configured int64, C-collated text or UUID
+primary keys, complete native results, confirmed transaction outcomes and
+source installation evidence. Capture gaps remain visible as incomplete
+results. The package includes one compatible capture, one verified
+refutation, and one rollback and retry for a fresh consumer to replay.
 
 ```yaml
 - name: Recompute the point-window Serializable result

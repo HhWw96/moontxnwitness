@@ -33,6 +33,31 @@ function run(executable, script, options, pipe = false) {
   return result.stdout;
 }
 
+async function checkGates(fixtures) {
+  const results = [];
+  for (const [name, code, status] of [
+    ['ordered', 0, 'checked-compatible'], ['before', 1, 'refuted'], ['retry', 2, 'unknown'],
+  ]) {
+    const capsule = gunzipSync(await readFile(resolve(fixtures, name + '.json.gz')),
+      {maxOutputLength: 64 * 1024 * 1024});
+    const path = resolve(fixtures, name + '.capsule.json');
+    await writeFile(path, capsule, {flag: 'wx'});
+    const run = spawnSync(process.execPath, [resolve(root, 'examples/check-point-window.mjs'),
+      '--runtime', runtime, '--config', resolve(fixtures, 'config.json'),
+      '--policy', resolve(fixtures, 'policy.json'), path],
+    {cwd: root, encoding: 'utf8', timeout: 120_000, windowsHide: true});
+    if (run.error) throw run.error;
+    assert.equal(run.status, code, name + '\n' + run.stdout + run.stderr);
+    const verdict = JSON.parse(run.stdout);
+    assert.equal(verdict.status, status, name);
+    assert.equal(verdict.accepted, code === 0, name);
+    assert.equal(verdict.verifiedRefutation, code === 1, name);
+    assert.equal(verdict.reportMatches, true, name);
+    results.push({name, code, status});
+  }
+  return results;
+}
+
 let passed = false;
 try {
   for (let index = 1; index <= 5; index++) {
@@ -64,16 +89,10 @@ try {
     assert.equal(replay.retry.sqlstate, '40001');
     assert.equal(replay.orderedControl.status, 'checked-compatible');
     await writeFile(resolve(round, 'replay.json'), JSON.stringify(replay, null, 2) + '\n', {flag: 'wx'});
-    if (index === 1) {
-      for (const name of ['before', 'ordered', 'retry']) {
-        const capsule = gunzipSync(await readFile(resolve(fixtures, name + '.json.gz')),
-          {maxOutputLength: 64 * 1024 * 1024});
-        await writeFile(resolve(fixtures, name + '.capsule.json'), capsule, {flag: 'wx'});
-      }
-    }
+    const gates = await checkGates(fixtures);
     runs.push({round: index, category: replay.category, original: replay.originalTransactions,
       reduced: replay.reducedTransactions, oneMinimalVerified: replay.oneMinimalVerified,
-      retrySqlstate: replay.retry.sqlstate, control: replay.orderedControl.status});
+      retrySqlstate: replay.retry.sqlstate, control: replay.orderedControl.status, gates});
   }
   passed = true;
 } finally {

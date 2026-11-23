@@ -1,3 +1,8 @@
+# 0.7.0
+
+- Run the same point-window gate on every freshly captured compatible, refuted and incomplete window during the portable PostgreSQL demo.
+- Document the stable downstream Action inputs, verifier exits, supported capture surface and clean-package verification sequence.
+
 # 0.6.9
 
 - Interleave two pinned sources for the full A/B/C PostgreSQL capture benchmark and bind every matched pair to its capture and result hashes.
