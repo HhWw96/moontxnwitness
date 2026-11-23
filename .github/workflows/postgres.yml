@@ -152,6 +152,51 @@ jobs:
           path: |
             ${{ runner.temp }}/mtw-orm-action/staged.json
             ${{ runner.temp }}/mtw-orm-action/gate.json
+      - name: Re-run capture, reduction and replay in five PostgreSQL rounds
+        if: ${{ !inputs.source_ref }}
+        env:
+          MTW_CONFIGURED_V2_DSN: host=127.0.0.1 port=${{ job.services.postgres.ports[5432] }} dbname=mtw_test user=mtw password=fixture-only
+        run: >-
+          node scripts/postgres-point-window-demo.mjs --runtime dist
+          --dsn-env MTW_CONFIGURED_V2_DSN --output "$RUNNER_TEMP/mtw-live-point"
+      - name: Exercise the refutation gate with the newly captured write skew
+        if: ${{ !inputs.source_ref }}
+        id: live_skew
+        continue-on-error: true
+        uses: ./.github/actions/check-point-window
+        with:
+          release-version: '0.6.4'
+          portable-sha256: 53483a92b1449667914456a7999ce28ad3406e1389467b86661d736e7e7bfdfc
+          capsule: ${{ runner.temp }}/mtw-live-point/round-1/fixtures/before.capsule.json
+          config: ${{ runner.temp }}/mtw-live-point/round-1/fixtures/config.json
+          policy: ${{ runner.temp }}/mtw-live-point/round-1/fixtures/policy.json
+      - name: Require the new counterexample to block the job
+        if: ${{ !inputs.source_ref }}
+        env:
+          VERDICT: ${{ steps.live_skew.outputs.verdict }}
+          EXIT_CODE: ${{ steps.live_skew.outputs.exit-code }}
+          OUTCOME: ${{ steps.live_skew.outcome }}
+        run: |
+          python -B - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP']) / 'mtw-live-point'
+          receipt = json.loads((root / 'receipt.json').read_bytes())
+          assert receipt['passed'] is True and len(receipt['rounds']) == 5
+          assert os.environ['OUTCOME'] == 'failure' and os.environ['EXIT_CODE'] == '1'
+          verdict = json.loads(os.environ['VERDICT'])
+          assert verdict['verifiedRefutation'] is True and verdict['sourceCoverageComplete'] is True
+          (root / 'gate.json').write_text(json.dumps(verdict, indent=2), encoding='utf-8')
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !inputs.source_ref && always() }}
+        with:
+          name: replayed-postgresql-point-windows
+          path: |
+            ${{ runner.temp }}/mtw-live-point/receipt.json
+            ${{ runner.temp }}/mtw-live-point/gate.json
+            ${{ runner.temp }}/mtw-live-point/round-*/replay.json
       - name: Capture all ten configured model scenarios and verify the current build
         shell: bash
         env:

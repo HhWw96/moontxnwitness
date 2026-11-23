@@ -36,10 +36,31 @@ claim. Offline replay does not rerun SQL.
 
 ## Run the database cases again
 
+The portable archive can capture and replay the three isolation outcomes in
+five independent rounds. Install the pinned psycopg and SQLGlot dependencies
+from `examples/orm-requirements.txt` and
+`integrations/python/requirements-configured-sql.txt`. Supply a disposable
+PostgreSQL 18.6 instance through an environment variable.
+
+```sh
+node scripts/postgres-point-window-demo.mjs --runtime dist --dsn-env MTW_DISPOSABLE_DSN --output new-run
+node examples/point-window-replay.mjs --fixtures new-run/round-1/fixtures --html witness.html
+```
+
+On Windows, `--bin PATH_TO_POSTGRES_BIN` starts an owned instance for each
+round. Use an unused output path under `D:\CodexScratch` for the Windows
+producer. Each round retains the database receipt, fixture checksums,
+independent replay and HTML explanation. PostgreSQL CI submits the first
+newly captured refutation to the public verifier and requires exit 1.
+
+## Run the separate FastAPI Users case
+
 Build the runtime in a source checkout and install both the pinned ORM and
 configured adapter requirements. Use PostgreSQL 18.6 binaries for the disposable
 local cluster and the original FastAPI Users SQLAlchemy checkout at
-`6397ace506d829a2ee12786da5d724c3f4c6b634`. The application needs
+`6397ace506d829a2ee12786da5d724c3f4c6b634`. On Windows set
+`core.autocrlf=false` on the upstream checkout before checking out that commit
+so the byte audit can compare it to the original Git blob. The application needs
 `fastapi-users==14.0.2` for the upstream fixture.
 
 ```sh

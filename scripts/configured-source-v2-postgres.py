@@ -39,7 +39,7 @@ def varchar_binding_fixture(control, connect_writer, schema, writer, output):
     table = TableConfigV2(schema, 'varchar_rows', PrimaryKeyConfigV2('id', 'uuid'),
         (ColumnConfig('email', 'text', TEXT_COMPARISON),))
     config = SQLCaptureConfigV2(table)
-    policy = SourceInstallPolicy('mtw_source_v2_varchar', (writer,))
+    policy = SourceInstallPolicy('mtw_source_v2_varchar_' + schema, (writer,))
     target = q(schema) + '.varchar_rows'
     control.execute('CREATE TABLE ' + target + ' (id uuid PRIMARY KEY, email varchar(320) COLLATE pg_catalog."C" NOT NULL)')
     control.execute('GRANT SELECT, INSERT, UPDATE, DELETE ON ' + target + ' TO ' + q(writer))
@@ -72,7 +72,7 @@ def paged_snapshot_fixture(control, connect_writer, schema, writer, output):
     table = TableConfigV2(schema, 'page_rows', PrimaryKeyConfigV2('id', 'int64'),
         (ColumnConfig('label', 'text', TEXT_COMPARISON),))
     config = SQLCaptureConfigV2(table)
-    policy = SourceInstallPolicy('mtw_source_v2_page', (writer,))
+    policy = SourceInstallPolicy('mtw_source_v2_page_' + schema, (writer,))
     target = q(schema) + '.page_rows'
     control.execute('CREATE TABLE ' + target + ' (id bigint PRIMARY KEY, label text COLLATE pg_catalog."C" NOT NULL)')
     control.execute('INSERT INTO ' + target + " SELECT n,'row-'||n FROM pg_catalog.generate_series(1,260) n")
@@ -153,7 +153,7 @@ def sqlalchemy_fixture(control, connect_writer, schema, writer, output):
     table = TableConfigV2(schema, 'orm_rows', PrimaryKeyConfigV2('id', 'uuid'),
         (ColumnConfig('email', 'text', TEXT_COMPARISON),))
     config = SQLCaptureConfigV2(table)
-    policy = SourceInstallPolicy('mtw_source_v2_orm', (writer,))
+    policy = SourceInstallPolicy('mtw_source_v2_orm_' + schema, (writer,))
     target = q(schema) + '.orm_rows'
     control.execute('CREATE TABLE ' + target + ' (id uuid PRIMARY KEY, email varchar(320) COLLATE pg_catalog."C" NOT NULL)')
     control.execute('GRANT SELECT, INSERT, UPDATE, DELETE ON ' + target + ' TO ' + q(writer))
@@ -758,10 +758,11 @@ def async_analysis_fixtures(control, connect_writer, connect_async_writer, confi
 
 def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_reduction=False, connect_async=None,
           with_sqlalchemy=False, fastapi_users_checkout=None, with_paged=False,
-          fastapi_users_seed_campaign=False):
+          fastapi_users_seed_campaign=False, fixture_namespace=''):
     records = []
     for index, kind in enumerate(('int64', 'text', 'uuid')):
-        owner, writer, schema = 'source_owner_'+str(index), 'source_writer_'+str(index), 'app_'+str(index)
+        suffix = str(index) + fixture_namespace
+        owner, writer, schema = 'source_owner_'+suffix, 'source_writer_'+suffix, 'app_'+suffix
         password = secrets.token_hex(20)
         admin.execute('CREATE ROLE '+q(owner)+' NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS')
         admin.execute('CREATE ROLE '+q(writer)+' LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD '+lit(password))
@@ -780,7 +781,7 @@ def suite(admin, connect, work, *, with_window=False, with_analysis=False, with_
             control.execute('INSERT INTO '+target+' VALUES(17,true,%s)',(key,))
             control.execute('GRANT USAGE ON SCHEMA '+q(schema)+' TO '+q(writer))
             control.execute('GRANT SELECT,INSERT,UPDATE,DELETE ON '+target+' TO '+q(writer))
-            policy = SourceInstallPolicy('mtw_source_v2_'+str(index),(writer,))
+            policy = SourceInstallPolicy('mtw_source_v2_'+suffix,(writer,))
             installation = install_configured_source_v2(control,work/('install-'+str(index)),config,policy,opt_in=True).to_dict()
             eq(installation['status'],'installed-components-only')
             for field in ('catalogComponentsChecked','initialSnapshotComponentsChecked','initialLedgerComponentsChecked','actualCommitConfirmed'):
@@ -922,10 +923,11 @@ def main():
         service=conninfo_to_dict(os.environ[args.dsn_env])
         def connect(**kwargs):return psycopg.connect(**dict(service,**kwargs))
         def connect_async(**kwargs):return psycopg.AsyncConnection.connect(**dict(service,**kwargs))
+        fixture_namespace = '_' + secrets.token_hex(5)
         receipt={'format':'configured-source-v2-native-installation-validation/v1','passed':False,'actualDatabaseExecution':False,
             'actualV2InstallationExecuted':False,'formalPerformanceMeasurement':False,'windowProducerRequested':args.with_window,
             'analysisFixturesRequested':args.with_analysis,'reductionFixturesRequested':args.with_reduction,
-            'fastapiUsersSeedCampaign':args.fastapi_users_seed_campaign,
+            'fastapiUsersSeedCampaign':args.fastapi_users_seed_campaign,'fixtureNamespace':fixture_namespace,
             'sourceSha256':{str(Path(__file__).resolve().relative_to(ROOT)):sha(Path(__file__))}}
         try:
             with connect(autocommit=True) as admin:
@@ -935,7 +937,7 @@ def main():
                     with_reduction=args.with_reduction,connect_async=connect_async if args.with_async else None,
                     with_sqlalchemy=args.with_sqlalchemy,fastapi_users_checkout=args.fastapi_users_checkout,
                     fastapi_users_seed_campaign=args.fastapi_users_seed_campaign,
-                    with_paged=args.with_paged)
+                    with_paged=args.with_paged,fixture_namespace=fixture_namespace)
                 receipt['actualV2InstallationExecuted'],receipt['passed']=True,True
         except BaseException:receipt['error']=traceback.format_exc()
         (work/'receipt.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n',encoding='utf8')

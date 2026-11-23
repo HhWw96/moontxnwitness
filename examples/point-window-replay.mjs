@@ -1,14 +1,20 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFile, writeFile} from 'node:fs/promises';
+import {resolve, sep} from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {parseArgs} from 'node:util';
 import {gunzipSync} from 'node:zlib';
-import {replayConfiguredWindowCapsuleV4, replayConfiguredWindowReductionCapsuleV4}
-  from '../dist/configured-window-v2-capsule.mjs';
-import {explainConfiguredWindowV4} from '../dist/configured-window-v2-standalone.mjs';
 
-const {values: args} = parseArgs({options: {html: {type: 'string'}}});
-const root = new URL('./point-window-replay-data/', import.meta.url);
+const {values: args} = parseArgs({options: {
+  html: {type: 'string'}, fixtures: {type: 'string'}, runtime: {type: 'string'},
+}});
+const directoryUrl = path => pathToFileURL(resolve(path) + sep);
+const root = args.fixtures ? directoryUrl(args.fixtures) : new URL('./point-window-replay-data/', import.meta.url);
+const runtime = args.runtime ? directoryUrl(args.runtime) : new URL('../dist/', import.meta.url);
+const {replayConfiguredWindowCapsuleV4, replayConfiguredWindowReductionCapsuleV4} =
+  await import(new URL('configured-window-v2-capsule.mjs', runtime).href);
+const {explainConfiguredWindowV4} = await import(new URL('configured-window-v2-standalone.mjs', runtime).href);
 const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'));
 assert.equal(manifest.format, 'moontxnwitness-point-window-replay/v1');
 const files = ['config.json', 'policy.json', 'before.json.gz', 'reduced.json.gz', 'retry.json.gz', 'ordered.json.gz'];

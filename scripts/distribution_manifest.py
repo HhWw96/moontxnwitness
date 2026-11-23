@@ -647,6 +647,11 @@ def select_distribution_files(root, public_names, tested_files, version):
         for name in ('scripts/point-window-ci-test.mjs', 'scripts/verify-point-window-moon-consumer.mjs'):
             require(name, 'independent configured point-window consumer')
             portable.add(name)
+    if 'scripts/postgres-point-window-demo.mjs' in public_names:
+        for name in ('scripts/postgres-point-window-demo.mjs', 'scripts/configured-source-v2-postgres.py',
+                     'scripts/stage-point-window-replay.mjs'):
+            require(name, 'live point-window portable reproduction')
+            portable.add(name)
     if tuple(map(int, version.split('.'))) >= (0, 3, 8):
         portable.update(NATIVE038_PORTABLE_INPUTS)
     if tuple(map(int, version.split('.'))) >= (0, 5, 1):
