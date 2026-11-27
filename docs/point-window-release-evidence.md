@@ -8,13 +8,13 @@ The [database campaign](point-window-replay.md) separately exercises PostgreSQL 
 
 ## Reproduce point and predicate evidence
 
-Start with the [v0.7.5 portable archive and checksums](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.7.5). From a new extraction directory, run:
+Start with the [v0.7.6 portable archive and checksums](https://github.com/HhWw96/moontxnwitness/releases/tag/v0.7.6). From a new extraction directory, run:
 
 ```sh
 node examples/point-window-replay.mjs --html point-witness.html
 node examples/predicate-window-replay.mjs --output predicate-witness.json
 node scripts/point-window-ci-test.mjs
-node scripts/verify-point-window-moon-consumer.mjs --runtime dist --module-version 0.7.5 --output new-moon-consumer
+node scripts/verify-point-window-moon-consumer.mjs --runtime dist --module-version 0.7.6 --output new-moon-consumer
 ```
 
 The two replays work offline. The final command installs the public package

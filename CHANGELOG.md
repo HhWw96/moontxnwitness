@@ -1,3 +1,9 @@
+# 0.7.6
+
+- Require MoonBit 1.0.0 RC1 or newer and pin the official RC1 toolchain and standard library for CI and release builds.
+- Apply prerelease-aware compiler checks to source builds and isolated MoonBit consumers.
+- Preserve the 64-container JSON bound after the standard library's parser migration and retain Unicode separator coverage.
+
 # 0.7.5
 
 - Ship digest-checked original PostgreSQL reservation inputs for offline predicate analysis, source-closed reduction and repair replay.

@@ -27,7 +27,7 @@ pub fn verify_configured_window_structured_v2_json(
     let (actual, actual_canonical) = configured_window_analysis_record_v2(
       config_text, policy_text, bundle_text, options_text, true,
     )
-    window_report_depth_v2(actual, 64)
+    window_report_depth_v2(actual, sql_json_depth_limit_v1)
     let expected = sql_json_v1(report_text, 33554432)
     let equal = actual_canonical == sql_canonical_v1(expected)
     (
@@ -139,7 +139,7 @@ fn window_report_depth_v2(record : Json, remaining : Int32) -> Unit raise {
   match record {
     Array(items) => {
       if remaining <= 0 {
-        raise @json.DepthLimitExceeded
+        raise SqlJsonDepthExceededV1
       }
       for item in items {
         window_report_depth_v2(item, remaining - 1)
@@ -147,7 +147,7 @@ fn window_report_depth_v2(record : Json, remaining : Int32) -> Unit raise {
     }
     Object(fields) => {
       if remaining <= 0 {
-        raise @json.DepthLimitExceeded
+        raise SqlJsonDepthExceededV1
       }
       for _, item in fields {
         window_report_depth_v2(item, remaining - 1)
@@ -182,7 +182,7 @@ pub fn verify_configured_window_reduction_structured_v2_json(
     let (actual, actual_canonical) = configured_window_reduction_record_v2(
       config_text, policy_text, bundle_text, options_text, true,
     )
-    window_report_depth_v2(actual, 64)
+    window_report_depth_v2(actual, sql_json_depth_limit_v1)
     let expected = sql_json_v1(report_text, 67108864)
     let equal = actual_canonical == sql_canonical_v1(expected)
     let result = window_object_v2(actual)
