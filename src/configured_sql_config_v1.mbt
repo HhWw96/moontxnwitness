@@ -99,11 +99,7 @@ fn sql_json_v1(text : String, maximum : Int32) -> Json raise {
     fail("budget:json-bytes")
   }
   sql_check_json_depth_v1(bytes)
-  @json.parse(
-    text[:],
-    reject_duplicate_keys=true,
-    preserve_number_repr=true,
-  )
+  @json.parse(text[:], reject_duplicate_keys=true, preserve_number_repr=true)
 }
 
 ///|

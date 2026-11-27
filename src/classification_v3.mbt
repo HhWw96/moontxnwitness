@@ -520,8 +520,14 @@ fn classification_v3_dispatch_json(
       encoded
     }
   } catch {
-    e =>
-      classification_v3_diagnostic(text, options_text, "invalid", e.to_string())
+    e => {
+      // The Failure wrapper is part of the compared legacy diagnostic.
+      let message = match e {
+        Failure(detail) => "Failure(" + detail + ")"
+        _ => e.to_string()
+      }
+      classification_v3_diagnostic(text, options_text, "invalid", message)
+    }
   }
 }
 
