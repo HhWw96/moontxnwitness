@@ -259,3 +259,13 @@ pub extend Outcome with Eq::{equal, not_equal}
 
 ///|
 pub extend Report with Eq::{equal, not_equal}
+
+///|
+// Historical reports bind the complete Failure text, including its source
+// location. Keep that wire representation independent of the compiler's Show.
+fn report_error_text(error : Error) -> String {
+  match error {
+    Failure(detail) => "Failure(" + detail + ")"
+    _ => error.to_string()
+  }
+}

@@ -354,7 +354,7 @@ pub fn parse_sql_config_v1(text : String) -> Result[SQLConfigV1, String] {
       default_schema,
     })
   } catch {
-    error => Err(error.to_string())
+    error => Err(report_error_text(error))
   }
 }
 

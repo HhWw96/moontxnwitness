@@ -23,7 +23,7 @@ test "window54 optimized verification keeps the original self-report depth gate"
     let _ = sql_json_v1(text, 67108864)
     ""
   } catch {
-    error => error.to_string()
+    error => report_error_text(error)
   }
   assert_true(!old_reason.is_empty())
   let checked = sql_json_v1(

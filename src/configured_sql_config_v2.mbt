@@ -160,7 +160,7 @@ pub fn parse_sql_config_v2(text : String) -> Result[SQLConfigV2, String] {
     }
     Ok({ parser_config, record, digest, })
   } catch {
-    error => Err(error.to_string())
+    error => Err(report_error_text(error))
   }
 }
 

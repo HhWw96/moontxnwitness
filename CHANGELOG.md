@@ -3,7 +3,7 @@
 - Require MoonBit 1.0.0 RC1 or newer and pin the official RC1 toolchain and standard library for CI and release builds.
 - Apply prerelease-aware compiler checks to source builds and isolated MoonBit consumers.
 - Preserve the 64-container JSON bound after the standard library's parser migration and retain Unicode separator coverage.
-- Preserve exact legacy classification diagnostics across the compiler upgrade.
+- Preserve exact legacy classification, source mapping and point-window diagnostics across the compiler upgrade.
 
 # 0.7.5
 

@@ -852,8 +852,8 @@ pub fn analyze_configured_window_v2_json(
         {
           "format": "moontxnwitness-configured-window-analysis/v2",
           "status": Json(
-            if error.to_string().contains("budget:") ||
-              error.to_string().contains("unsupported:") {
+            if report_error_text(error).contains("budget:") ||
+              report_error_text(error).contains("unsupported:") {
               "unknown"
             } else {
               "invalid"
@@ -863,7 +863,7 @@ pub fn analyze_configured_window_v2_json(
           "sourceMappingVerified": false,
           "writerWindowVerified": false,
           "sourceAuthenticated": false,
-          "reason": Json(error.to_string()),
+          "reason": Json(report_error_text(error)),
         } : Json).stringify()
   }
 }
@@ -900,7 +900,7 @@ pub fn verify_configured_window_v2_json(
         {
           "format": "moontxnwitness-configured-window-verification/v2",
           "valid": false,
-          "reason": Json(error.to_string()),
+          "reason": Json(report_error_text(error)),
         } : Json).stringify()
   }
 }
