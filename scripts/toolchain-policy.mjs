@@ -7,15 +7,42 @@ const lock = JSON.parse(readFileSync(new URL('../.moonbit-toolchain.json', impor
 export const MINIMUM_COMPILER = lock.minimumCompiler;
 export const PINNED_COMPILER = lock.compiler;
 
+const compilerVersion = /^(v?((?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*)){2})(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)(?:\s|$)/;
+
+function parseCompilerVersion(output) {
+  const match = compilerVersion.exec(output.trim());
+  if (!match) throw Error('Cannot identify a MoonBit compiler version');
+  const release = match[2].split('.').map(Number);
+  const prerelease = match[3]?.split('.') ?? [];
+  if (release.some(n => !Number.isSafeInteger(n)) || prerelease.some(entry => /^0\d+$/.test(entry))) {
+    throw Error('Invalid compiler version');
+  }
+  return {version: match[1], release, prerelease};
+}
+
+function comparePrereleases(left, right) {
+  if (!left.length || !right.length) return Number(!left.length) - Number(!right.length);
+  for (let index = 0; index < Math.min(left.length, right.length); index++) {
+    const a = left[index], b = right[index];
+    if (a === b) continue;
+    const numericA = /^\d+$/.test(a), numericB = /^\d+$/.test(b);
+    if (numericA !== numericB) return numericA ? -1 : 1;
+    if (numericA && a.length !== b.length) return a.length - b.length;
+    return a < b ? -1 : 1;
+  }
+  return left.length - right.length;
+}
+
+const minimum = parseCompilerVersion(MINIMUM_COMPILER);
+
 export function assertCompilerVersion(output) {
-  const match = /^v?(\d+)\.(\d+)\.(\d+)(?:\+[A-Za-z0-9._]+)?(?:\s|$)/.exec(output.trim());
-  if (!match) throw Error('Cannot identify a stable MoonBit compiler version');
-  const actual = match.slice(1,4).map(Number), minimum = MINIMUM_COMPILER.split('.').map(Number);
-  if (actual.some(n=>!Number.isSafeInteger(n))) throw Error('Invalid compiler version');
-  let comparison=0;
-  for(let i=0;i<3&&!comparison;i++)comparison=Math.sign(actual[i]-minimum[i]);
-  if(comparison<0)throw Error(`MoonBit compiler >= ${MINIMUM_COMPILER} is required; found ${match[0].trim()}`);
-  return match[0].trim();
+  const actual = parseCompilerVersion(output);
+  const releaseDifference = actual.release.map((value, index) => value - minimum.release[index]).find(value => value !== 0);
+  const comparison = releaseDifference ?? comparePrereleases(actual.prerelease, minimum.prerelease);
+  if (comparison < 0) {
+    throw Error(`MoonBit compiler >= ${MINIMUM_COMPILER} is required; found ${actual.version}`);
+  }
+  return actual.version;
 }
 
 export function assertPinnedCompilerVersion(output) {

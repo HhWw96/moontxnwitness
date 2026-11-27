@@ -152,7 +152,7 @@ fn configured_window_reduction_body_v2(
     report
   } catch {
     error => {
-      let reason = error.to_string()
+      let reason = report_error_text(error)
       {
         "format": "moontxnwitness-configured-window-analysis/v2",
         "status": Json(configured_window_reduction_error_status_v2(reason)),
@@ -226,9 +226,9 @@ fn configured_window_reduction_body_v2(
   ) catch {
     error => {
       output["status"] = Json(
-        configured_window_reduction_error_status_v2(error.to_string()),
+        configured_window_reduction_error_status_v2(report_error_text(error)),
       )
-      output["reason"] = Json(error.to_string())
+      output["reason"] = Json(report_error_text(error))
       // Keep the successful original window proof even if the independent
       // reduction cannot be completed within its own scope or byte budget.
       return record
@@ -303,7 +303,9 @@ pub fn reduce_configured_window_v2_json(
           "format": "moontxnwitness-configured-window-reduction/v1",
           "semanticContract": "verified-configured-window-model-selection/v1",
           "status": Json(
-            configured_window_reduction_error_status_v2(error.to_string()),
+            configured_window_reduction_error_status_v2(
+              report_error_text(error),
+            ),
           ),
           "preserveModel": "serializable",
           "windowVerified": false,
@@ -311,7 +313,7 @@ pub fn reduce_configured_window_v2_json(
           "oneMinimal": false,
           "originalWindowRetained": true,
           "sourceAuthenticated": false,
-          "reason": Json(error.to_string()),
+          "reason": Json(report_error_text(error)),
         } : Json).stringify()
   }
 }
@@ -365,7 +367,7 @@ pub fn verify_configured_window_reduction_v2_json(
           "refutationVerified": false,
           "oneMinimalVerified": false,
           "sourceAuthenticated": false,
-          "reason": Json(error.to_string()),
+          "reason": Json(report_error_text(error)),
         } : Json).stringify()
   }
 }

@@ -513,7 +513,7 @@ pub fn diagnose_configured_session_v4(
     "diagnostic-only"
   } catch {
     error => {
-      reason = error.to_string()
+      reason = report_error_text(error)
       if !result_mismatch {
         result_status = "unknown"
       }

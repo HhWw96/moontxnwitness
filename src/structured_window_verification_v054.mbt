@@ -27,7 +27,7 @@ pub fn verify_configured_window_structured_v2_json(
     let (actual, actual_canonical) = configured_window_analysis_record_v2(
       config_text, policy_text, bundle_text, options_text, true,
     )
-    window_report_depth_v2(actual, 64)
+    window_report_depth_v2(actual, sql_json_depth_limit_v1)
     let expected = sql_json_v1(report_text, 33554432)
     let equal = actual_canonical == sql_canonical_v1(expected)
     (
@@ -45,7 +45,7 @@ pub fn verify_configured_window_structured_v2_json(
         {
           "format": "moontxnwitness-configured-window-verification/v2",
           "valid": false,
-          "reason": Json(error.to_string()),
+          "reason": Json(report_error_text(error)),
         } : Json).stringify()
   }
 }
@@ -92,7 +92,7 @@ fn configured_window_analysis_record_v2(
       v3_dislock_sha256(bundle_text),
     )
   } catch {
-    error => configured_window_analysis_failure_v2(error.to_string())
+    error => configured_window_analysis_failure_v2(report_error_text(error))
   }
   window_bounded_record_v2(
     record, canonical, 33554432, "budget:window-report-bytes", configured_window_analysis_failure_v2,
@@ -139,7 +139,7 @@ fn window_report_depth_v2(record : Json, remaining : Int32) -> Unit raise {
   match record {
     Array(items) => {
       if remaining <= 0 {
-        raise @json.DepthLimitExceeded
+        raise SqlJsonDepthExceededV1
       }
       for item in items {
         window_report_depth_v2(item, remaining - 1)
@@ -147,7 +147,7 @@ fn window_report_depth_v2(record : Json, remaining : Int32) -> Unit raise {
     }
     Object(fields) => {
       if remaining <= 0 {
-        raise @json.DepthLimitExceeded
+        raise SqlJsonDepthExceededV1
       }
       for _, item in fields {
         window_report_depth_v2(item, remaining - 1)
@@ -182,7 +182,7 @@ pub fn verify_configured_window_reduction_structured_v2_json(
     let (actual, actual_canonical) = configured_window_reduction_record_v2(
       config_text, policy_text, bundle_text, options_text, true,
     )
-    window_report_depth_v2(actual, 64)
+    window_report_depth_v2(actual, sql_json_depth_limit_v1)
     let expected = sql_json_v1(report_text, 67108864)
     let equal = actual_canonical == sql_canonical_v1(expected)
     let result = window_object_v2(actual)
@@ -217,7 +217,7 @@ pub fn verify_configured_window_reduction_structured_v2_json(
           "refutationVerified": false,
           "oneMinimalVerified": false,
           "sourceAuthenticated": false,
-          "reason": Json(error.to_string()),
+          "reason": Json(report_error_text(error)),
         } : Json).stringify()
   }
 }
@@ -262,7 +262,7 @@ fn configured_window_reduction_record_v2(
       options,
     )
   } catch {
-    error => configured_window_reduction_failure_v2(error.to_string())
+    error => configured_window_reduction_failure_v2(report_error_text(error))
   }
   window_bounded_record_v2(
     record, canonical, 67108864, "budget:configured-window-reduction-report-bytes",

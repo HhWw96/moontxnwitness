@@ -23,7 +23,7 @@ test "window54 optimized verification keeps the original self-report depth gate"
     let _ = sql_json_v1(text, 67108864)
     ""
   } catch {
-    error => error.to_string()
+    error => report_error_text(error)
   }
   assert_true(!old_reason.is_empty())
   let checked = sql_json_v1(
@@ -69,7 +69,7 @@ test "window54 canonical byte guard retains compact UTF-8 limits" {
 }
 
 ///|
-test "window54 trusted container depth matches the original strict parser" {
+test "window54 text and structured paths keep the 64-container limit" {
   for leaf in [Json::null(), ({} : Json), Json(([] : Array[Json]))] {
     for layers in [0, 1, 62, 63, 64, 65] {
       let mut value = leaf
@@ -88,7 +88,21 @@ test "window54 trusted container depth matches the original strict parser" {
       } catch {
         _ => false
       }
+      assert_eq(
+        original_accepts,
+        layers + (if leaf == Json::null() { 0 } else { 1 }) <= 64,
+      )
       assert_eq(optimized_accepts, original_accepts)
     }
   }
+}
+
+///|
+test "configured JSON depth skips brackets in escaped strings" {
+  let mut text = "A quote \" then a backslash \\ and more brackets "
+  for _ in 0..<70 {
+    text = text + "[{"
+  }
+  let input : Json = { "text": Json(text) }
+  assert_eq(sql_json_v1(input.stringify(), 1024), input)
 }

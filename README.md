@@ -14,7 +14,7 @@ English: A MoonBit transaction anomaly analysis library with explainable witness
 
 [源码](https://github.com/HhWw96/moontxnwitness) · [下载](https://github.com/HhWw96/moontxnwitness/releases) · [Mooncakes](https://mooncakes.io/docs/HhWw96/moontxnwitness) · [更新记录](CHANGELOG.md)
 
-当前源码版本为 **v0.7.5**。可直接运行 `node examples/predicate-window-replay.mjs` 离线核验真实预约案例。[范围预约指南](docs/configured-predicate-window.md#reproduce-the-reservation-case)提供 PostgreSQL 实跑、五到二事务缩减和修复对照。[点窗口](docs/point-window-replay.md)和[下游工作流](examples/downstream-point-ci/README.md)提供安装、回放和 CI 用法。[采集性能协议](docs/configured-window-performance.md#paired-comparison-for-larger-boundary-pages)及[公开验证记录](docs/point-window-release-evidence.md)汇总实测证据。
+当前源码版本为 **v0.7.6**。可直接运行 `node examples/predicate-window-replay.mjs` 离线核验真实预约案例。[范围预约指南](docs/configured-predicate-window.md#reproduce-the-reservation-case)提供 PostgreSQL 实跑、五到二事务缩减和修复对照。[点窗口](docs/point-window-replay.md)和[下游工作流](examples/downstream-point-ci/README.md)提供安装、回放和 CI 用法。[采集性能协议](docs/configured-window-performance.md#paired-comparison-for-larger-boundary-pages)及[公开验证记录](docs/point-window-release-evidence.md)汇总实测证据。
 
 ## 关系谓词模型与可组合推断
 
@@ -103,7 +103,7 @@ node dist/moontxnwitness.mjs capabilities --format json
 
 ### v0.3.1
 
-源码需要 MoonBit `moonc` ≥0.10.21。构建与 CI 固定使用 `0.10.21+06da1ed44`，与配套标准库的官方归档摘要一同记录在 [.moonbit-toolchain.json](.moonbit-toolchain.json)。执行 `python -B scripts/install_moonbit.py --home <新工具链目录>` 可校验并安装这套 Windows 或 Linux x86-64 工具链。
+源码需要 MoonBit `moonc` ≥ `1.0.0-rc1`。CI 使用 [.moonbit-toolchain.json](.moonbit-toolchain.json) 固定的官方编译器构建及配套标准库。执行 `python -B scripts/install_moonbit.py --home <新工具链目录>` 可校验并安装这套 Windows 或 Linux x86-64 工具链。
 
 直接运行 MoonBit 核心库示例，无需 Node.js 或 Python：
 

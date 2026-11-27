@@ -255,7 +255,7 @@ fn source_fetch_mapping_with_delivery_v4(
     "matched-initial-components"
   } catch {
     error => {
-      reason = error.to_string()
+      reason = report_error_text(error)
       if reason.contains("mismatch:") {
         "mismatch"
       } else if reason.contains("invalid:") {

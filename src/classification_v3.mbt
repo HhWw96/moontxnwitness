@@ -521,7 +521,12 @@ fn classification_v3_dispatch_json(
     }
   } catch {
     e =>
-      classification_v3_diagnostic(text, options_text, "invalid", e.to_string())
+      classification_v3_diagnostic(
+        text,
+        options_text,
+        "invalid",
+        report_error_text(e),
+      )
   }
 }
 

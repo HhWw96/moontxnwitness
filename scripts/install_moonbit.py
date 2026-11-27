@@ -17,6 +17,22 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 OFFICIAL_CDN = 'https://cli.moonbitlang.com'
+COMPILER_VERSION = re.compile(
+    r'((?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*)){2})'
+    r'(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?'
+    r'(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?', re.ASCII)
+
+
+def compiler_precedence(version):
+    match = COMPILER_VERSION.fullmatch(version.removeprefix('v'))
+    if not match:
+        raise ValueError(f'Invalid MoonBit compiler version: {version}')
+    release, prerelease = match.groups()
+    identifiers = prerelease.split('.') if prerelease else []
+    if any(re.fullmatch(r'0\d+', part) for part in identifiers):
+        raise ValueError(f'Invalid MoonBit compiler version: {version}')
+    return (tuple(map(int, release.split('.'))), prerelease is None,
+            tuple((0, int(part)) if part.isdecimal() else (1, part) for part in identifiers))
 
 
 def download(relative_url, archive, expected):
@@ -47,8 +63,9 @@ def extract(archive, to):
 def install(home):
     lock = json.loads((ROOT / '.moonbit-toolchain.json').read_text(encoding='utf-8'))
     version = lock['compiler']
-    if not re.fullmatch(r'\d+\.\d+\.\d+\+[0-9a-f]+', version):
-        raise ValueError('The lock must select an exact stable MoonBit compiler build')
+    if (not re.fullmatch(r'[0-9a-f]+', version.partition('+')[2])
+            or compiler_precedence(version) < compiler_precedence(lock['minimumCompiler'])):
+        raise ValueError('The lock must select an exact MoonBit compiler build meeting the minimum')
     system = platform.system().lower()
     if system not in ('windows', 'linux') or platform.machine().lower() not in ('amd64', 'x86_64'):
         raise ValueError('This installer has pinned archives for Windows and Linux x86-64')

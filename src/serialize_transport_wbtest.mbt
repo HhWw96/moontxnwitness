@@ -90,7 +90,7 @@ test "transport038 03 all edge option fields and nonstandard realtime reasons su
       to_op: None,
       from_version: None,
       to_version: None,
-      reason: "reason \u0000 \u001f /    ",
+      reason: "reason \u0000 \u001f / \u2028 \u2029",
     })
     edges.push({
       from: "b\n\t中",
@@ -128,7 +128,7 @@ test "transport038 05 arbitrary Unicode findings coverage serial order and order
   let finding : Finding = {
     code: "custom\u0000",
     severity: "uncertainty",
-    message: "正文\n\r\t\"\\ / 🙂 é  ",
+    message: "正文\n\r\t\"\\ / 🙂 é \u2028",
     transactions: ["a\"\\中"],
     key: Some(key),
     ops: [0, 2147483647],

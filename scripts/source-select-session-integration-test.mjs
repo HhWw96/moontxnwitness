@@ -12,12 +12,13 @@ assert.equal(sha(pinBytes),'5cfb5fa9330dae4da1377d62bdabc52f9fd54ce4807b48e12f40
 const pins=JSON.parse(pinBytes);
 // The historical fixture still binds its original revision. Pin the current
 // delivery and installation digest reuse separately from the frozen inputs.
+// The current mapping keeps its diagnostic text stable across toolchains.
 const mapping='src/source_fetch_mapping_v4.mbt';
 const installation='src/source_install_v4.mbt';
 assert.equal(pins.files[mapping],'7187215852dda78ba8227f3bb69b57fdfa20cf2bcc34deee85b77ab52beac510');
 assert.equal(pins.files[installation],'f032bea135511157dcaea325e0b7437d73e7b21f08219a74156e86224d6269d2');
 const expected={...pins.files,
- [mapping]:'0481a9b988d68d9032083b61825b630f9d3a48ed3797cf4c4cfb20b989be2e6a',
+ [mapping]:'718560fce22194d06bc626c1ac2787593e69565cf44036086dd080b7e1c34257',
  [installation]:'e65443162b1461cb9aa4cf190eda12484790eee1ae97f587c357cd9915949edf'};
 const clone=x=>structuredClone(x);const before={};
 for(const [name,digest]of Object.entries(expected)){const actual=sha(await readFile(resolve(root,name)));assert.equal(actual,digest,name);before[name]=actual;}

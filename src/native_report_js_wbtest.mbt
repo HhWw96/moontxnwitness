@@ -51,7 +51,7 @@ test "native051 01 bounded host conversion preserves JSON scalars and numeric le
 test "native051 02 escaped and Unicode strings use the original pretty UTF8 byte limit" {
   for
     text in [
-      "", "月", "🙂𐐷", "é", "é", "a\"\\b", "\n\r\t\b\f\u0000\u001f", "  ",
+      "", "月", "🙂𐐷", "é", "é", "a\"\\b", "\n\r\t\b\f\u0000\u001f", "\u2028\u2029",
     ] {
     native051_check({ "label": text, "nested": [{ "value": text }] })
   }
@@ -207,7 +207,7 @@ test "native038 02 Unicode and escaping retain exact parsed text semantics" {
   let edges : Array[Edge] = []
   for
     name in [
-      "月", "🙂𐐷", "é", "é", "a\"\\b", "\n\r\t\b\f\u0000\u001f", "  ",
+      "月", "🙂𐐷", "é", "é", "a\"\\b", "\n\r\t\b\f\u0000\u001f", "\u2028\u2029",
       "",
     ] {
     edges.push(native038_edge(name, name + "end"))

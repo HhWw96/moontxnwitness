@@ -17,6 +17,8 @@ import shutil
 import subprocess
 import sys
 
+from install_moonbit import compiler_precedence
+
 
 MODULE = "HhWw96/moontxnwitness"
 CONSUMER = "verification/model-library-consumer"
@@ -306,10 +308,10 @@ def main(argv=None):
 
     try:
         versions = stage("compiler-versions", [str(moon), "version", "--all"], timeout=60)
-        compiler = re.search(r"moonc\s+v?(\d+)\.(\d+)\.(\d+)([^\s]*)", versions)
+        compiler = re.search(r"(?m)^\s*moonc\s+(v?\S+)", versions)
         lock = json.loads((Path(__file__).resolve().parents[1] / '.moonbit-toolchain.json').read_text('utf8'))
         minimum = lock['minimumCompiler']
-        require(compiler and tuple(map(int, compiler.group(1, 2, 3))) >= tuple(map(int, minimum.split('.'))),
+        require(compiler and compiler_precedence(compiler.group(1)) >= compiler_precedence(minimum),
                 f"Actual moonc must be >={minimum}")
         receipt["compiler"] = compiler.group(0)
         receipt["compilerBinary"] = binding(moon.parent / ("moonc.exe" if os.name == "nt" else "moonc"))

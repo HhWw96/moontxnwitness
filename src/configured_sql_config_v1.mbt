@@ -44,16 +44,62 @@ pub fn sql_config_v1_json(config : SQLConfigV1) -> Json {
 }
 
 ///|
+let sql_json_depth_limit_v1 : Int32 = 64
+
+///|
+priv suberror SqlJsonDepthExceededV1
+
+///|
+impl Show for SqlJsonDepthExceededV1 with fn output(_, logger) {
+  // Keep the original public failure reason for existing verification reports.
+  logger.write_string(
+    "Depth limit exceeded, please increase the max_nesting_depth parameter",
+  )
+}
+
+///|
+// RC1's parser is stack-safe at arbitrary depth. Check the project limit
+// before parsing or passing records to recursive canonical encoders.
+fn sql_check_json_depth_v1(bytes : Bytes) -> Unit raise {
+  if bytes.length() <= sql_json_depth_limit_v1 {
+    return
+  }
+  let mut depth = 0
+  let mut quoted = false
+  let mut escaped = false
+  for byte in bytes {
+    if quoted {
+      if escaped {
+        escaped = false
+      } else if byte == b'\\' {
+        escaped = true
+      } else if byte == b'"' {
+        quoted = false
+      }
+    } else {
+      match byte {
+        b'"' => quoted = true
+        b'[' | b'{' => {
+          depth += 1
+          if depth > sql_json_depth_limit_v1 {
+            raise SqlJsonDepthExceededV1
+          }
+        }
+        b']' | b'}' => depth -= 1
+        _ => ()
+      }
+    }
+  }
+}
+
+///|
 fn sql_json_v1(text : String, maximum : Int32) -> Json raise {
-  if orm_utf8_size(text) > maximum {
+  let bytes = @utf8.encode(text[:])
+  if bytes.length() > maximum {
     fail("budget:json-bytes")
   }
-  @json.parse(
-    text[:],
-    max_nesting_depth=64,
-    reject_duplicate_keys=true,
-    preserve_number_repr=true,
-  )
+  sql_check_json_depth_v1(bytes)
+  @json.parse(text[:], reject_duplicate_keys=true, preserve_number_repr=true)
 }
 
 ///|
@@ -308,7 +354,7 @@ pub fn parse_sql_config_v1(text : String) -> Result[SQLConfigV1, String] {
       default_schema,
     })
   } catch {
-    error => Err(error.to_string())
+    error => Err(report_error_text(error))
   }
 }
 
